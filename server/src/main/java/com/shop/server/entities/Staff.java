@@ -11,12 +11,12 @@ import lombok.Setter;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "san_pham")
+@Table(name = "nhan_vien")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class Product extends PrimaryEntity implements Serializable {
+public class Staff extends PrimaryEntity implements Serializable {
 
     private String name;
 
