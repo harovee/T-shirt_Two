@@ -38,7 +38,3 @@ out/
 
 ### env ###
 .env
-
-### config ###
-client.rar
-client

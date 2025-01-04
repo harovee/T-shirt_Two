@@ -25,4 +25,9 @@ public class MappingConstant {
 
     public static final String API_COMMON_ANOTHER = API_COMMON + "/another";
 
+    /* AUTHENTICATION */
+    public static final String API_AUTH_PREFIX = API_VERSION_PREFIX + "/auth";
+
+    public static final String PATH_OAUTH2 = "/oauth2";
+
 }
