@@ -12,4 +12,11 @@ export default {
 
 <script lang="ts" setup>
 
+import {localStorageAction} from "@/utils/storage.ts";
+import {ACCESS_TOKEN_STORAGE_KEY} from "@/infrastructure/constants/storageKey.ts";
+
+const accessToken = localStorageAction.get(ACCESS_TOKEN_STORAGE_KEY);
+console.log(accessToken);
+
+
 </script>

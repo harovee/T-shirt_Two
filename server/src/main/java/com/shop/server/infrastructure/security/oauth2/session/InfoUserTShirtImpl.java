@@ -1,14 +1,14 @@
 package com.shop.server.infrastructure.security.oauth2.session;
 
 import com.shop.server.infrastructure.constants.auth.Session;
-import com.shop.server.infrastructure.security.model.response.InfoUserSpotifyResponse;
+import com.shop.server.infrastructure.security.model.response.InfoUserTShirtTwoResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class InfoUserSpotifyImpl implements InfoUserSpotify {
+public class InfoUserTShirtImpl implements InfoUserTShirt {
 
     private final HttpSession httpSession;
 
@@ -53,8 +53,8 @@ public class InfoUserSpotifyImpl implements InfoUserSpotify {
     }
 
     @Override
-    public InfoUserSpotifyResponse getInfoUserSpotify() {
-        return new InfoUserSpotifyResponse(
+    public InfoUserTShirtTwoResponse getInfoUserSpotify() {
+        return new InfoUserTShirtTwoResponse(
                 getId(),
                 getUserName(),
                 getEmail(),

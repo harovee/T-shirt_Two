@@ -1,8 +1,8 @@
 package com.shop.server.infrastructure.security.oauth2.session;
 
-import com.shop.server.infrastructure.security.model.response.InfoUserSpotifyResponse;
+import com.shop.server.infrastructure.security.model.response.InfoUserTShirtTwoResponse;
 
-public interface InfoUserSpotify {
+public interface InfoUserTShirt {
 
     String getId();
 
@@ -20,6 +20,6 @@ public interface InfoUserSpotify {
 
     String getHost();
 
-    InfoUserSpotifyResponse getInfoUserSpotify();
+    InfoUserTShirtTwoResponse getInfoUserSpotify();
 
 }

@@ -86,7 +86,7 @@ public class SecurityConfig {
         CorsConfiguration publicApiConfig = new CorsConfiguration();
         publicApiConfig.setAllowedOrigins(Collections.singletonList("*"));
         publicApiConfig.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "*"));
-        publicApiConfig.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        publicApiConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         publicApiConfig.setAllowCredentials(false);
         publicApiConfig.setExposedHeaders(List.of("Authorization"));
         source.registerCorsConfiguration(MappingConstant.API_EMBED_PREFIX + "/**", publicApiConfig);

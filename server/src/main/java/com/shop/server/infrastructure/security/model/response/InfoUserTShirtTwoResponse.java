@@ -9,7 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class InfoUserSpotifyResponse {
+public class InfoUserTShirtTwoResponse {
 
     private String id;
 

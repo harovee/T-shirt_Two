@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shop.server.entities.Staff;
 import com.shop.server.infrastructure.constants.auth.Session;
-import com.shop.server.infrastructure.security.model.response.InfoUserSpotifyResponse;
+import com.shop.server.infrastructure.security.model.response.InfoUserTShirtTwoResponse;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
 import com.shop.server.infrastructure.security.repository.SecurityUserRepository;
 import io.jsonwebtoken.Claims;
@@ -33,7 +33,7 @@ public class TokenProvider {
     @Value("${jwt.secret}")
     private String tokenSecret;
 
-    private static final long TOKEN_EXP = 2 * 60 * 60 * 1000;
+    private final long TOKEN_EXP = 2 * 60 * 60 * 1000;
 
     @Setter(onMethod_ = @Autowired)
     private SecurityUserRepository userAuthRepository;
@@ -44,16 +44,16 @@ public class TokenProvider {
 
         if (staff == null) throw new BadRequestException("user not found");
 
-        InfoUserSpotifyResponse infoUserSpotifyResponse = getInfoUserSpotifyResponse(staff);
-        String subject = new ObjectMapper().writeValueAsString(infoUserSpotifyResponse);
-        Map<String, Object> claims = getBodyClaims(infoUserSpotifyResponse);
+        InfoUserTShirtTwoResponse infoUserTShirtTwoResponse = getInfoUserSpotifyResponse(staff);
+        String subject = new ObjectMapper().writeValueAsString(infoUserTShirtTwoResponse);
+        Map<String, Object> claims = getBodyClaims(infoUserTShirtTwoResponse);
 
         return Jwts.builder()
                 .setSubject(subject)
                 .setClaims(claims)
                 .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
-                .setExpiration(new java.util.Date(TOKEN_EXP))
-                .setIssuer("oniamey.spotify")
+                .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
+                .setIssuer("T-Shirt Two")
                 .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
                 .compact();
     }
@@ -62,7 +62,7 @@ public class TokenProvider {
         Staff staff = userAuthRepository.findById(userId).orElse(null);
         if (staff == null) throw new BadRequestException("user not found");
 
-        InfoUserSpotifyResponse response = getInfoUserSpotifyResponse(staff);
+        InfoUserTShirtTwoResponse response = getInfoUserSpotifyResponse(staff);
         String subject = new ObjectMapper().writeValueAsString(response);
         Map<String, Object> claims = getBodyClaims(response);
 
@@ -71,13 +71,13 @@ public class TokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
                 .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
-                .setIssuer("oniamey.spotify")
+                .setIssuer("T-Shirt Two")
                 .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
                 .compact();
     }
 
-    private InfoUserSpotifyResponse getInfoUserSpotifyResponse(Staff staff) {
-        InfoUserSpotifyResponse response = new InfoUserSpotifyResponse();
+    private InfoUserTShirtTwoResponse getInfoUserSpotifyResponse(Staff staff) {
+        InfoUserTShirtTwoResponse response = new InfoUserTShirtTwoResponse();
         response.setId(staff.getId());
         response.setUserName(staff.getUserName());
         response.setEmail(staff.getEmail());
@@ -88,7 +88,7 @@ public class TokenProvider {
         return response;
     }
 
-    private static Map<String, Object> getBodyClaims(InfoUserSpotifyResponse response) {
+    private static Map<String, Object> getBodyClaims(InfoUserTShirtTwoResponse response) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(Session.CURRENT_USER_ID, response.getId());
         claims.put(Session.CURRENT_USER_NAME, response.getUserName());
