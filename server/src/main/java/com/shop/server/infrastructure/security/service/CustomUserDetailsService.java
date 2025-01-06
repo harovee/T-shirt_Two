@@ -1,6 +1,6 @@
 package com.shop.server.infrastructure.security.service;
 
-import com.shop.server.entities.main.Staff;
+import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
 import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +27,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String email)
             throws UsernameNotFoundException {
-        Optional<Staff> userOptional = userRepository.findByEmail(email);
+        Optional<NhanVien> userOptional = userRepository.findByEmail(email);
         if (userOptional.isPresent()) {
-            Staff staff = userOptional.get();
-            String role = staff.getRole().name();
-            return UserPrincipal.create(staff, role);
+            NhanVien nhanVien = userOptional.get();
+            String role = nhanVien.getRole().name();
+            return UserPrincipal.create(nhanVien, role);
         }
 
         throw new UsernameNotFoundException("user not found with email : " + email);

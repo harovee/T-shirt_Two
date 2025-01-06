@@ -1,11 +1,16 @@
 package com.shop.server.entities.main;
 
-import com.shop.server.entities.base.AuditEntity;
-import jakarta.persistence.*;
+import com.shop.server.entities.base.PrimaryEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.io.Serializable;
 
 @Getter
 @Setter
@@ -13,12 +18,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "gio_hang")
-public class GioHang extends AuditEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+public class GioHang extends PrimaryEntity implements Serializable {
 
     @ManyToOne
-    @JoinColumn(name = "id_khach_hang",referencedColumnName = "id")
+    @JoinColumn(name = "id_khach_hang", referencedColumnName = "id")
     private KhachHang khachHang;
+
 }

@@ -1,9 +1,9 @@
 package com.shop.server.repositories;
 
-import com.shop.server.entities.Staff;
+import com.shop.server.entities.main.NhanVien;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface NhanVienRepository extends JpaRepository<Staff, String> {
+public interface NhanVienRepository extends JpaRepository<NhanVien, String> {
 }

@@ -1,6 +1,6 @@
 package com.shop.server.infrastructure.security.oauth2;
 
-import com.shop.server.entities.main.Staff;
+import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.ActorConstants;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.constants.module.Status;
@@ -51,43 +51,43 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
         }
 
-        Optional<Staff> userAuthOptional = userRepository.findByEmail(oAuth2UserInfo.getEmail());
+        Optional<NhanVien> userAuthOptional = userRepository.findByEmail(oAuth2UserInfo.getEmail());
 
         if (userAuthOptional.isPresent()) {
-            Staff staff = userAuthOptional.get();
-            if(staff.getStatus().equals(Status.INACTIVE)){
+            NhanVien nhanVien = userAuthOptional.get();
+            if(nhanVien.getStatus().equals(Status.INACTIVE)){
                 throw new OAuth2AuthenticationProcessingException("The specified user is disabled");
             }
-            Staff staffExist = (Staff) updateExistingUser(staff, oAuth2UserInfo);
-            return UserPrincipal.create(staffExist, oAuth2User.getAttributes(), staffExist.getRole().name());
+            NhanVien nhanVienExist = (NhanVien) updateExistingUser(nhanVien, oAuth2UserInfo);
+            return UserPrincipal.create(nhanVienExist, oAuth2User.getAttributes(), nhanVienExist.getRole().name());
         }
 
         Object newUser = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
-        if (newUser instanceof Staff originStaff) {
-            return UserPrincipal.create(originStaff, oAuth2User.getAttributes(), ActorConstants.EMPLOYEE);
+        if (newUser instanceof NhanVien originNhanVien) {
+            return UserPrincipal.create(originNhanVien, oAuth2User.getAttributes(), ActorConstants.EMPLOYEE);
         } else {
             throw new OAuth2AuthenticationProcessingException("Invalid email format");
         }
     }
 
     private Object registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
-        Staff staff = new Staff();
-        staff.setUserName(oAuth2UserInfo.getName());
-        staff.setEmail(oAuth2UserInfo.getEmail());
-        staff.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
-        staff.setProfilePicture(oAuth2UserInfo.getImageUrl());
-        staff.setStatus(Status.ACTIVE);
-        staff.setRole(Role.EMPLOYEE);
-        staff.setPassword(null);
-        return userRepository.save(staff);
+        NhanVien nhanVien = new NhanVien();
+        nhanVien.setUserName(oAuth2UserInfo.getName());
+        nhanVien.setEmail(oAuth2UserInfo.getEmail());
+        nhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
+        nhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
+        nhanVien.setStatus(Status.ACTIVE);
+        nhanVien.setRole(Role.EMPLOYEE);
+        nhanVien.setPassword(null);
+        return userRepository.save(nhanVien);
     }
 
-    private Object updateExistingUser(Staff existingStaff, OAuth2UserInfo oAuth2UserInfo) {
-        existingStaff.setUserName(oAuth2UserInfo.getName());
-        existingStaff.setProfilePicture(oAuth2UserInfo.getImageUrl());
-        existingStaff.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
-        if (existingStaff.getStatus() == null) existingStaff.setStatus(Status.ACTIVE);
-        return userRepository.save(existingStaff);
+    private Object updateExistingUser(NhanVien existingNhanVien, OAuth2UserInfo oAuth2UserInfo) {
+        existingNhanVien.setUserName(oAuth2UserInfo.getName());
+        existingNhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
+        existingNhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
+        if (existingNhanVien.getStatus() == null) existingNhanVien.setStatus(Status.ACTIVE);
+        return userRepository.save(existingNhanVien);
     }
 
 }

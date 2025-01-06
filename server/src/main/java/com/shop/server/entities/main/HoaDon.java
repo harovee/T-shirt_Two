@@ -1,11 +1,8 @@
 package com.shop.server.entities.main;
 
-import com.shop.server.entities.base.AuditEntity;
+import com.shop.server.entities.base.PrimaryEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -24,10 +21,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Entity
 @Table(name = "hoa_don")
-public class HoaDon extends AuditEntity implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+public class HoaDon extends PrimaryEntity implements Serializable {
 
     @Column(name = "ma_hoa_don", unique = true)
     private String ma;
@@ -64,7 +58,7 @@ public class HoaDon extends AuditEntity implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_nhan_vien", referencedColumnName = "id")
-    private Staff nhanVien;
+    private NhanVien nhanVien;
 
     @ManyToOne
     @JoinColumn(name = "id_phieu_giam_gia", referencedColumnName = "id")
@@ -73,4 +67,5 @@ public class HoaDon extends AuditEntity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_khach_hang", referencedColumnName = "id")
     private KhachHang khachHang;
+
 }

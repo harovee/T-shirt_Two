@@ -23,7 +23,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Staff extends PrimaryEntity implements Serializable {
+public class NhanVien extends PrimaryEntity implements Serializable {
 
     @Column(name = "ma_nhan_vien", unique = true)
     private String maNhanVien;

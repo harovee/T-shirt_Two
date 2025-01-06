@@ -1,6 +1,6 @@
 package com.shop.server.infrastructure.security.oauth2.user;
 
-import com.shop.server.entities.main.Staff;
+import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.ActorConstants;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,30 +37,30 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserPrincipal create(Staff staff) {
+    public static UserPrincipal create(NhanVien nhanVien) {
         List<GrantedAuthority> authorities = Collections.
                 singletonList(new SimpleGrantedAuthority(ActorConstants.ADMIN));
 
         return new UserPrincipal(
-                staff.getId(),
-                staff.getEmail(),
+                nhanVien.getId(),
+                nhanVien.getEmail(),
                 authorities
         );
     }
 
-    public static UserPrincipal create(Staff staff, String role) {
+    public static UserPrincipal create(NhanVien nhanVien, String role) {
         List<GrantedAuthority> authorities = Collections.
                 singletonList(new SimpleGrantedAuthority(role));
 
         return new UserPrincipal(
-                staff.getId(),
-                staff.getEmail(),
+                nhanVien.getId(),
+                nhanVien.getEmail(),
                 authorities
         );
     }
 
-    public static UserPrincipal create(Staff staff, Map<String, Object> attributes, String roles) {
-        UserPrincipal userPrincipal = UserPrincipal.create(staff, roles);
+    public static UserPrincipal create(NhanVien nhanVien, Map<String, Object> attributes, String roles) {
+        UserPrincipal userPrincipal = UserPrincipal.create(nhanVien, roles);
         userPrincipal.setAttributes(attributes);
         return userPrincipal;
     }

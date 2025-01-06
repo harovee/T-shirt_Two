@@ -2,7 +2,7 @@ package com.shop.server.infrastructure.security.service.impl;
 
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.RefreshToken;
-import com.shop.server.entities.main.Staff;
+import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.infrastructure.security.model.request.AuthLoginRequest;
@@ -81,15 +81,15 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
     @Override
     public ResponseObject<?> login(AuthLoginRequest request) {
         try {
-            Optional<Staff> userOptional = authUserRepository.findByEmail(request.getEmail());
+            Optional<NhanVien> userOptional = authUserRepository.findByEmail(request.getEmail());
             if (userOptional.isPresent()) {
-                Staff staff = userOptional.get();
-                String passwordSecret = staff.getPasswordSecret();
+                NhanVien nhanVien = userOptional.get();
+                String passwordSecret = nhanVien.getPasswordSecret();
                 SecretKey restoredKey = AESPasswordCryptoUtil.decodeKeyFromString(passwordSecret);
-                String decryptedPassword = AESPasswordCryptoUtil.decrypt(staff.getPassword(), restoredKey);
+                String decryptedPassword = AESPasswordCryptoUtil.decrypt(nhanVien.getPassword(), restoredKey);
                 if (decryptedPassword.matches(request.getPassword())) {
-                    String accessToken = tokenProvider.createToken(staff.getId());
-                    String refreshToken = refreshTokenService.createRefreshToken(staff.getId()).getRefreshToken();
+                    String accessToken = tokenProvider.createToken(nhanVien.getId());
+                    String refreshToken = refreshTokenService.createRefreshToken(nhanVien.getId()).getRefreshToken();
                     return ResponseObject.successForward(TokenUriResponse.getState(accessToken, refreshToken), "Get state successfully");
                 } else {
                     return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Incorrect password");
@@ -105,20 +105,20 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
     @Override
     public ResponseObject<?> register(AuthRegisterRequest request) {
         try {
-            Optional<Staff> userOptional = authUserRepository.findByEmail(request.getEmail());
+            Optional<NhanVien> userOptional = authUserRepository.findByEmail(request.getEmail());
             if (userOptional.isPresent()) {
                 return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Email already in use");
             }
-            Staff staff = new Staff();
-            staff.setEmail(request.getEmail());
+            NhanVien nhanVien = new NhanVien();
+            nhanVien.setEmail(request.getEmail());
             SecretKey secretKey = AESPasswordCryptoUtil.generateSecretKey();
             String encodedPassword = AESPasswordCryptoUtil.encrypt(request.getPassword(), secretKey);
             String encodeSecretKey = AESPasswordCryptoUtil.encodeKeyToString(secretKey);
-            staff.setPassword(encodedPassword);
-            staff.setPasswordSecret(encodeSecretKey);
-            staff.setRole(Role.USER);
-            staff.setStatus(Status.ACTIVE);
-            String userId = authUserRepository.save(staff).getId();
+            nhanVien.setPassword(encodedPassword);
+            nhanVien.setPasswordSecret(encodeSecretKey);
+            nhanVien.setRole(Role.USER);
+            nhanVien.setStatus(Status.ACTIVE);
+            String userId = authUserRepository.save(nhanVien).getId();
             String accessToken = tokenProvider.createToken(userId);
             String refreshToken = refreshTokenService.createRefreshToken(userId).getRefreshToken();
             return ResponseObject.successForward(TokenUriResponse.getState(accessToken, refreshToken), "Get state successfully");

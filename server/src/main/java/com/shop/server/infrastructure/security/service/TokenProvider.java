@@ -2,7 +2,7 @@ package com.shop.server.infrastructure.security.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shop.server.entities.main.Staff;
+import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.auth.Session;
 import com.shop.server.infrastructure.security.model.response.InfoUserTShirtTwoResponse;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
@@ -40,11 +40,11 @@ public class TokenProvider {
 
     public String createToken(Authentication authentication) throws BadRequestException, JsonProcessingException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        Staff staff = getCurrentUserLogin(userPrincipal.getEmail());
+        NhanVien nhanVien = getCurrentUserLogin(userPrincipal.getEmail());
 
-        if (staff == null) throw new BadRequestException("user not found");
+        if (nhanVien == null) throw new BadRequestException("user not found");
 
-        InfoUserTShirtTwoResponse infoUserTShirtTwoResponse = getInfoUserSpotifyResponse(staff);
+        InfoUserTShirtTwoResponse infoUserTShirtTwoResponse = getInfoUserSpotifyResponse(nhanVien);
         String subject = new ObjectMapper().writeValueAsString(infoUserTShirtTwoResponse);
         Map<String, Object> claims = getBodyClaims(infoUserTShirtTwoResponse);
 
@@ -59,10 +59,10 @@ public class TokenProvider {
     }
 
     public String createToken(String userId) throws BadRequestException, JsonProcessingException {
-        Staff staff = userAuthRepository.findById(userId).orElse(null);
-        if (staff == null) throw new BadRequestException("user not found");
+        NhanVien nhanVien = userAuthRepository.findById(userId).orElse(null);
+        if (nhanVien == null) throw new BadRequestException("user not found");
 
-        InfoUserTShirtTwoResponse response = getInfoUserSpotifyResponse(staff);
+        InfoUserTShirtTwoResponse response = getInfoUserSpotifyResponse(nhanVien);
         String subject = new ObjectMapper().writeValueAsString(response);
         Map<String, Object> claims = getBodyClaims(response);
 
@@ -76,15 +76,15 @@ public class TokenProvider {
                 .compact();
     }
 
-    private InfoUserTShirtTwoResponse getInfoUserSpotifyResponse(Staff staff) {
+    private InfoUserTShirtTwoResponse getInfoUserSpotifyResponse(NhanVien nhanVien) {
         InfoUserTShirtTwoResponse response = new InfoUserTShirtTwoResponse();
-        response.setId(staff.getId());
-        response.setUserName(staff.getUserName());
-        response.setEmail(staff.getEmail());
-        response.setSubscriptionType(staff.getSubscriptionType());
-        response.setProfilePicture(staff.getProfilePicture());
-        response.setRoleCode(staff.getRole().name());
-        response.setRoleName(staff.getRole().name());
+        response.setId(nhanVien.getId());
+        response.setUserName(nhanVien.getUserName());
+        response.setEmail(nhanVien.getEmail());
+        response.setSubscriptionType(nhanVien.getSubscriptionType());
+        response.setProfilePicture(nhanVien.getProfilePicture());
+        response.setRoleCode(nhanVien.getRole().name());
+        response.setRoleName(nhanVien.getRole().name());
         return response;
     }
 
@@ -144,8 +144,8 @@ public class TokenProvider {
         return false;
     }
 
-    private Staff getCurrentUserLogin(String email) {
-        Optional<Staff> user = userAuthRepository.findByEmail(email);
+    private NhanVien getCurrentUserLogin(String email) {
+        Optional<NhanVien> user = userAuthRepository.findByEmail(email);
         return user.orElse(null);
     }
 
