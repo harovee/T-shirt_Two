@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "nhan_vien")
@@ -24,8 +25,20 @@ import java.io.Serializable;
 @Setter
 public class Staff extends PrimaryEntity implements Serializable {
 
-    @Column(nullable = false, length = EntityProperties.LENGTH_NAME)
+    @Column(name = "ma_nhan_vien", unique = true)
+    private String maNhanVien;
+
+    @Column(name = "ho_va_ten", nullable = false, length = EntityProperties.LENGTH_NAME)
     private String userName;
+
+    @Column(name = "ngay_sinh")
+    private LocalDate ngaySinh;
+
+    @Column(name = "gioi_tinh")
+    private boolean gioiTinh;
+
+    @Column(name = "so_dien_thoai")
+    private String soDienThoai;
 
     @Column(nullable = false, length = EntityProperties.LENGTH_CODE)
     private String email;

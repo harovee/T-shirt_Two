@@ -1,9 +1,9 @@
 package com.shop.server.repositories;
 
-import com.shop.server.entities.Product;
+import com.shop.server.entities.main.GioHangChiTiet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, String> {
+public interface GioHangChiTietRepository extends JpaRepository<GioHangChiTiet, String> {
 }

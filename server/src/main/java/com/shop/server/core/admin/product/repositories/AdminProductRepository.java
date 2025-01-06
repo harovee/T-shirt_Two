@@ -2,15 +2,15 @@ package com.shop.server.core.admin.product.repositories;
 
 import com.shop.server.core.admin.product.models.requests.AdminFindProductRequest;
 import com.shop.server.core.admin.product.models.responses.AdminProductResponse;
-import com.shop.server.repositories.ProductRepository;
+import com.shop.server.entities.main.SanPham;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AdminProductRepository extends ProductRepository {
+public interface AdminProductRepository extends JpaRepository<SanPham, String> {
 
     /**
      * Lấy dữ liệu product dựa trên các trường có trong request
