@@ -1,6 +1,6 @@
 package com.shop.server.infrastructure.security.repository;
 
-import com.shop.server.entities.RefreshToken;
+import com.shop.server.entities.main.RefreshToken;
 import com.shop.server.repositories.RefreshTokenRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

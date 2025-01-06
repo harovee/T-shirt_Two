@@ -161,6 +161,33 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: true
                 },
             },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.name,
+                component: () => import('@/page/admin/employee/Employee.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+        ],
+    },
+    {
+        path: ROUTES_CONSTANTS.EMPLOYEE.path,
+        name: ROUTES_CONSTANTS.EMPLOYEE.name,
+        redirect: ROUTES_CONSTANTS.EMPLOYEE.children.HOME,
+        meta: {
+            requiresAuth: false
+        },
+        children: [
+            {
+                path: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.path,
+                name: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.name,
+                component: () => import('@/layout/employee/Employee.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
         ],
     },
     {

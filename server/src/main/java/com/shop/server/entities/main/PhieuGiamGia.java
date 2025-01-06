@@ -1,12 +1,18 @@
 package com.shop.server.entities.main;
 
-import com.shop.server.entities.base.AuditEntity;
-import jakarta.persistence.*;
+import com.shop.server.entities.base.PrimaryEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Getter
@@ -15,7 +21,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Entity
 @Table(name = "phieu_giam_gia")
-public class PhieuGiamGia extends AuditEntity {
+public class PhieuGiamGia extends PrimaryEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;

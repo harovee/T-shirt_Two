@@ -1,11 +1,15 @@
 package com.shop.server.entities.main;
 
-import com.shop.server.entities.base.AuditEntity;
-import jakarta.persistence.*;
+import com.shop.server.entities.base.PrimaryEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.io.Serializable;
 
 @Getter
 @Setter
@@ -13,10 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "mau_sac")
-public class MauSac extends AuditEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+public class MauSac extends PrimaryEntity implements Serializable {
 
     @Column(name = "ma_mau_sac")
     private String maMauSac;

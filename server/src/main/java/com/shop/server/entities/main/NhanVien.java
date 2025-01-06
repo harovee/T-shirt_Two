@@ -1,4 +1,4 @@
-package com.shop.server.entities;
+package com.shop.server.entities.main;
 
 import com.shop.server.entities.base.PrimaryEntity;
 import com.shop.server.infrastructure.constants.module.EntityProperties;
@@ -23,7 +23,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Staff extends PrimaryEntity implements Serializable {
+public class NhanVien extends PrimaryEntity implements Serializable {
 
     @Column(name = "ma_nhan_vien", unique = true)
     private String maNhanVien;
