@@ -1,6 +1,6 @@
 package com.shop.server.infrastructure.security.oauth2.user;
 
-import com.shop.server.entities.Staff;
+import com.shop.server.entities.main.Staff;
 import com.shop.server.infrastructure.constants.module.ActorConstants;
 import lombok.Getter;
 import lombok.Setter;

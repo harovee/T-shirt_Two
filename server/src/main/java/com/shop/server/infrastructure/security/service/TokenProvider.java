@@ -2,11 +2,11 @@ package com.shop.server.infrastructure.security.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shop.server.entities.Staff;
+import com.shop.server.entities.main.Staff;
 import com.shop.server.infrastructure.constants.auth.Session;
 import com.shop.server.infrastructure.security.model.response.InfoUserTShirtTwoResponse;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
-import com.shop.server.infrastructure.security.repository.SecurityUserRepository;
+import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -36,7 +36,7 @@ public class TokenProvider {
     private final long TOKEN_EXP = 2 * 60 * 60 * 1000;
 
     @Setter(onMethod_ = @Autowired)
-    private SecurityUserRepository userAuthRepository;
+    private SecurityNhanVienRepository userAuthRepository;
 
     public String createToken(Authentication authentication) throws BadRequestException, JsonProcessingException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();

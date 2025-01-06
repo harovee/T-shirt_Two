@@ -1,8 +1,8 @@
 package com.shop.server.infrastructure.security.service.impl;
 
 import com.shop.server.core.common.base.ResponseObject;
-import com.shop.server.entities.RefreshToken;
-import com.shop.server.entities.Staff;
+import com.shop.server.entities.main.RefreshToken;
+import com.shop.server.entities.main.Staff;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.infrastructure.security.model.request.AuthLoginRequest;
@@ -11,7 +11,7 @@ import com.shop.server.infrastructure.security.model.request.AuthRegisterRequest
 import com.shop.server.infrastructure.security.model.response.AuthRefreshResponse;
 import com.shop.server.infrastructure.security.model.response.TokenUriResponse;
 import com.shop.server.infrastructure.security.repository.SecurityRefreshRepository;
-import com.shop.server.infrastructure.security.repository.SecurityUserRepository;
+import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import com.shop.server.infrastructure.security.service.RefreshTokenService;
 import com.shop.server.infrastructure.security.service.SecurityRefreshTokenService;
 import com.shop.server.infrastructure.security.service.TokenProvider;
@@ -36,7 +36,7 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
 
     private final SecurityRefreshRepository authRefreshTokenRepository;
 
-    private final SecurityUserRepository authUserRepository;
+    private final SecurityNhanVienRepository authUserRepository;
 
     private final RefreshTokenService refreshTokenService;
 

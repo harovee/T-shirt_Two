@@ -1,10 +1,10 @@
 package com.shop.server.infrastructure.security.service;
 
-import com.shop.server.entities.RefreshToken;
-import com.shop.server.entities.Staff;
+import com.shop.server.entities.main.RefreshToken;
+import com.shop.server.entities.main.Staff;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
 import com.shop.server.infrastructure.security.repository.SecurityRefreshRepository;
-import com.shop.server.infrastructure.security.repository.SecurityUserRepository;
+import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import com.shop.server.utils.DateTimeUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +23,12 @@ public class RefreshTokenService {
 
     private final SecurityRefreshRepository refreshRepository;
 
-    private final SecurityUserRepository userRepository;
+    private final SecurityNhanVienRepository userRepository;
 
     @Autowired
     public RefreshTokenService(
             SecurityRefreshRepository refreshRepository,
-            SecurityUserRepository userAuthRepository
+            SecurityNhanVienRepository userAuthRepository
     ) {
         this.refreshRepository = refreshRepository;
         this.userRepository = userAuthRepository;

@@ -1,4 +1,4 @@
-package com.shop.server.entities;
+package com.shop.server.entities.main;
 
 import com.shop.server.entities.base.PrimaryEntity;
 import jakarta.persistence.Column;

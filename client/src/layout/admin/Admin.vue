@@ -155,6 +155,10 @@ const menuItems = ref([
     key: ROUTES_CONSTANTS.ADMIN.children.STAFF.name,
     path: ROUTES_CONSTANTS.ADMIN.children.STAFF.path,
   },
+  {
+    key: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.path,
+  },
 ]);
 
 const items: ItemType[] = reactive([
@@ -179,6 +183,8 @@ const items: ItemType[] = reactive([
   getItem('Đợt giảm giá', ROUTES_CONSTANTS.ADMIN.children.SALE.name, () => h(MailOutlined)),
 
   getItem('Nhân viên', ROUTES_CONSTANTS.ADMIN.children.STAFF.name, () => h(MailOutlined)),
+
+  getItem('Khách hàng', ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.name, () => h(MailOutlined)),
 ]);
 
 const handleClick: MenuProps['onClick'] = e => {

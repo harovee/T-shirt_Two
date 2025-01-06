@@ -1,6 +1,6 @@
 package com.shop.server.infrastructure.security.oauth2;
 
-import com.shop.server.entities.Staff;
+import com.shop.server.entities.main.Staff;
 import com.shop.server.infrastructure.constants.module.ActorConstants;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.constants.module.Status;
@@ -8,7 +8,7 @@ import com.shop.server.infrastructure.security.exception.OAuth2AuthenticationPro
 import com.shop.server.infrastructure.security.oauth2.user.OAuth2UserInfo;
 import com.shop.server.infrastructure.security.oauth2.user.OAuth2UserInfoFactory;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
-import com.shop.server.infrastructure.security.repository.SecurityUserRepository;
+import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final SecurityUserRepository userRepository;
+    private final SecurityNhanVienRepository userRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {

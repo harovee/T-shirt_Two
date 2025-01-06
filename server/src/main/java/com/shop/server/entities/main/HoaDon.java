@@ -1,13 +1,20 @@
 package com.shop.server.entities.main;
 
-import com.shop.server.entities.Staff;
 import com.shop.server.entities.base.AuditEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -17,12 +24,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Entity
 @Table(name = "hoa_don")
-public class HoaDon extends AuditEntity {
+public class HoaDon extends AuditEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "ma_hoa_don",unique = true)
+    @Column(name = "ma_hoa_don", unique = true)
     private String ma;
 
     @Column(name = "tien_giam")
@@ -56,14 +63,14 @@ public class HoaDon extends AuditEntity {
     private String trangThai;
 
     @ManyToOne
-    @JoinColumn(name = "id_nhan_vien",referencedColumnName = "id")
+    @JoinColumn(name = "id_nhan_vien", referencedColumnName = "id")
     private Staff nhanVien;
 
     @ManyToOne
-    @JoinColumn(name = "id_phieu_giam_gia",referencedColumnName = "id")
+    @JoinColumn(name = "id_phieu_giam_gia", referencedColumnName = "id")
     private PhieuGiamGia phieuGiamGia;
 
     @ManyToOne
-    @JoinColumn(name = "id_khach_hang",referencedColumnName = "id")
+    @JoinColumn(name = "id_khach_hang", referencedColumnName = "id")
     private KhachHang khachHang;
 }

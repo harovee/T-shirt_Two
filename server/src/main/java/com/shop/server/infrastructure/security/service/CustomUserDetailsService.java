@@ -1,8 +1,8 @@
 package com.shop.server.infrastructure.security.service;
 
-import com.shop.server.entities.Staff;
+import com.shop.server.entities.main.Staff;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
-import com.shop.server.infrastructure.security.repository.SecurityUserRepository;
+import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private static final Logger log = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
-    private final SecurityUserRepository userRepository;
+    private final SecurityNhanVienRepository userRepository;
 
     @Override
     @Transactional
