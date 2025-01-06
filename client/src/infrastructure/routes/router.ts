@@ -164,6 +164,24 @@ const routes: Array<RouteRecordRaw> = [
         ],
     },
     {
+        path: ROUTES_CONSTANTS.EMPLOYEE.path,
+        name: ROUTES_CONSTANTS.EMPLOYEE.name,
+        redirect: ROUTES_CONSTANTS.EMPLOYEE.children.HOME,
+        meta: {
+            requiresAuth: false
+        },
+        children: [
+            {
+                path: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.path,
+                name: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.name,
+                component: () => import('@/layout/employee/Employee.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+        ],
+    },
+    {
         path: ROUTES_CONSTANTS.REDIRECT.path,
         name: ROUTES_CONSTANTS.REDIRECT.name,
         component: () => import("@/infrastructure/routes/guard/Redirect.vue"),

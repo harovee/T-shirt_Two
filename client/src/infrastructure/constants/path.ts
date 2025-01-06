@@ -1,7 +1,7 @@
 export const ROUTES_CONSTANTS = {
     AUTHENTICATION: {
-        path: "/",
-        name: "spotify",
+        path: "/authentication",
+        name: "T-Shirt Two",
         children: {
             LOGIN: {
                 path: "login",
@@ -82,11 +82,21 @@ export const ROUTES_CONSTANTS = {
         children: {
             STATISTIC: {
                 path: "statistic",
-                name: "admin-statistic",
+                name: "user-statistic",
             },
             PRODUCT: {
                 path: "product",
-                name: "admin-product",
+                name: "user-product",
+            },
+        },
+    },
+    EMPLOYEE: {
+        path: "/",
+        name: "employee",
+        children: {
+            HOME: {
+                path: "home",
+                name: "employee-home",
             },
         },
     },

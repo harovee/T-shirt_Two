@@ -11,6 +11,7 @@ import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
 import com.shop.server.infrastructure.security.repository.SecurityUserRepository;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -62,7 +64,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Object newUser = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
         if (newUser instanceof Staff originStaff) {
-            return UserPrincipal.create(originStaff, oAuth2User.getAttributes(), ActorConstants.USER);
+            return UserPrincipal.create(originStaff, oAuth2User.getAttributes(), ActorConstants.EMPLOYEE);
         } else {
             throw new OAuth2AuthenticationProcessingException("Invalid email format");
         }
@@ -75,7 +77,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         staff.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
         staff.setProfilePicture(oAuth2UserInfo.getImageUrl());
         staff.setStatus(Status.ACTIVE);
-        staff.setRole(Role.USER);
+        staff.setRole(Role.EMPLOYEE);
         staff.setPassword(null);
         return userRepository.save(staff);
     }

@@ -28,14 +28,14 @@ public class Staff extends PrimaryEntity implements Serializable {
     @Column(name = "ma_nhan_vien", unique = true)
     private String maNhanVien;
 
-    @Column(name = "ho_va_ten", nullable = false, length = EntityProperties.LENGTH_NAME)
+    @Column(name = "ho_va_ten", length = EntityProperties.LENGTH_NAME)
     private String userName;
 
     @Column(name = "ngay_sinh")
     private LocalDate ngaySinh;
 
     @Column(name = "gioi_tinh")
-    private boolean gioiTinh;
+    private Boolean gioiTinh;
 
     @Column(name = "so_dien_thoai")
     private String soDienThoai;
