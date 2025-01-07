@@ -64,7 +64,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Object newUser = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
         if (newUser instanceof NhanVien originNhanVien) {
-            return UserPrincipal.create(originNhanVien, oAuth2User.getAttributes(), ActorConstants.EMPLOYEE);
+            return UserPrincipal.create(originNhanVien, oAuth2User.getAttributes(), ActorConstants.CLIENT);
         } else {
             throw new OAuth2AuthenticationProcessingException("Invalid email format");
         }
@@ -77,7 +77,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         nhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
         nhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
         nhanVien.setStatus(Status.ACTIVE);
-        nhanVien.setRole(Role.EMPLOYEE);
+        nhanVien.setRole(Role.CLIENT);
         nhanVien.setPassword(null);
         return userRepository.save(nhanVien);
     }

@@ -10,7 +10,7 @@ public enum Role {
 
     USER,
 
-    EMPLOYEE;
+    CLIENT;
 
     public static List<String> Roles() {
         return Arrays.stream(Role.values())

@@ -10,9 +10,9 @@ export const queryKey = {
         register: "registerKey"
     },
     admin: {
-        employee: {
-            employeeList: "adEmployeeListKey",
-            employeeDetail: "adEmployeeDetailKey",
+        client: {
+            clientList: "adClientListKey",
+            clientDetail: "adClientDetailKey",
         },
         user: {
             userList: "adUserListKey",

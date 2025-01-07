@@ -24,7 +24,7 @@
     </div>
     <table-spotify
         wrapperClassName="min-h-[410px]"
-        :columns="columnsEmployee"
+        :columns="columnsClient"
         :data-source="props.dataSource?.data"
         :loading="loading"
         :pagination-params="paginationParams || {}"
@@ -44,7 +44,7 @@
               title="Bạn có chắc chắn muốn chuyển đổi trạng thái không?"
               ok-text="Có"
               cancel-text="Hủy"
-              @confirm="handleChangeStatusEmployee(record.id)"
+              @confirm="handleChangeStatusClient(record.id)"
           >
             <a-tooltip
                 title="Cập nhật trạng thái"
@@ -70,7 +70,7 @@ import TableSpotify from "@/components/ui/Table.vue";
 import {ColumnType} from "ant-design-vue/es/table";
 import {toast} from "vue3-toastify";
 import {defineEmits} from "vue";
-import {useChangeStatusEmployee} from "@/infrastructure/services/service/admin/employee.action.ts";
+import {useChangeStatusClient} from "@/infrastructure/services/service/admin/client.action.ts";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -84,11 +84,11 @@ const props = defineProps({
   paginationParams: Object,
 });
 
-const {mutate: changeStatusEmployee} = useChangeStatusEmployee();
+const {mutate: changeStatusClient} = useChangeStatusClient();
 
-const handleChangeStatusEmployee = (id: string) => {
+const handleChangeStatusClient = (id: string) => {
   try {
-    changeStatusEmployee(id, {
+    changeStatusClient(id, {
       onSuccess: (res: any) => {
         toast.success(res.data.message);
       },
@@ -106,7 +106,7 @@ const handleChangeStatusEmployee = (id: string) => {
   }
 }
 
-const columnsEmployee: ColumnType[] = [
+const columnsClient: ColumnType[] = [
   {
     title: "#",
     dataIndex: "catalog",

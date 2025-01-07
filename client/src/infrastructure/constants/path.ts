@@ -74,9 +74,9 @@ export const ROUTES_CONSTANTS = {
                 path: "bill",
                 name: "admin-bill",
             },
-            EMPLOYEE: {
-                path: "employee",
-                name: "admin-employee",
+            CLIENT: {
+                path: "client",
+                name: "admin-client",
             }
         },
     },
@@ -94,13 +94,13 @@ export const ROUTES_CONSTANTS = {
             },
         },
     },
-    EMPLOYEE: {
+    CLIENT: {
         path: "/",
-        name: "employee",
+        name: "client",
         children: {
             HOME: {
                 path: "home",
-                name: "employee-home",
+                name: "client-home",
             },
         },
     },

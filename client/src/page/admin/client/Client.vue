@@ -9,69 +9,69 @@
         <v-icon name="si-iconfinder" size="x-large" width="24" height="24"/>
         <h4 class="text-xl m-0">Bộ lọc</h4>
       </div>
-      <employee-filter
+      <client-filter
           @filter="handleFilter"
       />
     </div>
     <div class="rounded-xl">
-      <employee-table
+      <client-table
           :data-source="dataSource"
           :loading="isLoading || isFetching"
-          @handleOpenModalCreate="handleOpenModalCreateEmployee"
-          @handleCloseModalCreate="handleCloseModalCreateEmployee"
+          @handleOpenModalCreate="handleOpenModalCreateClient"
+          @handleCloseModalCreate="handleCloseModalCreateClient"
           :pagination-params="params"
           @update:pagination-params="handlePaginationChange"
       />
     </div>
   </div>
-  <employee-modal-c
-      :open="isOpenModalCreateEmployee"
-      @handleClose="handleCloseModalCreateEmployee"
-      @onCancel="isOpenModalCreateEmployee = false"
+  <client-modal-c
+      :open="isOpenModalCreateClient"
+      @handleClose="handleCloseModalCreateClient"
+      @onCancel="isOpenModalCreateClient = false"
   />
 </template>
 
 <script lang="ts" setup>
 
 import {computed, ref, watch} from "vue";
-import {FindEmployeeRequest} from "@/infrastructure/services/api/admin/employee.api.ts";
-import {useGetEmployees} from "@/infrastructure/services/service/admin/employee.action.ts";
+import {FindClientRequest} from "@/infrastructure/services/api/admin/client.api.ts";
+import {useGetClients} from "@/infrastructure/services/service/admin/client.action.ts";
 import {keepPreviousData} from "@tanstack/vue-query";
-import EmployeeFilter from "@/page/admin/employee/EmployeeFilter.vue";
-import EmployeeTable from "@/page/admin/employee/EmployeeTable.vue";
-import EmployeeModalC from "@/page/admin/employee/EmployeeModalC.vue";
+import ClientFilter from "@/page/admin/client/ClientFilter.vue";
+import ClientTable from "@/page/admin/client/ClientTable.vue";
+import ClientModalC from "@/page/admin/client/ClientModalC.vue";
 
 /*** Table - Pagination - Filter  ***/
 
-const params = ref<FindEmployeeRequest>({
+const params = ref<FindClientRequest>({
   page: 1,
   size: 10
 });
 
-const {data, isLoading, isFetching} = useGetEmployees(params, {
+const {data, isLoading, isFetching} = useGetClients(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
 
-const handleFilter = (newParams: FindEmployeeRequest) => {
+const handleFilter = (newParams: FindClientRequest) => {
   params.value = {...params.value, ...newParams};
 };
 
 const dataSource = computed(() => data?.value?.data || []);
 
-const handlePaginationChange = (newParams: FindEmployeeRequest) => {
+const handlePaginationChange = (newParams: FindClientRequest) => {
   params.value = {...params.value, ...newParams};
 };
 
-/*** Create Employee ***/
-const isOpenModalCreateEmployee = ref(false);
+/*** Create Client ***/
+const isOpenModalCreateClient = ref(false);
 
-const handleOpenModalCreateEmployee = () => {
-  isOpenModalCreateEmployee.value = true;
+const handleOpenModalCreateClient = () => {
+  isOpenModalCreateClient.value = true;
 };
 
-const handleCloseModalCreateEmployee = () => {
-  isOpenModalCreateEmployee.value = false;
+const handleCloseModalCreateClient = () => {
+  isOpenModalCreateClient.value = false;
 };
 
 watch(
@@ -87,6 +87,6 @@ watch(
 
 <script lang="ts">
 export default {
-  name: 'admin employee',
+  name: 'admin client',
 };
 </script>

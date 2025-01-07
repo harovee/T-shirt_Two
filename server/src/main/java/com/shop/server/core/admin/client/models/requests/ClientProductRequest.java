@@ -1,4 +1,4 @@
-package com.shop.server.core.admin.employee.models.requests;
+package com.shop.server.core.admin.client.models.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeProductRequest {
+public class ClientProductRequest {
 
     String name;
 

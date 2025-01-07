@@ -44,8 +44,8 @@ onMounted(() => {
       case ROLES.USER:
         router.push({name: ROUTES_CONSTANTS.USER.name});
         break;
-      case ROLES.EMPLOYEE:
-        router.push({name: ROUTES_CONSTANTS.EMPLOYEE.name});
+      case ROLES.CLIENT:
+        router.push({name: ROUTES_CONSTANTS.CLIENT.name});
         break;
       default:
         router.push({name: ROUTES_CONSTANTS.AUTHENTICATION.name});

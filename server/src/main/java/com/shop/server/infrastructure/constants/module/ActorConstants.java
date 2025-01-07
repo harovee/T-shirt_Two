@@ -6,6 +6,6 @@ public final class ActorConstants {
 
     public static final String USER = "USER";
 
-    public static final String EMPLOYEE = "EMPLOYEE";
+    public static final String CLIENT = "CLIENT";
 
 }
