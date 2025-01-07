@@ -200,24 +200,6 @@ const routes: Array<RouteRecordRaw> = [
         ],
     },
     {
-        path: ROUTES_CONSTANTS.CLIENT.path,
-        name: ROUTES_CONSTANTS.CLIENT.name,
-        redirect: ROUTES_CONSTANTS.CLIENT.children.HOME,
-        meta: {
-            requiresAuth: false
-        },
-        children: [
-            {
-                path: ROUTES_CONSTANTS.CLIENT.children.HOME.path,
-                name: ROUTES_CONSTANTS.CLIENT.children.HOME.name,
-                component: () => import('@/layout/client/Client.vue'),
-                meta: {
-                    requiresAuth: false
-                },
-            },
-        ],
-    },
-    {
         path: ROUTES_CONSTANTS.REDIRECT.path,
         name: ROUTES_CONSTANTS.REDIRECT.name,
         component: () => import("@/infrastructure/routes/guard/Redirect.vue"),
