@@ -65,4 +65,5 @@ public interface AdminClientRepository extends KhachHangRepository {
     AdminDetailClientResponse getClientDetail(String id);
 
     boolean existsClientByEmail(String email);
+
 }
