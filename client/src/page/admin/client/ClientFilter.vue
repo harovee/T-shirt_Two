@@ -5,11 +5,11 @@
   >
     <a-form-item
         label="Tìm kiếm"
-        class="col-span-3 md:col-span-3 lg:col-span-1"
+        class="col-span-3 md:col-span-3 lg:col-span-2"
     >
       <a-input
           v-model:value="params.keyword"
-          placeholder="Nhập tên, email khách hàng"
+          placeholder="Nhập mã, tên, email, hoặc bất kỳ thông tin khách hàng"
           allowClear
           @change="onChangeInput('keyword' , $event)"
       />

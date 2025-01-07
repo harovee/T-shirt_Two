@@ -170,22 +170,13 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: true
                 },
             },
-        ],
-    },
-    {
-        path: ROUTES_CONSTANTS.CLIENT.path,
-        name: ROUTES_CONSTANTS.CLIENT.name,
-        redirect: ROUTES_CONSTANTS.CLIENT.children.HOME,
-        meta: {
-            requiresAuth: false
-        },
-        children: [
             {
-                path: ROUTES_CONSTANTS.CLIENT.children.HOME.path,
-                name: ROUTES_CONSTANTS.CLIENT.children.HOME.name,
-                component: () => import('@/layout/client/Client.vue'),
+                path: ROUTES_CONSTANTS.ADMIN.children.CLIENT_DETAIL.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.CLIENT_DETAIL.name,
+                component: () => import('@/page/admin/client/ClientDetail.vue'),
                 meta: {
-                    requiresAuth: false
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
                 },
             },
         ],

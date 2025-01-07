@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 import {computed, createVNode, defineEmits, defineProps, reactive} from "vue";
-import {Form, message, Modal, Upload} from "ant-design-vue";
+import {Form, Modal} from "ant-design-vue";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 import {toast} from "vue3-toastify";
 import {useCreateClient} from "@/infrastructure/services/service/admin/client.action.ts";

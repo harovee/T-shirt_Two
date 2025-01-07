@@ -37,7 +37,11 @@ public class AdminClientServiceImpl implements AdminClientService {
 
     @Override
     public ResponseObject<?> getClientById(String id) {
-        return null;
+        return new ResponseObject<>(
+                adminClientRepository.getClientDetail(id),
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
     }
 
     @Override

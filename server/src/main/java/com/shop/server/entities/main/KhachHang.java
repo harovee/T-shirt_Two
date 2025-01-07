@@ -44,7 +44,4 @@ public class KhachHang extends PrimaryEntity implements Serializable {
     @Column(name = "anh_dai_dien")
     private String anhDaiDien;
 
-    @Column(name = "trang_thai")
-    private String trangThai;
-
 }

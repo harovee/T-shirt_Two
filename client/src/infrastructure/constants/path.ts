@@ -77,6 +77,10 @@ export const ROUTES_CONSTANTS = {
             CLIENT: {
                 path: "client",
                 name: "admin-client",
+            },
+            CLIENT_DETAIL: {
+                path: "client/:id",
+                name: "admin-client-detail",
             }
         },
     },
