@@ -191,7 +191,8 @@ const handleClick: MenuProps['onClick'] = e => {
   selectedKeys.value = [String.fromCharCode(e.value)];
   const targetItem = menuItems.value.find(item => item.key === e.key);
   if (targetItem && targetItem.path) {
-    router.push(targetItem.path);
+    const path = ROUTES_CONSTANTS.ADMIN.path + '/' + targetItem.path;
+    router.push(path);
   }
 };
 

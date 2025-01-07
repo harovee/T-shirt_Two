@@ -59,6 +59,20 @@
               </a-button>
             </a-tooltip>
           </a-popconfirm>
+
+          <a-tooltip
+              title="Chi tiết khách hàng"
+              trigger="hover"
+          >
+            <a-button
+                class="bg-purple-100"
+                size="middle"
+                shape="round"
+                @Click="handleRedirectClientDetail(record.id)"
+            >
+              <v-icon name="fa-eye"/>
+            </a-button>
+          </a-tooltip>
         </div>
       </template>
     </table-spotify>
@@ -71,6 +85,8 @@ import {ColumnType} from "ant-design-vue/es/table";
 import {toast} from "vue3-toastify";
 import {defineEmits} from "vue";
 import {useChangeStatusClient} from "@/infrastructure/services/service/admin/client.action.ts";
+import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
+import router from "@/infrastructure/routes/router.ts";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -106,6 +122,12 @@ const handleChangeStatusClient = (id: string) => {
   }
 }
 
+const handleRedirectClientDetail = (id: string) => {
+  const clientDetailPath =
+      ROUTES_CONSTANTS.ADMIN.children.CLIENT_DETAIL.path.replace(':id', id);
+  router.push(clientDetailPath);
+}
+
 const columnsClient: ColumnType[] = [
   {
     title: "#",
@@ -114,6 +136,14 @@ const columnsClient: ColumnType[] = [
     ellipsis: true,
     width: 50,
     align: "center"
+  },
+  {
+    title: "Mã khách hàng",
+    dataIndex: "code",
+    key: "code",
+    ellipsis: true,
+    width: 200,
+    resizable: true
   },
   {
     title: "Tên khách hàng",
