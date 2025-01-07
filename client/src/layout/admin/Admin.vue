@@ -156,8 +156,8 @@ const menuItems = ref([
     path: ROUTES_CONSTANTS.ADMIN.children.STAFF.path,
   },
   {
-    key: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.name,
-    path: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.path,
+    key: ROUTES_CONSTANTS.ADMIN.children.CLIENT.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.CLIENT.path,
   },
 ]);
 
@@ -184,7 +184,7 @@ const items: ItemType[] = reactive([
 
   getItem('Nhân viên', ROUTES_CONSTANTS.ADMIN.children.STAFF.name, () => h(MailOutlined)),
 
-  getItem('Khách hàng', ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.name, () => h(MailOutlined)),
+  getItem('Khách hàng', ROUTES_CONSTANTS.ADMIN.children.CLIENT.name, () => h(MailOutlined)),
 ]);
 
 const handleClick: MenuProps['onClick'] = e => {

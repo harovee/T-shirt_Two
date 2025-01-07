@@ -162,9 +162,9 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
-                path: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.path,
-                name: ROUTES_CONSTANTS.ADMIN.children.EMPLOYEE.name,
-                component: () => import('@/page/admin/employee/Employee.vue'),
+                path: ROUTES_CONSTANTS.ADMIN.children.CLIENT.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.CLIENT.name,
+                component: () => import('@/page/admin/client/Client.vue'),
                 meta: {
                     requiresRole: ROLES.ADMIN,
                     requiresAuth: true
@@ -173,17 +173,17 @@ const routes: Array<RouteRecordRaw> = [
         ],
     },
     {
-        path: ROUTES_CONSTANTS.EMPLOYEE.path,
-        name: ROUTES_CONSTANTS.EMPLOYEE.name,
-        redirect: ROUTES_CONSTANTS.EMPLOYEE.children.HOME,
+        path: ROUTES_CONSTANTS.CLIENT.path,
+        name: ROUTES_CONSTANTS.CLIENT.name,
+        redirect: ROUTES_CONSTANTS.CLIENT.children.HOME,
         meta: {
             requiresAuth: false
         },
         children: [
             {
-                path: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.path,
-                name: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.name,
-                component: () => import('@/layout/employee/Employee.vue'),
+                path: ROUTES_CONSTANTS.CLIENT.children.HOME.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.HOME.name,
+                component: () => import('@/layout/client/Client.vue'),
                 meta: {
                     requiresAuth: false
                 },
@@ -191,17 +191,17 @@ const routes: Array<RouteRecordRaw> = [
         ],
     },
     {
-        path: ROUTES_CONSTANTS.EMPLOYEE.path,
-        name: ROUTES_CONSTANTS.EMPLOYEE.name,
-        redirect: ROUTES_CONSTANTS.EMPLOYEE.children.HOME,
+        path: ROUTES_CONSTANTS.CLIENT.path,
+        name: ROUTES_CONSTANTS.CLIENT.name,
+        redirect: ROUTES_CONSTANTS.CLIENT.children.HOME,
         meta: {
             requiresAuth: false
         },
         children: [
             {
-                path: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.path,
-                name: ROUTES_CONSTANTS.EMPLOYEE.children.HOME.name,
-                component: () => import('@/layout/employee/Employee.vue'),
+                path: ROUTES_CONSTANTS.CLIENT.children.HOME.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.HOME.name,
+                component: () => import('@/layout/client/Client.vue'),
                 meta: {
                     requiresAuth: false
                 },

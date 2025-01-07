@@ -1,9 +1,9 @@
 <template>
   <a-modal
       :open="props.open"
-      title="Form Employee"
+      title="Thông tin khách hàng"
       @cancel="handleClose"
-      @ok="handleCreateEmployee"
+      @ok="handleCreateClient"
       ok-text="Thêm"
       cancel-text="Hủy"
       destroyOnClose
@@ -65,8 +65,8 @@ import {computed, createVNode, defineEmits, defineProps, reactive} from "vue";
 import {Form, message, Modal, Upload} from "ant-design-vue";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 import {toast} from "vue3-toastify";
-import {useCreateEmployee} from "@/infrastructure/services/service/admin/employee.action.ts";
-import {EmployeeRequest} from "@/infrastructure/services/api/admin/employee.api.ts";
+import {useCreateClient} from "@/infrastructure/services/service/admin/client.action.ts";
+import {ClientRequest} from "@/infrastructure/services/api/admin/client.api.ts";
 
 const props = defineProps({
   open: Boolean,
@@ -74,9 +74,9 @@ const props = defineProps({
 
 const emit = defineEmits(["handleClose"]);
 
-const {mutate: create} = useCreateEmployee();
+const {mutate: create} = useCreateClient();
 
-const modelRef = reactive<EmployeeRequest>({
+const modelRef = reactive<ClientRequest>({
   name: null,
   email: null,
 });
@@ -106,7 +106,7 @@ const formFields = computed(() => [
   },
 ]);
 
-const handleCreateEmployee = () => {
+const handleCreateClient = () => {
   Modal.confirm({
     content: "Bạn chắc chắn muốn thêm?",
     icon: createVNode(ExclamationCircleOutlined),

@@ -1,9 +1,9 @@
-package com.shop.server.core.admin.employee.services.impl;
+package com.shop.server.core.admin.client.services.impl;
 
-import com.shop.server.core.admin.employee.models.requests.EmployeeFindProductRequest;
-import com.shop.server.core.admin.employee.models.requests.EmployeeProductRequest;
-import com.shop.server.core.admin.employee.repositories.AdminEmployeeRepository;
-import com.shop.server.core.admin.employee.services.AdminEmployeeService;
+import com.shop.server.core.admin.client.models.requests.ClientFindProductRequest;
+import com.shop.server.core.admin.client.models.requests.ClientProductRequest;
+import com.shop.server.core.admin.client.repositories.AdminClientRepository;
+import com.shop.server.core.admin.client.services.AdminClientService;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.KhachHang;
@@ -17,32 +17,32 @@ import java.util.Optional;
 
 
 @Service
-public class AdminEmployeeServiceImpl implements AdminEmployeeService {
+public class AdminClientServiceImpl implements AdminClientService {
 
-    private final AdminEmployeeRepository adminEmployeeRepository;
+    private final AdminClientRepository adminClientRepository;
 
-    public AdminEmployeeServiceImpl(AdminEmployeeRepository adminEmployeeRepository) {
-        this.adminEmployeeRepository = adminEmployeeRepository;
+    public AdminClientServiceImpl(AdminClientRepository adminClientRepository) {
+        this.adminClientRepository = adminClientRepository;
     }
 
     @Override
-    public ResponseObject<?> getEmployees(EmployeeFindProductRequest request) {
+    public ResponseObject<?> getClients(ClientFindProductRequest request) {
         Pageable pageable = Helper.createPageable(request);
         return new ResponseObject<>(
-                PageableObject.of(adminEmployeeRepository.getEmployeeByRequest(pageable, request)),
+                PageableObject.of(adminClientRepository.getClientByRequest(pageable, request)),
                 HttpStatus.OK,
                 Message.Success.GET_SUCCESS
         );
     }
 
     @Override
-    public ResponseObject<?> getEmployeeById(String id) {
+    public ResponseObject<?> getClientById(String id) {
         return null;
     }
 
     @Override
-    public ResponseObject<?> createEmployee(EmployeeProductRequest request) {
-        if (adminEmployeeRepository.existsKhachHangByEmail(request.getEmail())) {
+    public ResponseObject<?> createClient(ClientProductRequest request) {
+        if (adminClientRepository.existsClientByEmail(request.getEmail())) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
                     Message.Response.DUPLICATE + ", email"
@@ -52,7 +52,7 @@ public class AdminEmployeeServiceImpl implements AdminEmployeeService {
         khachHang.setHoVaTen(request.getName());
         khachHang.setEmail(request.getEmail());
         khachHang.setDeleted(false);
-        adminEmployeeRepository.save(khachHang);
+        adminClientRepository.save(khachHang);
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.CREATE_SUCCESS
@@ -60,13 +60,13 @@ public class AdminEmployeeServiceImpl implements AdminEmployeeService {
     }
 
     @Override
-    public ResponseObject<?> updateEmployee(String id, EmployeeProductRequest request) {
+    public ResponseObject<?> updateClient(String id, ClientProductRequest request) {
         return null;
     }
 
     @Override
-    public ResponseObject<?> changeStatusEmployee(String id) {
-        Optional<KhachHang> khachHangOptional = adminEmployeeRepository.findById(id);
+    public ResponseObject<?> changeStatusClient(String id) {
+        Optional<KhachHang> khachHangOptional = adminClientRepository.findById(id);
         if (khachHangOptional.isEmpty()) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
@@ -75,7 +75,7 @@ public class AdminEmployeeServiceImpl implements AdminEmployeeService {
         }
         KhachHang khachHang = khachHangOptional.get();
         khachHang.setDeleted(!khachHang.getDeleted());
-        adminEmployeeRepository.save(khachHang);
+        adminClientRepository.save(khachHang);
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.UPDATE_SUCCESS

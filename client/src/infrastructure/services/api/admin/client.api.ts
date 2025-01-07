@@ -1,50 +1,50 @@
 import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} from "@/infrastructure/types/api.common";
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
-import {PREFIX_API_ADMIN_EMPLOYEE} from "@/infrastructure/constants/url.ts";
+import {PREFIX_API_ADMIN_CLIENT} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
-export interface PropertyEmployeeParams {
+export interface PropertyClientParams {
     keyword?: string | null;
     status?: string | null;
 
     [key: string]: any;
 }
 
-export interface FindEmployeeRequest extends PropertyEmployeeParams, PaginationParams {
+export interface FindClientRequest extends PropertyClientParams, PaginationParams {
 
 }
 
-export interface EmployeeRequest {
+export interface ClientRequest {
     name: string | null;
     email: string | null;
 }
 
-export type EmployeeResponse = ResponseList & {
+export type ClientResponse = ResponseList & {
     name: string | null;
     email: string | null;
 };
 
-export type DetailEmployeeResponse = {
+export type DetailClientResponse = {
     name: string | null;
     email: string | null;
 };
 
-export const getEmployees = async (params: Ref<FindEmployeeRequest>) => {
+export const getClients = async (params: Ref<FindClientRequest>) => {
     const res = (await request({
-        url: `${PREFIX_API_ADMIN_EMPLOYEE}`,
+        url: `${PREFIX_API_ADMIN_CLIENT}`,
         method: "GET",
         params: params.value,
     })) as AxiosResponse<
-        DefaultResponse<PaginationResponse<Array<EmployeeResponse>>>
+        DefaultResponse<PaginationResponse<Array<ClientResponse>>>
     >;
 
     return res.data;
 };
 
-export const createEmployee = async (data: EmployeeRequest) => {
+export const createClient = async (data: ClientRequest) => {
     const res = (await request({
-        url: `${PREFIX_API_ADMIN_EMPLOYEE}`,
+        url: `${PREFIX_API_ADMIN_CLIENT}`,
         method: "POST",
         data: data
     })) as AxiosResponse<
@@ -54,18 +54,18 @@ export const createEmployee = async (data: EmployeeRequest) => {
     return res.data;
 };
 
-export const getEmployee = async (EmployeeId: Ref<string | null>) => {
+export const getClientById = async (clientId: Ref<string | null>) => {
     return await request({
-        url: `${PREFIX_API_ADMIN_EMPLOYEE}/${EmployeeId}`,
+        url: `${PREFIX_API_ADMIN_CLIENT}/${clientId}`,
         method: "GET"
     }) as AxiosResponse<
-        DefaultResponse<PaginationResponse<Array<EmployeeResponse>>>
+        DefaultResponse<PaginationResponse<Array<ClientResponse>>>
     >;
 };
 
-export const updateEmployee = async (EmployeeId: string, data: EmployeeRequest) => {
+export const updateClient = async (clientId: string, data: ClientRequest) => {
     return await request({
-        url: `${PREFIX_API_ADMIN_EMPLOYEE}/${EmployeeId}`,
+        url: `${PREFIX_API_ADMIN_CLIENT}/${clientId}`,
         method: "PUT",
         data: data
     }) as AxiosResponse<
@@ -73,9 +73,9 @@ export const updateEmployee = async (EmployeeId: string, data: EmployeeRequest) 
     >;
 };
 
-export const changeStatusEmployee = async (EmployeeId: string) => {
+export const changeStatusClient = async (clientId: string) => {
     return await request({
-        url: `${PREFIX_API_ADMIN_EMPLOYEE}/${EmployeeId}`,
+        url: `${PREFIX_API_ADMIN_CLIENT}/${clientId}`,
         method: "DELETE",
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>

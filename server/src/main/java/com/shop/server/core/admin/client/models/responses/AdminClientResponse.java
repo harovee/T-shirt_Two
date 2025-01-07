@@ -1,8 +1,8 @@
-package com.shop.server.core.admin.employee.models.responses;
+package com.shop.server.core.admin.client.models.responses;
 
 import com.shop.server.core.common.base.BaseResponse;
 
-public interface AdminEmployeeResponse extends BaseResponse {
+public interface AdminClientResponse extends BaseResponse {
 
     String getName();
 

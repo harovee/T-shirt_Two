@@ -1,4 +1,4 @@
-package com.shop.server.core.admin.employee.models.requests;
+package com.shop.server.core.admin.client.models.requests;
 
 import com.shop.server.core.common.base.PageableRequest;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeFindProductRequest extends PageableRequest {
+public class ClientFindProductRequest extends PageableRequest {
 
     private String keyword;
 
