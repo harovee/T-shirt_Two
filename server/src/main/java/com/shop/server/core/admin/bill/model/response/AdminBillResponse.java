@@ -28,15 +28,15 @@ public interface AdminBillResponse extends BaseResponse {
 
     String getTrangThai();
 
-    String getMaNhanVien();
+    String getIdNhanVien();
 
     String getTenNhanVien();
 
-    String getMaPhieuGiamGia();
+    String getIdPhieuGiamGia();
 
     String getTenPhieuGiamGia();
 
-    String getMaKhachHang();
+    String getIdKhachHang();
 
     String getTenKhachHang();
 }

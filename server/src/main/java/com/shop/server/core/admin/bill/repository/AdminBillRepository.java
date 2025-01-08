@@ -26,10 +26,14 @@ public interface AdminBillRepository extends HoaDonRepository {
             hd.trang_thai AS trangThai,
             hd.id_nhan_vien AS idNhanVien,
             hd.id_phieu_giam_gia AS idPhieuGiamGia,
-            hd.id_khach_hang AS idKhachHang
+            hd.id_khach_hang AS idKhachHang,
+            nv.ho_va_ten AS tenNhanVien,
+            kh.ho_va_ten AS tenKhachHang,
+            pg.ten AS tenPhieuGiamGia
         FROM hoa_don hd
         LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
+        LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
         WHERE 
             (:#{#req.keyword} IS NULL OR 
             hd.ten_nguoi_nhan LIKE CONCAT('%', :#{#req.keyword},'%') OR 
@@ -57,7 +61,7 @@ public interface AdminBillRepository extends HoaDonRepository {
             hd.id AS id,
             hd.tien_giam AS tienGiam,
             hd.tong_tien AS tongTien,
-            hd.loai_hoa_don AS loaiHoaDon,
+            hd.loai_hoa_don AS loaiHD,
             hd.ten_nguoi_nhan AS tenNguoiNhan,
             hd.so_dien_thoai AS soDienThoai,
             hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan,
@@ -67,10 +71,14 @@ public interface AdminBillRepository extends HoaDonRepository {
             hd.trang_thai AS trangThai,
             hd.id_nhan_vien AS idNhanVien,
             hd.id_phieu_giam_gia AS idPhieuGiamGia,
-            hd.id_khach_hang AS idKhachHang
+            hd.id_khach_hang AS idKhachHang,
+            nv.ho_va_ten AS tenNhanVien,
+            kh.ho_va_ten AS tenKhachHang,
+            pg.ten AS tenPhieuGiamGia
         FROM hoa_don hd
         LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
+        LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
         WHERE hd.id = :id
     """, nativeQuery = true)
     AdminBillResponse getDetailBillById(String id);
