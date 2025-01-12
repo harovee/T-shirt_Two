@@ -8,6 +8,8 @@ public interface AdminClientResponse extends BaseResponse {
 
     String getEmail();
 
+    String getCode();
+
     String getStatus();
 
 }
