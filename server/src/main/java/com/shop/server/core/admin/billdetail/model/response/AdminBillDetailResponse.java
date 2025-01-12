@@ -9,6 +9,8 @@ public interface AdminBillDetailResponse extends BaseResponse {
 
     String getIdHoaDon();
 
+    String getMaHoaDon();
+
     String getIdSanPhamChiTiet();
 
     String getTenSanPhamChiTiet();
@@ -19,5 +21,27 @@ public interface AdminBillDetailResponse extends BaseResponse {
 
     BigDecimal getThanhTien();
 
-    String getTrangThai();
+    String getTrangThaiHD();
+
+    BigDecimal getTongTienHD();
+
+    BigDecimal getTienGiamHD();
+
+    String getLoaiHoaDon();
+
+    String getTenNguoiNhan();
+
+    String getSoDienThoai();
+
+    String getDiaChiNguoiNhan();
+
+    BigDecimal getTienShip();
+
+    String getNgayShip();
+
+    String getGhiChuHD();
+
+    String getTenNhanVien();
+
+    String getTenKhachHang();
 }

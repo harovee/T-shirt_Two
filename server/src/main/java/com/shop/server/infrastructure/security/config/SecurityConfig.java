@@ -130,7 +130,9 @@ public class SecurityConfig {
                                 Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
                                 Helper.appendWildcard(MappingConstant.API_ADMIN_BILL),
                                 Helper.appendWildcard(MappingConstant.API_ADMIN_STAFF),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_BILL_DETAIL)
+                                Helper.appendWildcard(MappingConstant.API_ADMIN_BILL_DETAIL),
+                                Helper.appendWildcard(MappingConstant.API_ADMIN_BILL_HISTORY)
+
 
 
                         )

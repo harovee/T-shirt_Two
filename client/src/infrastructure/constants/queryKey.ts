@@ -22,7 +22,14 @@ export const queryKey = {
             songList: "adSongListKey",
             songDetail: "adSongDetailKey",
             genreList: "adGenresListKey",
+        },
+        bill: {
+            billList: "adBillListKey",
+        },
+        billdetail: {
+            detailList: "adBillDetail"
         }
+
     },
 
     user: {

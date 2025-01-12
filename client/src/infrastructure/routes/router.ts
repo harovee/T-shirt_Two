@@ -72,6 +72,24 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
+                component: () => import('@/page/admin/bill/bill/AdminBill.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.name,
+                component: () => import('@/page/admin/bill/bill/AdminBillDetail.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name,
                 component: () => import('@/page/admin/product/product-detail/ProductDetail.vue'),
