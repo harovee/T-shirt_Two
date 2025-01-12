@@ -75,8 +75,19 @@ export const ROUTES_CONSTANTS = {
                 name: "admin-staff-detail",
             },
             BILL: {
-                path: "bill",
+                path: "/bill",
                 name: "admin-bill",
+                children: {
+                    BILL_MANAGEMENT: {
+                        path: "bill-management",
+                        name: "admin-bill-management",
+                    },
+                    BILL_DETAIL: {
+                        path: "bill-detail",
+                        name: "admin-bill-detail",
+                    },
+                    
+                }
             },
             CLIENT: {
                 path: "client",

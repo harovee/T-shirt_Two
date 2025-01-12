@@ -1,0 +1,87 @@
+<template>
+  <div class="p-6 grid grid-cols-1 gap-6">
+    <div class="flex items-center gap-2">
+      <v-icon
+        name="md-switchaccount-round"
+        size="x-large"
+        width="48"
+        height="48"
+      />
+      <h3 class="text-2xl m-0">Quản lý hóa đơn</h3>
+    </div>
+    <div
+      class="p-4 rounded-xl border-2 shadow-purple-950 shadow-xl flex flex-col gap-6"
+    >
+      <div class="flex items-center gap-2">
+        <v-icon name="si-iconfinder" size="x-large" width="24" height="24" />
+        <h4 class="text-xl m-0">Bộ lọc</h4>
+      </div>
+      <admin-bill-filter @filter="handleFilter"/>
+    </div>
+    <div class="rounded-xl">
+      <admin-bill-table
+        :data-source="dataSource"
+        :loading="isLoading || isFetching"
+        @handleOpenModalUpdate="handleOpenModalUpdateBill"
+        @handleCloseModalUpdate="handleCloseModalUpdateBill"
+        :pagination-params="params"
+        @update:pagination-params="handlePaginationChange"
+      />
+    </div>
+  </div>
+  <!-- <admin-bill-modal
+    :open="isOpenModalUpdateBill"
+    @handleClose="handleCloseModalUpdateBill"
+    @onCancel="isOpenModalUpdateBill = false"
+  /> -->
+</template>
+
+<script lang="ts" setup>
+import { computed, ref, watch } from "vue";
+import { keepPreviousData } from "@tanstack/vue-query";
+import AdminBillFilter from "./AdminBillFilter.vue";
+import { FindBillRequest } from "@/infrastructure/services/api/admin/bill.api";
+import { useGetBills } from "@/infrastructure/services/service/admin/bill.action";
+import AdminBillTable from "./AdminBillTable.vue";
+import { FindBillDetailRequest } from "@/infrastructure/services/api/admin/bill-detail.api";
+import { useGetBillDetails } from "@/infrastructure/services/service/admin/bill-detail.action";
+
+/*** Table - Pagination - Filter  ***/
+
+const params = ref<FindBillRequest>({
+  page: 1,
+  size: 10,
+});
+
+const detailParams = ref<FindBillDetailRequest>({
+  page: 1,
+  size: 10,
+});
+
+const { data, isLoading, isFetching } = useGetBills(params, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+
+const handleFilter = (newParams: FindBillRequest) => {
+  params.value = { ...params.value, ...newParams };
+};
+
+const dataSource = computed(() => data?.value?.data || []);
+
+
+const handlePaginationChange = (newParams: FindBillRequest) => {
+  params.value = { ...params.value, ...newParams };
+};
+
+watch(
+  () => data.value,
+  (newData) => {
+    if (newData) {
+        console.log(newData);   
+    }
+  },
+  { immediate: true }
+);
+</script>

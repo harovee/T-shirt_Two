@@ -14,9 +14,10 @@ public interface AdminBillRepository extends HoaDonRepository {
         SELECT
             ROW_NUMBER() OVER(ORDER BY hd.id DESC) AS catalog,
             hd.id AS id,
+            hd.ma_hoa_don AS ma,
             hd.tien_giam AS tienGiam,
             hd.tong_tien AS tongTien,
-            hd.loai_hoa_don AS loaiHoaDon,
+            hd.loai_hoa_don AS loaiHD,
             hd.ten_nguoi_nhan AS tenNguoiNhan,
             hd.so_dien_thoai AS soDienThoai,
             hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan,
@@ -36,8 +37,7 @@ public interface AdminBillRepository extends HoaDonRepository {
         LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
         WHERE 
             (:#{#req.keyword} IS NULL OR 
-            hd.ten_nguoi_nhan LIKE CONCAT('%', :#{#req.keyword},'%') OR 
-            hd.dia_chi_nguoi_nhan LIKE CONCAT('%', :#{#req.keyword},'%') OR
+            hd.ma_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR 
             hd.loai_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR 
             kh.ho_va_ten LIKE CONCAT('%', :#{#req.keyword},'%') OR
             nv.ho_va_ten LIKE CONCAT('%', :#{#req.keyword},'%'))
@@ -48,8 +48,7 @@ public interface AdminBillRepository extends HoaDonRepository {
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
         WHERE 
             (:#{#req.keyword} IS NULL OR 
-            hd.ten_nguoi_nhan LIKE CONCAT('%', :#{#req.keyword},'%') OR 
-            hd.dia_chi_nguoi_nhan LIKE CONCAT('%', :#{#req.keyword},'%') OR
+            hd.ma_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR 
             hd.loai_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR
             kh.ho_va_ten LIKE CONCAT('%', :#{#req.keyword},'%') OR
             nv.ho_va_ten LIKE CONCAT('%', :#{#req.keyword},'%'))
@@ -59,6 +58,7 @@ public interface AdminBillRepository extends HoaDonRepository {
     @Query(value = """
         SELECT
             hd.id AS id,
+            hd.ma_hoa_don AS ma,
             hd.tien_giam AS tienGiam,
             hd.tong_tien AS tongTien,
             hd.loai_hoa_don AS loaiHD,

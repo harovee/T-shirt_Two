@@ -1,14 +1,18 @@
 package com.shop.server.core.admin.billdetail.controller;
 
+import com.shop.server.core.admin.billdetail.model.request.AdminCreateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminFindBillDetailRequest;
+import com.shop.server.core.admin.billdetail.model.request.AdminUpdateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.service.AdminBillDetailService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,5 +33,15 @@ public class AdminBillDetailController {
     @GetMapping("/{id}")
     ResponseEntity<?> getAdminBillDetailById(@PathVariable String id) {
         return Helper.createResponseEntity(adminBillDetailService.getBillDetailById(id));
+    }
+
+    @PostMapping()
+    ResponseEntity<?> createBillDetail(@Valid @RequestBody final AdminCreateBillDetailRequest request) {
+        return Helper.createResponseEntity(adminBillDetailService.createBillDetail(request));
+    }
+
+    @PutMapping("/{id}")
+    ResponseEntity<?> updateBillDetail(@PathVariable String id, @Valid @RequestBody final AdminUpdateBillDetailRequest request) {
+        return Helper.createResponseEntity(adminBillDetailService.updateBillDetail(id, request));
     }
 }

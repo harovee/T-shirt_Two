@@ -8,6 +8,8 @@ public interface AdminBillResponse extends BaseResponse {
 
     String getId();
 
+    String getMa();
+
     BigDecimal getTienGiam();
 
     BigDecimal getTongTien();

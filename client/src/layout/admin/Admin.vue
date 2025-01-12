@@ -115,6 +115,10 @@ const menuItems = ref([
     path: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.path
   },
   {
+    key: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+  },
+  {
     key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name,
     path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.path
   },
@@ -166,7 +170,7 @@ const items: ItemType[] = reactive([
 
   getItem('Hóa đơn', ROUTES_CONSTANTS.ADMIN.children.BILL.name, () => h(MailOutlined), [
     // getItem('Bán hàng', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
-    // getItem('Quản lý hóa đơn', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
+    getItem('Quản lý hóa đơn', ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name, null),
   ]),
 
   getItem('Sản Phẩm', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.name, () => h(AppstoreOutlined), [

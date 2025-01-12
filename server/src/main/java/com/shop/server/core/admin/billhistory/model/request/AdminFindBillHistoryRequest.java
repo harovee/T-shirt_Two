@@ -1,4 +1,4 @@
-package com.shop.server.core.admin.billdetail.model.request;
+package com.shop.server.core.admin.billhistory.model.request;
 
 import com.shop.server.core.common.base.PageableRequest;
 import lombok.AllArgsConstructor;
@@ -10,9 +10,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminFindBillDetailRequest extends PageableRequest {
+public class AdminFindBillHistoryRequest extends PageableRequest {
     private String keyword;
 
     private String idHoaDon;
-
 }
