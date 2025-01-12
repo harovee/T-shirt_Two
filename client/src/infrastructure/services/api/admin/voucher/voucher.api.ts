@@ -1,7 +1,7 @@
 import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} from "@/infrastructure/types/api.common";
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
-import {API_ADMIN_VOUCHER} from "@/infrastructure/constants/url.ts";
+import {PREFIX_API_ADMIN_VOUCHER} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
@@ -58,7 +58,7 @@ export type DetailVoucherResponse = {
 
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
-        url: `${API_ADMIN_VOUCHER}`,
+        url: `${PREFIX_API_ADMIN_VOUCHER}`,
         method: "GET",
         params: params.value,
     })) as AxiosResponse<
@@ -70,7 +70,7 @@ export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
 
 export const createVoucher = async (data: VoucherRequest) => {
     const res = (await request({
-        url: `${API_ADMIN_VOUCHER}`,
+        url: `${PREFIX_API_ADMIN_VOUCHER}`,
         method: "POST",
         data: data
     })) as AxiosResponse<
@@ -82,7 +82,7 @@ export const createVoucher = async (data: VoucherRequest) => {
 
 export const getVoucherById = async (VoucherId: Ref<string | null>) => {
     return await request({
-        url: `${API_ADMIN_VOUCHER}/${VoucherId}`,
+        url: `${PREFIX_API_ADMIN_VOUCHER}/${VoucherId}`,
         method: "GET"
     }) as AxiosResponse<
         DefaultResponse<PaginationResponse<Array<VoucherResponse>>>
@@ -91,7 +91,7 @@ export const getVoucherById = async (VoucherId: Ref<string | null>) => {
 
 export const updateVoucher = async (VoucherId: string, data: VoucherRequest) => {
     return await request({
-        url: `${API_ADMIN_VOUCHER}/${VoucherId}`,
+        url: `${PREFIX_API_ADMIN_VOUCHER}/${VoucherId}`,
         method: "PUT",
         data: data
     }) as AxiosResponse<
@@ -101,7 +101,7 @@ export const updateVoucher = async (VoucherId: string, data: VoucherRequest) => 
 
 export const deleteVoucher = async (VoucherId: string) => {
     return await request({
-        url: `${API_ADMIN_VOUCHER}/${VoucherId}`,
+        url: `${PREFIX_API_ADMIN_VOUCHER}/${VoucherId}`,
         method: "DELETE",
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>

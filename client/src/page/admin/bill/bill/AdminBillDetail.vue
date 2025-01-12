@@ -1,5 +1,5 @@
 <template>
-    <div class="p-6 grid grid-cols-1 gap-6">
+  <div class="p-6 grid grid-cols-1 gap-6">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
         <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48"/>
@@ -13,16 +13,16 @@
       </div>
     </div>
   </div>
-  
+
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path";
 import router from "@/infrastructure/routes/router";
-// import TableExample from "@/components/ui/TableExample.vue";
 
 const handleRedirectBillManager = () => {
-    router.push(ROUTES_CONSTANTS.ADMIN.path + '/' + ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path)
+  // router.push(ROUTES_CONSTANTS.ADMIN.path + '/' + ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path);
+  router.push({name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name})
 }
 
 

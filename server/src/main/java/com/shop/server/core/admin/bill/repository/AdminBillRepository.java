@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AdminBillRepository extends HoaDonRepository {
+
     @Query(value = """
         SELECT
             ROW_NUMBER() OVER(ORDER BY hd.id DESC) AS catalog,
@@ -35,8 +36,8 @@ public interface AdminBillRepository extends HoaDonRepository {
         LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
         LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
-        WHERE 
-            (:#{#req.keyword} IS NULL OR 
+        WHERE
+            (:#{#req.keyword} IS NULL OR
             hd.ma_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR 
             hd.loai_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR 
             kh.ho_va_ten LIKE CONCAT('%', :#{#req.keyword},'%') OR
@@ -46,7 +47,7 @@ public interface AdminBillRepository extends HoaDonRepository {
         FROM hoa_don hd
         LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
-        WHERE 
+        WHERE
             (:#{#req.keyword} IS NULL OR 
             hd.ma_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR 
             hd.loai_hoa_don LIKE CONCAT('%', :#{#req.keyword},'%') OR
@@ -82,4 +83,5 @@ public interface AdminBillRepository extends HoaDonRepository {
         WHERE hd.id = :id
     """, nativeQuery = true)
     AdminBillResponse getDetailBillById(String id);
+
 }
