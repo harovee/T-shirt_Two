@@ -30,6 +30,8 @@ export const PREFIX_API_REFRESH = PREFIX_API_AUTH + `/refresh` as string;
 
 // ADMIN API
 export const PREFIX_API_ADMIN_FEATURE = `${API_URL}/admin/feature` as string;
+export const PREFIX_API_ADMIN_EMPLOYEE = `${API_URL}/admin/employee` as string;
+export const API_ADMIN_VOUCHER = `${API_URL}/admin/voucher` as string;
 export const PREFIX_API_ADMIN_PRODUCT = `${API_URL}/admin/product` as string;
 export const PREFIX_API_ADMIN_PRODUCT_DETAIL = `${API_URL}/admin/product-detail` as string;
 export const PREFIX_API_ADMIN_MATERIAL = `${API_URL}/admin/material` as string;

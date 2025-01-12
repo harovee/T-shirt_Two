@@ -22,9 +22,6 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "phieu_giam_gia")
 public class PhieuGiamGia extends PrimaryEntity implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
 
     @Column(name = "ma_phieu_giam_gia")
     private String ma;
@@ -37,6 +34,9 @@ public class PhieuGiamGia extends PrimaryEntity implements Serializable {
 
     @Column(name = "dieu_kien_giam")
     private String dieuKienGiam;
+
+    @Column(name = "gia_tri_giam")
+    private Double giaTriGiam;
 
     @Column(name = "giam_toi_da")
     private String giamToiDa;

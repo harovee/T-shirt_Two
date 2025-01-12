@@ -76,6 +76,10 @@ export const queryKey = {
         billdetail: {
             detailList: "adBillDetail"
         },
+        voucher: {
+            voucherList: "adVoucherListKey",
+            voucherDetail: "adVoucherDetailKey",
+        }
     },
 
     user: {

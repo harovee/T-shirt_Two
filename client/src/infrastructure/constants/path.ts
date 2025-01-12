@@ -98,9 +98,12 @@ export const ROUTES_CONSTANTS = {
                         path: "bill-detail",
                         name: "admin-bill-detail",
                     },
-                    
+
                 }
             },
+            VOUCHER: {
+                path: "voucher",
+                name: "admin-voucher",
             CLIENT: {
                 path: "client",
                 name: "admin-client",

@@ -22,6 +22,7 @@ public class MappingConstant {
     public static final String API_USER_ANOTHER = API_USER_PREFIX + "/another";
     public static final String API_USER_PRODUCT = API_USER_PREFIX + "/product";
 
+    // admin
     public static final String API_ADMIN_ANOTHER = API_ADMIN_PREFIX + "/another";
     public static final String API_ADMIN_PRODUCT = API_ADMIN_PREFIX + "/product";
     public static final String API_ADMIN_CLIENT = API_ADMIN_PREFIX + "/client";
@@ -41,7 +42,9 @@ public class MappingConstant {
     public static final String API_ADMIN_BILL = API_ADMIN_PREFIX + "/bill";
     public static final String API_ADMIN_BILL_DETAIL = API_ADMIN_PREFIX + "/bill-detail";
     public static final String API_ADMIN_BILL_HISTORY = API_ADMIN_PREFIX + "/bill-history";
+    public static final String API_ADMIN_VOUCHER = API_ADMIN_PREFIX + "/voucher";
 
+    // employee
     public static final String API_CLIENT_ANOTHER = API_CLIENT_PREFIX + "/another";
 
     public static final String API_COMMON_ANOTHER = API_COMMON + "/another";
