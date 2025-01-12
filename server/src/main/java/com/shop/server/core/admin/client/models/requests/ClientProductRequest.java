@@ -11,8 +11,20 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ClientProductRequest {
 
+    String userName;
+
+    String password;
+
     String name;
 
     String email;
+
+    String code;
+
+    String birthday;
+
+    Boolean gender;
+
+    String phoneNumber;
 
 }

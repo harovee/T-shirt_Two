@@ -97,6 +97,7 @@ const modelRef = reactive<StaffRequest>({
   birthday: null,
   gender: null,
   phoneNumber: null,
+  identity: null
 });
 
 const rulesRef = reactive({

@@ -16,13 +16,21 @@ export interface FindClientRequest extends PropertyClientParams, PaginationParam
 }
 
 export interface ClientRequest {
-    name: string | null;
-    email: string | null;
+    name: String | null;
+    email: String | null;
+    username: String | null;
+    password: String | null;
+    birthday: String | null;
+    gender: String | null;
+    phoneNumber: String | null;
 }
 
 export type ClientResponse = ResponseList & {
+    id: string | null;
     name: string | null;
     email: string | null;
+    code: string | null;
+    status: string | null;
 };
 
 export type DetailClientResponse = {

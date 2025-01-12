@@ -35,7 +35,7 @@
         <div v-if="column.key === 'another'" class="text-center">
         </div>
         <div v-else-if="column.key === 'code'">
-          AC{{record.code}}
+          NV{{record.code}}
         </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>

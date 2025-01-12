@@ -19,40 +19,27 @@
           <a-input
               v-if="field.component === 'a-input'"
               v-model:value="modelRef[field.name]"
+              :placeholder="field.placeholder"
           ></a-input>
 
-          <!--          <a-select-->
-          <!--              v-else-if="field.component === 'a-select'"-->
-          <!--              :max-tag-count="field.maxTagCount"-->
-          <!--              :placeholder="field.placeholder"-->
-          <!--              :show-search="field.showSearch"-->
-          <!--              :filter-option="field.filterOption"-->
-          <!--              :allow-clear="field.allowClear"-->
-          <!--              :mode="field.mode"-->
-          <!--              :options="field.options"-->
-          <!--              v-model:value="modelRef[field.name]"-->
-          <!--          ></a-select>-->
+          <a-radio-group
+              v-if="field.component === 'a-radio-group'"
+              v-for="option in field.options"
+              v-model:value="modelRef[field.name]"
+          >
+            <a-radio :value="option.value">
+              {{ option.name }}
+            </a-radio>
+          </a-radio-group>
 
-          <!--          <a-date-picker-->
-          <!--              class="w-full"-->
-          <!--              v-else-if="field.component === 'a-date-picker'"-->
-          <!--              v-model:value="modelRef[field.name]"-->
-          <!--              format="YYYY-MM-DD HH:mm"-->
-          <!--              show-time-->
-          <!--              :placeholder="field.placeholder"-->
-          <!--          ></a-date-picker>-->
-
-          <!--          <a-upload-->
-          <!--              v-else-if="field.component === 'a-upload'"-->
-          <!--              v-bind="field.customProps || {}"-->
-          <!--              :max-count="1"-->
-          <!--              v-model:value="modelRef[field.name]"-->
-          <!--          >-->
-          <!--            <a-button class="flex justify-between items-center gap-1">-->
-          <!--              <upload-outlined></upload-outlined>-->
-          <!--              Tải tệp âm thanh-->
-          <!--            </a-button>-->
-          <!--          </a-upload>-->
+          <a-date-picker
+              class="w-full"
+              v-else-if="field.component === 'a-date-picker'"
+              v-model:value="modelRef[field.name]"
+              format="YYYY-MM-DD HH:mm"
+              show-time
+              :placeholder="field.placeholder"
+          ></a-date-picker>
 
         </a-form-item>
       </template>
@@ -79,11 +66,21 @@ const {mutate: create} = useCreateClient();
 const modelRef = reactive<ClientRequest>({
   name: null,
   email: null,
+  username: null,
+  password: null,
+  birthday: null,
+  gender: null,
+  phoneNumber: null
 });
 
 const rulesRef = reactive({
   name: [{required: true, message: "Vui lòng nhập tên khách hàng", trigger: "blur"}],
   email: [{required: true, message: "Vui lòng nhập tên khách hàng", trigger: "blur"}],
+  username: [{required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur"}],
+  password: [{required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"}],
+  birthday: [{required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur"}],
+  gender: [{required: true, message: "Vui lòng chọn giới tính", trigger: "blur"}],
+  phoneNumber: [{required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur"}],
 });
 
 const {resetFields, validate, validateInfos} = Form.useForm(
@@ -103,6 +100,45 @@ const formFields = computed(() => [
     name: "email",
     component: "a-input",
     placeholder: "Nhâp email"
+  },
+  {
+    label: "Tên tài khoản",
+    name: "username",
+    component: "a-input",
+    placeholder: "Nhâp tên tài khoản"
+  },
+  {
+    label: "Mật khẩu",
+    name: "password",
+    component: "a-input",
+    placeholder: "Nhâp mật khẩu"
+  },
+  {
+    label: "Ngày sinh",
+    name: "birthday",
+    component: "a-date-picker",
+    placeholder: "Nhâp ngày sinh"
+  },
+  {
+    label: "Giới tính",
+    name: "gender",
+    component: "a-radio-group",
+    options: [
+      {
+        name: "Nam",
+        value: true,
+      },
+      {
+        name: "Nữ",
+        value: false,
+      }
+    ]
+  },
+  {
+    label: "Số điện thoại",
+    name: "phoneNumber",
+    component: "a-input",
+    placeholder: "Nhâp số điện thoại"
   },
 ]);
 
