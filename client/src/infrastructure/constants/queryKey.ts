@@ -27,12 +27,19 @@ export const queryKey = {
             songDetail: "adSongDetailKey",
             genreList: "adGenresListKey",
         },
+        sale: {
+            saleList: "adSaleListKey",
+            songDetail: "adSaleDetailKey",
+            productList: "adProductInSaleMdListKey",
+            productDetailList: "adProductDetailInSaleMdListKey",
+            attributeList: "adAttributeList"
+        },
         bill: {
             billList: "adBillListKey",
         },
         billdetail: {
             detailList: "adBillDetail"
-        }
+        },
 
     },
 

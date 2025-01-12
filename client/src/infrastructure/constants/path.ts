@@ -66,6 +66,14 @@ export const ROUTES_CONSTANTS = {
                 path: "sale",
                 name: "admin-sale",
             },
+            SALE_ADD: {
+                path: "sale/add",
+                name: "admin-sale-add",
+            },
+            SALE_DETAIL: {
+                path: "sale/:id",
+                name: "admin-sale-detail",
+            },
             STAFF: {
                 path: "staff",
                 name: "admin-staff",

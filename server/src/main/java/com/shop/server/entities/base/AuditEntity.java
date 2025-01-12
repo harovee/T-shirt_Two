@@ -1,5 +1,6 @@
 package com.shop.server.entities.base;
 
+import com.shop.server.infrastructure.config.database.AuditorAwareConfig;
 import com.shop.server.infrastructure.event.AuditEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -16,13 +17,15 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @MappedSuperclass
-@EntityListeners(AuditEntityListener.class)
+@EntityListeners({AuditEntityListener.class, AuditorAwareConfig.class})
 public abstract class AuditEntity {
 
     @Column(name = "ngay_tao", updatable = false)
+    @CreatedDate
     private Long createdDate;
 
     @Column (name = "ngay_sua")
+    @LastModifiedDate
     private Long lastModifiedDate;
 
     @Column(name = "nguoi_tao")

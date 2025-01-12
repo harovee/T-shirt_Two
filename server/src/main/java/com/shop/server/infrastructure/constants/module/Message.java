@@ -47,6 +47,7 @@ public class Message {
     public static class Validate {
         public static final String NOT_NULL = "không được để trống";
         public static final String NOT_BLANK = "không được để trống và ký tự khoảng trắng";
+        public static final String NOT_EMPTY = "không được để danh sách rỗng";
         public static final String IS_EMAIL = "trường dữ liệu phải có định dạng là email";
         public static final String IS_NUMBER = "trường dữ liệu phải có định dạng số";
         public static final String SIZE50 = "trường dữ liệu phải có từ 8 đến 50 ký tự";

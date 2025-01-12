@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -30,13 +29,16 @@ public class DotGiamGia extends PrimaryEntity implements Serializable {
     private String loai;
 
     @Column(name = "gia_tri")
-    private String giaTri;
+    private Double giaTri;
+
+    @Column(name = "gia_tri_giam_toi_da")
+    private Double giaTriGiamToiDa;
 
     @Column(name = "ngay_bat_dau")
-    private LocalDate ngayBatDau;
+    private Long ngayBatDau;
 
     @Column(name = "ngay_ket_thuc")
-    private LocalDate ngayKetThuc;
+    private Long ngayKetThuc;
 
     @Column(name = "trang_thai")
     private String trangThai;

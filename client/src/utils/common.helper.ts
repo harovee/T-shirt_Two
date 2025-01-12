@@ -21,12 +21,20 @@ export function sortAlphaText(arr: string[], type?: "asc" | "desc") {
   });
 }
 
-export const getDateFormat = (unix: number, showTime: boolean = false) => {
+export const getDateFormat = (unix: number | any, showTime: boolean = false) => {
   return dayjs(unix).format(showTime ? "DD/MM/YYYY HH:mm:ss" : "DD/MM/YYYY");
 };
 
 export const getDateTimeMinutesFormat = (unix: number, showTime: boolean = false) => {
   return dayjs(unix).format(showTime ? "YYYY/MM/DD HH:mm" : "YYYY/MM/DD");
+};
+
+export const convertDateFormat = (inputDate: string): string => {
+  const parsedDate = dayjs(inputDate, 'DD/MM/YYYY HH:mm');
+  if (!parsedDate.isValid()) {
+    throw new Error('Ngày tháng không hợp lệ');
+  }
+  return parsedDate.format('YYYY/MM/DD HH:mm:ss');
 };
 
 export const confirmModal = (message, onConfirm) => {
