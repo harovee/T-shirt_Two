@@ -26,7 +26,6 @@ public class MappingConstant {
     public static final String API_ADMIN_PRODUCT = API_ADMIN_PREFIX + "/product";
     public static final String API_ADMIN_CLIENT = API_ADMIN_PREFIX + "/client";
     public static final String API_ADMIN_STAFF = API_ADMIN_PREFIX + "/staff";
-    public static final String API_ADMIN_EMPLOYEE = API_ADMIN_PREFIX + "/employee";
     public static final String API_ADMIN_PRODUCT_DETAIL = API_ADMIN_PREFIX + "/product-detail";
     public static final String API_ADMIN_MATERIAL = API_ADMIN_PREFIX + "/material";
     public static final String API_ADMIN_COLLAR = API_ADMIN_PREFIX + "/collar"; // Cổ áo
@@ -38,9 +37,6 @@ public class MappingConstant {
     public static final String API_ADMIN_TRADEMARK = API_ADMIN_PREFIX + "/trademark"; // Thương hiệu
     public static final String API_ADMIN_FEATURE = API_ADMIN_PREFIX + "/feature"; // Tính năng
     public static final String API_ADMIN_CATEGORY = API_ADMIN_PREFIX + "/category"; // DAnh mục
-
-    public static final String API_ADMIN_CLIENT = API_ADMIN_PREFIX + "/client";
-    public static final String API_ADMIN_STAFF = API_ADMIN_PREFIX + "/staff";
     public static final String API_ADMIN_PROMOTION = API_ADMIN_PREFIX + "/sale";
     public static final String API_ADMIN_BILL = API_ADMIN_PREFIX + "/bill";
     public static final String API_ADMIN_BILL_DETAIL = API_ADMIN_PREFIX + "/bill-detail";
