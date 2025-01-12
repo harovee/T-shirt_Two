@@ -44,7 +44,7 @@ public class AESPasswordCryptoUtil {
 
             System.out.println(secretKey);
 
-            String pass = "Nghiaxpes1";
+            String pass = "HaoVe01";
             String encryptedPassword = AESPasswordCryptoUtil.encrypt(pass, secretKey);
             System.out.println("Encrypted Password: " + encryptedPassword);
 
@@ -60,7 +60,7 @@ public class AESPasswordCryptoUtil {
             System.out.println("Decrypted Email with Restored Key: " + decryptedPasswordWithRestoredKey);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
 }

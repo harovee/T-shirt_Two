@@ -70,6 +70,10 @@ export const ROUTES_CONSTANTS = {
                 path: "staff",
                 name: "admin-staff",
             },
+            STAFF_DETAIL: {
+                path: "staff/:id",
+                name: "admin-staff-detail",
+            },
             BILL: {
                 path: "bill",
                 name: "admin-bill",

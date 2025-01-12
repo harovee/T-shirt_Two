@@ -2,14 +2,14 @@
   <div class="p-4 rounded-xl border-2 shadow-purple-950 shadow-xl">
     <div class="flex justify-between items-center">
       <div>
-        <h3 class="text-xl font-semibold text-gray-800">Danh sách khách hàng</h3>
+        <h3 class="text-xl font-semibold text-gray-800">Danh sách nhân viên</h3>
         <p class="text-sm text-gray-500">
-          Hiển thị danh sách khách hàng T-Shirts Two
+          Hiển thị danh sách nhân viên T-Shirts Two
         </p>
       </div>
       <div class="p-2.5">
         <a-tooltip
-            title="Thêm khách hàng"
+            title="Thêm nhân viên"
             trigger="hover"
         >
           <a-button
@@ -24,7 +24,7 @@
     </div>
     <table-t-shirt
         wrapperClassName="min-h-[410px]"
-        :columns="columnsClient"
+        :columns="columnsStaff"
         :data-source="props.dataSource?.data"
         :loading="loading"
         :pagination-params="paginationParams || {}"
@@ -33,6 +33,9 @@
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'another'" class="text-center">
+        </div>
+        <div v-else-if="column.key === 'code'">
+          AC{{record.code}}
         </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>
@@ -44,7 +47,7 @@
               title="Bạn có chắc chắn muốn chuyển đổi trạng thái không?"
               ok-text="Có"
               cancel-text="Hủy"
-              @confirm="handleChangeStatusClient(record.id)"
+              @confirm="handleChangeStatusStaff(record.id)"
           >
             <a-tooltip
                 title="Cập nhật trạng thái"
@@ -61,14 +64,14 @@
           </a-popconfirm>
 
           <a-tooltip
-              title="Chi tiết khách hàng"
+              title="Chi tiết nhân viên"
               trigger="hover"
           >
             <a-button
                 class="bg-purple-100"
                 size="middle"
                 shape="round"
-                @Click="handleRedirectClientDetail(record.id)"
+                @Click="handleRedirectStaffDetail(record.id)"
             >
               <v-icon name="fa-eye"/>
             </a-button>
@@ -83,8 +86,8 @@
 import TableTShirt from "@/components/ui/Table.vue";
 import {ColumnType} from "ant-design-vue/es/table";
 import {toast} from "vue3-toastify";
-import {defineEmits} from "vue";
-import {useChangeStatusClient} from "@/infrastructure/services/service/admin/client.action.ts";
+import {defineEmits, watch} from "vue";
+import {useChangeStatusStaff} from "@/infrastructure/services/service/admin/staff.action.ts";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
 
@@ -100,11 +103,11 @@ const props = defineProps({
   paginationParams: Object,
 });
 
-const {mutate: changeStatusClient} = useChangeStatusClient();
+const {mutate: changeStatusStaff} = useChangeStatusStaff();
 
-const handleChangeStatusClient = (id: string) => {
+const handleChangeStatusStaff = (id: string) => {
   try {
-    changeStatusClient(id, {
+    changeStatusStaff(id, {
       onSuccess: (res: any) => {
         toast.success(res.data.message);
       },
@@ -122,13 +125,13 @@ const handleChangeStatusClient = (id: string) => {
   }
 }
 
-const handleRedirectClientDetail = (id: string) => {
-  const clientDetailPath =
-      ROUTES_CONSTANTS.ADMIN.children.CLIENT_DETAIL.path.replace(':id', id);
-  router.push(clientDetailPath);
+const handleRedirectStaffDetail = (id: string) => {
+  const staffDetailPath =
+      ROUTES_CONSTANTS.ADMIN.children.STAFF_DETAIL.path.replace(':id', id);
+  router.push(staffDetailPath);
 }
 
-const columnsClient: ColumnType[] = [
+const columnsStaff: ColumnType[] = [
   {
     title: "#",
     dataIndex: "catalog",
@@ -138,7 +141,7 @@ const columnsClient: ColumnType[] = [
     align: "center"
   },
   {
-    title: "Mã khách hàng",
+    title: "Mã nhân viên",
     dataIndex: "code",
     key: "code",
     ellipsis: true,
@@ -146,7 +149,7 @@ const columnsClient: ColumnType[] = [
     resizable: true
   },
   {
-    title: "Tên khách hàng",
+    title: "Tên nhân viên",
     dataIndex: "name",
     key: "name",
     ellipsis: true,
@@ -154,7 +157,7 @@ const columnsClient: ColumnType[] = [
     resizable: true
   },
   {
-    title: "Email khách hàng",
+    title: "Email nhân viên",
     dataIndex: "email",
     key: "email",
     ellipsis: true,
@@ -177,4 +180,10 @@ const columnsClient: ColumnType[] = [
     fixed: "right"
   },
 ];
+watch(
+    () => props.dataSource,
+    (newData) => {
+      console.log(newData);
+    }
+)
 </script>

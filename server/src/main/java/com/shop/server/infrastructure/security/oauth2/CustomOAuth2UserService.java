@@ -72,7 +72,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private Object registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
         NhanVien nhanVien = new NhanVien();
-        nhanVien.setUserName(oAuth2UserInfo.getName());
+        nhanVien.setFullName(oAuth2UserInfo.getName());
         nhanVien.setEmail(oAuth2UserInfo.getEmail());
         nhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
         nhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
@@ -83,7 +83,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     private Object updateExistingUser(NhanVien existingNhanVien, OAuth2UserInfo oAuth2UserInfo) {
-        existingNhanVien.setUserName(oAuth2UserInfo.getName());
+        existingNhanVien.setFullName(oAuth2UserInfo.getName());
         existingNhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
         existingNhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
         if (existingNhanVien.getStatus() == null) existingNhanVien.setStatus(Status.ACTIVE);

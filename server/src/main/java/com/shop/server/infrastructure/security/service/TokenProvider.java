@@ -14,6 +14,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.HttpSession;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
@@ -37,6 +38,9 @@ public class TokenProvider {
 
     @Setter(onMethod_ = @Autowired)
     private SecurityNhanVienRepository userAuthRepository;
+
+    @Setter(onMethod_ = @Autowired)
+    private HttpSession httpSession;
 
     public String createToken(Authentication authentication) throws BadRequestException, JsonProcessingException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -79,7 +83,7 @@ public class TokenProvider {
     private InfoUserTShirtTwoResponse getInfoUserSpotifyResponse(NhanVien nhanVien) {
         InfoUserTShirtTwoResponse response = new InfoUserTShirtTwoResponse();
         response.setId(nhanVien.getId());
-        response.setUserName(nhanVien.getUserName());
+        response.setUserName(nhanVien.getFullName());
         response.setEmail(nhanVien.getEmail());
         response.setSubscriptionType(nhanVien.getSubscriptionType());
         response.setProfilePicture(nhanVien.getProfilePicture());
@@ -147,6 +151,28 @@ public class TokenProvider {
     private NhanVien getCurrentUserLogin(String email) {
         Optional<NhanVien> user = userAuthRepository.findByEmail(email);
         return user.orElse(null);
+    }
+
+    public void setAttributeSession(String authToken) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
+                .build()
+                .parseClaimsJws(authToken)
+                .getBody();
+        String id = claims.get("id", String.class);
+        String userName = claims.get("userName", String.class);
+        String email = claims.get("email", String.class);
+        String subscriptionType = claims.get("subscriptionType", String.class);
+        String profilePicture = claims.get("profilePicture", String.class);
+        String roleCode = claims.get("roleCode", String.class);
+        String roleName = claims.get("roleName", String.class);
+        httpSession.setAttribute(Session.CURRENT_USER_ID, id);
+        httpSession.setAttribute(Session.CURRENT_USER_NAME, userName);
+        httpSession.setAttribute(Session.CURRENT_USER_EMAIL, email);
+        httpSession.setAttribute(Session.CURRENT_USER_SUBSCRIPTION_TYPE, subscriptionType);
+        httpSession.setAttribute(Session.CURRENT_USER_PROFILE_PICTURE, profilePicture);
+        httpSession.setAttribute(Session.CURRENT_USER_ROLE_CODE, roleCode);
+        httpSession.setAttribute(Session.CURRENT_USER_ROLE_NAME, roleName);
     }
 
 }

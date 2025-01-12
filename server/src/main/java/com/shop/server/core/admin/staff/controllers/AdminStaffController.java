@@ -36,6 +36,11 @@ public class AdminStaffController {
         return Helper.createResponseEntity(adminStaffService.createStaff(request));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getStaffById(@PathVariable String id) {
+        return Helper.createResponseEntity(adminStaffService.getStaffById(id));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateStaff(@PathVariable String id, @Valid @RequestBody final AdminStaffRequest request) {
         return Helper.createResponseEntity(adminStaffService.updateStaff(id, request));

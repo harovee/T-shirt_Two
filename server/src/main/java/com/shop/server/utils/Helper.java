@@ -145,4 +145,8 @@ public class Helper {
         return prefix.toUpperCase() + formattedNumber;
     }
 
+    public static void main(String[] args) {
+        System.out.println(generateCode("Trịnh Hiếu Nghĩa"));
+    }
+
 }

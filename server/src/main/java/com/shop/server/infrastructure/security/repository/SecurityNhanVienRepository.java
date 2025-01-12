@@ -11,4 +11,6 @@ public interface SecurityNhanVienRepository extends NhanVienRepository {
 
     Optional<NhanVien> findByEmail(String email);
 
+    Optional<NhanVien> findByUsername(String username);
+
 }

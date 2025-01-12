@@ -21,7 +21,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
      */
     @Query(value = """
                 SELECT
-                    ROW_NUMBER() OVER(ORDER BY nv.id DESC) AS catalog,
+                    ROW_NUMBER() OVER(ORDER BY nv.ngay_tao DESC) AS catalog,
                 	nv.id AS id,
                     nv.ho_va_ten as name,
                     nv.email as email,
@@ -33,6 +33,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.ho_va_ten LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     nv.email LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.status} IS NULL OR nv.deleted = :#{#req.status})
+                ORDER BY nv.ngay_tao DESC
             """, countQuery = """
                 SELECT
                     COUNT(nv.id)
@@ -54,8 +55,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.ma_nhan_vien as code,
                     nv.gioi_tinh as sex,
                     nv.profile_picture as picture,
-                    nv.password_hash as passHash,
-                    nv.password_secret as passSecret,
+                    nv.password as password,
                     nv.ngay_sinh as birthday,
                     nv.so_dien_thoai as phoneNumber,
                     nv.nguoi_sua as updateBy,

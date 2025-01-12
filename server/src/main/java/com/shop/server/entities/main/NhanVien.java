@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "nhan_vien")
@@ -25,29 +24,32 @@ import java.time.LocalDate;
 @Setter
 public class NhanVien extends PrimaryEntity implements Serializable {
 
+    @Column(name = "username", unique = true)
+    private String username;
+
     @Column(name = "ma_nhan_vien", unique = true)
-    private String maNhanVien;
+    private String code;
 
     @Column(name = "ho_va_ten", length = EntityProperties.LENGTH_NAME)
-    private String userName;
+    private String fullName;
 
     @Column(name = "ngay_sinh")
-    private LocalDate ngaySinh;
+    private Long birthday;
 
     @Column(name = "gioi_tinh")
-    private Boolean gioiTinh;
+    private Boolean gender;
 
     @Column(name = "so_dien_thoai")
-    private String soDienThoai;
+    private String phoneNumber;
 
-    @Column(nullable = false, length = EntityProperties.LENGTH_CODE)
+    @Column(nullable = false, length = EntityProperties.LENGTH_CODE, unique = true)
     private String email;
 
-    @Column(name = "password_hash", length = EntityProperties.LENGTH_PASSWORD)
+    @Column(name = "password", length = EntityProperties.LENGTH_PASSWORD)
     private String password;
 
-    @Column(name = "password_secret", length = EntityProperties.LENGTH_PASSWORD_SECRET)
-    private String passwordSecret;
+    @Column(name = "identity", length = EntityProperties.LENGTH_PASSWORD)
+    private String identity;
 
     @Column(length = EntityProperties.LENGTH_CODE)
     private String subscriptionType;

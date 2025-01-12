@@ -8,21 +8,29 @@ import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.Message;
+import com.shop.server.infrastructure.constants.module.Role;
+import com.shop.server.infrastructure.constants.module.Status;
+import com.shop.server.infrastructure.security.oauth2.session.InfoUserTShirt;
+import com.shop.server.utils.DateTimeUtil;
 import com.shop.server.utils.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-
+@Slf4j
 @Service
 public class AdminStaffServiceImpl implements AdminStaffService {
 
     private final AdminStaffRepository adminStaffRepository;
 
-    public AdminStaffServiceImpl(AdminStaffRepository adminStaffRepository) {
+    private final InfoUserTShirt infoUserTShirt;
+
+    public AdminStaffServiceImpl(AdminStaffRepository adminStaffRepository, InfoUserTShirt infoUserTShirt) {
         this.adminStaffRepository = adminStaffRepository;
+        this.infoUserTShirt = infoUserTShirt;
     }
 
     @Override
@@ -37,7 +45,11 @@ public class AdminStaffServiceImpl implements AdminStaffService {
 
     @Override
     public ResponseObject<?> getStaffById(String id) {
-        return null;
+        return new ResponseObject<>(
+                adminStaffRepository.getStaffDetail(id),
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
     }
 
     @Override
@@ -48,11 +60,32 @@ public class AdminStaffServiceImpl implements AdminStaffService {
                     Message.Response.DUPLICATE + ", email"
             );
         }
-        NhanVien nhanVien = new NhanVien();
-        nhanVien.setUserName(request.getName());
-        nhanVien.setEmail(request.getEmail());
-        nhanVien.setDeleted(false);
-        adminStaffRepository.save(nhanVien);
+        try {
+            NhanVien staff = new NhanVien();
+            staff.setUsername(request.getUserName());
+            staff.setPassword(request.getPassword());
+            staff.setFullName(request.getName());
+            staff.setEmail(request.getEmail());
+            Long count = adminStaffRepository.count() + 1;
+            String formattedCode = String.format("%05d", count);
+            staff.setCode(formattedCode);
+            staff.setIdentity(request.getIdentity());
+            staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
+            staff.setGender(request.getGender());
+            staff.setPhoneNumber(request.getPhoneNumber());
+            staff.setRole(Role.USER);
+            staff.setStatus(Status.ACTIVE);
+            staff.setDeleted(false);
+            staff.setNguoiTao(infoUserTShirt.getId());
+            staff.setNguoiSua(infoUserTShirt.getId());
+            adminStaffRepository.save(staff);
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage()
+            );
+        }
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.CREATE_SUCCESS
@@ -61,7 +94,35 @@ public class AdminStaffServiceImpl implements AdminStaffService {
 
     @Override
     public ResponseObject<?> updateStaff(String id, AdminStaffRequest request) {
-        return null;
+        Optional<NhanVien> staffOptional = adminStaffRepository.findById(id);
+        if (staffOptional.isEmpty()) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.NOT_FOUND + ", nhân viên"
+            );
+        }
+        try {
+            NhanVien staff = staffOptional.get();
+            staff.setUsername(request.getUserName());
+            staff.setPassword(request.getPassword());
+            staff.setFullName(request.getName());
+            staff.setEmail(request.getEmail());
+            staff.setIdentity(request.getIdentity());
+            staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
+            staff.setGender(request.getGender());
+            staff.setPhoneNumber(request.getPhoneNumber());
+            staff.setNguoiSua(infoUserTShirt.getId());
+            adminStaffRepository.save(staff);
+        } catch (Exception e) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage()
+            );
+        }
+        return ResponseObject.successForward(
+                HttpStatus.CREATED,
+                Message.Success.UPDATE_SUCCESS
+        );
     }
 
     @Override

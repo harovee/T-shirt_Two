@@ -14,6 +14,10 @@ export const queryKey = {
             clientList: "adClientListKey",
             clientDetail: "adClientDetailKey",
         },
+        staff: {
+            staffList: "adStaffListKey",
+            staffDetail: "adStaffDetailKey",
+        },
         user: {
             userList: "adUserListKey",
             userDetail: "adUserDetailKey",
