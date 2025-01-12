@@ -1,6 +1,7 @@
 package com.shop.server.entities.main;
 
 import com.shop.server.entities.base.PrimaryEntity;
+import com.shop.server.infrastructure.constants.module.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -36,7 +37,7 @@ public class SanPhamChiTiet extends PrimaryEntity implements Serializable {
     private BigDecimal gia;
 
     @Column(name = "so_luong")
-    private int soLuong;
+    private Long soLuong;
 
     @ManyToOne
     @JoinColumn(name = "id_san_pham", referencedColumnName = "id")
@@ -77,5 +78,8 @@ public class SanPhamChiTiet extends PrimaryEntity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_tay_ao", referencedColumnName = "id")
     private TayAo tayAo;
+
+    @Column(name = "trang_thai")
+    private Status trangThai;
 
 }

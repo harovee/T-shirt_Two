@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.product.services;
 
+import com.shop.server.core.admin.product.models.requests.AdGetSanPhamChiTietRequest;
 import com.shop.server.core.admin.product.models.requests.AdminFindProductRequest;
 import com.shop.server.core.admin.product.models.requests.AdminProductRequest;
 import com.shop.server.core.common.base.ResponseObject;
@@ -15,7 +16,10 @@ public interface AdminProductService {
 
     ResponseObject<?> updateProduct(String id, @Valid AdminProductRequest request);
 
-    ResponseObject<?> changeStatusProduct(String id);
+    ResponseObject<?> deleted(String id);
 
+    ResponseObject<?> getListProduct();
+
+    ResponseObject<?> getSanPhamChiTietByIdSanPham(String id, AdGetSanPhamChiTietRequest request);
 
 }

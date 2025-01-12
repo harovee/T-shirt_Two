@@ -30,6 +30,18 @@ export const PREFIX_API_REFRESH = PREFIX_API_AUTH + `/refresh` as string;
 
 // ADMIN API
 export const PREFIX_API_ADMIN_FEATURE = `${API_URL}/admin/feature` as string;
+export const PREFIX_API_ADMIN_EMPLOYEE = `${API_URL}/admin/employee` as string;
+export const PREFIX_API_ADMIN_PRODUCT = `${API_URL}/admin/product` as string;
+export const PREFIX_API_ADMIN_PRODUCT_DETAIL = `${API_URL}/admin/product-detail` as string;
+export const PREFIX_API_ADMIN_MATERIAL = `${API_URL}/admin/material` as string;
+export const PREFIX_API_ADMIN_SIZE = `${API_URL}/admin/size` as string;
+export const PREFIX_API_ADMIN_COLLAR = `${API_URL}/admin/collar` as string;
+export const PREFIX_API_ADMIN_PATTERN = `${API_URL}/admin/pattern` as string;
+export const PREFIX_API_ADMIN_COLOR = `${API_URL}/admin/color` as string;
+export const PREFIX_API_ADMIN_STYLE = `${API_URL}/admin/style` as string;
+export const PREFIX_API_ADMIN_SLEEVE = `${API_URL}/admin/sleeve` as string;
+export const PREFIX_API_ADMIN_TRADEMARK = `${API_URL}/admin/trademark` as string;
+export const PREFIX_API_ADMIN_CATEGORY = `${API_URL}/admin/category` as string;
 export const PREFIX_API_ADMIN_CLIENT = `${API_URL}/admin/client` as string;
 export const PREFIX_API_ADMIN_SALE = `${API_URL}/admin/sale` as string;
 export const API_ADMIN_BILL = `${API_URL}/admin/bill` as string;

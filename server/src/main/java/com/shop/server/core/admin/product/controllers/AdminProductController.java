@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.product.controllers;
 
+import com.shop.server.core.admin.product.models.requests.AdGetSanPhamChiTietRequest;
 import com.shop.server.core.admin.product.models.requests.AdminFindProductRequest;
 import com.shop.server.core.admin.product.models.requests.AdminProductRequest;
 import com.shop.server.core.admin.product.services.AdminProductService;
@@ -32,6 +33,16 @@ public class AdminProductController {
         return Helper.createResponseEntity(adminProductService.getProducts(request));
     }
 
+    @GetMapping("/get-list-product")
+    public ResponseEntity<?> getListProducts() {
+        return Helper.createResponseEntity(adminProductService.getListProduct());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProductDetail(@PathVariable final String id) {
+        return Helper.createResponseEntity(adminProductService.getProductById(id));
+    }
+
     @PostMapping()
     public ResponseEntity<?> createProduct(@Valid @RequestBody final AdminProductRequest request) {
         return Helper.createResponseEntity(adminProductService.createProduct(request));
@@ -44,7 +55,12 @@ public class AdminProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable String id) {
-        return Helper.createResponseEntity(adminProductService.changeStatusProduct(id));
+        return Helper.createResponseEntity(adminProductService.deleted(id));
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<?> getProducts(@PathVariable String id, AdGetSanPhamChiTietRequest request) {
+        return Helper.createResponseEntity(adminProductService.getSanPhamChiTietByIdSanPham(id, request));
     }
 
 }

@@ -24,6 +24,19 @@ public class MappingConstant {
 
     public static final String API_ADMIN_ANOTHER = API_ADMIN_PREFIX + "/another";
     public static final String API_ADMIN_PRODUCT = API_ADMIN_PREFIX + "/product";
+    public static final String API_ADMIN_EMPLOYEE = API_ADMIN_PREFIX + "/employee";
+    public static final String API_ADMIN_PRODUCT_DETAIL = API_ADMIN_PREFIX + "/product-detail";
+    public static final String API_ADMIN_MATERIAL = API_ADMIN_PREFIX + "/material";
+    public static final String API_ADMIN_COLLAR = API_ADMIN_PREFIX + "/collar"; // Cổ áo
+    public static final String API_ADMIN_PATTERN = API_ADMIN_PREFIX + "/pattern"; //Họa tiết
+    public static final String API_ADMIN_SIZE = API_ADMIN_PREFIX + "/size";
+    public static final String API_ADMIN_COLOR = API_ADMIN_PREFIX + "/color";
+    public static final String API_ADMIN_STYLE = API_ADMIN_PREFIX + "/style";
+    public static final String API_ADMIN_SLEEVE = API_ADMIN_PREFIX + "/sleeve"; // Tay áo
+    public static final String API_ADMIN_TRADEMARK = API_ADMIN_PREFIX + "/trademark"; // Thương hiệu
+    public static final String API_ADMIN_FEATURE = API_ADMIN_PREFIX + "/feature"; // Tính năng
+    public static final String API_ADMIN_CATEGORY = API_ADMIN_PREFIX + "/category"; // DAnh mục
+
     public static final String API_ADMIN_CLIENT = API_ADMIN_PREFIX + "/client";
     public static final String API_ADMIN_STAFF = API_ADMIN_PREFIX + "/staff";
     public static final String API_ADMIN_PROMOTION = API_ADMIN_PREFIX + "/sale";

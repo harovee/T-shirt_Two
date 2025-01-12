@@ -3,13 +3,16 @@ package com.shop.server.core.admin.product.models.responses;
 import com.shop.server.core.common.base.BaseResponse;
 
 public interface AdminProductResponse extends BaseResponse {
+    String getMaSanPham ();
 
-    String getTitle();
+    String getTen();
 
-    String getArtist();
+    Long getNgayTao();
 
-    Long getReleasedDate();
+    Long getSoLuong();
 
-    Integer getStatus();
+    Integer getTrangThai();
+
+    String getTenDanhMuc ();
 
 }

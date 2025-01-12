@@ -34,13 +34,48 @@ export const queryKey = {
             productDetailList: "adProductDetailInSaleMdListKey",
             attributeList: "adAttributeList"
         },
+        product: {
+            productList: "adProdcutListKey",
+        },
+        productDetail: {
+            productDetailList: "adProdcutDetailListKey",
+        },
+        category: {
+            categoryList: "adCategoryListKey",
+        },
+        material: {
+            materialList: "adMaterialListKey",
+        },
+        collar: {
+            collarList: "adCollarListKey",
+        },
+        pattern: {
+            patternList: "adPatternListKey",
+        },
+        size: {
+            sizeList: "adSizeListKey",
+        },
+        color: {
+            colorList: "adColorListKey",
+        },
+        style: {
+            styleList: "adStyleListKey",
+        },
+        sleeve: {
+            sleeveList: "adSleeveListKey",
+        },
+        trademark: {
+            trademarkList: "adTrademarkListKey",
+        },
+        feature: {
+            featureList: "adFeatureListKey",
+        },
         bill: {
             billList: "adBillListKey",
         },
         billdetail: {
             detailList: "adBillDetail"
         },
-
     },
 
     user: {
