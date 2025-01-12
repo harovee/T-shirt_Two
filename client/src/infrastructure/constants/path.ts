@@ -32,6 +32,10 @@ export const ROUTES_CONSTANTS = {
                         path: "product-detail",
                         name: "admin-product-detail",
                     },
+                    CREATE_PRODUCT: {
+                        path: "create-product",
+                        name: "admin-create-product",
+                    },
                     CATEGORY: {
                         path: "category",
                         name: "admin-category",

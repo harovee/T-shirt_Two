@@ -115,16 +115,12 @@ const menuItems = ref([
     path: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.path
   },
   {
-    key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name,
-    path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.path
+    key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.path
   },
   {
     key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.name,
     path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.path
-  },
-  {
-    key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.name,
-    path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.path
   },
   {
     key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.TRADEMARK.name,
@@ -170,9 +166,8 @@ const items: ItemType[] = reactive([
   ]),
 
   getItem('Sản Phẩm', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.name, () => h(AppstoreOutlined), [
-    getItem('Sản phẩm chi tiết', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name),
-    getItem('Danh mục', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.name),
     getItem('Sản phẩm', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.name),
+    getItem('Danh mục', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.name),
     getItem('Thương hiệu', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.TRADEMARK.name),
     getItem('Chất liệu', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.MATERIAL.name),
     getItem('Cổ áo', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.COLLAR.name),

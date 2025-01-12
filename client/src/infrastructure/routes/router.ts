@@ -81,6 +81,15 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.path + '/:id',
+                name: 'product-detail-id',
+                component: () => import('@/page/admin/product/product-detail/ProductDetail.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.name,
                 component: () => import('@/page/admin/product/category/Category.vue'),
@@ -93,6 +102,15 @@ const routes: Array<RouteRecordRaw> = [
                 path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.name,
                 component: () => import('@/page/admin/product/product/Product.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CREATE_PRODUCT.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CREATE_PRODUCT.name,
+                component: () => import('@/page/admin/product/product/CreateProduct.vue'),
                 meta: {
                     requiresRole: ROLES.ADMIN,
                     requiresAuth: true

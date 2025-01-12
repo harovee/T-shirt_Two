@@ -4,12 +4,6 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'admin product detail',
-};
-</script>
-
 <script lang="ts" setup>
 
 </script>
