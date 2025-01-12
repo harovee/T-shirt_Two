@@ -77,6 +77,10 @@ export const ROUTES_CONSTANTS = {
             EMPLOYEE: {
                 path: "employee",
                 name: "admin-employee",
+            },
+            VOUCHER: {
+                path: "voucher",
+                name: "admin-voucher",
             }
         },
     },

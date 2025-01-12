@@ -33,7 +33,7 @@ public abstract class AuditEntity {
     @LastModifiedBy
     private String nguoiSua;
 
-    @Column(name = "deleted")
+    @Column(name = "deleted",precision = 0)
     private Boolean deleted;
 
 }

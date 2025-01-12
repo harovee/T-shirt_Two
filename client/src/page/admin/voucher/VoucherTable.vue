@@ -1,0 +1,212 @@
+<template>
+  <div class="p-4 rounded-xl border-2 shadow-purple-950 shadow-xl">
+    <div class="flex justify-between items-center">
+      <div>
+        <h3 class="text-xl font-semibold text-gray-800">Danh sách voucher</h3>
+        <p class="text-sm text-gray-500">
+          Hiển thị danh sách voucher
+        </p>
+      </div>
+      <div class="p-2.5">
+        <a-tooltip
+          title="Thêm voucher"
+          trigger="hover"
+        >
+          <a-button
+            class="bg-purple-300 flex justify-between items-center gap-2"
+            size="large"
+            @click="$emit('handleOpenModalCreate', $event)"
+          >
+            <v-icon name="md-addcircle" />
+          </a-button>
+        </a-tooltip>
+      </div>
+    </div>
+    <table-spotify
+      wrapperClassName="min-h-[410px]"
+      :columns="columnsVoucher"
+      :data-source="props.dataSource?.data"
+      :loading="loading"
+      :pagination-params="paginationParams || {}"
+      :total-pages="props.dataSource?.totalPages || 1"
+      @update:pagination-params="$emit('update:paginationParams', $event)"
+    >
+      <template #bodyCell="{ column, record }">
+        <div v-if="column.key === 'another'" class="text-center">
+        </div>
+        <div v-else-if="column.key === 'loaiGiam'" class="text-center">
+            <a-tag v-if="record.loaiGiam === true || record.loaiGiam === 'true'" color="success">Tiền</a-tag>
+            <a-tag v-else-if="record.loaiGiam === false || record.loaiGiam === 'false'" color="success">%</a-tag>
+            <a-tag v-else color="secondary">Không xác định</a-tag>
+        </div>
+
+        <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
+          <a-tooltip
+            title="Cập nhật"
+            trigger="hover"
+          >
+            <a-button
+              class="bg-blue-100"
+              size="middle"
+              shape="round"
+              @click="$emit('handleOpenModalUpdateVoucher', record)"
+            >
+              <v-icon name="fa-edit" />
+            </a-button>
+          </a-tooltip>
+          <a-popconfirm
+            title="Bạn có chắc chắn muốn xóa voucher này không?"
+            ok-text="Có"
+            cancel-text="Hủy"
+            @confirm="handleDeleteVoucher(record.id)"
+          >
+            <a-tooltip
+              title="Xóa"
+              trigger="hover"
+            >
+              <a-button
+                class="bg-purple-100"
+                size="middle"
+                shape="round"
+              >
+                <v-icon name="fa-trash" />
+              </a-button>
+            </a-tooltip>
+          </a-popconfirm>
+        </div>
+      </template>
+    </table-spotify>
+  </div>
+</template>
+
+<script setup lang="ts">
+import TableSpotify from "@/components/ui/Table.vue";
+import { ColumnType } from "ant-design-vue/es/table";
+import { toast } from "vue3-toastify";
+import { defineEmits, watch } from "vue";
+import { useDeleteVoucher } from "@/infrastructure/services/service/admin/voucher/voucher.action";
+
+const emit = defineEmits([
+  "update:paginationParams",
+  "handleOpenModalCreate",
+  "handleCloseModalCreate",
+  "handleUpdateVoucher",
+  "handleOpenModalUpdateVoucher"
+]);
+
+const props = defineProps({
+  dataSource: Object,
+  loading: Boolean,
+  paginationParams: Object,
+  pagePageable: Object
+});
+
+// watch(
+//   () => props.dataSource,
+//   (newData) => {
+//     console.log(newData);
+//   }
+// );
+ const { mutate : deleteVoucher} = useDeleteVoucher();
+
+const handleDeleteVoucher = async (id: string) => {
+  try {
+    await deleteVoucher(id);
+    console.log("Deleting voucher with ID:", id);
+    toast.success("Voucher deleted successfully!");
+  } catch (error: any) {
+    console.error("🚀 ~ DeleteVoucher ~ error:", error);
+    toast.error("Failed to delete voucher");
+  }
+};
+
+const columnsVoucher: ColumnType[] = [
+  {
+    title: "#",
+    dataIndex: "catalog",
+    key: "catalog",
+    ellipsis: true,
+    width: 50,
+    align: "center",
+  },
+  {
+    title: "Mã",
+    dataIndex: "ma",
+    key: "ma",
+    ellipsis: true,
+    width: 70,
+    resizable: true,
+  },
+  {
+    title: "Tên voucher",
+    dataIndex: "ten",
+    key: "ten",
+    ellipsis: true,
+    width: 100,
+    resizable: true,
+  },
+  {
+    title: "Điều kiện giảm",
+    dataIndex: "dieuKienGiam",
+    key: "dieuKienGiam",
+    ellipsis: true,
+    width: 100,
+    resizable: true,
+  },
+  {
+    title: "Giá trị giảm",
+    dataIndex: "giaTriGiam",
+    key: "giaTriGiam",
+    ellipsis: true,
+    width: 100,
+    resizable: true,
+  },
+  {
+    title: "Loại giảm",
+    dataIndex: "loaiGiam",
+    key: "loaiGiam",
+    ellipsis: true,
+    width: 70,
+    resizable: true,
+  },
+  {
+    title: "Giảm tối đa",
+    dataIndex: "giamToiDa",
+    key: "giamToiDa",
+    ellipsis: true,
+    width: 100,
+    resizable: true,
+  },
+  {
+    title: "Ngày bắt đầu",
+    dataIndex: "ngayBatDau",
+    key: "ngayBatDau",
+    ellipsis: true,
+    width: 100,
+    resizable: true,
+  },
+  {
+    title: "Ngày kết thúc",
+    dataIndex: "ngayKetThuc",
+    key: "ngayKetThuc",
+    ellipsis: true,
+    width: 100,
+    resizable: true,
+  },
+  {
+    title: "Trạng thái",
+    dataIndex: "trangThai",
+    key: "trangThai",
+    ellipsis: true,
+    width: 100,
+    align: "center",
+  },
+  {
+    title: "Hành động",
+    key: "action",
+    align: "center",
+    width: 150,
+    fixed: "right",
+  },
+];
+</script>

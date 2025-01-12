@@ -128,6 +128,7 @@ public class SecurityConfig {
                                 Helper.appendWildcard(MappingConstant.PATH_OAUTH2),
                                 Helper.appendWildcard(MappingConstant.API_EMBED_PREFIX),
                                 Helper.appendWildcard(MappingConstant.API_EMPLOYEE_PREFIX)
+                               // Helper.appendWildcard(MappingConstant.API_ADMIN_VOUCHER)
                         )
                         .permitAll()
         );
@@ -141,7 +142,8 @@ public class SecurityConfig {
         );
         http.authorizeHttpRequests( // config author api admin
                 auth -> auth.requestMatchers(
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_PREFIX)
+                                Helper.appendWildcard(MappingConstant.API_ADMIN_PREFIX),
+                                Helper.appendWildcard(MappingConstant.API_ADMIN_VOUCHER)
                         )
                         .hasAnyAuthority(Role.ADMIN.name())
         );

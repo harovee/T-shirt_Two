@@ -22,6 +22,10 @@ export const queryKey = {
             songList: "adSongListKey",
             songDetail: "adSongDetailKey",
             genreList: "adGenresListKey",
+        }, 
+        voucher: {
+            voucherList: "adVoucherListKey",
+            voucherDetail: "adVoucherDetailKey",
         }
     },
 

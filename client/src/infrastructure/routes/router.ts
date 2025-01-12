@@ -153,6 +153,15 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.VOUCHER.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.VOUCHER.name,
+                component: () => import('@/page/admin/voucher/Voucher.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.STAFF.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.STAFF.name,
                 component: () => import('@/page/admin/staff/Staff.vue'),
