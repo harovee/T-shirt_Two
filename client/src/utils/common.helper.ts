@@ -64,6 +64,51 @@ export const confirmModal = (message, onConfirm) => {
   });
 };
 
+ export const convertStringToTimeStampSecond = (date: string): number | null => {
+  const dateObj = convertStringToDate(date);
+  return convertDateToTimeStampSecond(dateObj);
+}
+
+export const convertTimeStampSecondToStringTimeZone = (timeStampSecond: number): string | null => {
+  const dateObj = convertTimeStampSecondToDate(timeStampSecond);
+  return convertDateToString(dateObj);
+}
+
+export const convertStringToDate = (date: string): Date | null => {
+  if (!date || date.trim() === '') {
+      return null;
+  }
+  return new Date(date);
+}
+
+export const convertDateToTimeStampSecond = (date: Date | null): number | null => {
+  if (date) {
+      return Math.floor(date.getTime() / 1000);
+  }
+  return null;
+}
+
+export const convertTimeStampSecondToDate = (timeStampSecond: number): Date  => {
+  return new Date(timeStampSecond * 1000);
+}
+
+export const convertDateToString = (date: Date): string | null => {
+  if (date) {
+      return date.toISOString();
+  }
+  return null;
+}
+
+export const addMinutes = (date: Date, minutes: number): Date => {
+  const newDate = new Date(date);
+  newDate.setMinutes(newDate.getMinutes() + minutes);
+  return newDate;
+}
+
+export const getCurrentTimeStampSecond = (): number => {
+  return Math.floor(Date.now() / 1000);
+}
+
 export const defaultProductImageSaleUrl =
   'https://static.vecteezy.com/system/resources/previews/015/079/128/large_2x/orange-empty-stage-product-show-3d-render-png.png';
 
