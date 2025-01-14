@@ -19,12 +19,30 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'another'" class="text-center"></div>
         <div v-else-if="column.key === 'status'" class="text-center">
-          <a-tag v-if="record.status === 'false'" color="success"
-            >Hoạt động</a-tag
+          <a-tag v-if="record.trangThai === 'Thành công'" color="success"
+            >Thành công</a-tag
           >
-          <a-tag v-else-if="record.status === 'true'" color="warning"
-            >Vô hiệu hóa</a-tag
+          <a-tag v-else-if="record.trangThai === 'Chờ xác nhận'" color="warning"
+            >Chờ xác nhận</a-tag
           >
+          <a-tag v-else-if="record.trangThai === 'Chờ giao hàng'" color="processing"
+            >Chờ giao hàng</a-tag
+          >
+          <a-tag v-else-if="record.trangThai === 'Đang vận chuyển'" color="default"
+            >Đang vận chuyển</a-tag
+          >
+          <a-tag v-else-if="record.trangThai === 'Trả hàng'" color="error"
+            >Trả hàng</a-tag
+          >
+          <a-tag v-else color="secondary">Không xác định</a-tag>
+        </div>
+        <div v-else-if="column.key === 'loaiHD'" class="text-center">
+          <a-tag v-if="record.loaiHD === 'Online'" color="success"
+            >Online</a-tag
+          >
+          <a-tag v-else-if="record.loaiHD === 'Tại quầy'" color="default"
+            >Tại quầy</a-tag>
+          
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
         <div
@@ -55,8 +73,6 @@ import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
 
 
-
-
 const emit = defineEmits([
   "update:paginationParams",
 ]);
@@ -72,7 +88,7 @@ const handleRedirectBillDetail = (idHoaDon: string) => {
     path: ROUTES_CONSTANTS.ADMIN.path + '/' + ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.path,
     query: {idHoaDon}
     }
-    console.log(detailBillPath)
+    // console.log(detailBillPath)
     router.push(detailBillPath);
 }
 
@@ -94,19 +110,11 @@ const columnsBill: ColumnType[] = [
     align: "center",
   },
   {
-    title: "Loại hóa đơn",
-    dataIndex: "loaiHD",
-    key: "loaiHD",
+    title: "Mã nhân viên",
+    dataIndex: "maNhanVien",
+    key: "maNhanVien",
     ellipsis: true,
-    width: 200,
-    align: "center",
-  },
-  {
-    title: "Tổng tiền",
-    dataIndex: "tongTien",
-    key: "tongTien",
-    ellipsis: true,
-    width: 150,
+    width: 110,
     align: "center",
   },
   {
@@ -118,11 +126,36 @@ const columnsBill: ColumnType[] = [
     align: "center",
   },
   {
+    title: "Số điện thoại",
+    dataIndex: "soDienThoai",
+    key: "soDienThoai",
+    ellipsis: true,
+    width: 130,
+    align: "center",
+  },
+  {
+    title: "Loại hóa đơn",
+    dataIndex: "loaiHD",
+    key: "loaiHD",
+    ellipsis: true,
+    width: 120,
+    align: "center",
+  },
+  {
+    title: "Tổng tiền",
+    dataIndex: "tongTien",
+    key: "tongTien",
+    ellipsis: true,
+    width: 140,
+    align: "center",
+  },
+  
+  {
     title: "Trạng thái",
     dataIndex: "trangThai",
-    key: "trangThai",
+    key: "status",
     ellipsis: true,
-    width: 200,
+    width: 180,
     align: "center",
   },
   {

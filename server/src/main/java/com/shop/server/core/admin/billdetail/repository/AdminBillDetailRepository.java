@@ -39,10 +39,12 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             hd.ghi_chu AS ghiChuHD,
             hd.trang_thai AS trangThaiHD,
             nv.ho_va_ten AS tenNhanVien,
-            kh.ho_va_ten AS tenKhachHang
+            kh.ho_va_ten AS tenKhachHang,
+            kc.ten AS tenKichCo
         FROM hoa_don_chi_tiet ct
         LEFT JOIN san_pham_chi_tiet spct ON ct.id_san_pham_chi_tiet = spct.id
         JOIN hoa_don hd ON ct.id_hoa_don = hd.id
+        JOIN kich_co kc ON spct.id_kich_co = kc.id
         LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
         LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
@@ -59,7 +61,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
         WHERE
             (:#{#req.keyword} IS NULL OR
              spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
-        AND (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = hd.id) 
+        AND (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = hd.id)
     """, nativeQuery = true)
     Page<AdminBillDetailResponse> getAdminBillDetailByRequest(Pageable pageable, AdminFindBillDetailRequest req);
 
@@ -71,7 +73,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             spct.ten AS tenSanPhamChiTiet,
             ct.so_luong AS soLuong,
             ct.gia AS gia,
-            ct.thanh_tien AS thanhTien,
+            ct.thanh_tien AS thanhTien
         FROM hoa_don_chi_tiet ct
         LEFT JOIN san_pham_chi_tiet spct ON ct.id_san_pham_chi_tiet = spct.id
         WHERE ct.id = :id

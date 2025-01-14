@@ -11,5 +11,13 @@ public interface AdminBillHistoryResponse extends BaseResponse {
 
     String getMoTa();
 
+    Long getNgayTao();
+
+    Long getNgaySua();
+
+    String getNguoiTao();
+
+    String getNguoiSua();
+
     String getTrangThai();
 }

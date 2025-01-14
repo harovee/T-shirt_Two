@@ -15,6 +15,8 @@ public interface AdminBillDetailResponse extends BaseResponse {
 
     String getTenSanPhamChiTiet();
 
+    String getTenKichCo();
+
     Short getSoLuong();
 
     BigDecimal getGia();

@@ -6,6 +6,7 @@ import request from "@/infrastructure/services/request.ts";
 
 export interface BillPropsParams {
     keyword?: string | null;
+    trangThai? :string | null;
 
     [key: string]: any;
 }
@@ -21,11 +22,12 @@ export interface BillRequest {
 export type BillResponse = ResponseList & {
     catalog: number | null;
     ma: string | null;
+    maNhanVien: string | null;
     loaiHD: string | null;
     tongTien: number | null;
     trangThai: string | null;
     tenKhachHang: string | null;
-
+    soDienThoai: string | null;
 }
 
 

@@ -17,6 +17,10 @@ public interface AdminBillHistoryRepository extends LichSuHoaDonRepository {
             hd.ma_hoa_don AS maHoaDon,
             ls.hanh_dong AS hanhDong,
             ls.mo_ta AS moTa,
+            ls.ngay_tao AS ngayTao,
+            ls.ngay_sua AS ngaySua,
+            ls.nguoi_tao AS nguoiTao,
+            ls.nguoi_sua AS nguoiSua,
             ls.trang_thai AS trangThai
             FROM lich_su_hoa_don ls
             JOIN hoa_don hd ON hd.id = ls.id_hoa_don

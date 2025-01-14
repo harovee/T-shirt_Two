@@ -22,8 +22,6 @@
       <admin-bill-table
         :data-source="dataSource"
         :loading="isLoading || isFetching"
-        @handleOpenModalUpdate="handleOpenModalUpdateBill"
-        @handleCloseModalUpdate="handleCloseModalUpdateBill"
         :pagination-params="params"
         @update:pagination-params="handlePaginationChange"
       />
@@ -43,17 +41,10 @@ import AdminBillFilter from "./AdminBillFilter.vue";
 import { FindBillRequest } from "@/infrastructure/services/api/admin/bill.api";
 import { useGetBills } from "@/infrastructure/services/service/admin/bill.action";
 import AdminBillTable from "./AdminBillTable.vue";
-import { FindBillDetailRequest } from "@/infrastructure/services/api/admin/bill-detail.api";
-import { useGetBillDetails } from "@/infrastructure/services/service/admin/bill-detail.action";
 
 /*** Table - Pagination - Filter  ***/
 
 const params = ref<FindBillRequest>({
-  page: 1,
-  size: 10,
-});
-
-const detailParams = ref<FindBillDetailRequest>({
   page: 1,
   size: 10,
 });
