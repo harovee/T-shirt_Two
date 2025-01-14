@@ -29,12 +29,12 @@ export const getDateTimeMinutesFormat = (unix: number, showTime: boolean = false
   return dayjs(unix).format(showTime ? "YYYY/MM/DD HH:mm" : "YYYY/MM/DD");
 };
 
-export const convertDateFormat = (inputDate: string): string => {
-  const parsedDate = dayjs(inputDate, 'DD/MM/YYYY HH:mm');
+export const convertDateFormat = (inputDate: number): string => {
+  const parsedDate = dayjs(inputDate);
   if (!parsedDate.isValid()) {
     throw new Error('Ngày tháng không hợp lệ');
   }
-  return parsedDate.format('YYYY/MM/DD HH:mm:ss');
+  return parsedDate.format('DD/MM/YYYY HH:mm:ss'); // Định dạng theo yêu cầu
 };
 
 export const confirmModal = (message, onConfirm) => {
@@ -51,3 +51,48 @@ export const confirmModal = (message, onConfirm) => {
     },
   });
 };
+
+ export const convertStringToTimeStampSecond = (date: string): number | null => {
+  const dateObj = convertStringToDate(date);
+  return convertDateToTimeStampSecond(dateObj);
+}
+
+export const convertTimeStampSecondToStringTimeZone = (timeStampSecond: number): string | null => {
+  const dateObj = convertTimeStampSecondToDate(timeStampSecond);
+  return convertDateToString(dateObj);
+}
+
+export const convertStringToDate = (date: string): Date | null => {
+  if (!date || date.trim() === '') {
+      return null;
+  }
+  return new Date(date); 
+}
+
+export const convertDateToTimeStampSecond = (date: Date | null): number | null => {
+  if (date) {
+      return Math.floor(date.getTime() / 1000); 
+  }
+  return null;
+}
+
+export const convertTimeStampSecondToDate = (timeStampSecond: number): Date  => {
+  return new Date(timeStampSecond * 1000); 
+}
+
+export const convertDateToString = (date: Date): string | null => {
+  if (date) {
+      return date.toISOString();
+  }
+  return null;
+}
+
+export const addMinutes = (date: Date, minutes: number): Date => {
+  const newDate = new Date(date);
+  newDate.setMinutes(newDate.getMinutes() + minutes);
+  return newDate;
+}
+
+export const getCurrentTimeStampSecond = (): number => {
+  return Math.floor(Date.now() / 1000);
+}
