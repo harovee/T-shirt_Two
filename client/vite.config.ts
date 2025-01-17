@@ -5,6 +5,8 @@ import path from "path";
 export default defineConfig(({command, mode}: ConfigEnv) => {
   const env = loadEnv(mode, process.cwd());
   console.log(command);
+  console.log(env);
+  console.log(mode);
   return {
     css: {
       postcss: './postcss.config.js',

@@ -60,13 +60,31 @@ public class AdminStaffServiceImpl implements AdminStaffService {
                     Message.Response.DUPLICATE + ", email"
             );
         }
+        if (adminStaffRepository.existsStaffByUsername(request.getUsername())) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", tên tài khoản"
+            );
+        }
+        if (adminStaffRepository.existsStaffByIdentity(request.getIdentity())) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", mã định danh cá nhân"
+            );
+        }
+        if (adminStaffRepository.existsStaffByPhoneNumber(request.getPhoneNumber())) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", số điện thoại"
+            );
+        }
         try {
             NhanVien staff = new NhanVien();
-            staff.setUsername(request.getUserName());
+            staff.setUsername(request.getUsername());
             staff.setPassword(request.getPassword());
             staff.setFullName(request.getName());
             staff.setEmail(request.getEmail());
-            Long count = adminStaffRepository.count() + 1;
+            Long count = adminStaffRepository.countNhanVienByRole(Role.USER) + 1;
             String formattedCode = String.format("%05d", count);
             staff.setCode(formattedCode);
             staff.setIdentity(request.getIdentity());
@@ -103,7 +121,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
         }
         try {
             NhanVien staff = staffOptional.get();
-            staff.setUsername(request.getUserName());
+            staff.setUsername(request.getUsername());
             staff.setPassword(request.getPassword());
             staff.setFullName(request.getName());
             staff.setEmail(request.getEmail());
@@ -137,6 +155,24 @@ public class AdminStaffServiceImpl implements AdminStaffService {
         NhanVien nhanVien = nhanVienOptional.get();
         nhanVien.setDeleted(!nhanVien.getDeleted());
         adminStaffRepository.save(nhanVien);
+        return ResponseObject.successForward(
+                HttpStatus.CREATED,
+                Message.Success.UPDATE_SUCCESS
+        );
+    }
+
+    @Override
+    public ResponseObject<?> updateStaffAvatar(String id, AdminStaffRequest request) {
+        Optional<NhanVien> staffOptional = adminStaffRepository.findById(id);
+        if (staffOptional.isEmpty()) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.NOT_FOUND + ", nhân viên"
+            );
+        }
+        NhanVien staff = staffOptional.get();
+        staff.setProfilePicture(request.getPicture());
+        adminStaffRepository.save(staff);
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.UPDATE_SUCCESS

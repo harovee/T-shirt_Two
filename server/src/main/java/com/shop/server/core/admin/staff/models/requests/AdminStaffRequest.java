@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AdminStaffRequest {
 
-    String userName;
+    String username;
 
     String password;
 
@@ -28,5 +28,7 @@ public class AdminStaffRequest {
     String phoneNumber;
 
     String identity;
+
+    String picture;
 
 }

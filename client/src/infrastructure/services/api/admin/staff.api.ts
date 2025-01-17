@@ -24,6 +24,7 @@ export interface StaffRequest {
     gender: Boolean | null,
     phoneNumber: String | null,
     identity: String | null,
+    picture: String | null;
 }
 
 export type StaffResponse = ResponseList & {
@@ -35,8 +36,22 @@ export type StaffResponse = ResponseList & {
 };
 
 export type DetailStaffResponse = {
-    name: string | null;
+    id: string;
+    username: string | null;
+    code: string | null;
+    fullName: string | null;
+    birthday: string | null;
+    gender: string | null;
+    phoneNumber: string | null;
     email: string | null;
+    password: string | null;
+    identity: string | null;
+    status: Boolean | null;
+    picture: string | null;
+    createdBy: string | null;
+    lastModifiedBy: string | null;
+    createdDate: number | null;
+    lastModifiedDate: number | null;
 };
 
 export const getStaffs = async (params: Ref<FindStaffRequest>) => {
@@ -63,12 +78,12 @@ export const createStaff = async (data: StaffRequest) => {
     return res.data;
 };
 
-export const getStaffById = async (staffId: Ref<string | null>) => {
+export const getStaffById = async (staffId: string) => {
     return await request({
         url: `${PREFIX_API_ADMIN_STAFF}/${staffId}`,
         method: "GET"
     }) as AxiosResponse<
-        DefaultResponse<PaginationResponse<Array<StaffResponse>>>
+        DefaultResponse<DetailStaffResponse>
     >;
 };
 
@@ -90,3 +105,13 @@ export const changeStatusStaff = async (staffId: string) => {
         DefaultResponse<DefaultResponse<null>>
     >;
 };
+
+export const updateAvatarStaff = async (staffId: string, data: StaffRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_STAFF}/avatar/${staffId}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+}

@@ -17,5 +17,6 @@ public interface AdminStaffService {
 
     ResponseObject<?> changeStatusStaff(String id);
 
+    ResponseObject<?> updateStaffAvatar(String id, AdminStaffRequest request);
 
 }

@@ -67,7 +67,7 @@ export const getClientById = async (clientId: Ref<string | null>) => {
         url: `${PREFIX_API_ADMIN_CLIENT}/${clientId}`,
         method: "GET"
     }) as AxiosResponse<
-        DefaultResponse<PaginationResponse<Array<ClientResponse>>>
+        DefaultResponse<ClientResponse>
     >;
 };
 
