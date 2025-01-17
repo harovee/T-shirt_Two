@@ -51,4 +51,9 @@ public class AdminStaffController {
         return Helper.createResponseEntity(adminStaffService.changeStatusStaff(id));
     }
 
+    @PutMapping("/avatar/{id}")
+    public ResponseEntity<?> updateStaffAvatar(@PathVariable String id, @RequestBody final AdminStaffRequest request) {
+        return Helper.createResponseEntity(adminStaffService.updateStaffAvatar(id, request));
+    }
+
 }

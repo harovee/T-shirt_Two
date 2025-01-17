@@ -39,16 +39,16 @@ public class NhanVien extends PrimaryEntity implements Serializable {
     @Column(name = "gioi_tinh")
     private Boolean gender;
 
-    @Column(name = "so_dien_thoai")
+    @Column(name = "so_dien_thoai", unique = true)
     private String phoneNumber;
 
-    @Column(nullable = false, length = EntityProperties.LENGTH_CODE, unique = true)
+    @Column(nullable = false, length = EntityProperties.LENGTH_CODE)
     private String email;
 
     @Column(name = "password", length = EntityProperties.LENGTH_PASSWORD)
     private String password;
 
-    @Column(name = "identity", length = EntityProperties.LENGTH_PASSWORD)
+    @Column(name = "identity", length = EntityProperties.LENGTH_PASSWORD, unique = true)
     private String identity;
 
     @Column(length = EntityProperties.LENGTH_CODE)

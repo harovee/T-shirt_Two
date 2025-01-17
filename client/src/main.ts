@@ -1,12 +1,12 @@
-import { createApp } from 'vue'
+import {createApp} from 'vue'
 import './style.css'
 import App from './App.vue'
 import router from '@/infrastructure/routes/router.ts';
 import Antd from "ant-design-vue";
 import * as AllIcons from "oh-vue-icons/icons";
-import { OhVueIcon, addIcons } from "oh-vue-icons";
+import {addIcons, OhVueIcon} from "oh-vue-icons";
 import "ant-design-vue/dist/reset.css";
-import Vue3Toastify, { type ToastContainerOptions } from "vue3-toastify";
+import Vue3Toastify, {type ToastContainerOptions} from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { createPinia } from "pinia";

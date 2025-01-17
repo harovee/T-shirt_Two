@@ -5,6 +5,7 @@ import {
     getStaffById,
     getStaffs,
     StaffRequest,
+    updateAvatarStaff,
     updateStaff
 } from "@/infrastructure/services/api/admin/staff.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
@@ -39,10 +40,10 @@ export const useCreateStaff = () => {
 
 
 export const useGetStaffById = (
-    staffId: Ref<string | null>, options?: any
+    staffId: string, options?: any
 ): UseQueryReturnType<Awaited<ReturnType<typeof getStaffById>>, Error> => {
     return useQuery({
-        queryKey: [queryKey.admin.staff.staffDetail, staffId,],
+        queryKey: [queryKey.admin.staff.staffDetail, staffId],
         queryFn: () => getStaffById(staffId),
         ...options,
     });
@@ -74,3 +75,19 @@ export const useChangeStatusStaff = () => {
         },
     });
 };
+
+export const useUpdateStaffAvatar = () => {
+    const query = useQueryClient();
+    return useMutation({
+        mutationFn: ({staffId, data}: {
+            staffId: string;
+            data: StaffRequest;
+        }) => updateAvatarStaff(staffId, data),
+        onSuccess: () => {
+            query.invalidateQueries({queryKey: [queryKey.admin.staff.staffDetail],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.staff.staffList + "🚀 ~ staffUpdate ~ error:", error);
+        },
+    });
+}

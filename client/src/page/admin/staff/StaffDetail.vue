@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
         <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48"/>
-        <h3 class="text-2xl m-0">Thông tin nhân viên: </h3>
+        <h3 class="text-2xl m-0">Thông tin nhân viên</h3>
       </div>
       <div class="flex items-center gap-2 scale-75 transition-all cursor-pointer
                   hover:scale-100 hover:text-red-500"
@@ -14,22 +14,40 @@
     </div>
   </div>
   <div class="p-6 grid grid-cols-5 gap-6">
-    <div class="col-span-2 md:col-span-5 lg:col-span-2 bg-gray-100 rounded-xl p-5 grid justify-center items-">
-      <div class="w-[20rem] h-[20rem]">
-        <a-avatar
-            shape="vertical"
-            :src="userInfo?.profilePicture"
-            class="w-full h-full text-center"
-        >
-        </a-avatar>
+    <div class="col-span-2 md:col-span-5 lg:col-span-2 bg-gray-100 rounded-xl p-5 h-fit">
+      <div class="flex justify-end">
+        <a-tag v-if="detailRef.status === false" color="success">Hoạt động</a-tag>
+        <a-tag v-else-if="detailRef.status === true" color="warning">Vô hiệu hóa</a-tag>
+        <a-tag v-else color="violet">Không xác định</a-tag>
       </div>
-      <div class="text-center">
-        aaaaaaaaaaaaa
+      <div class="w-full grid justify-center">
+        <div class="w-[20rem] h-[20rem]">
+          <a-tooltip
+              title="Tải Ảnh Lên"
+              trigger="hover"
+          >
+            <a-avatar
+                @click="openWidget()"
+                shape="circle"
+                :src="modelRef['picture']"
+                class="w-full h-full text-center scale-95 hover:scale-100 transition-all cursor-pointer"
+            >
+            </a-avatar>
+          </a-tooltip>
+        </div>
+      </div>
+      <div class="mt-5 p-5 w-full h-full bg-white rounded-xl">
+        <h4 class="text-center text-xl font-semibold text-gray-700">{{ detailRef.fullName }}</h4>
+        <p class="text-gray-500">Mã nhân viên: NV{{ detailRef.code }}</p>
+        <p class="text-gray-500">Người tạo: {{ detailRef.createdBy || 'Chưa xác định' }} lúc
+          {{ convertDateFormat(detailRef.createdDate) }}</p>
+        <p class="text-gray-500">Người chỉnh sửa lần cuối: {{ detailRef.lastModifiedBy || 'Chưa xác định' }} lúc
+          {{ convertDateFormat(detailRef.lastModifiedDate) }}</p>
       </div>
     </div>
-    <div class="col-span-3 md:col-span-5 lg:col-span-3 rounded-xl border-2 shadow-purple-500 shadow-xl">
-      <a-form layout="vertical" class="p-5">
-        <template v-for="field in formFields">
+    <div class="col-span-3 md:col-span-5 p-5 lg:col-span-3 rounded-xl border-2 shadow-purple-500 shadow-xl h-fit">
+      <a-form layout="vertical" class="grid grid-cols-2 gap-4">
+        <template class="col-span-1 md:col-span-1 lg:col-span-1" v-for="field in formFields">
           <a-form-item
               :label="field.label"
               :name="field.name"
@@ -39,7 +57,15 @@
                 v-if="field.component === 'a-input'"
                 v-model:value="modelRef[field.name]"
                 :placeholder="field.placeholder"
+                :type="field.type"
             ></a-input>
+
+            <a-input-password
+                v-if="field.component === 'a-input-password'"
+                v-model:value="modelRef[field.name]"
+                :placeholder="field.placeholder"
+                :type="field.type"
+            ></a-input-password>
 
             <a-radio-group
                 v-if="field.component === 'a-radio-group'"
@@ -63,8 +89,11 @@
           </a-form-item>
         </template>
       </a-form>
+      <div class="flex justify-end gap-4">
+        <a-button @click="handleReset()">Đặt lại</a-button>
+        <a-button type="primary" @click="handleUpdate()">Cập nhật</a-button>
+      </div>
     </div>
-
   </div>
 </template>
 
@@ -76,18 +105,64 @@ export default {
 
 <script lang="ts" setup>
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
+import {computed, createVNode, reactive, watch} from "vue";
+import {DetailStaffResponse, StaffRequest} from "@/infrastructure/services/api/admin/staff.api.ts";
+import {Form, Modal} from "ant-design-vue";
+import {
+  useGetStaffById,
+  useUpdateStaff,
+  useUpdateStaffAvatar
+} from "@/infrastructure/services/service/admin/staff.action.ts";
+import {keepPreviousData} from "@tanstack/vue-query";
 import router from "@/infrastructure/routes/router.ts";
-import {computed, reactive} from "vue";
-import {useAuthStore} from "@/infrastructure/stores/auth.ts";
-import {StaffRequest} from "@/infrastructure/services/api/admin/staff.api.ts";
-import {Form} from "ant-design-vue";
+import {CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET} from "@/infrastructure/constants/cloudinary.ts";
+import {
+  convertDateFormat, convertToAntdDatePicker
+} from "@/utils/common.helper.ts";
+import {toast} from "vue3-toastify";
+import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 
-const auth = useAuthStore();
-const userInfo = computed(() => auth.user);
+const staffId = computed(() => {
+  const currentUrl = window.location.href;
+  const match = currentUrl.match(/\/admin\/staff\/([a-f0-9-]+)/);
+  if (match) {
+    return match[1];
+  } else {
+    router.push({name: ROUTES_CONSTANTS.NOT_FOUND.name})
+    toast.warning("Không tìm thấy người dùng trên");
+    return "idNotFound";
+  }
+});
 
 const handleRedirectStaff = () => {
   router.push(ROUTES_CONSTANTS.ADMIN.path + '/' + ROUTES_CONSTANTS.ADMIN.children.STAFF.path);
 }
+
+const {data, refetch} = useGetStaffById(staffId.value, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const staffDetail = computed(() => data?.value?.data?.data || null);
+
+const detailRef = reactive<DetailStaffResponse>({
+  id: staffId.value,
+  username: null,
+  code: null,
+  fullName: null,
+  birthday: null,
+  gender: null,
+  phoneNumber: null,
+  email: null,
+  password: null,
+  identity: null,
+  status: null,
+  picture: null,
+  createdBy: null,
+  lastModifiedBy: null,
+  createdDate: null,
+  lastModifiedDate: null,
+})
 
 const modelRef = reactive<StaffRequest>({
   name: null,
@@ -97,20 +172,48 @@ const modelRef = reactive<StaffRequest>({
   birthday: null,
   gender: null,
   phoneNumber: null,
-  identity: null
+  identity: null,
+  picture: null,
 });
 
 const rulesRef = reactive({
-  name: [{required: true, message: "Vui lòng nhập tên nhân viên", trigger: "blur"}],
-  email: [{required: true, message: "Vui lòng nhập tên nhân viên", trigger: "blur"}],
-  username: [{required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur"}],
-  password: [{required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"}],
-  birthday: [{required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur"}],
-  gender: [{required: true, message: "Vui lòng chọn giới tính", trigger: "blur"}],
-  phoneNumber: [{required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur"}],
+  name: [
+    { required: true, message: "Vui lòng nhập tên nhân viên", trigger: "blur" },
+    { validator: (_, value) => value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"), trigger: "blur" },
+    { max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur" },
+  ],
+  username: [
+    { required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur" },
+    { pattern: /^[a-zA-Z0-9]+$/, message: "Tên tài khoản chỉ được chứa chữ và số, không dấu và không ký tự đặc biệt", trigger: "blur" },
+  ],
+  email: [
+    { required: true, message: "Vui lòng nhập email", trigger: "blur" },
+    { pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/, message: "Email không hợp lệ (chỉ chấp nhận @gmail.com hoặc @fpt.edu.vn)", trigger: "blur" },
+    { max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur" },
+  ],
+  password: [
+    { required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur" },
+    { pattern: /^(?=.*[A-Z])(?=.*\W).{8,50}$/, message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa, 1 ký tự đặc biệt, và dài từ 8 đến 50 ký tự", trigger: "blur" },
+  ],
+  birthday: [
+    { required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur" },
+    { validator: (_, value) => new Date(value) < new Date() ? Promise.resolve() : Promise.reject("Ngày sinh phải là ngày trong quá khứ"), trigger: "blur" },
+  ],
+  gender: [
+    { required: true, message: "Vui lòng chọn giới tính", trigger: "blur" },
+  ],
+  phoneNumber: [
+    { required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur" },
+    { pattern: /^\+?[1-9]\d{1,14}$/, message: "Số điện thoại không hợp lệ (bao gồm mã quốc gia nếu có) ví dụ: 84", trigger: "blur" },
+  ],
+  identity: [
+    { required: true, message: "Vui lòng nhập mã căn cước công dân", trigger: "blur" },
+    { pattern: /^[A-Z0-9]{6,20}$/, message: "Mã định danh không hợp lệ (chỉ chấp nhận ký tự chữ hoa và số, dài từ 6-20 ký tự)", trigger: "blur" },
+  ],
 });
 
-const {resetFields, validate, validateInfos} = Form.useForm(
+
+const {validate, validateInfos} = Form.useForm(
     modelRef,
     rulesRef
 );
@@ -119,32 +222,50 @@ const formFields = computed(() => [
   {
     label: "Tên nhân viên",
     name: "name",
+    type: "string",
     component: "a-input",
     placeholder: "Nhâp tên nhân viên"
   },
   {
     label: "Email",
     name: "email",
+    type: "string",
     component: "a-input",
     placeholder: "Nhâp email"
   },
   {
     label: "Tên tài khoản",
     name: "username",
+    type: "string",
     component: "a-input",
     placeholder: "Nhâp tên tài khoản"
   },
   {
     label: "Mật khẩu",
     name: "password",
-    component: "a-input",
+    type: "string",
+    component: "a-input-password",
     placeholder: "Nhâp mật khẩu"
+  },
+  {
+    label: "Mã định danh cá nhân",
+    name: "identity",
+    type: "number",
+    component: "a-input",
+    placeholder: "Nhâp mã căn cước công dân"
   },
   {
     label: "Ngày sinh",
     name: "birthday",
     component: "a-date-picker",
     placeholder: "Nhâp ngày sinh"
+  },
+  {
+    label: "Số điện thoại",
+    name: "phoneNumber",
+    type: "number",
+    component: "a-input",
+    placeholder: "Nhâp số điện thoại"
   },
   {
     label: "Giới tính",
@@ -161,13 +282,141 @@ const formFields = computed(() => [
       }
     ]
   },
-  {
-    label: "Số điện thoại",
-    name: "phoneNumber",
-    component: "a-input",
-    placeholder: "Nhâp số điện thoại"
-  },
 ]);
 
+// * HandleUpload * \\
+const {mutate: updateStaffAvatar} = useUpdateStaffAvatar();
+
+const myWidget = cloudinary.createUploadWidget(
+    {
+      cloudName: CLOUDINARY_CLOUD_NAME,
+      uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+    },
+    (error: any, result: any) => {
+      if (!error && result && result.event === "success") {
+        modelRef.picture = result.info.url;
+        const id = staffId.value;
+        uploadAvatarStaff(id, modelRef);
+      }
+    }
+);
+
+const uploadAvatarStaff = (staffId: string, data: StaffRequest) => {
+  try {
+    updateStaffAvatar({staffId, data}, {
+      onSuccess: (res: any) => {
+        toast.success(res.data.message);
+        refetch();
+      },
+      onError: (error: any) => {
+        toast.error(
+            error?.response?.data?.message
+        )
+      },
+    })
+  } catch (error: any) {
+    console.error("🚀 ~ handleChangeStatus ~ error:", error);
+    toast.error(
+        error?.response?.data?.message
+    );
+  }
+}
+
+const openWidget = () => {
+  myWidget.open();
+}
+
+// * HandleForm * \\
+const {mutate: updateStaff} = useUpdateStaff();
+
+const handleUpdate = () => {
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn cập nhật?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        await validate();
+        const request = {
+          staffId: detailRef.id,
+          data: modelRef
+        };
+        updateStaff(request, {
+          onSuccess: (res: any) => {
+            toast.success(res.data.message);
+            refetch();
+          },
+          onError: (error: any) => {
+            toast.error(
+                error?.response?.data?.message
+            )
+          },
+        })
+      } catch (error: any) {
+        console.error("🚀 ~ handleUpdate ~ error:", error);
+        if (error?.response) {
+          toast.warning(
+              error?.response?.data?.message
+          );
+        } else if (error?.errorFields) {
+          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+        }
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
+}
+
+const handleReset = () => {
+  if (staffDetail.value != null) {
+    assignData(staffDetail.value);
+  }
+}
+
+const assignData = (staff: DetailStaffResponse) => {
+  Object.assign(modelRef, {
+    name: staff.fullName,
+    email: staff.email,
+    username: staff.username,
+    password: staff.password,
+    birthday: convertToAntdDatePicker(staff.birthday),
+    gender: staff.gender,
+    phoneNumber: staff.phoneNumber,
+    identity: staff.identity,
+    picture: staff.picture,
+  });
+
+  Object.assign(detailRef, {
+    id: staff.id,
+    username: staff.username,
+    code: staff.code,
+    fullName: staff.fullName,
+    birthday: staff.birthday,
+    gender: staff.gender,
+    phoneNumber: staff.phoneNumber,
+    email: staff.email,
+    password: staff.password,
+    identity: staff.identity,
+    status: staff.status,
+    picture: staff.picture,
+    createdBy: staff.createdBy,
+    lastModifiedBy: staff.lastModifiedBy,
+    createdDate: staff.createdDate,
+    lastModifiedDate: staff.lastModifiedDate,
+  })
+}
+
+watch(
+    staffDetail,
+    (staff) => {
+      if (staff) {
+        assignData(staff);
+      }
+    },
+    {immediate: true}
+);
 
 </script>

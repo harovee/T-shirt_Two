@@ -9,11 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudinary/url-gen": "^1.21.0",
+    "@cloudinary/vue": "^1.13.0",
     "@tanstack/vue-query": "^5.59.20",
     "@tanstack/vue-query-devtools": "^5.59.20",
     "@types/lodash": "^4.17.7",
     "ant-design-vue": "^4.2.5",
     "axios": "^1.7.7",
+    "dotenv": "^16.4.7",
     "dotenv-expand": "^11.0.6",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
