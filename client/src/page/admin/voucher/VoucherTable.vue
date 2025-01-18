@@ -2,14 +2,14 @@
   <div class="p-4 rounded-xl border-2 shadow-purple-950 shadow-xl">
     <div class="flex justify-between items-center">
       <div>
-        <h3 class="text-xl font-semibold text-gray-800">Danh sách voucher</h3>
+        <h3 class="text-xl font-semibold text-gray-800">Danh sách phiếu giảm giá</h3>
         <p class="text-sm text-gray-500">
-          Hiển thị danh sách voucher
+          Hiển thị danh sách phiếu giảm giá
         </p>
       </div>
       <div class="p-2.5">
         <a-tooltip
-          title="Thêm voucher"
+          title="Thêm phiếu giảm giá"
           trigger="hover"
         >
           <a-button
@@ -34,28 +34,38 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'another'" class="text-center">
         </div>
-        <div v-else-if="column.key === 'loaiGiam'" class="text-center">
-            <a-tag v-if="record.loaiGiam === true || record.loaiGiam === 'true'" color="success">Tiền</a-tag>
-            <a-tag v-else-if="record.loaiGiam === false || record.loaiGiam === 'false'" color="success">%</a-tag>
+        <div v-if="column.key === 'giaTriGiam'" class="text-left">
+    <span v-if="record.loaiGiam === true || record.loaiGiam === 'true'">
+      {{ record.giaTriGiam }} VNĐ
+    </span>
+    <span v-else-if="record.loaiGiam === false || record.loaiGiam === 'false'">
+      {{ record.giaTriGiam }} %
+    </span>
+    <span v-else>
+      Không xác định
+    </span>
+  </div>
+        <div v-else-if="column.key === 'trangThai'" class="text-center">
+            <a-tag v-if="record.trangThai === 'ACTIVE' || record.trangThai === 'ACTIVE'" color="success">Đang áp dụng</a-tag>
+            <a-tag v-else-if="record.trangThai === 'NOT_STARTED' || record.trangThai === 'NOT_STARTED'" color="warning">Sắp diễn ra</a-tag>
+            <a-tag v-else-if="record.trangThai === 'EXPIRED' || record.trangThai === 'EXPIRED'" color="rgb(231, 147, 164)">Hết hạn</a-tag>
             <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
-
         <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
           <a-tooltip
-            title="Cập nhật"
+            :title="record.trangThai === 'ACTIVE' || record.trangThai === 'EXPIRED' ? 'Không thể cập nhật voucher này' : 'Cập nhật'"
             trigger="hover"
+             
           >
-            <a-button
-              class="bg-blue-100"
-              size="middle"
-              shape="round"
+            <a-button  class="bg-blue-100"  size="middle" shape="round"
+            :disabled="record.trangThai === 'ACTIVE' || record.trangThai === 'EXPIRED'"
               @click="$emit('handleOpenModalUpdateVoucher', record)"
             >
               <v-icon name="fa-edit" />
             </a-button>
           </a-tooltip>
           <a-popconfirm
-            title="Bạn có chắc chắn muốn xóa voucher này không?"
+            title="Bạn có chắc chắn muốn xóa phiếu giảm giá này không?"
             ok-text="Có"
             cancel-text="Hủy"
             @confirm="handleDeleteVoucher(record.id)"
@@ -90,15 +100,14 @@ const emit = defineEmits([
   "update:paginationParams",
   "handleOpenModalCreate",
   "handleCloseModalCreate",
-  "handleUpdateVoucher",
-  "handleOpenModalUpdateVoucher"
+  "handleOpenModalUpdateVoucher",
+  "handleCloseModalUpdateVoucher",
 ]);
 
 const props = defineProps({
   dataSource: Object,
   loading: Boolean,
   paginationParams: Object,
-  pagePageable: Object
 });
 
 // watch(
@@ -121,13 +130,13 @@ const handleDeleteVoucher = async (id: string) => {
 };
 
 const columnsVoucher: ColumnType[] = [
-  {
+{
     title: "#",
     dataIndex: "catalog",
     key: "catalog",
     ellipsis: true,
     width: 50,
-    align: "center",
+    align: "center"
   },
   {
     title: "Mã",
@@ -146,6 +155,14 @@ const columnsVoucher: ColumnType[] = [
     resizable: true,
   },
   {
+    title: "Số lượng",
+    dataIndex: "soLuong",
+    key: "soLuong",
+    ellipsis: true,
+    width: 55,
+    resizable: true,
+  },
+  {
     title: "Điều kiện giảm",
     dataIndex: "dieuKienGiam",
     key: "dieuKienGiam",
@@ -159,14 +176,6 @@ const columnsVoucher: ColumnType[] = [
     key: "giaTriGiam",
     ellipsis: true,
     width: 100,
-    resizable: true,
-  },
-  {
-    title: "Loại giảm",
-    dataIndex: "loaiGiam",
-    key: "loaiGiam",
-    ellipsis: true,
-    width: 70,
     resizable: true,
   },
   {
