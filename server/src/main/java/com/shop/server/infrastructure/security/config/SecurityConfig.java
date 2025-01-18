@@ -127,22 +127,7 @@ public class SecurityConfig {
                                 Helper.appendWildcard(MappingConstant.API_AUTH_PREFIX),
                                 Helper.appendWildcard(MappingConstant.PATH_OAUTH2),
                                 Helper.appendWildcard(MappingConstant.API_EMBED_PREFIX),
-                                Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
-
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_MATERIAL),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_COLLAR),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_SIZE),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_COLOR),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_PATTERN),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_STYLE),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_TRADEMARK),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_SLEEVE),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_CATEGORY),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_FEATURE),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_PRODUCT),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_PRODUCT_DETAIL)
-
-
+                                Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX)
                         )
                         .permitAll()
         );
