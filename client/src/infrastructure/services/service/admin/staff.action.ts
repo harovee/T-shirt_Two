@@ -87,7 +87,7 @@ export const useUpdateStaffAvatar = () => {
             query.invalidateQueries({queryKey: [queryKey.admin.staff.staffDetail],});
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.staff.staffList + "🚀 ~ staffUpdate ~ error:", error);
+            console.log(queryKey.admin.staff.staffDetail + "🚀 ~ staffUpdate ~ error:", error);
         },
     });
 }

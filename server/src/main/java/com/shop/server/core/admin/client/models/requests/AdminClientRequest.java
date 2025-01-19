@@ -9,9 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClientProductRequest {
+public class AdminClientRequest {
 
-    String userName;
+    String username;
 
     String password;
 
@@ -26,5 +26,7 @@ public class ClientProductRequest {
     Boolean gender;
 
     String phoneNumber;
+
+    String picture;
 
 }

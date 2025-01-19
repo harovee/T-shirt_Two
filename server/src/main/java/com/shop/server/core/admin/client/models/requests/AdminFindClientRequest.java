@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClientFindProductRequest extends PageableRequest {
+public class AdminFindClientRequest extends PageableRequest {
 
     private String keyword;
 

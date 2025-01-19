@@ -27,6 +27,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.ho_va_ten as name,
                     nv.email as email,
                     nv.ma_nhan_vien as code,
+                    nv.so_dien_thoai as phoneNumber,
                     nv.deleted as status
                 FROM nhan_vien nv
                 WHERE
@@ -71,8 +72,14 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.identity as identity,
                     nv.deleted as status,
                     nv.profile_picture as picture,
-                    IFNULL('AD' + nt.ma_nhan_vien, 'Mã chưa xác định') as createdBy,
-                    IFNULL('AD' + ns.ma_nhan_vien, 'Mã chưa xác định') as lastModifiedBy,
+                    CASE
+                        WHEN nt.ma_nhan_vien IS NOT NULL THEN CONCAT('AD', nt.ma_nhan_vien)
+                        ELSE CONCAT('KH', nv.email)
+                    END AS createdBy,
+                    CASE
+                        WHEN ns.ma_nhan_vien IS NOT NULL THEN CONCAT('AD', ns.ma_nhan_vien)
+                        ELSE CONCAT('KH', nv.email)
+                    END AS lastModifiedBy,
                     nv.ngay_tao as createdDate,
                     nv.ngay_sua as lastModifiedDate
                 FROM nhan_vien nv
@@ -89,6 +96,42 @@ public interface AdminStaffRepository extends NhanVienRepository {
     boolean existsStaffByUsername(String username);
 
     boolean existsStaffByPhoneNumber(String phoneNumber);
+
+    @Query(value = """
+           SELECT EXISTS (
+               SELECT 1
+               FROM nhan_vien nv
+               WHERE nv.email = :email AND id != :id
+           )
+            """, nativeQuery = true)
+    Long existsStaffByEmailAndIdNotEquals(String email, String id);
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM nhan_vien nv
+                WHERE nv.identity = :identity AND id != :id
+            )
+            """, nativeQuery = true)
+    Long existsStaffByIdentityAndIdNotEquals(String identity, String id);
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM nhan_vien nv
+                WHERE nv.username = :username AND id != :id
+            )
+            """, nativeQuery = true)
+    Long existsStaffByUsernameAndIdNotEquals(String username, String id);
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM nhan_vien nv
+                WHERE nv.so_dien_thoai = :phoneNumber AND id != :id
+            )
+            """, nativeQuery = true)
+    Long existsStaffByPhoneNumberAndIdNotEquals(String phoneNumber, String id);
 
     Long countNhanVienByRole(Role role);
 }

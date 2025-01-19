@@ -44,7 +44,7 @@
                        class="w-full"
                        v-else-if="field.component === 'a-date-picker'"
                        v-model:value="modelRef[field.name]"
-                       format="YYYY-MM-DD HH:mm"
+                       format="YYYY-MM-DD"
                        show-time
                        :placeholder="field.placeholder">
                     </a-date-picker>

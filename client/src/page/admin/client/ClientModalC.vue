@@ -36,7 +36,7 @@
               class="w-full"
               v-else-if="field.component === 'a-date-picker'"
               v-model:value="modelRef[field.name]"
-              format="YYYY-MM-DD HH:mm"
+              format="YYYY-MM-DD"
               show-time
               :placeholder="field.placeholder"
           ></a-date-picker>
@@ -70,17 +70,39 @@ const modelRef = reactive<ClientRequest>({
   password: null,
   birthday: null,
   gender: null,
-  phoneNumber: null
+  phoneNumber: null,
+  picture: null,
 });
 
 const rulesRef = reactive({
-  name: [{required: true, message: "Vui lòng nhập tên khách hàng", trigger: "blur"}],
-  email: [{required: true, message: "Vui lòng nhập tên khách hàng", trigger: "blur"}],
-  username: [{required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur"}],
-  password: [{required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"}],
-  birthday: [{required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur"}],
-  gender: [{required: true, message: "Vui lòng chọn giới tính", trigger: "blur"}],
-  phoneNumber: [{required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur"}],
+  name: [
+    { validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"), trigger: "blur" },
+    { max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur" },
+  ],
+  username: [
+    { required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur" },
+    { pattern: /^[a-zA-Z0-9]+$/, message: "Tên tài khoản chỉ được chứa chữ và số, không dấu và không ký tự đặc biệt", trigger: "blur" },
+  ],
+  email: [
+    { required: true, message: "Vui lòng nhập email", trigger: "blur" },
+    { pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/, message: "Email không hợp lệ (chỉ chấp nhận @gmail.com hoặc @fpt.edu.vn)", trigger: "blur" },
+    { max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur" },
+  ],
+  password: [
+    { required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur" },
+    { pattern: /^(?=.*[A-Z])(?=.*\W).{8,50}$/, message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa, 1 ký tự đặc biệt, và dài từ 8 đến 50 ký tự", trigger: "blur" },
+  ],
+  birthday: [
+    { required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur" },
+    { validator: (_, value) => new Date(value) < new Date() ? Promise.resolve() : Promise.reject("Ngày sinh phải là ngày trong quá khứ"), trigger: "blur" },
+  ],
+  gender: [
+    { required: true, message: "Vui lòng chọn giới tính", trigger: "blur" },
+  ],
+  phoneNumber: [
+    { required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur" },
+    { pattern: /^\+?[1-9]\d{1,14}$/, message: "Số điện thoại không hợp lệ (bao gồm mã quốc gia nếu có) ví dụ: 84", trigger: "blur" },
+  ],
 });
 
 const {resetFields, validate, validateInfos} = Form.useForm(
