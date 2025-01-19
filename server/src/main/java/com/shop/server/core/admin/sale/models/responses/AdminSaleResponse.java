@@ -8,7 +8,9 @@ public interface AdminSaleResponse extends BaseResponse {
 
     String getTen();
 
-    String getGiaTri();
+    String getLoai();
+
+    Double getGiaTri();
 
     Double getGiaTriGiamToiDa();
 

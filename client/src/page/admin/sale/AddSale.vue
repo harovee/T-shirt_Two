@@ -13,12 +13,18 @@
       </div>
   </div>
   <div class="p-3 grid grid-cols-5 gap-6">
-      <div class="col-span-5 md:col-span-5 lg:col-span-2 w-full h-96 shadow-md flex justify-center h-fit">
+      <div class="col-span-5 md:col-span-5 lg:col-span-2 w-full h-fit shadow-md flex justify-center">
           <div class="w-[30rem] p-5">
               <!-- FORM CHI TIẾT ĐỢT GIẢM GIÁ -->
               <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
                     <a-form-item class="m-0 mt-2" ref="ten" label="Tên" name="ten" required>
                         <a-input v-model:value="formState.ten" />
+                    </a-form-item>
+                    <a-form-item class="m-0 mt-2" ref="loai" label="Loại" name="loai" required>
+                            <a-radio-group v-model:value="formState.loai">
+                              <a-radio value="PERCENT">%</a-radio>
+                              <a-radio value="VND">vnđ</a-radio>
+                            </a-radio-group>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
                         <a-input-number v-model:value="formState.giaTri" min="0" style="width: 100%"></a-input-number>
@@ -100,10 +106,9 @@ export default {
 import router from "@/infrastructure/routes/router.ts";
 import { reactive, ref, createVNode } from "vue";
 import type { UnwrapRef } from 'vue';
-import {Modal, notification} from "ant-design-vue";
+import {Modal} from "ant-design-vue";
 import {ExclamationCircleOutlined, PlusCircleOutlined} from "@ant-design/icons-vue";
 import type { Rule } from 'ant-design-vue/es/form';
-import { toast } from "vue3-toastify";
 import { keepPreviousData } from "@tanstack/vue-query";
 import dayjs from 'dayjs';
 
@@ -112,6 +117,7 @@ import { useCreateSale, useCreateSaleAndSaleProduct, useGetAttributes } from "@/
 import ProductTable from "./ProductTable.vue";
 import ProductDetailTable from "./ProductDetailTableInAddSale.vue";
 import { defaultSaleDatePickerRules, defaultSaleRequest, FormState, disabledDate, disabledDateTime} from "./base/DefaultConfig";
+import { notificationType, openNotification } from "@/utils/notification.config";
 
 const listAttributes = useGetAttributes({
   refetchOnWindowFocus: false,
@@ -197,30 +203,26 @@ const { mutate: createSaleAndSaleProduct } = useCreateSaleAndSaleProduct();
 
 const handleCreateSale = (dataRequest: SaleRequest) => {
     Modal.confirm({
-    content: "Bạn chắc chắn muốn thêm mới mà không gán cho sản phẩm chi tiết?",
+    title: "Bạn chắc chắn muốn thêm mới mà không gán cho sản phẩm chi tiết?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
     async onOk() {
       try {
         createSale(dataRequest, {
           onSuccess: (result) => {
-            toast.success(result?.message);
+            openNotification(notificationType.success, result?.message, '');
             handleRedirectClient();
           },
           onError: (error: any) => {
-            toast.error(
-                error?.response?.data?.message
-            );
+            openNotification(notificationType.error, error?.response?.data?.message, '');
           },
         });
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {
-          toast.warning(
-              error?.response?.data?.message
-          );
+          openNotification(notificationType.error, error?.response?.data?.message, '');
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
         }
       }
     },
@@ -233,20 +235,25 @@ const handleCreateSale = (dataRequest: SaleRequest) => {
 
 const handleAddSaleAndSaleProduct = (dataRequest: SaleAndSaleProductRequest) => {
     Modal.confirm({
-    content: "Bạn chắc chắn muốn gán đợt mới cho các sản phẩm chi tiết đã chọn?",
+    title: "Bạn chắc chắn muốn gán đợt mới cho các sản phẩm chi tiết đã chọn?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
     async onOk() {
       try {
         createSaleAndSaleProduct(dataRequest, {
-          onSuccess: (res: any) => {toast.success(res.data.message);},
-          onError: (error: any) => {toast.error(error?.response?.data?.message)},
+          onSuccess: (result) => {
+            openNotification(notificationType.success, result?.message, '');
+            handleRedirectClient();
+          },
+          onError: (error: any) => {
+            openNotification(notificationType.error, error?.response?.data?.message, '');
+          },
         });
       } catch (error: any) {
         if (error?.response) {
-          toast.warning(error?.response?.data?.message);
+          openNotification(notificationType.error, error?.response?.data?.message, '');
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
         }
       }
     },
@@ -277,7 +284,7 @@ const onSubmit = (x: number) => {
             }
           );
       }).catch(() => {
-        toast.error('Vui lòng nhập đầy đủ các trường dữ liệu.')
+        openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
       });
 };
 const resetForm = () => {

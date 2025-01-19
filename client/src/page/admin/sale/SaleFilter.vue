@@ -78,7 +78,7 @@ const rangePresets = ref([
 
 const statusOptions = [
   { label: "Tất cả", value: null },
-  { label: "Đang trong đợt", value: 'IN_PROGRESS' },
+  { label: "Đang diễn ra", value: 'IN_PROGRESS' },
   { label: "Chưa diễn ra", value: 'PENDING' },
   { label: "Đã kết thúc", value: 'FINISHED' },
   { label: "Bị vô hiệu hóa", value: 'INACTIVE' }

@@ -33,6 +33,7 @@ export interface SaleRequest {
 export type SaleResponse = ResponseList & {
     maDotGiamGia: string | null;
     ten: string | null;
+    loai: string | null;
     giaTri: number | null;
     giaTriGiamToiDa: number | null;
     ngayBatDau: number | null;

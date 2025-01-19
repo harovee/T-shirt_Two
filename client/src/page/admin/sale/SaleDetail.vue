@@ -27,6 +27,9 @@
                     <a-form-item class="m-0 mt-2" ref="ma" label="Mã" name="ma">
                         <a-input disabled="" v-model:value="formState.ma" />
                     </a-form-item>
+                    <a-form-item class="m-0 mt-2" ref="ten" label="Tên" name="ten" required>
+                        <a-input v-model:value="formState.ten" />
+                    </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="loai" label="Loại" name="loai" required>
                             <a-radio-group v-model:value="formState.loai">
                               <a-radio value="PERCENT">%</a-radio>
@@ -143,11 +146,10 @@ import {
     ExclamationCircleOutlined,
     PlusCircleOutlined
 } from '@ant-design/icons-vue';
-import { Modal, notification } from "ant-design-vue";
+import { Modal } from "ant-design-vue";
 import { computed, onMounted, watch, reactive, ref, createVNode } from "vue";
 import type { UnwrapRef } from 'vue';
 import type { Rule } from 'ant-design-vue/es/form';
-import { toast } from "vue3-toastify";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { useAuthStore } from "@/infrastructure/stores/auth.ts";
 import { SaleRequest, SaleAndSaleProductRequest } from "@/infrastructure/services/api/admin/sale.api.ts";
@@ -164,6 +166,7 @@ import {
      FormState,
      disabledDate, disabledDateTime
      } from "./base/DefaultConfig";
+import { openNotification, notificationType } from "@/utils/notification.config";
 
 
 const auth = useAuthStore();
@@ -238,16 +241,18 @@ const rules: Record<string, Rule[]> = {
     ngayBatDauVaKetThuc: [{ required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', trigger: 'change', type: 'array' },
     {
           validator: (rule, value) => {
-          const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
-          dayjs(date).valueOf()
-          );
-          const now = dayjs().valueOf();
-          if (ngayBatDau < now) {
-            return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
-          }
-          if (ngayKetThuc < ngayBatDau) {
-            return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
-          }
+            if (value != null) {
+                const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
+                dayjs(date).valueOf()
+                );
+                const now = dayjs().valueOf();
+                if (ngayBatDau < now) {
+                    return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+                }
+                if (ngayKetThuc < ngayBatDau) {
+                    return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
+                }
+            }
           return Promise.resolve();
           },
           trigger: 'change',
@@ -280,26 +285,34 @@ watch(() => data.value?.data.data, (saleData) => {
 });
 const { mutate: updateSale } = useUpdateSale();
 const handleUpdateSale = (id: string | any, dataRequest: SaleRequest) => {
-    try {
-        updateSale(
-            { saleId: id, data: dataRequest },
-            {
-                onSuccess: (res: any) => {
-                    toast.success(res.data.message);
-                    activeTabKey.value =  '1';
-                },
-                onError: (error: any) => {
-                    toast.error(
-                        error?.response?.data?.message
-                    )
-                },
-            })
-    } catch (error: any) {
-        console.error("🚀 ~ handleUpdateSale ~ error:", error);
-        toast.error(
-            error?.response?.data?.message
-        );
-    }
+    Modal.confirm({
+    title: "Bạn chắc chắn cập nhật đợt giảm giá nàyy?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        updateSale({ saleId: id, data: dataRequest }, {
+          onSuccess: (result) => {
+            openNotification(notificationType.success, result?.data.message, '');
+            activeTabKey.value =  '1';
+          },
+          onError: (error: any) => {
+            openNotification(notificationType.error, error?.response?.data?.message, '');
+          },
+        });
+      } catch (error: any) {
+        if (error?.response) {
+          openNotification(notificationType.error, error?.response?.data?.message, '');
+        } else if (error?.errorFields) {
+          openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
+        }
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+        Modal.destroyAll();
+    },
+  });
 }
 
 const onSubmit = (x: number) => {
@@ -346,25 +359,25 @@ const handleRedirectClient = () => {
 const { mutate: updateSaleProduct } = useUpdateSaleAndSaleProduct();
 const handleUpdateSaleProduct = (saleId: string | '', data: SaleAndSaleProductRequest) => {
     Modal.confirm({
-    content: "Bạn chắc chắn muốn áp dụng đợt giảm giá cho các sản phẩm đã chọn?",
+    title: "Bạn chắc chắn muốn áp dụng đợt giảm giá cho các sản phẩm đã chọn?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
     async onOk() {
       try {
         updateSaleProduct({saleId, data}, {
-          onSuccess: (res: any) => {
-            toast.success(res?.message);
-            activeTabKey.value =  '1';
-        },
+            onSuccess: (result) => {
+                openNotification(notificationType.success, result?.message, '');
+                activeTabKey.value =  '1';
+          },
           onError: (error: any) => {
-            toast.error(error?.response?.data?.message);
+                openNotification(notificationType.error, error?.response?.data?.message, '');
           },
         });
       } catch (error: any) {
         if (error?.response) {
-            toast.error(error?.response?.data?.message);
+          openNotification(notificationType.error, error?.response?.data?.message, '');
         } else if (error?.errorFields) {
-            toast.error('Lưu thất bại');
+          openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
         }
       }
     },

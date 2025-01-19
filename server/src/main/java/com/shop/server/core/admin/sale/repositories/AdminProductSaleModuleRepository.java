@@ -116,12 +116,12 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 join danh_muc dm on dm.id = sp.id_danh_muc
                 join thuong_hieu th on spct.id_thuong_hieu = th.id
                 join kich_co kc on spct.id_kich_co = kc.id
-                join co_ao ca on spct.id_co_ao = ca.id
-                join tay_ao ta on spct.id_tay_ao = ta.id
-                join hoa_tiet ht on spct.id_hoa_tiet = ht.id
-                join chat_lieu cl on spct.id_chat_lieu = cl.id
-                join kieu_dang kd on spct.id_kieu_dang = kd.id
-                join tinh_nang tn on spct.id_tinh_nang = tn.id
+                left join co_ao ca on spct.id_co_ao = ca.id
+                left join tay_ao ta on spct.id_tay_ao = ta.id
+                left join hoa_tiet ht on spct.id_hoa_tiet = ht.id
+                left join chat_lieu cl on spct.id_chat_lieu = cl.id
+                left join kieu_dang kd on spct.id_kieu_dang = kd.id
+                left join tinh_nang tn on spct.id_tinh_nang = tn.id
                 join mau_sac ms on spct.id_mau_sac = ms.id
                 left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
                 where spct.deleted = false
@@ -147,12 +147,12 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 join danh_muc dm on dm.id = sp.id_danh_muc
                 join thuong_hieu th on spct.id_thuong_hieu = th.id
                 join kich_co kc on spct.id_kich_co = kc.id
-                join co_ao ca on spct.id_co_ao = ca.id
-                join tay_ao ta on spct.id_tay_ao = ta.id
-                join hoa_tiet ht on spct.id_hoa_tiet = ht.id
-                join chat_lieu cl on spct.id_chat_lieu = cl.id
-                join kieu_dang kd on spct.id_kieu_dang = kd.id
-                join tinh_nang tn on spct.id_tinh_nang = tn.id
+                left join co_ao ca on spct.id_co_ao = ca.id
+                left join tay_ao ta on spct.id_tay_ao = ta.id
+                left join hoa_tiet ht on spct.id_hoa_tiet = ht.id
+                left join chat_lieu cl on spct.id_chat_lieu = cl.id
+                left join kieu_dang kd on spct.id_kieu_dang = kd.id
+                left join tinh_nang tn on spct.id_tinh_nang = tn.id
                 join mau_sac ms on spct.id_mau_sac = ms.id
                 where spct.deleted = false
                 and spct.trang_thai != 0
@@ -192,12 +192,12 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 join danh_muc dm on dm.id = sp.id_danh_muc
                 join thuong_hieu th on spct.id_thuong_hieu = th.id
                 join kich_co kc on spct.id_kich_co = kc.id
-                join co_ao ca on spct.id_co_ao = ca.id
-                join tay_ao ta on spct.id_tay_ao = ta.id
-                join hoa_tiet ht on spct.id_hoa_tiet = ht.id
-                join chat_lieu cl on spct.id_chat_lieu = cl.id
-                join kieu_dang kd on spct.id_kieu_dang = kd.id
-                join tinh_nang tn on spct.id_tinh_nang = tn.id
+                left join co_ao ca on spct.id_co_ao = ca.id
+                left join tay_ao ta on spct.id_tay_ao = ta.id
+                left join hoa_tiet ht on spct.id_hoa_tiet = ht.id
+                left join chat_lieu cl on spct.id_chat_lieu = cl.id
+                left join kieu_dang kd on spct.id_kieu_dang = kd.id
+                left join tinh_nang tn on spct.id_tinh_nang = tn.id
                 join mau_sac ms on spct.id_mau_sac = ms.id
                 left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
                 where spct.id = ?1

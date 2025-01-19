@@ -83,7 +83,6 @@
   
 </template>
 <script lang="ts" setup>
-import { notification } from "ant-design-vue";
 import {defineProps, ref, watch } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { defaultProductImageSaleUrl, formatCurrency } from "@/utils/common.helper";
@@ -91,6 +90,7 @@ import {
   FindSaleProductDetailRequest,
 } from "@/infrastructure/services/api/admin/sale.api.ts";
 import { useGetSaleProductDetails, useDeleteSaleProduct } from "@/infrastructure/services/service/admin/sale.action.ts";
+import { errorNotiSort, openNotification, successNotiSort } from "@/utils/notification.config";
 
 
 const props = defineProps<{
@@ -117,7 +117,7 @@ const columns = [
     title: "Hành động",
     dataIndex: "action",
     width: 80,
-    
+    align: 'center'
   },
 
 ];
@@ -148,18 +148,10 @@ const { mutate } = useDeleteSaleProduct();
 const handleDelete = (id : any) => {
   mutate(id, {
     onSuccess() {
-          notification.success({
-                message: 'Xóa thành công!',
-                description: '',
-                duration: 3,
-          });
+      successNotiSort('Xóa thành công');
     },
     onError(error) {
-          notification.error({
-                message: 'Xóa thất bại!',
-                description: error,
-                duration: 3,
-          });
+      openNotification('error', 'Xóa thất bại',  error?.response?.data?.message);
     },
   });
 };

@@ -45,15 +45,20 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
                 	dgg.id,
                 	dgg.ma_dot_giam_gia,
                     dgg.ten,
-                    CONCAT(CONVERT(gia_tri, UNSIGNED ),' ', IF(dgg.loai = 'PERCENT', '%', 'Vnd')) AS gia_tri,
+                    dgg.loai,
+                    dgg.gia_tri,
                     dgg.ngay_bat_dau,
                     dgg.ngay_ket_thuc,
-                    IF(dgg.trang_thai = 'ACTIVE', CASE
-                               WHEN UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc THEN 'IN_PROGRESS'
-                               WHEN UNIX_TIMESTAMP()*1000 > dgg.ngay_ket_thuc THEN 'FINISHED'
-                               WHEN UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau THEN 'PENDING'
-                               ELSE 'UNKNOWN'
-                           END, 'INACTIVE') AS trang_thai
+                    CASE
+                         WHEN UNIX_TIMESTAMP() * 1000 > dgg.ngay_ket_thuc THEN 'FINISHED'
+                         WHEN dgg.trang_thai = 'ACTIVE' THEN
+                             CASE
+                                 WHEN UNIX_TIMESTAMP() * 1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc THEN 'IN_PROGRESS'
+                                 WHEN UNIX_TIMESTAMP() * 1000 < dgg.ngay_bat_dau THEN 'PENDING'
+                                 ELSE 'UNKNOWN'
+                             END
+                         ELSE 'INACTIVE'
+                    END AS trang_thai
                 FROM dot_giam_gia dgg
                 WHERE
                     dgg.deleted = 0
@@ -62,9 +67,9 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
                     dgg.ma_dot_giam_gia LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     dgg.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.trangThai} IS NULL
-                    OR (:#{#req.trangThai} = 'IN_PROGRESS' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
+                    OR (:#{#req.trangThai} = 'IN_PROGRESS' AND dgg.trang_thai = 'ACTIVE' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
                     OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 > dgg.ngay_ket_thuc)
-                    OR (:#{#req.trangThai} = 'PENDING' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
+                    OR (:#{#req.trangThai} = 'PENDING' AND dgg.trang_thai = 'ACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
                     OR dgg.trang_thai = :#{#req.trangThai}
                     )
                 AND (:#{#req.ngayBatDau} IS NULL OR dgg.ngay_bat_dau >= :#{#req.ngayBatDau})
@@ -80,9 +85,9 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
                     dgg.ma_dot_giam_gia LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     dgg.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.trangThai} IS NULL
-                    OR (:#{#req.trangThai} = 'IN_PROGRESS' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
+                    OR (:#{#req.trangThai} = 'IN_PROGRESS' AND dgg.trang_thai = 'ACTIVE' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
                     OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 > dgg.ngay_ket_thuc)
-                    OR (:#{#req.trangThai} = 'PENDING' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
+                    OR (:#{#req.trangThai} = 'PENDING' AND dgg.trang_thai = 'ACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
                     OR dgg.trang_thai = :#{#req.trangThai}
                     )
                 AND (:#{#req.ngayBatDau} IS NULL OR dgg.ngay_bat_dau >= :#{#req.ngayBatDau})
@@ -103,6 +108,7 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             dgg.gia_tri_giam_toi_da = :#{#req.giaTriGiamToiDa},
             dgg.ngay_bat_dau = :#{#req.ngayBatDau},
             dgg.ngay_ket_thuc = :#{#req.ngayKetThuc},
+            dgg.trang_thai = :#{#req.trangThai},
             dgg.nguoi_sua = :#{#req.nguoiSua},
             dgg.ngay_sua = UNIX_TIMESTAMP()*1000
             where dgg.id = ?1

@@ -34,6 +34,10 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'another'" class="text-center">
         </div>
+        <div v-if="column.key === 'giaTri'">
+          <span v-if="record.loai === 'VND'">{{ formatCurrency(record.giaTri, "VND", "vi-VN") }}</span>
+          <span v-else="record.loai === 'PHAN_TRAM'">{{ record.giaTri + ' %' }}</span>
+        </div>
         <div v-if="column.key === 'ngayBatDau'" class="text-center">
           {{ getDateFormat(record.ngayBatDau, true) }}
         </div>
@@ -42,9 +46,9 @@
         </div>
         <div v-else-if="column.key === 'trangThai'" class="text-center">
           <a-tag v-if="record.trangThai === 'IN_PROGRESS'" color="success">Đang diễn ra</a-tag>
-          <a-tag v-else-if="record.trangThai === 'INACTIVE'" color="warning">Bị vô hiệu hóa</a-tag>
+          <a-tag v-else-if="record.trangThai === 'INACTIVE'" color="error">Vô hiệu hóa</a-tag>
           <a-tag v-else-if="record.trangThai === 'PENDING'" color="warning">Chưa diễn ra</a-tag>
-          <a-tag v-else-if="record.trangThai === 'FINISHED'" color="warning">Đã kết thúc</a-tag>
+          <a-tag v-else-if="record.trangThai === 'FINISHED'" color="default">Đã kết thúc</a-tag>
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
         <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
@@ -98,7 +102,7 @@ import {toast} from "vue3-toastify";
 import {defineEmits} from "vue";
 import {useChangeStatusSale} from "@/infrastructure/services/service/admin/sale.action.ts";
 import router from "@/infrastructure/routes/router.ts";
-import { getDateFormat} from "@/utils/common.helper.ts";
+import { formatCurrency, getDateFormat} from "@/utils/common.helper.ts";
 
 const emit = defineEmits([
   "update:paginationParams"
@@ -179,7 +183,8 @@ const columnsSale: ColumnType[] = [
     key: "ngayBatDau",
     ellipsis: true,
     width: 100,
-    resizable: true
+    resizable: true,
+    align: "center"
   },
   {
     title: "Kết thúc",
