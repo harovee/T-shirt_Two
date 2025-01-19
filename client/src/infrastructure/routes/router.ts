@@ -83,7 +83,7 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.name,
-                component: () => import('@/page/admin/bill/bill/AdminBillDetail.vue'),
+                component: () => import('@/page/admin/bill/billdetail/AdminBillDetail.vue'),
                 meta: {
                     requiresRole: ROLES.ADMIN,
                     requiresAuth: true

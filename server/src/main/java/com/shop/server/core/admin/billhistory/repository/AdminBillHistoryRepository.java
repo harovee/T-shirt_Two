@@ -17,28 +17,22 @@ public interface AdminBillHistoryRepository extends LichSuHoaDonRepository {
             hd.ma_hoa_don AS maHoaDon,
             ls.hanh_dong AS hanhDong,
             ls.mo_ta AS moTa,
+            ls.ngay_tao AS ngayTao,
+            ls.ngay_sua AS ngaySua,
+            ls.nguoi_tao AS nguoiTao,
+            ls.nguoi_sua AS nguoiSua,
             ls.trang_thai AS trangThai
             FROM lich_su_hoa_don ls
             JOIN hoa_don hd ON hd.id = ls.id_hoa_don
-            WHERE 
-                (:#{#req.keyword} IS NULL OR 
-                hd.ma_hoa_don LIKE CONCAT('%',:#{#req.keyword},'%') OR
-                ls.hanh_dong LIKE CONCAT('%',:#{#req.keyword},'%') OR
-                ls.mo_ta LIKE CONCAT('%',:#{#req.keyword},'%') OR
-                ls.trang_thai LIKE CONCAT('%',:#{#req.keyword},'%'))
-            AND (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
+            WHERE
+                (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
         """, countQuery = """
             SELECT
                 COUNT(ls.id)
             FROM lich_su_hoa_don ls
             JOIN hoa_don hd ON hd.id = ls.id_hoa_don
-            WHERE 
-                (:#{#req.keyword} IS NULL OR 
-                hd.ma_hoa_don LIKE CONCAT('%',:#{#req.keyword},'%') OR
-                ls.hanh_dong LIKE CONCAT('%',:#{#req.keyword},'%') OR
-                ls.mo_ta LIKE CONCAT('%',:#{#req.keyword},'%') OR
-                ls.trang_thai LIKE CONCAT('%',:#{#req.keyword},'%'))
-            AND (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
+            WHERE
+                (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
         """, nativeQuery = true)
     Page<AdminBillHistoryResponse> getAdminBillHistoryByRequest(Pageable pageable,
                                                        AdminFindBillHistoryRequest req);

@@ -6,7 +6,10 @@ import request from "@/infrastructure/services/request.ts";
 
 export interface BillPropsParams {
     keyword?: string | null;
-
+    trangThai? :string | null;
+    loaiHD?: string | null;
+    ngayBatDau?: number | null;
+    ngayKetThuc?: number | null;
     [key: string]: any;
 }
 
@@ -15,17 +18,22 @@ export interface FindBillRequest extends BillPropsParams, PaginationParams {
 }
 
 export interface BillRequest {
-    
+    soDienThoai: String | null;
+    diaChiNguoiNhan: String | null;
+    idKhachHang: String | null;
+    tenNguoiNhan: String | null;
+    ghiChu: String | null;
 }
 
 export type BillResponse = ResponseList & {
     catalog: number | null;
     ma: string | null;
+    maNhanVien: string | null;
     loaiHD: string | null;
     tongTien: number | null;
     trangThai: string | null;
     tenKhachHang: string | null;
-
+    soDienThoai: string | null;
 }
 
 
@@ -49,3 +57,13 @@ export const getBillById = async (billId: Ref<string | null>) => {
         DefaultResponse<PaginationResponse<Array<BillResponse>>>
     >;
 }
+
+export const updateBill = async (billId: string, data: BillRequest) => {
+    return await request({
+        url: `${API_ADMIN_BILL}/${billId}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};

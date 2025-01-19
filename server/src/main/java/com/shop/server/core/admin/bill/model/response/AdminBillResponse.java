@@ -10,8 +10,6 @@ public interface AdminBillResponse extends BaseResponse {
 
     String getMa();
 
-    BigDecimal getTienGiam();
-
     BigDecimal getTongTien();
 
     String getLoaiHD();
@@ -20,25 +18,13 @@ public interface AdminBillResponse extends BaseResponse {
 
     String getSoDienThoai();
 
-    String getDiaChiNguoiNhan();
-
-    BigDecimal getTienShip();
-
-    String getNgayShip();
-
     String getGhiChu();
 
     String getTrangThai();
 
-    String getIdNhanVien();
+    String getMaNhanVien();
 
-    String getTenNhanVien();
-
-    String getIdPhieuGiamGia();
-
-    String getTenPhieuGiamGia();
-
-    String getIdKhachHang();
+    Long getNgayTao();
 
     String getTenKhachHang();
 }

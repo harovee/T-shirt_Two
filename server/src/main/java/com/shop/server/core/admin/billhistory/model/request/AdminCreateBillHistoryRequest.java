@@ -10,6 +10,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminFindBillHistoryRequest extends PageableRequest {
+public class AdminCreateBillHistoryRequest extends PageableRequest {
     private String idHoaDon;
+
+    private String hanhDong;
+
+    private String moTa;
+
+    private String trangThai;
 }

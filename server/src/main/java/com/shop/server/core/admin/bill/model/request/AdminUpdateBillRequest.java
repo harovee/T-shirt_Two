@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.bill.model.request;
 
+import com.shop.server.core.common.base.PageableRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,12 +10,18 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminSaveBillRequest {
-    private String loaiHD;
+public class AdminUpdateBillRequest extends PageableRequest {
+    private String trangThai;
 
     private String idKhachHang;
 
-    private String idNhanVien;
-
     private String idPhieuGiamGia;
+
+    private String diaChiNguoiNhan;
+
+    private String tenNguoiNhan;
+
+    private String soDienThoai;
+
+    private String ghiChu;
 }

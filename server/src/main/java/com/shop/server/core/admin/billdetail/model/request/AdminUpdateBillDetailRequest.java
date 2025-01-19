@@ -13,6 +13,4 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class AdminUpdateBillDetailRequest {
     private Short soLuong;
-
-    private BigDecimal thanhTien;
 }
