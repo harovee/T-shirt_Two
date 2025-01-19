@@ -1,9 +1,7 @@
 package com.shop.server.core.admin.co_ao.controller;
 
-import com.shop.server.core.admin.chat_lieu.model.request.AdCreateUpdateChatLieuRequest;
-import com.shop.server.core.admin.chat_lieu.model.request.AdFindChatLieuRequest;
-import com.shop.server.core.admin.chat_lieu.service.AdChatLieuService;
 import com.shop.server.core.admin.co_ao.model.request.AdCreateUpdateCoAoRequest;
+import com.shop.server.core.admin.co_ao.model.request.AdFindCoAoRequest;
 import com.shop.server.core.admin.co_ao.service.AdCoAoService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -19,25 +17,34 @@ public class AdCoAoController {
 
     private final AdCoAoService adCoAoService;
 
-    @GetMapping("/get-list-collar")
-    public ResponseEntity<?> getListCoAo() {
-        return Helper.createResponseEntity(adCoAoService.getListCoAo());
+    @GetMapping()
+    public ResponseEntity<?> getAllCoAos(@Valid final AdFindCoAoRequest request) {
+        return Helper.createResponseEntity(adCoAoService.getAllCoAos(request));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCoAoDetail(@PathVariable final String id) {
+        return Helper.createResponseEntity(adCoAoService.getCoAo(id));
+    }
 
     @PostMapping()
     public ResponseEntity<?> createCoAo(@Valid @RequestBody final AdCreateUpdateCoAoRequest request) {
         return Helper.createResponseEntity(adCoAoService.createCoAo(request));
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<?> updateChatLieu(@PathVariable String id, @Valid @RequestBody final AdCreateUpdateChatLieuRequest request) {
-//        return Helper.createResponseEntity(adChatLieuService.updateChatLieu(id, request));
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<?> deleteChatLieu(@PathVariable String id) {
-//        return Helper.createResponseEntity(adChatLieuService.deleted(id));
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCoAo(@PathVariable String id, @Valid @RequestBody final AdCreateUpdateCoAoRequest request) {
+        return Helper.createResponseEntity(adCoAoService.updateCoAo(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteCoAo(@PathVariable String id) {
+        return Helper.createResponseEntity(adCoAoService.deleted(id));
+    }
+
+    @GetMapping("/get-list-collar")
+    public ResponseEntity<?> getListCoAo() {
+        return Helper.createResponseEntity(adCoAoService.getListCoAo());
+    }
 
 }

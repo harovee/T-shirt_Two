@@ -7,7 +7,7 @@
             <div class="flex items-center justify-center">
               <img :src="logoSpotifyFirst" alt="Logo" class="mb-2 w-48"/>
             </div>
-            <span class="text-2xl text-gray-500">Chào mừng đến với K&Q T-Shirts</span>
+            <span class="text-2xl text-gray-500">Chào mừng đến với T-Shirts Two</span>
           </div>
           <router-view/>
         </div>
@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import logoSpotifyFirst from "@/assets/image/logo/nobg/svg/logo-big-1.svg";
+// import logoSpotifyFirst from "@/assets/image/logo/nobg/svg/logo-big-1.svg";
 </script>
 
 <style scoped>

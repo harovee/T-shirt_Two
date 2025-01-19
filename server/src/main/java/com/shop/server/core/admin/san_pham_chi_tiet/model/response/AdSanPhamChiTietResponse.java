@@ -7,7 +7,7 @@ public interface AdSanPhamChiTietResponse extends BaseResponse {
 
     String getMaSanPhamChiTiet ();
 
-    String getDanhMuc ();
+    String getSanPham ();
 
     String getThuongHieu ();
 
@@ -26,8 +26,6 @@ public interface AdSanPhamChiTietResponse extends BaseResponse {
     String getTayAo ();
 
     String getTinhNang ();
-
-    String getTen ();
 
     String getGia ();
 

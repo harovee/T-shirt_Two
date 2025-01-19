@@ -54,10 +54,10 @@ const props = defineProps({
   allProductData: Array<ProductResponse>,
 });
 
-watch(
-  () => props.ProductDetail,
-  (newData) => console.log(newData)
-);
+// watch(
+//   () => props.ProductDetail,
+//   (newData) => console.log(newData)
+// );
 
 const emit = defineEmits(["handleClose"]);
 
@@ -109,8 +109,8 @@ watch(
       Object.assign(modelRef, {
         ten: newVal.ten,
         moTa: newVal.moTa,
-        trangThai: newVal.trangThai === "ACTIVE" ? 0 : 1,
-        idDanhMuc: newVal.danhMuc.id,
+        trangThai: newVal?.trangThai === "ACTIVE" ? 0 : 1,
+        idDanhMuc: newVal?.danhMuc?.id,
       });
     } else {
       resetFields();

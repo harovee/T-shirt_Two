@@ -7,7 +7,7 @@
         :trigger="null"
         collapsible
     >
-      <div class="logo" style="width: 100%; height: 70px">LOGO</div>
+      <!-- <div class="logo" style="width: 100%; height: 70px">LOGO</div> -->
       <a-menu v-model:selectedKeys="selectedKeys" theme="light" mode="inline">
         <template v-for="item in menuItems">
           <a-menu-item
@@ -77,7 +77,7 @@
         </div>
       </a-layout-content>
       <a-layout-footer class="text-center">
-        K&Q T-Shirts ©2024 Created by Haove
+         T-Shirts Two ©2024 Created by Haove
       </a-layout-footer>
     </a-layout>
   </a-layout>

@@ -1,22 +1,26 @@
 import {
     createTrademark,
     getListTrademark,
-    trademarkRequest
-} from "@/infrastructure/services/api/admin/trademark.api";
+    TrademarkRequest,
+    getTrademark,
+    FindTrademarkRequest,
+    getTrademarks,
+    updateTrademark
+} from "@/infrastructure/services/api/admin/trademark.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetTrademarks = (
+    params: Ref<FindTrademarkRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getTrademarks>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.trademark.trademarkList, params],
+        queryFn: () => getTrademarks(params),
+        ...options,
+    });
+};
 
 export const useGetListTrademark = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListTrademark = (
 export const useCreateTrademark = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: trademarkRequest) => createTrademark(data),
+        mutationFn: (data: TrademarkRequest) => createTrademark(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.trademark.trademarkList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.trademark.trademarkList, "🚀 ~ trademarkCreate ~ error:", error);
+            console.log(queryKey.admin.trademark.trademarkList, "🚀 ~ TrademarkCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetTrademark = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getTrademark>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.trademark.trademarkList, id,],
+        queryFn: () => getTrademark(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdateTrademark = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: TrademarkRequest; }) => updateTrademark(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.trademark.trademarkList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.trademark.trademarkList + "🚀 ~ TrademarkUpdate ~ error:", error);
+        },
+    });
+};

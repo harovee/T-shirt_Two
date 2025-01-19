@@ -1,22 +1,26 @@
 import {
     createColor,
     getListColor,
-    colorRequest
-} from "@/infrastructure/services/api/admin/color.api";
+    ColorRequest,
+    getColor,
+    FindColorRequest,
+    getColors,
+    updateColor
+} from "@/infrastructure/services/api/admin/color.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetColors = (
+    params: Ref<FindColorRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getColors>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.color.colorList, params],
+        queryFn: () => getColors(params),
+        ...options,
+    });
+};
 
 export const useGetListColor = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListColor = (
 export const useCreateColor = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: colorRequest) => createColor(data),
+        mutationFn: (data: ColorRequest) => createColor(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.color.colorList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.color.colorList, "🚀 ~ colorCreate ~ error:", error);
+            console.log(queryKey.admin.color.colorList, "🚀 ~ ColorCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetColor = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getColor>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.color.colorList, id,],
+        queryFn: () => getColor(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdateColor = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: ColorRequest; }) => updateColor(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.color.colorList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.color.colorList + "🚀 ~ ColorUpdate ~ error:", error);
+        },
+    });
+};

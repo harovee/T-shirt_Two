@@ -180,6 +180,42 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.STYLE.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.STYLE.name,
+                component: () => import('@/page/admin/product/style/Style.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SLEEVE.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SLEEVE.name,
+                component: () => import('@/page/admin/product/sleeve/Sleeve.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.FEATURE.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.FEATURE.name,
+                component: () => import('@/page/admin/product/feature/Feature.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PATTERN.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PATTERN.name,
+                component: () => import('@/page/admin/product/pattern/Pattern.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.SALE.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.SALE.name,
                 component: () => import('@/page/admin/sale/Sale.vue'),

@@ -60,28 +60,28 @@
             </a-button>
           </a-tooltip>
         </div>
-        
       </template>
     </table-spotify>
   </div>
   <modal-update-product
-        :open="isOpenModalCreateProduct"
-        @handleClose="handleCloseModalCreateProduct"
-        @onCancel="isOpenModalCreateProduct = false"
-        :ProductDetail="productDetail || null" :is-loading-detail="isLoadingDetail || false"
-        :all-product-data="props.dataSource?.data"
-      />
+    :open="isOpenModalCreateProduct"
+    @handleClose="handleCloseModalCreateProduct"
+    @onCancel="isOpenModalCreateProduct = false"
+    :ProductDetail="productDetail || null"
+    :is-loading-detail="isLoadingDetail || false"
+    :all-product-data="props.dataSource?.data"
+  />
 </template>
 
 <script setup lang="ts">
 import TableSpotify from "@/components/ui/Table.vue";
 import { ColumnType } from "ant-design-vue/es/table";
 import { toast } from "vue3-toastify";
-import { defineEmits,computed, watch , ref} from "vue";
+import { defineEmits, computed, watch, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import ModalUpdateProduct from "@/page/admin/product/product/ModalUpdateProduct.vue";
-import {useGetProductById} from "@/infrastructure/services/service/admin/product.action";
+import { useGetProductById } from "@/infrastructure/services/service/admin/product.action";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -97,16 +97,14 @@ const props = defineProps({
 
 const id = ref<string | null>(null);
 
-const { data: dataDetail, isLoading: isLoadingDetail} = useGetProductById(
-  id,
-  {
-    refetchOnWindowFocus: false,
-    enabled: () => !!id.value,
-  }
-);
-
-
-
+const {
+  data: dataDetail,
+  isLoading: isLoadingDetail,
+  refetch,
+} = useGetProductById(id, {
+  refetchOnWindowFocus: false,
+  enabled: () => !!id.value,
+});
 
 // Đóng mở modal
 const isOpenModalCreateProduct = ref(false);
@@ -129,21 +127,25 @@ const redirectToCreateProduct = () => {
 };
 
 const handleRedirect = (id) => {
-  router.push(`${ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.path}/${id}`);
+  router.push(
+    `${ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.path}/${id}`
+  );
 };
 
 const productDetail = computed(() =>
   id.value
     ? {
-      ...dataDetail.value?.data,
-      id: id.value,
-    }
+        ...dataDetail.value?.data,
+        id: id.value,
+      }
     : null
 );
 
-// watch(productDetail, (newValue) => {
-//   console.log('PlanTypeDetail đã thay đổi:', newValue);
-// });
+watch(isOpenModalCreateProduct, (newVal) => {
+  if (newVal && id && id !== null) {
+    refetch();
+  }
+});
 
 const columnsProduct: ColumnType[] = [
   {

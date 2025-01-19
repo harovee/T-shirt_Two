@@ -64,6 +64,22 @@ export const ROUTES_CONSTANTS = {
                         path: "color",
                         name: "admin-color",
                     },
+                    FEATURE: {
+                        path: "feature",
+                        name: "admin-feature",
+                    },
+                    STYLE: {
+                        path: "style",
+                        name: "admin-style",
+                    },
+                    SLEEVE: {
+                        path: "sleeve",
+                        name: "admin-sleeve",
+                    },
+                    PATTERN: {
+                        path: "pattern",
+                        name: "admin-pattern",
+                    }
                 }
             },
             SALE: {

@@ -21,6 +21,11 @@ export interface ProductRequest {
     trangThai: Number | null
     idDanhMuc: string | null
 }
+export interface ProductAddRequest {
+    ten: string | null
+    moTa: string | null
+    idDanhMuc: string | null
+}
 
 export type ProductResponse = ResponseList & {
     maSanPham: string | null
@@ -59,7 +64,7 @@ export const getListProducts = async () => {
     return res.data;
 };
 
-export const createProduct = async (data: ProductRequest) => {
+export const createProduct = async (data: ProductAddRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_PRODUCT}`,
         method: "POST",
@@ -81,13 +86,6 @@ export const getProduct = async (id: string | null) => {
   };
 
 export const updateProduct = async (id: string, params: ProductRequest) => {
-    // return await request({
-    //     url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-    //     method: "PUT",
-    //     data: data
-    // }) as AxiosResponse<
-    //     DefaultResponse<DefaultResponse<null>>
-    // >;
     const res = (await request({
         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
         method: "PUT",
@@ -96,12 +94,3 @@ export const updateProduct = async (id: string, params: ProductRequest) => {
     
       return res.data;
 };
-
-// export const deletedProduct = async (id: string) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "DELETE",
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };

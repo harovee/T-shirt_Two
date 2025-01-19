@@ -16,7 +16,6 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
         			ROW_NUMBER() OVER(ORDER BY spct.id DESC) AS catalog,
                     spct.id as id,
                     spct.ma_san_pham_chi_tiet as maSanPhamChitiet,
-                    spct.ten AS ten,
                     cl.ten AS chatLieu,
                     ca.ten AS coAo,
                     ht.ten AS hoaTiet,
@@ -26,7 +25,7 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                     ta.ten AS tayAo,
                     th.ten AS thuongHieu,
                     tn.ten AS tinhNang,
-                    dm.ten AS danhMuc,
+                    sp.ten AS sanPham,
                     spct.gia AS gia,
                     spct.so_luong AS soLuong,
                     spct.trang_thai AS trangThai
@@ -41,7 +40,6 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                     LEFT JOIN thuong_hieu th ON spct.id_thuong_hieu = th.id
                     LEFT JOIN tinh_nang tn ON spct.id_tinh_nang = tn.id
                     JOIN san_pham sp ON spct.id_san_pham = sp.id
-                    JOIN danh_muc dm ON sp.id_danh_muc = dm.id
         		WHERE spct.id_san_pham = :#{#req.idSanPham}
                     AND (:#{#req.keyword} IS NULL OR spct.ma_san_pham_chi_tiet LIKE CONCAT('%', :#{#req.keyword}, '%'))
                     AND (:#{#req.idChatLieu} IS NULL OR spct.id_chat_lieu LIKE :#{#req.idChatLieu})
@@ -53,7 +51,8 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                     AND (:#{#req.idTayAo} IS NULL OR spct.id_tay_ao LIKE :#{#req.idTayAo})
                     AND (:#{#req.idThuongHieu} IS NULL OR spct.id_thuong_hieu LIKE :#{#req.idThuongHieu})
                     AND (:#{#req.idTinhNang} IS NULL OR spct.id_tinh_nang LIKE :#{#req.idTinhNang})
-                    AND (:#{#req.trangThai} IS NULL OR spct.trang_thai = :#{#req.trangThai})
+            		AND (:#{#req.trangThai} IS NULL OR spct.trang_thai = :#{#req.trangThai})
+            		AND (:#{#req.gia} IS NULL OR spct.gia <= :#{#req.gia})
                     AND spct.deleted = 0
     """, countQuery = """
         SELECT COUNT(spct.id)
@@ -72,6 +71,7 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                 AND (:#{#req.idThuongHieu} IS NULL OR spct.id_thuong_hieu = :#{#req.idThuongHieu})
                 AND (:#{#req.idTinhNang} IS NULL OR spct.id_tinh_nang = :#{#req.idTinhNang})
                 AND (:#{#req.trangThai} IS NULL OR spct.trang_thai = :#{#req.trangThai})
+                AND (:#{#req.gia} IS NULL OR spct.gia <= :#{#req.gia})
                 AND sp.deleted = 0
     """, nativeQuery = true)
     Page<AdSanPhamChiTietResponse> getAllSanPhamChiTiets(Pageable pageable, AdFindSpctRequest req);

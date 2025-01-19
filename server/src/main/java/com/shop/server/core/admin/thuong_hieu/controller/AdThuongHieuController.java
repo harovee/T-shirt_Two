@@ -1,6 +1,7 @@
 package com.shop.server.core.admin.thuong_hieu.controller;
 
 import com.shop.server.core.admin.thuong_hieu.model.request.AdCreateUpdateThuongHieuRequest;
+import com.shop.server.core.admin.thuong_hieu.model.request.AdFindThuongHieuRequest;
 import com.shop.server.core.admin.thuong_hieu.service.AdThuongHieuService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -16,25 +17,34 @@ public class AdThuongHieuController {
 
     private final AdThuongHieuService adThuongHieuService;
 
-    @GetMapping("/get-list-trademark")
-    public ResponseEntity<?> getListThuongHieu() {
-        return Helper.createResponseEntity(adThuongHieuService.getListThuongHieu());
+    @GetMapping()
+    public ResponseEntity<?> getAllThuongHieus(@Valid final AdFindThuongHieuRequest request) {
+        return Helper.createResponseEntity(adThuongHieuService.getAllThuongHieus(request));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getThuongHieuDetail(@PathVariable final String id) {
+        return Helper.createResponseEntity(adThuongHieuService.getThuongHieu(id));
+    }
 
     @PostMapping()
     public ResponseEntity<?> createThuongHieu(@Valid @RequestBody final AdCreateUpdateThuongHieuRequest request) {
         return Helper.createResponseEntity(adThuongHieuService.createThuongHieu(request));
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<?> updateChatLieu(@PathVariable String id, @Valid @RequestBody final AdCreateUpdateChatLieuRequest request) {
-//        return Helper.createResponseEntity(adChatLieuService.updateChatLieu(id, request));
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<?> deleteChatLieu(@PathVariable String id) {
-//        return Helper.createResponseEntity(adChatLieuService.deleted(id));
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateThuongHieu(@PathVariable String id, @Valid @RequestBody final AdCreateUpdateThuongHieuRequest request) {
+        return Helper.createResponseEntity(adThuongHieuService.updateThuongHieu(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteThuongHieu(@PathVariable String id) {
+        return Helper.createResponseEntity(adThuongHieuService.deleted(id));
+    }
+
+    @GetMapping("/get-list-trademark")
+    public ResponseEntity<?> getListThuongHieu() {
+        return Helper.createResponseEntity(adThuongHieuService.getListThuongHieu());
+    }
 
 }

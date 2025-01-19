@@ -1,22 +1,26 @@
 import {
     createCollar,
     getListCollar,
-    collarRequest
-} from "@/infrastructure/services/api/admin/collar.api";
+    CollarRequest,
+    getCollar,
+    FindCollarRequest,
+    getCollars,
+    updateCollar
+} from "@/infrastructure/services/api/admin/collar.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetCollars = (
+    params: Ref<FindCollarRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getCollars>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.collar.collarList, params],
+        queryFn: () => getCollars(params),
+        ...options,
+    });
+};
 
 export const useGetListCollar = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListCollar = (
 export const useCreateCollar = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: collarRequest) => createCollar(data),
+        mutationFn: (data: CollarRequest) => createCollar(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.collar.collarList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.collar.collarList, "🚀 ~ collarCreate ~ error:", error);
+            console.log(queryKey.admin.collar.collarList, "🚀 ~ CollarCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetCollar = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getCollar>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.collar.collarList, id,],
+        queryFn: () => getCollar(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdateCollar = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: CollarRequest; }) => updateCollar(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.collar.collarList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.collar.collarList + "🚀 ~ CollarUpdate ~ error:", error);
+        },
+    });
+};

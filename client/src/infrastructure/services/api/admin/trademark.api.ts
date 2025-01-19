@@ -4,54 +4,53 @@ import request from "@/infrastructure/services/request.ts";
 import {PREFIX_API_ADMIN_TRADEMARK} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
-// export interface PropertyProductParams {
-//     keyword?: string | null;
-//     status?: string | null;
+export interface PropertyTrademarkParams {
+    keyword?: string | null;
+    [key: string]: any;
+}
 
-//     [key: string]: any;
-// }
+export interface FindTrademarkRequest extends PropertyTrademarkParams, PaginationParams {
 
-// export interface FindProductRequest extends PropertyProductParams, PaginationParams {
+}
 
-// }
-
-export interface trademarkRequest {
+export interface TrademarkRequest {
     ten: string | null
 }
 
-// export type materialResponse = ResponseList & {
-//     maSanPham: string | null
-//     ten: string | null
-// };
+export type TrademarkResponse = ResponseList & {
+    maThuongHieu: string | null
+    ten: string | null
+};
 
 export type ListTrademarkResponse = {
     id: string | null,
     ten: string | null
 };
 
-// export const getProducts = async (params: Ref<FindProductRequest>) => {
-//     const res = (await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}`,
-//         method: "GET",
-//         params: params.value,
-//     })) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
+export const getTrademarks = async (params: Ref<FindTrademarkRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_TRADEMARK}`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<TrademarkResponse>>>
+    >;
 
-//     return res.data;
-// };
+    return res.data;
+};
 
-export const getListTrademark = async (): Promise<ListTrademarkResponse[]> => {
-    const res: AxiosResponse<DefaultResponse<ListTrademarkResponse[]>> = await request({
-      url: `${PREFIX_API_ADMIN_TRADEMARK}/get-list-trademark`,
-      method: "GET",
-    });
-  
-    // Đảm bảo trả về dữ liệu từ "data"
-    return res.data.data;
-  };
+export const getListTrademark = async () => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_TRADEMARK}/get-list-trademark`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ListTrademarkResponse>>>
+    >;
 
-export const createTrademark = async (data: trademarkRequest) => {
+    return res.data;
+};
+
+export const createTrademark = async (data: TrademarkRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_TRADEMARK}`,
         method: "POST",
@@ -63,30 +62,21 @@ export const createTrademark = async (data: trademarkRequest) => {
     return res.data;
 };
 
-// export const getEmployee = async (EmployeeId: Ref<string | null>) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${EmployeeId}`,
-//         method: "GET"
-//     }) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
-// };
+export const getTrademark = async (id: string | null) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_TRADEMARK}/${id}`,
+        method: "GET"
+    }) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<TrademarkResponse>>>
+    >;
+};
 
-// export const updateProduct = async (id: string, data: ProductRequest) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "PUT",
-//         data: data
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
-
-// export const deletedProduct = async (id: string) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "DELETE",
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
+export const updateTrademark = async (id: string, data: TrademarkRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_TRADEMARK}/${id}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};

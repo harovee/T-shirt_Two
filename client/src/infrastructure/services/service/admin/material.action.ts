@@ -1,22 +1,26 @@
 import {
     createMaterial,
     getListMaterial,
-    materialRequest
-} from "@/infrastructure/services/api/admin/material.api";
+    MaterialRequest,
+    getMaterial,
+    FindMaterialRequest,
+    getMaterials,
+    updateMaterial
+} from "@/infrastructure/services/api/admin/material.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetMaterials = (
+    params: Ref<FindMaterialRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getMaterials>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.material.materialList, params],
+        queryFn: () => getMaterials(params),
+        ...options,
+    });
+};
 
 export const useGetListMaterial = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListMaterial = (
 export const useCreateMaterial = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: materialRequest) => createMaterial(data),
+        mutationFn: (data: MaterialRequest) => createMaterial(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.material.materialList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.material.materialList, "🚀 ~ materialCreate ~ error:", error);
+            console.log(queryKey.admin.material.materialList, "🚀 ~ MaterialCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetMaterial = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getMaterial>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.material.materialList, id,],
+        queryFn: () => getMaterial(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdateMaterial = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: MaterialRequest; }) => updateMaterial(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.material.materialList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.material.materialList + "🚀 ~ MaterialUpdate ~ error:", error);
+        },
+    });
+};

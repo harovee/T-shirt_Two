@@ -1,22 +1,26 @@
 import {
     createSize,
     getListSize,
-    sizeRequest
-} from "@/infrastructure/services/api/admin/size.api";
+    SizeRequest,
+    getSize,
+    FindSizeRequest,
+    getSizes,
+    updateSize
+} from "@/infrastructure/services/api/admin/size.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetSizes = (
+    params: Ref<FindSizeRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getSizes>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.size.sizeList, params],
+        queryFn: () => getSizes(params),
+        ...options,
+    });
+};
 
 export const useGetListSize = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListSize = (
 export const useCreateSize = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: sizeRequest) => createSize(data),
+        mutationFn: (data: SizeRequest) => createSize(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.size.sizeList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.size.sizeList, "🚀 ~ sizeCreate ~ error:", error);
+            console.log(queryKey.admin.size.sizeList, "🚀 ~ SizeCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetSize = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getSize>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.size.sizeList, id,],
+        queryFn: () => getSize(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdateSize = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: SizeRequest; }) => updateSize(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.size.sizeList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.size.sizeList + "🚀 ~ SizeUpdate ~ error:", error);
+        },
+    });
+};

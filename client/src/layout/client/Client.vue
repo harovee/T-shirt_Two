@@ -33,7 +33,7 @@
         </div>
       </a-layout-content>
       <a-layout-footer class="text-center">
-        K&Q T-Shirts ©2024 Created by Haove
+        T-Shirts Two ©2024 Created by Haove
       </a-layout-footer>
     </a-layout>
   </a-layout>
@@ -46,6 +46,7 @@ import {useRouter} from 'vue-router';
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import {useAuthStore} from "@/infrastructure/stores/auth.ts";
 
+
 const auth = useAuthStore();
 
 const userInfo = computed(() => auth.user);
@@ -56,6 +57,7 @@ const handleLogout = () => {
   auth.logout();
   router.push(ROUTES_CONSTANTS.AUTHENTICATION.path);
 };
+
 </script>
 
 <script lang="ts">

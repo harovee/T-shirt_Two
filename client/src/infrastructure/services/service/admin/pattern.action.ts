@@ -1,22 +1,26 @@
 import {
     createPattern,
     getListPattern,
-    patternRequest
-} from "@/infrastructure/services/api/admin/pattern.api";
+    PatternRequest,
+    getPattern,
+    FindPatternRequest,
+    getPatterns,
+    updatePattern
+} from "@/infrastructure/services/api/admin/pattern.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetPatterns = (
+    params: Ref<FindPatternRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getPatterns>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.pattern.patternList, params],
+        queryFn: () => getPatterns(params),
+        ...options,
+    });
+};
 
 export const useGetListPattern = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListPattern = (
 export const useCreatePattern = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: patternRequest) => createPattern(data),
+        mutationFn: (data: PatternRequest) => createPattern(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.pattern.patternList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.pattern.patternList, "🚀 ~ patternCreate ~ error:", error);
+            console.log(queryKey.admin.pattern.patternList, "🚀 ~ PatternCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetPattern = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getPattern>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.pattern.patternList, id,],
+        queryFn: () => getPattern(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdatePattern = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: PatternRequest; }) => updatePattern(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.pattern.patternList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.pattern.patternList + "🚀 ~ PatternUpdate ~ error:", error);
+        },
+    });
+};

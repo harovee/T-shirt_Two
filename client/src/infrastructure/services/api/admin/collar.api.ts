@@ -4,54 +4,53 @@ import request from "@/infrastructure/services/request.ts";
 import {PREFIX_API_ADMIN_COLLAR} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
-// export interface PropertyProductParams {
-//     keyword?: string | null;
-//     status?: string | null;
+export interface PropertyCollarParams {
+    keyword?: string | null;
+    [key: string]: any;
+}
 
-//     [key: string]: any;
-// }
+export interface FindCollarRequest extends PropertyCollarParams, PaginationParams {
 
-// export interface FindProductRequest extends PropertyProductParams, PaginationParams {
+}
 
-// }
-
-export interface collarRequest {
+export interface CollarRequest {
     ten: string | null
 }
 
-// export type materialResponse = ResponseList & {
-//     maSanPham: string | null
-//     ten: string | null
-// };
+export type CollarResponse = ResponseList & {
+    maCoAo: string | null
+    ten: string | null
+};
 
 export type ListCollarResponse = {
     id: string | null,
     ten: string | null
 };
 
-// export const getProducts = async (params: Ref<FindProductRequest>) => {
-//     const res = (await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}`,
-//         method: "GET",
-//         params: params.value,
-//     })) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
+export const getCollars = async (params: Ref<FindCollarRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_COLLAR}`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<CollarResponse>>>
+    >;
 
-//     return res.data;
-// };
+    return res.data;
+};
 
-export const getListCollar = async (): Promise<ListCollarResponse[]> => {
-    const res: AxiosResponse<DefaultResponse<ListCollarResponse[]>> = await request({
-      url: `${PREFIX_API_ADMIN_COLLAR}/get-list-collar`,
-      method: "GET",
-    });
-  
-    // Đảm bảo trả về dữ liệu từ "data"
-    return res.data.data;
-  };
+export const getListCollar = async () => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_COLLAR}/get-list-collar`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ListCollarResponse>>>
+    >;
 
-export const createCollar = async (data: collarRequest) => {
+    return res.data;
+};
+
+export const createCollar = async (data: CollarRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_COLLAR}`,
         method: "POST",
@@ -63,30 +62,21 @@ export const createCollar = async (data: collarRequest) => {
     return res.data;
 };
 
-// export const getEmployee = async (EmployeeId: Ref<string | null>) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${EmployeeId}`,
-//         method: "GET"
-//     }) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
-// };
+export const getCollar = async (id: string | null) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_COLLAR}/${id}`,
+        method: "GET"
+    }) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<CollarResponse>>>
+    >;
+};
 
-// export const updateProduct = async (id: string, data: ProductRequest) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "PUT",
-//         data: data
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
-
-// export const deletedProduct = async (id: string) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "DELETE",
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
+export const updateCollar = async (id: string, data: CollarRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_COLLAR}/${id}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};

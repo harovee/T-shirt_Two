@@ -27,6 +27,7 @@ public class AdChatLieuServiceImpl implements AdChatLieuService {
     @Override
     public ResponseObject<?> getAllChatLieus(AdFindChatLieuRequest request) {
         Pageable pageable = Helper.createPageable(request);
+
         return new ResponseObject<>(
                 PageableObject.of(adChatLieuRepository.getAllChatLieus(pageable, request)),
                 HttpStatus.OK,

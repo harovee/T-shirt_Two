@@ -4,65 +4,53 @@ import request from "@/infrastructure/services/request.ts";
 import {PREFIX_API_ADMIN_MATERIAL} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
-// export interface PropertyProductParams {
-//     keyword?: string | null;
-//     status?: string | null;
+export interface PropertyMaterialParams {
+    keyword?: string | null;
+    [key: string]: any;
+}
 
-//     [key: string]: any;
-// }
+export interface FindMaterialRequest extends PropertyMaterialParams, PaginationParams {
 
-// export interface FindProductRequest extends PropertyProductParams, PaginationParams {
+}
 
-// }
-
-export interface materialRequest {
+export interface MaterialRequest {
     ten: string | null
 }
 
-// export type materialResponse = ResponseList & {
-//     maSanPham: string | null
-//     ten: string | null
-// };
+export type MaterialResponse = ResponseList & {
+    maChatLieu: string | null
+    ten: string | null
+};
 
 export type ListMaterialResponse = {
     id: string | null,
     ten: string | null
 };
 
-// export const getProducts = async (params: Ref<FindProductRequest>) => {
-//     const res = (await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}`,
-//         method: "GET",
-//         params: params.value,
-//     })) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
+export const getMaterials = async (params: Ref<FindMaterialRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_MATERIAL}`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<MaterialResponse>>>
+    >;
 
-//     return res.data;
-// };
+    return res.data;
+};
 
-// export const getListMaterial = async () => {
-//     const res = (await request({
-//         url: `${PREFIX_API_ADMIN_MATERIAL}/get-list-material`,
-//         method: "GET",
-//     })) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ListMaterialResponse>>>
-//     >;
+export const getListMaterial = async () => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_MATERIAL}/get-list-material`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ListMaterialResponse>>>
+    >;
 
-//     return res.data;
-// };
+    return res.data;
+};
 
-export const getListMaterial = async (): Promise<ListMaterialResponse[]> => {
-    const res: AxiosResponse<DefaultResponse<ListMaterialResponse[]>> = await request({
-      url: `${PREFIX_API_ADMIN_MATERIAL}/get-list-material`,
-      method: "GET",
-    });
-  
-    // Đảm bảo trả về dữ liệu từ "data"
-    return res.data.data;
-  };
-
-export const createMaterial = async (data: materialRequest) => {
+export const createMaterial = async (data: MaterialRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_MATERIAL}`,
         method: "POST",
@@ -74,30 +62,21 @@ export const createMaterial = async (data: materialRequest) => {
     return res.data;
 };
 
-// export const getEmployee = async (EmployeeId: Ref<string | null>) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${EmployeeId}`,
-//         method: "GET"
-//     }) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
-// };
+export const getMaterial = async (id: string | null) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_MATERIAL}/${id}`,
+        method: "GET"
+    }) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<MaterialResponse>>>
+    >;
+};
 
-// export const updateProduct = async (id: string, data: ProductRequest) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "PUT",
-//         data: data
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
-
-// export const deletedProduct = async (id: string) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "DELETE",
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
+export const updateMaterial = async (id: string, data: MaterialRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_MATERIAL}/${id}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};

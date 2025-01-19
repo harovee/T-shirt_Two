@@ -1,22 +1,26 @@
 import {
     createSleeve,
     getListSleeve,
-    sleeveRequest
-} from "@/infrastructure/services/api/admin/sleeve.api";
+    SleeveRequest,
+    getSleeve,
+    FindSleeveRequest,
+    getSleeves,
+    updateSleeve
+} from "@/infrastructure/services/api/admin/sleeve.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetSleeves = (
+    params: Ref<FindSleeveRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getSleeves>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.sleeve.sleeveList, params],
+        queryFn: () => getSleeves(params),
+        ...options,
+    });
+};
 
 export const useGetListSleeve = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListSleeve = (
 export const useCreateSleeve = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: sleeveRequest) => createSleeve(data),
+        mutationFn: (data: SleeveRequest) => createSleeve(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.sleeve.sleeveList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.sleeve.sleeveList, "🚀 ~ sleeveCreate ~ error:", error);
+            console.log(queryKey.admin.sleeve.sleeveList, "🚀 ~ SleeveCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetSleeve = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getSleeve>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.sleeve.sleeveList, id,],
+        queryFn: () => getSleeve(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdateSleeve = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: SleeveRequest; }) => updateSleeve(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.sleeve.sleeveList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.sleeve.sleeveList + "🚀 ~ SleeveUpdate ~ error:", error);
+        },
+    });
+};

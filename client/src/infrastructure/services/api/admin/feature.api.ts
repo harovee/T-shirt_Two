@@ -4,54 +4,53 @@ import request from "@/infrastructure/services/request.ts";
 import {PREFIX_API_ADMIN_FEATURE} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
-// export interface PropertyProductParams {
-//     keyword?: string | null;
-//     status?: string | null;
+export interface PropertyFeatureParams {
+    keyword?: string | null;
+    [key: string]: any;
+}
 
-//     [key: string]: any;
-// }
+export interface FindFeatureRequest extends PropertyFeatureParams, PaginationParams {
 
-// export interface FindProductRequest extends PropertyProductParams, PaginationParams {
+}
 
-// }
-
-export interface featureRequest {
+export interface FeatureRequest {
     ten: string | null
 }
 
-// export type materialResponse = ResponseList & {
-//     maSanPham: string | null
-//     ten: string | null
-// };
+export type FeatureResponse = ResponseList & {
+    maTinhNang: string | null
+    ten: string | null
+};
 
 export type ListFeatureResponse = {
     id: string | null,
     ten: string | null
 };
 
-// export const getProducts = async (params: Ref<FindProductRequest>) => {
-//     const res = (await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}`,
-//         method: "GET",
-//         params: params.value,
-//     })) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
+export const getFeatures = async (params: Ref<FindFeatureRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_FEATURE}`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<FeatureResponse>>>
+    >;
 
-//     return res.data;
-// };
+    return res.data;
+};
 
-export const getListFeature = async (): Promise<ListFeatureResponse[]> => {
-    const res: AxiosResponse<DefaultResponse<ListFeatureResponse[]>> = await request({
-      url: `${PREFIX_API_ADMIN_FEATURE}/get-list-feature`,
-      method: "GET",
-    });
-  
-    // Đảm bảo trả về dữ liệu từ "data"
-    return res.data.data;
-  };
+export const getListFeature = async () => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_FEATURE}/get-list-feature`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ListFeatureResponse>>>
+    >;
 
-export const createFeature = async (data: featureRequest) => {
+    return res.data;
+};
+
+export const createFeature = async (data: FeatureRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_FEATURE}`,
         method: "POST",
@@ -63,30 +62,21 @@ export const createFeature = async (data: featureRequest) => {
     return res.data;
 };
 
-// export const getEmployee = async (EmployeeId: Ref<string | null>) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${EmployeeId}`,
-//         method: "GET"
-//     }) as AxiosResponse<
-//         DefaultResponse<PaginationResponse<Array<ProductResponse>>>
-//     >;
-// };
+export const getFeature = async (id: string | null) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_FEATURE}/${id}`,
+        method: "GET"
+    }) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<FeatureResponse>>>
+    >;
+};
 
-// export const updateProduct = async (id: string, data: ProductRequest) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "PUT",
-//         data: data
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
-
-// export const deletedProduct = async (id: string) => {
-//     return await request({
-//         url: `${PREFIX_API_ADMIN_PRODUCT}/${id}`,
-//         method: "DELETE",
-//     }) as AxiosResponse<
-//         DefaultResponse<DefaultResponse<null>>
-//     >;
-// };
+export const updateFeature = async (id: string, data: FeatureRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_FEATURE}/${id}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};

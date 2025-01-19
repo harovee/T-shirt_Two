@@ -101,6 +101,7 @@ public interface AdminProductRepository extends SanPhamRepository {
     SELECT sp.id AS id,
     sp.ten AS ten
     FROM SanPham sp
+    ORDER BY sp.createdDate DESC
 """)
     List<AdProductListResponse> getListProduct ();
 

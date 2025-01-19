@@ -1,22 +1,26 @@
 import {
     createStyle,
     getListStyle,
-    styleRequest
-} from "@/infrastructure/services/api/admin/style.api";
+    StyleRequest,
+    getStyle,
+    FindStyleRequest,
+    getStyles,
+    updateStyle
+} from "@/infrastructure/services/api/admin/style.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
 
 
-// export const useGetCAtegory = (
-//     params: Ref<FindProductRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getProducts>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.product.productList, params],
-//         queryFn: () => getProducts(params),
-//         ...options,
-//     });
-// };
+export const useGetStyles = (
+    params: Ref<FindStyleRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getStyles>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.style.styleList, params],
+        queryFn: () => getStyles(params),
+        ...options,
+    });
+};
 
 export const useGetListStyle = (
     options?: any
@@ -31,52 +35,39 @@ export const useGetListStyle = (
 export const useCreateStyle = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: styleRequest) => createStyle(data),
+        mutationFn: (data: StyleRequest) => createStyle(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.style.styleList],
             })
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.style.styleList, "🚀 ~ styleCreate ~ error:", error);
+            console.log(queryKey.admin.style.styleList, "🚀 ~ StyleCreate ~ error:", error);
         },
     });
 };
 
 
-// export const useGetEmployee = (
-//     employeeId: Ref<string | null>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof getEmployee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.employee.employeeDetail, employeeId,],
-//         queryFn: () => getEmployee(employeeId),
-//         ...options,
-//     });
-// };
+export const useGetStyle = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getStyle>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.style.styleList, id,],
+        queryFn: () => getStyle(id.value),
+        ...options,
+    });
+};
 
 
-// export const useUpdateProduct = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: ({id, data,}: { id: string; data: ProductRequest; }) => updateProduct(id, data),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.product.productList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.product.productList + "🚀 ~ productUpdate ~ error:", error);
-//         },
-//     });
-// };
-
-// export const useChangeStatusEmployee = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (employeeId: string) => changeStatusEmployee(employeeId),
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: [queryKey.admin.employee.employeeList],});
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.admin.employee.employeeList + "🚀 ~ employeeDelete ~ error:", error);
-//         },
-//     });
-// };
+export const useUpdateStyle = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({id, data,}: { id: string; data: StyleRequest; }) => updateStyle(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.style.styleList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.style.styleList + "🚀 ~ StyleUpdate ~ error:", error);
+        },
+    });
+};

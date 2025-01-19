@@ -19,7 +19,7 @@ public interface AdChatLieuRepository extends ChatLieuRepository {
 
     @Query(value = """
         SELECT 
-            ROW_NUMBER() OVER(ORDER BY cl.id DESC) AS catalog,
+            ROW_NUMBER() OVER(ORDER BY cl.ngay_tao DESC) AS catalog,
             cl.id as id,
             cl.ma_chat_lieu as maChatLieu,
             cl.ten AS ten,
@@ -38,9 +38,11 @@ public interface AdChatLieuRepository extends ChatLieuRepository {
     Page<AdChatLieuResponse> getAllChatLieus (Pageable pageable, AdFindChatLieuRequest req);
 
     @Query(value = """
-    SELECT cl.id AS id,
+    SELECT 
+    cl.id AS id,
     cl.ten AS ten
     FROM ChatLieu cl
+    ORDER BY cl.createdDate DESC
 """)
     List<AdGetChatLieuResponse> getListChatLieu ();
 

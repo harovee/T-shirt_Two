@@ -64,6 +64,7 @@ public class DateTimeUtil {
 
     public static void main(String[] args) {
         System.out.println(DateTimeUtil.convertStringToTimeStampSecond("2024-12-04T06:53:29.493Z"));
+        System.out.println(DateTimeUtil.convertTimeStampSecondToString(1736755662935L / 1000L));
     }
 
 }

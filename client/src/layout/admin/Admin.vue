@@ -57,14 +57,14 @@
         </div>
       </a-layout-content>
       <a-layout-footer class="text-center">
-        K&Q T-Shirts ©2024 Created by Haove
+        T-Shirts Two ©2024 Created by Haove
       </a-layout-footer>
     </a-layout>
   </a-layout>
 </template>
 
 <script lang="ts" setup>
-import logo from "@/assets/image/logo/nobg/svg/logo-big-1.svg"
+// import logo from "@/assets/image/logo/nobg/svg/logo-big-1.svg"
 import {computed, h, reactive, ref, VueElement} from 'vue';
 import {useRouter} from 'vue-router';
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
@@ -151,6 +151,22 @@ const menuItems = ref([
     path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.COLOR.path
   },
   {
+    key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.FEATURE.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.FEATURE.path
+  },
+  {
+    key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PATTERN.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PATTERN.path
+  },
+  {
+    key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.STYLE.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.STYLE.path
+  },
+  {
+    key: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SLEEVE.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SLEEVE.path
+  },
+  {
     key: ROUTES_CONSTANTS.ADMIN.children.SALE.name,
     path: ROUTES_CONSTANTS.ADMIN.children.SALE.path,
   }
@@ -178,14 +194,18 @@ const items: ItemType[] = reactive([
   ]),
 
   getItem('Sản Phẩm', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.name, () => h(AppstoreOutlined), [
-    getItem('Sản phẩm chi tiết', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name),
-    getItem('Danh mục', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.name),
+    // getItem('Sản phẩm chi tiết', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name),
     getItem('Sản phẩm', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.name),
+    getItem('Danh mục', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.name),
     getItem('Thương hiệu', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.TRADEMARK.name),
     getItem('Chất liệu', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.MATERIAL.name),
     getItem('Cổ áo', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.COLLAR.name),
+    getItem('Tay áo', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SLEEVE.name),
     getItem('Kích cỡ', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SIZE.name),
     getItem('Màu sắc', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.COLOR.name),
+    getItem('Tính năng', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.FEATURE.name),
+    getItem('Kiểu dáng', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.STYLE.name),
+    getItem('Họa tiết', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PATTERN.name)
   ]),
 
   getItem('Đợt giảm giá', ROUTES_CONSTANTS.ADMIN.children.SALE.name, () => h(MailOutlined)),

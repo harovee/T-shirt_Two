@@ -3,7 +3,8 @@ package com.shop.server.core.admin.product.models.responses;
 import com.shop.server.core.common.base.BaseResponse;
 
 public interface AdminProductResponse extends BaseResponse {
-    String getMaSanPham ();
+
+    String getMaSanPham();
 
     String getTen();
 
@@ -13,6 +14,6 @@ public interface AdminProductResponse extends BaseResponse {
 
     Integer getTrangThai();
 
-    String getTenDanhMuc ();
+    String getTenDanhMuc();
 
 }

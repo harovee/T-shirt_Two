@@ -3,6 +3,7 @@ import {
     FindProductRequest,
     getProducts,
     ProductRequest,
+    ProductAddRequest,
     updateProduct,
     getListProducts,
     getProduct
@@ -35,7 +36,7 @@ export const useGetListProduct = (
 export const useCreateProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: ProductRequest) => createProduct(data),
+        mutationFn: (data: ProductAddRequest) => createProduct(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.product.productList],

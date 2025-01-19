@@ -83,7 +83,7 @@ public class AdminProductServiceImpl implements AdminProductService {
         sanPham.setMaSanPham(code);
         sanPham.setTen(request.getTen());
         sanPham.setMoTa(request.getMoTa());
-        sanPham.setTrangThai(request.getTrangThai() == 0 ? Status.ACTIVE : Status.INACTIVE);
+        sanPham.setTrangThai(Status.ACTIVE);
         sanPham.setDanhMuc(adDanhMucRepository.findById(request.getIdDanhMuc()).orElse(null));
         sanPham.setDeleted(false);
         SanPham addedSanPham = adminProductRepository.save(sanPham);
