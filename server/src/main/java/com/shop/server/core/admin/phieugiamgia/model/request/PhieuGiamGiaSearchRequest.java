@@ -9,5 +9,14 @@ import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 @Getter
 @Setter
 public class PhieuGiamGiaSearchRequest extends PageableRequest {
-    private String search;
+
+    private String keyword;
+
+    private String startDate;
+
+    private String endDate;
+
+    private Boolean loaiGiam;
+
+    private String trangThai;
 }

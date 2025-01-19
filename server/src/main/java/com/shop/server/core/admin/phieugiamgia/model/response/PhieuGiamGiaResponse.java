@@ -1,9 +1,10 @@
 package com.shop.server.core.admin.phieugiamgia.model.response;
 
+import com.shop.server.core.common.base.BaseResponse;
+
 import java.time.LocalDate;
 
-public interface PhieuGiamGiaResponse {
-    String getId();
+public interface PhieuGiamGiaResponse extends BaseResponse {
 
     String getMa();
 
