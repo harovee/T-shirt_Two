@@ -2,7 +2,9 @@ package com.shop.server.core.admin.sale.services;
 
 import com.shop.server.core.admin.sale.models.requests.AdminFindProductDetailSaleModuleRequest;
 import com.shop.server.core.admin.sale.models.requests.AdminFindProductSaleModuleRequest;
+import com.shop.server.core.admin.sale.models.requests.AdminFindSaleProductDetailRequest;
 import com.shop.server.core.admin.sale.models.requests.AdminFindSaleRequest;
+import com.shop.server.core.admin.sale.models.requests.AdminSaleAndSaleProductDetailRequest;
 import com.shop.server.core.admin.sale.models.requests.AdminSaleProductRequest;
 import com.shop.server.core.admin.sale.models.requests.AdminSaleRequest;
 import com.shop.server.core.common.base.ResponseObject;
@@ -33,6 +35,12 @@ public interface AdminSaleService {
     ResponseObject<?> saveSaleInfoAndSaleProductDetails(
             AdminSaleRequest saleRequest,
             AdminSaleProductRequest saleProductRequest);
+
+    ResponseObject<?> getSaleProductDetailBySaleId(AdminFindSaleProductDetailRequest request);
+
+    ResponseObject<?> deleteSaleProductById(String saleProductId);
+
+    ResponseObject<?> updateSaleAndSaveSaleProduct(String saleId, AdminSaleAndSaleProductDetailRequest request);
 
 
 }

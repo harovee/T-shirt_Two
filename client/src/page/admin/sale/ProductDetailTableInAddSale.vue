@@ -12,7 +12,7 @@
             />
         </a-space>
         <a-space class="m-1 ms-0">
-          <a-button size="small" type="primary">Bỏ lọc</a-button>
+          <a-button size="small" type="primary" @click="handleRemoveFilter">Bỏ lọc</a-button>
         </a-space>
         
     </a-space>
@@ -83,12 +83,42 @@
   </div> 
   <div>
     <a-table
+    :loading="isLoading"
     :row-selection="rowSelection"
     :columns="columns"
     :data-source="dataSource"
     :pagination="false"
-    :scroll="{ x: 1500, y: 500 }"
+    :scroll="{ x: 1000, y: 500 }"
   >
+  <template #bodyCell="{ record, column }">
+        <a-image-preview-group>
+            <div v-if="column.dataIndex === 'linkAnh'" class="text-center">
+                  <a-badge-ribbon :text="'-??? đ'"  color="red">
+                        <a-image :width="140"
+                         :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
+                         :src="record.linkAnh != 'default-product-detail-image-url.jpg'
+                        ? record.linkAnh : defaultProductImageSaleUrl " />
+                  </a-badge-ribbon>
+            </div>
+            <div v-if="column.dataIndex === 'thongTinChung'" class="text-left">
+              <a-space direction="vertical">
+                <a-space>{{ record.maSanPhamChiTiet }} - {{ record.ten }}</a-space>
+                <a-space>Sản phẩm: {{ record.tenSanPham }}</a-space>
+                <a-space>Số lượng: {{ record.soLuong }}</a-space>
+                <a-space>Giá gốc: <a-tag color="#108ee9"> {{ formatCurrency(record.gia, 'VND', 'vi-VN') }}</a-tag></a-space>
+                
+              </a-space>
+            </div>
+            <div v-if="column.dataIndex === 'phongCach'" class="text-left">
+              <a-space direction="vertical">
+                <a-space>Giới tính: {{ record.gioiTinh ? 'Nam' : 'Nữ' }}</a-space>
+                <a-space>Kích cỡ: {{ record.kichCo }}</a-space>
+                <a-space>Khác: {{ record.phongCach }}</a-space>
+                
+              </a-space>
+            </div>
+          </a-image-preview-group>
+  </template>
   </a-table>
   <a-pagination
       class="m-2"
@@ -103,6 +133,7 @@
 import type { TableProps, TableColumnType } from "ant-design-vue";
 import {defineProps, computed, defineEmits, ref, watch } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
+import { defaultProductImageSaleUrl, formatCurrency } from "@/utils/common.helper";
 import {
   AttributesResponse,
   FindProductDetailRequest,
@@ -127,41 +158,23 @@ interface DataType extends ProductDetailResponse{
 
 const columns: TableColumnType<DataType>[] = [
   {
-    title: "Mã",
-    dataIndex: "maSanPhamChiTiet",
+    title: "Ảnh",
+    dataIndex: "linkAnh",
     fixed: true,
-    width: 100,
+    width: 180,
+    align: 'center'
   },
   {
-    title: "Tên",
-    dataIndex: "ten",
-    width: 200,
-  },
-  {
-    title: "Sản phẩm",
-    dataIndex: "tenSanPham",
-    width: 200,
-  },
-  {
-    title: "Thương hiệu",
-    dataIndex: "tenThuongHieu",
-    width: 150,
-  },
-  {
-    title: "Giới tính",
-    dataIndex: "gioiTinh",
-    width: 70,
-
-  },
-  {
-    title: "Kích cỡ",
-    dataIndex: "kichCo",
-    width: 100,
-
+    title: "Thông tin chung",
+    dataIndex: "thongTinChung",
+    width: 400,
+    align: 'center'
   },
   {
     title: "Chi tiết",
     dataIndex: "phongCach",
+    align: 'center'
+
   }
 ];
 
@@ -180,7 +193,7 @@ const params = ref<FindProductDetailRequest>({
   idTinhNang: null,
 });
 
-const { data } = useGetProductDetails(params, {
+const { data, isLoading } = useGetProductDetails(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
@@ -191,14 +204,34 @@ const dataSource: DataType[] | any = computed(() => {
       key: e.id || "",
       maSanPhamChiTiet: e.maSanPhamChiTiet || null,
       ten: e.ten || "",
+      gia: e.gia || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
-      gioiTinh: e.gioiTinh ? "Nam": e.gioiTinh == false ? "Nữ" : "Không xác định",
+      gioiTinh: e.gioiTinh,
       kichCo: e.kichCo || "",
-      phongCach: e.phongCach || ""
+      phongCach: e.phongCach || "",
+      soLuong: e.soLuong || "",
+      linkAnh: e.linkAnh || ""
     })) || []
   );
 });
+
+const handleRemoveFilter = () => {
+  params.value =  {
+  page: 1,
+  idSanPhams: props.idSanPhams?.join(',') || '',
+  key: null,
+  gioiTinh: null,
+  idThuongHieu: null,
+  idKichCo: null,
+  idCoAo: null,
+  idTayAo: null,
+  idHoaTiet: null,
+  idChatLieu: null,
+  idKieuDang: null,
+  idTinhNang: null,
+};
+}
 
 const handleChangeKey = () =>{
   current1.value = 1;
@@ -213,9 +246,10 @@ watch(
       });
 const rowSelection: TableProps["rowSelection"] = {
   onChange: (selectedRowKeys: string[] | any) => {
-    console.log(selectedRowKeys);
   emit('update:idSanPhamChiTiets', selectedRowKeys);
   },
 };
+
+
 
 </script>
