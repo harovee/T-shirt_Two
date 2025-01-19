@@ -37,8 +37,8 @@
         </div>
       </div>
       <div class="mt-5 p-5 w-full h-full bg-white rounded-xl">
-        <h4 class="text-center text-xl font-semibold text-gray-700">{{ detailRef.fullName }}</h4>
-        <p class="text-gray-500">Mã nhân viên: NV{{ detailRef.code }}</p>
+        <h3 class="text-center text-xl font-semibold text-gray-700 mb-7">{{ detailRef.fullName }}</h3>
+        <p class="text-gray-500">Mã nhân viên: {{convertTextCode(detailRef.fullName)}}{{ detailRef.code }}</p>
         <p class="text-gray-500">Người tạo: {{ detailRef.createdBy || 'Chưa xác định' }} lúc
           {{ convertDateFormat(detailRef.createdDate) }}</p>
         <p class="text-gray-500">Người chỉnh sửa lần cuối: {{ detailRef.lastModifiedBy || 'Chưa xác định' }} lúc
@@ -81,7 +81,7 @@
                 class="w-full"
                 v-else-if="field.component === 'a-date-picker'"
                 v-model:value="modelRef[field.name]"
-                format="YYYY-MM-DD HH:mm"
+                format="YYYY-MM-DD"
                 show-time
                 :placeholder="field.placeholder"
             ></a-date-picker>
@@ -117,7 +117,7 @@ import {keepPreviousData} from "@tanstack/vue-query";
 import router from "@/infrastructure/routes/router.ts";
 import {CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET} from "@/infrastructure/constants/cloudinary.ts";
 import {
-  convertDateFormat, convertToAntdDatePicker
+  convertDateFormat, convertTextCode, convertToAntdDatePicker
 } from "@/utils/common.helper.ts";
 import {toast} from "vue3-toastify";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
@@ -178,8 +178,7 @@ const modelRef = reactive<StaffRequest>({
 
 const rulesRef = reactive({
   name: [
-    { required: true, message: "Vui lòng nhập tên nhân viên", trigger: "blur" },
-    { validator: (_, value) => value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"), trigger: "blur" },
+    { validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"), trigger: "blur" },
     { max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur" },
   ],
   username: [

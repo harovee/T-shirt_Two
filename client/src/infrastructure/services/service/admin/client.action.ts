@@ -1,10 +1,11 @@
 import {
     changeStatusClient,
+    ClientRequest,
     createClient,
     FindClientRequest,
     getClientById,
     getClients,
-    ClientRequest,
+    updateAvatarClient,
     updateClient
 } from "@/infrastructure/services/api/admin/client.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
@@ -39,7 +40,7 @@ export const useCreateClient = () => {
 
 
 export const useGetClientById = (
-    clientId: Ref<string | null>, options?: any
+    clientId: string, options?: any
 ): UseQueryReturnType<Awaited<ReturnType<typeof getClientById>>, Error> => {
     return useQuery({
         queryKey: [queryKey.admin.client.clientDetail, clientId,],
@@ -74,3 +75,19 @@ export const useChangeStatusClient = () => {
         },
     });
 };
+
+export const useUpdateClientAvatar = () => {
+    const query = useQueryClient();
+    return useMutation({
+        mutationFn: ({clientId, data}: {
+            clientId: string;
+            data: ClientRequest;
+        }) => updateAvatarClient(clientId, data),
+        onSuccess: () => {
+            query.invalidateQueries({queryKey: [queryKey.admin.client.clientDetail],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.client.clientDetail + "🚀 ~ clientUpdate ~ error:", error);
+        },
+    });
+}

@@ -36,7 +36,7 @@
               class="w-full"
               v-else-if="field.component === 'a-date-picker'"
               v-model:value="modelRef[field.name]"
-              format="YYYY-MM-DD HH:mm"
+              format="YYYY-MM-DD"
               show-time
               :placeholder="field.placeholder"
           ></a-date-picker>
@@ -77,8 +77,7 @@ const modelRef = reactive<StaffRequest>({
 
 const rulesRef = reactive({
   name: [
-    { required: true, message: "Vui lòng nhập tên nhân viên", trigger: "blur" },
-    { validator: (_, value) => value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"), trigger: "blur" },
+    { validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"), trigger: "blur" },
     { max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur" },
   ],
   username: [

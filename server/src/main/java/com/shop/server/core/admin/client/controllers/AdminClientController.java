@@ -1,7 +1,7 @@
 package com.shop.server.core.admin.client.controllers;
 
-import com.shop.server.core.admin.client.models.requests.ClientFindProductRequest;
-import com.shop.server.core.admin.client.models.requests.ClientProductRequest;
+import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
+import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
 import com.shop.server.core.admin.client.services.AdminClientService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -28,23 +28,33 @@ public class AdminClientController {
 
 
     @GetMapping()
-    public ResponseEntity<?> getProducts(@Valid final ClientFindProductRequest request) {
+    public ResponseEntity<?> getClients(@Valid final AdminFindClientRequest request) {
         return Helper.createResponseEntity(adminClientService.getClients(request));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getClientById(@PathVariable String id) {
+        return Helper.createResponseEntity(adminClientService.getClientById(id));
+    }
+
     @PostMapping()
-    public ResponseEntity<?> createProduct(@Valid @RequestBody final ClientProductRequest request) {
+    public ResponseEntity<?> createClient(@Valid @RequestBody final AdminClientRequest request) {
         return Helper.createResponseEntity(adminClientService.createClient(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable String id, @Valid @RequestBody final ClientProductRequest request) {
+    public ResponseEntity<?> updateClient(@PathVariable String id, @Valid @RequestBody final AdminClientRequest request) {
         return Helper.createResponseEntity(adminClientService.updateClient(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable String id) {
+    public ResponseEntity<?> deleteClient(@PathVariable String id) {
         return Helper.createResponseEntity(adminClientService.changeStatusClient(id));
+    }
+
+    @PutMapping("/avatar/{id}")
+    public ResponseEntity<?> updateClientAvatar(@PathVariable String id, @RequestBody final AdminClientRequest request) {
+        return Helper.createResponseEntity(adminClientService.updateClientAvatar(id, request));
     }
 
 }

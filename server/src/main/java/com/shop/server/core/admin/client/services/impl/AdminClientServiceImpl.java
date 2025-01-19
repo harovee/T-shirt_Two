@@ -1,13 +1,13 @@
 package com.shop.server.core.admin.client.services.impl;
 
-import com.shop.server.core.admin.client.models.requests.ClientFindProductRequest;
-import com.shop.server.core.admin.client.models.requests.ClientProductRequest;
+import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
+import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
 import com.shop.server.core.admin.client.repositories.AdminClientRepository;
 import com.shop.server.core.admin.client.services.AdminClientService;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.KhachHang;
-import com.shop.server.entities.main.NhanVien;
+import com.shop.server.entities.main.KhachHang;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.infrastructure.security.oauth2.session.InfoUserTShirt;
 import com.shop.server.utils.DateTimeUtil;
@@ -32,7 +32,7 @@ public class AdminClientServiceImpl implements AdminClientService {
     }
 
     @Override
-    public ResponseObject<?> getClients(ClientFindProductRequest request) {
+    public ResponseObject<?> getClients(AdminFindClientRequest request) {
         Pageable pageable = Helper.createPageable(request);
         return new ResponseObject<>(
                 PageableObject.of(adminClientRepository.getClientByRequest(pageable, request)),
@@ -51,20 +51,32 @@ public class AdminClientServiceImpl implements AdminClientService {
     }
 
     @Override
-    public ResponseObject<?> createClient(ClientProductRequest request) {
+    public ResponseObject<?> createClient(AdminClientRequest request) {
         if (adminClientRepository.existsClientByEmail(request.getEmail())) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
                     Message.Response.DUPLICATE + ", email"
             );
         }
+        if (adminClientRepository.existsClientByUsername(request.getUsername())) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", tên tài khoản"
+            );
+        }
+        if (adminClientRepository.existsClientByPhoneNumber(request.getPhoneNumber())) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", số điện thoại"
+            );
+        }
         KhachHang client = new KhachHang();
-        client.setUsername(request.getUserName());
+        client.setUsername(request.getUsername());
         client.setPassword(request.getPassword());
         client.setFullName(request.getName());
         client.setEmail(request.getEmail());
         Long count = adminClientRepository.count() + 1;
-        String formattedCode = String.format("%05d", count);
+        String formattedCode = String.format("%09d", count);
         client.setCode(formattedCode);
         client.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
         client.setGender(request.getGender());
@@ -80,7 +92,7 @@ public class AdminClientServiceImpl implements AdminClientService {
     }
 
     @Override
-    public ResponseObject<?> updateClient(String id, ClientProductRequest request) {
+    public ResponseObject<?> updateClient(String id, AdminClientRequest request) {
         Optional<KhachHang> clientOptional = adminClientRepository.findById(id);
         if (clientOptional.isEmpty()) {
             return ResponseObject.errorForward(
@@ -88,9 +100,27 @@ public class AdminClientServiceImpl implements AdminClientService {
                     Message.Response.NOT_FOUND + ", khách hàng"
             );
         }
+        if (adminClientRepository.existsClientByEmailAndIdNotEquals(request.getEmail(), id) == 1) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", email"
+            );
+        }
+        if (adminClientRepository.existsClientByUsernameAndIdNotEquals(request.getUsername(), id) == 1) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", tên tài khoản"
+            );
+        }
+        if (adminClientRepository.existsClientByPhoneNumberAndIdNotEquals(request.getPhoneNumber(), id) == 1) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", số điện thoại"
+            );
+        }
         try {
             KhachHang client = clientOptional.get();
-            client.setUsername(request.getUserName());
+            client.setUsername(request.getUsername());
             client.setPassword(request.getPassword());
             client.setFullName(request.getName());
             client.setEmail(request.getEmail());
@@ -123,6 +153,24 @@ public class AdminClientServiceImpl implements AdminClientService {
         KhachHang khachHang = khachHangOptional.get();
         khachHang.setDeleted(!khachHang.getDeleted());
         adminClientRepository.save(khachHang);
+        return ResponseObject.successForward(
+                HttpStatus.CREATED,
+                Message.Success.UPDATE_SUCCESS
+        );
+    }
+
+    @Override
+    public ResponseObject<?> updateClientAvatar(String id, AdminClientRequest request) {
+        Optional<KhachHang> clientOptional = adminClientRepository.findById(id);
+        if (clientOptional.isEmpty()) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.NOT_FOUND + ", nhân viên"
+            );
+        }
+        KhachHang client = clientOptional.get();
+        client.setProfilePicture(request.getPicture());
+        adminClientRepository.save(client);
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.UPDATE_SUCCESS

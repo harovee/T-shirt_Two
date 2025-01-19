@@ -85,8 +85,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setFullName(request.getName());
             staff.setEmail(request.getEmail());
             Long count = adminStaffRepository.countNhanVienByRole(Role.USER) + 1;
-            String formattedCode = String.format("%05d", count);
-            staff.setCode(formattedCode);
+            staff.setCode(String.valueOf(count));
             staff.setIdentity(request.getIdentity());
             staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
             staff.setGender(request.getGender());
@@ -117,6 +116,31 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
                     Message.Response.NOT_FOUND + ", nhân viên"
+            );
+        }
+        log.info("adminStaffRepository.existsStaffByEmailAndIdNotEquals(request.getEmail(), id) + {}", adminStaffRepository.existsStaffByEmailAndIdNotEquals(request.getEmail(), id));
+        if (adminStaffRepository.existsStaffByEmailAndIdNotEquals(request.getEmail(), id) == 1L) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", email"
+            );
+        }
+        if (adminStaffRepository.existsStaffByUsernameAndIdNotEquals(request.getUsername(), id) == 1L) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", tên tài khoản"
+            );
+        }
+        if (adminStaffRepository.existsStaffByIdentityAndIdNotEquals(request.getIdentity(), id) == 1L) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", mã định danh cá nhân"
+            );
+        }
+        if (adminStaffRepository.existsStaffByPhoneNumberAndIdNotEquals(request.getPhoneNumber(), id) == 1L) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", số điện thoại"
             );
         }
         try {

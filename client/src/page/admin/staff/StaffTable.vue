@@ -35,7 +35,7 @@
         <div v-if="column.key === 'another'" class="text-center">
         </div>
         <div v-else-if="column.key === 'code'">
-          NV{{record.code}}
+          {{ convertTextCode(record.name)}}{{record.code}}
         </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>
@@ -90,6 +90,7 @@ import {defineEmits, watch} from "vue";
 import {useChangeStatusStaff} from "@/infrastructure/services/service/admin/staff.action.ts";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
+import {convertTextCode} from "@/utils/common.helper.ts";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -160,6 +161,14 @@ const columnsStaff: ColumnType[] = [
     title: "Email nhân viên",
     dataIndex: "email",
     key: "email",
+    ellipsis: true,
+    width: 200,
+    resizable: true
+  },
+  {
+    title: "Số điện thoại",
+    dataIndex: "phoneNumber",
+    key: "phoneNumber",
     ellipsis: true,
     width: 200,
     resizable: true

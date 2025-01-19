@@ -31,7 +31,7 @@ export const getDateTimeMinutesFormat = (unix: number, showTime: boolean = false
 
 export const convertDateFormat = (inputDate: number | null): string => {
     const parsedDate = dayjs(inputDate);
-    return parsedDate.format('DD/MM/YYYY HH:mm:ss'); // Định dạng theo yêu cầu
+    return parsedDate.format('HH:mm:ss DD/MM/YYYY'); // Định dạng theo yêu cầu
 };
 
 export const confirmModal = (message, onConfirm) => {
@@ -99,3 +99,22 @@ export const convertToAntdDatePicker = (timestamp: string | number | null): dayj
     const date = dayjs(Number(timestamp));
     return date.isValid() ? date : null;
 };
+
+/**
+ * @param input - 'Phạm Thị Lan Anh'
+ * @returns resuilt - 'anhptl'
+ */
+export function convertTextCode(input: string | null): string {
+    if (!input) return "";
+    const words = input.split(" "); // Tách chuỗi thành các từ
+    const lastName = removeAccents(words[words.length - 1].toLowerCase());
+    const initials = words
+        .slice(0, words.length - 1)
+        .map(word => removeAccents(word[0].toLowerCase()))
+        .join("");
+
+    return `${lastName}${initials}`;
+}
+
+const removeAccents = (str: string): string =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");

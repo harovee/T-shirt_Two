@@ -23,6 +23,7 @@ export interface ClientRequest {
     birthday: String | null;
     gender: String | null;
     phoneNumber: String | null;
+    picture: String | null;
 }
 
 export type ClientResponse = ResponseList & {
@@ -34,8 +35,21 @@ export type ClientResponse = ResponseList & {
 };
 
 export type DetailClientResponse = {
-    name: string | null;
+    id: string;
+    username: string | null;
+    code: string | null;
+    fullName: string | null;
+    birthday: string | null;
+    gender: string | null;
+    phoneNumber: string | null;
     email: string | null;
+    password: string | null;
+    status: Boolean | null;
+    picture: string | null;
+    createdBy: string | null;
+    lastModifiedBy: string | null;
+    createdDate: number | null;
+    lastModifiedDate: number | null;
 };
 
 export const getClients = async (params: Ref<FindClientRequest>) => {
@@ -67,7 +81,7 @@ export const getClientById = async (clientId: Ref<string | null>) => {
         url: `${PREFIX_API_ADMIN_CLIENT}/${clientId}`,
         method: "GET"
     }) as AxiosResponse<
-        DefaultResponse<ClientResponse>
+        DefaultResponse<DetailClientResponse>
     >;
 };
 
@@ -89,3 +103,13 @@ export const changeStatusClient = async (clientId: string) => {
         DefaultResponse<DefaultResponse<null>>
     >;
 };
+
+export const updateAvatarClient = async (clientId: string, data: ClientRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/avatar/${clientId}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+}
