@@ -10,6 +10,7 @@ import {
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
+import { log } from "console";
 
 
 export const useGetListVoucher = (
@@ -42,7 +43,7 @@ export const useGetVoucherById = (
     voucherId: Ref<string | null>, options?: any
 ): UseQueryReturnType<Awaited<ReturnType<typeof getVoucherById>>, Error> => {
     return useQuery({
-        queryKey: [queryKey.admin.voucher.voucherDetail, voucherId,],
+        queryKey: [queryKey.admin.voucher.voucherDetail,voucherId,],
         queryFn: () => getVoucherById(voucherId),
         ...options,
     });
@@ -52,7 +53,7 @@ export const useGetVoucherById = (
 export const useUpdateVoucher = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({voucherId, data,}: { employeeId: string; data: VoucherRequest; }) => updateVoucher(voucherId, data),
+        mutationFn: ({voucherId, data,}: { voucherId: string; data: VoucherRequest; }) => updateVoucher(voucherId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: [queryKey.admin.voucher.voucherList],});
         },

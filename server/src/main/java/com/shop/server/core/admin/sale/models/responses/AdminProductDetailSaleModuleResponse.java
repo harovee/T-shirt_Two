@@ -8,6 +8,10 @@ public interface AdminProductDetailSaleModuleResponse extends BaseResponse {
 
     String getTen();
 
+    String getSoLuong();
+
+    String getGia();
+
     String getTenSanPham();
 
     String getTenThuongHieu();
@@ -17,5 +21,7 @@ public interface AdminProductDetailSaleModuleResponse extends BaseResponse {
     String getKichCo();
 
     String getPhongCach();
+
+    String getLinkAnh();
 
 }

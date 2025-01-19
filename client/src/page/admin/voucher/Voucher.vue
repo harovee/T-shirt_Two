@@ -19,17 +19,22 @@
           :loading="isLoading || isFetching"
           @handleOpenModalCreate="handleOpenModalCreateVoucher"
           @handleCloseModalCreate="handleCloseModalCreateVoucher"
-          :pagination-params="params" :page-pageable="pageable"
+          :pagination-params="params"
           @update:pagination-params="handlePaginationChange"
           @handleOpenModalUpdateVoucher = "handleOpenModalUpdateVoucher"
       />
     </div>
   </div>
-  <voucher-model
-      :open="isOpenModalCreateVoucher"
+  <voucher-model-c
+      :open="openCreate"
       @handleClose="handleCloseModalCreateVoucher"
-      @onCancel="isOpenModalCreateVoucher = false"
-      :VoucherDetail=" VoucherDetail || null" :all-voucher="VoucherData" :is-loading-detail="isLoadingDetail || false" 
+      @onCancel="openCreate = false" 
+  />
+  <voucher-model-u
+      :open="openUpdate"
+      @handleClose="handleCloseModalUpdateVoucher"
+      @onCancel="openUpdate = false"
+      :VoucherDetail="voucherDetail || null" :all-voucher="VoucherData" :is-loading-detail="isLoadingDetail || false" 
   />
 </template>
 
@@ -41,22 +46,24 @@ import {useGetListVoucher, useGetVoucherById} from "@/infrastructure/services/se
 import {keepPreviousData} from "@tanstack/vue-query";
 import VoucherFilter from "@/page/admin/voucher/VoucherFilter.vue";
 import VoucherTable from "@/page/admin/voucher/VoucherTable.vue";
-// import VoucherModel from "@/page/admin/voucher/VoucherModel.vue";
+import VoucherModelC from "@/page/admin/voucher/VoucherModelC.vue";
+import VoucherModelU from "@/page/admin/voucher/VoucherModelU.vue";
 
 /*** Table - Pagination - Filter  ***/
 
 const params = ref<FindVoucherRequest>({
   page: 1,
-  size: 10,
-  search: ""
+  size: 10
 });
+
 const id = ref<string | null>(null);
 
 const {data, isLoading, isFetching} = useGetListVoucher(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
-const { data: dataDetail , isLoading: isLoadingDetail } = useGetVoucherById(
+
+const { data: dataDetail , isLoading: isLoadingDetail , refetch} = useGetVoucherById(
     id,
     {
       refetchOnWindowFocus: false,
@@ -65,14 +72,11 @@ const { data: dataDetail , isLoading: isLoadingDetail } = useGetVoucherById(
   );
 
 
-
 const handleFilter = (newParams: FindVoucherRequest) => {
   params.value = {...params.value, ...newParams};
 };
 
 const VoucherData = computed(() => data?.value?.data|| []);
-
-// console.log(data?.value?.data?.content);
 
 
 const handlePaginationChange = (newParams: FindVoucherRequest) => {
@@ -80,37 +84,46 @@ const handlePaginationChange = (newParams: FindVoucherRequest) => {
 };
 
 /*** Create Employee ***/
-const isOpenModalCreateVoucher = ref(false);
+const openCreate = ref(false);
+
+const openUpdate = ref(false)
 
 const handleOpenModalCreateVoucher = () => {
-  isOpenModalCreateVoucher.value = true;
-  id.value = null;
+  openCreate.value = true;
 };
 
 const handleCloseModalCreateVoucher = () => {
-  isOpenModalCreateVoucher.value = false;
+  openCreate.value = false;
 };
 
-const handleOpenModalUpdateVoucher = (record: VoucherResponse) =>{
-  isOpenModalCreateVoucher.value= true;
-  id.value = record.id
+const handleOpenModalUpdateVoucher = (record : VoucherResponse) =>{
+  openUpdate.value = true;
+  id.value = record.id;
+//  console.log(id);
 }
-watch(
-    () => data.value,
-    (newData) => {
-      if (newData) {
 
-      }
-    },
-    {immediate: true}
-);
-const VoucherDetail = computed(() => 
+const handleCloseModalUpdateVoucher = (record : VoucherResponse) =>{
+  openUpdate.value = false;
+  id.value =null;
+}
+
+const voucherDetail = computed(() => 
     id.value ? {
-      ...dataDetail.value?.data,
+      ...dataDetail.value?.data?.data,
       id: id.value,
     }
     : null
 );
+ //console.log(voucherDetail);
+ 
+watch(
+  () => openUpdate.value,
+  (newData) => {
+    if (newData && id) {
+      refetch();
+    }
+  }
+);
+// console.log(voucherDetail);
 
-// const pageable = computed(() => data?.value?.data?.pageable);
 </script>

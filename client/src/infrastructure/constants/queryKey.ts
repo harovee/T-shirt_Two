@@ -32,7 +32,8 @@ export const queryKey = {
             songDetail: "adSaleDetailKey",
             productList: "adProductInSaleMdListKey",
             productDetailList: "adProductDetailInSaleMdListKey",
-            attributeList: "adAttributeList"
+            attributeList: "adAttributeListKey",
+            saleProductList: "adSaleProductListKey"
         },
         product: {
             productList: "adProdcutListKey",

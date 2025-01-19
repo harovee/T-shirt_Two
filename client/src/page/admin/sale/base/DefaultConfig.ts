@@ -39,6 +39,35 @@ export const defaultFormState: FormState = {
     lastModifiedDate: null,
 }
 
+
+
+export const disabledDate = (current: Dayjs | null) => {
+    return current && current.isBefore(dayjs().startOf("day"));
+};
+
+export const disabledDateTime = (current: Dayjs | null) => {
+    if (current && current.isSame(dayjs(), "day")) {
+        const now = dayjs();
+        return {
+            disabledHours: () => range(0, 24).filter((hour) => hour < now.hour()),
+            disabledMinutes: () => range(0, 60).filter((minute) => current.hour() === now.hour() && minute <= now.minute()),
+            disabledSeconds: () => range(0, 60).filter(
+                (second) => current.hour() === now.hour() && current.minute() === now.minute() && second <= now.second()
+            ),
+        };
+    }
+    return {};
+};
+
+const range = (start: number, end: number) => {
+    const result: number[] = [];
+    for (let i = start; i < end; i++) {
+        result.push(i);
+    }
+    return result;
+};
+
+
 export const defaultSaleDatePickerRules = [
     { label: 'Ngày mai', value: [dayjs().startOf('d').add(1, 'd'), dayjs().endOf('d').add(1, 'd')] },
     { label: '7 ngày tiếp theo', value: [dayjs(), dayjs().add(7, 'd')] },
@@ -62,9 +91,17 @@ export const defaultSaleDatePickerRules = [
 ]
 
 export const defaultSortOptions = [
-    {value: "gia_tri", label: "gia_tri"},
-    {value: "ngay_bat_dau", label: "Ngày bắt đầu"},
-    {value: "ngay_ket_thuc", label: "Ngày kết thúc"},
+    { value: "gia_tri", label: "gia_tri" },
+    { value: "ngay_bat_dau", label: "Ngày bắt đầu" },
+    { value: "ngay_ket_thuc", label: "Ngày kết thúc" },
 
 ]
+
+export const convertDateFormat = (inputDate: string): string => {
+  const parsedDate = dayjs(inputDate, 'DD/MM/YYYY HH:mm');
+  if (!parsedDate.isValid()) {
+    throw new Error('Ngày tháng không hợp lệ');
+  }
+  return parsedDate.format('YYYY/MM/DD HH:mm:ss');
+};
 

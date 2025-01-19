@@ -154,6 +154,7 @@ export type ProductSaleModuleResponse = {
     id: string | null;
     ten: string | null;
     tenDanhMuc: string | null;
+    tongSoLuong: number | null;
 }
 export const getProductSaleModule = async (params: Ref<FindProductRequest>) => {
     const res = (await request({
@@ -188,11 +189,14 @@ export interface FindProductDetailRequest extends PropertyProductDetailParams, P
 export type ProductDetailResponse = ResponseList & {
     maSanPhamChiTiet: string | null;
     ten: string | null;
+    gia: number | null;
     tenSanPham: string | null;
     tenThuongHieu: string | null;
     gioiTinh: boolean | null;
     kichCo: string | null;
     phongCach: string | null;
+    soLuong: number | null;
+    linkAnh: string | null;
 }
 export const getProductDetailSaleModule = async (params: Ref<FindProductDetailRequest>) => {
     const res = (await request({
@@ -208,7 +212,7 @@ export const getProductDetailSaleModule = async (params: Ref<FindProductDetailRe
 
 
 export interface SaleProductRequest {
-    idSanPhamChiTiets: string | null;
+    idSanPhamChiTiets: string[] | null;
     idDotGiamGia?: string | null,
     loaiGiamGia?: string | null;
     giaTriGiamGia?: number | null;
@@ -238,6 +242,56 @@ export const saveSaleAndSaleProduct = async (data: SaleAndSaleProductRequest) =>
         method: "POST",
         data: data
     })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+    return res.data;
+};
+
+export const updateSaleAndSaleProduct = async (data: SaleAndSaleProductRequest, saleId: string) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_SALE}/save-sale-and-sale-product-details/${saleId}`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+    return res.data;
+};
+
+
+export interface PropertySaleProductDetailParams {
+    keyword?: string | null;
+    idDotGiamGia: string;
+
+    [key: string]: any;
+}
+export interface FindSaleProductDetailRequest extends PropertySaleProductDetailParams, PaginationParams {
+}
+export type SaleProductDetailResponse = ResponseList & {
+    idSanPhamGiamGia: string | null;
+    maSanPhamChiTiet: string | null;
+    ten: string | null;
+    gia: number | null;
+    soLuong: number | null;
+    giaSauGiam: number | null;
+    linkAnh: string | null;
+};
+export const getSaleProductDetails = async (params: Ref<FindSaleProductDetailRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_SALE}/sale-product-details`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<SaleProductDetailResponse>>>
+    >;
+    return res.data;
+};
+
+export const deleteSaleProductById = async (saleProductId: string) => {
+    const res = await request({
+        url: `${PREFIX_API_ADMIN_SALE}/sale-product-details/${saleProductId}`,
+        method: "DELETE",
+    }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>
     >;
     return res.data;

@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AdminProductSaleModuleRepository extends SanPhamRepository {
@@ -74,20 +75,25 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
 
     @Query(value = """
             select ROW_NUMBER() OVER(ORDER BY sp.id DESC) AS catalog,
-            sp.id, sp.ten, dm.ten as ten_danh_muc
+            sp.id, sp.ten, dm.ten as ten_danh_muc, sum(spct.so_luong) as tong_so_luong
             from san_pham sp
             join danh_muc dm on dm.id = sp.id_danh_muc
+            join san_pham_chi_tiet spct on sp.id = spct.id_san_pham
             where sp.deleted = 0 and sp.trang_thai = 'ACTIVE'
             and (:#{#req.key} is null or  sp.ten LIKE CONCAT('%', :#{#req.key}, '%'))
             and (:#{#req.idDanhMuc} is null or sp.id_danh_muc = :#{#req.idDanhMuc})
-                    
+            group by sp.id, sp.ten, dm.ten
+            having sum(spct.so_luong) > 0;
             """, countQuery = """
             select COUNT(sp.id)
             from san_pham sp
             join danh_muc dm on dm.id = sp.id_danh_muc
+            join san_pham_chi_tiet spct on sp.id = spct.id_san_pham
             where sp.deleted = 0 and sp.trang_thai = 'ACTIVE'
             and (:#{#req.key} is null or  sp.ten LIKE CONCAT('%', :#{#req.key}, '%'))
-            and (:#{#req.idDanhMuc} is null or sp.id_danh_muc = :#{#req.idDanhMuc})  \s
+            and (:#{#req.idDanhMuc} is null or sp.id_danh_muc = :#{#req.idDanhMuc})
+            group by sp.id, sp.ten, dm.ten
+            having sum(spct.so_luong) > 0;
             """, nativeQuery = true)
     Page<AdminProductSaleModuleResponse> getProducts(AdminFindProductSaleModuleRequest req, Pageable pageable);
 
@@ -96,11 +102,14 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 select ROW_NUMBER() OVER(ORDER BY spct.id DESC) AS catalog,
                     spct.id,
                     spct.ma_san_pham_chi_tiet,
+                    spct.gia,
                     spct.ten,
                     CONCAT(sp.ten, ' ', dm.ten) as ten_san_pham,
                     th.ten as ten_thuong_hieu,
                     spct.gioi_tinh,
+                    spct.so_luong,
                     kc.ten as kich_co,
+                    coalesce(anh.url, 'default-product-detail-image-url.jpg') as link_anh,
                     CONCAT(ca.ten, ',', ta.ten, ',', ht.ten, ',', cl.ten, ',', kd.ten, ',', tn.ten, ',', ms.ma_mau_sac, ',', ms.ten) as phong_cach
                 from san_pham_chi_tiet spct
                 join san_pham sp on spct.id_san_pham = sp.id and sp.id in :#{#req.idSanPhams}
@@ -114,7 +123,9 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 join kieu_dang kd on spct.id_kieu_dang = kd.id
                 join tinh_nang tn on spct.id_tinh_nang = tn.id
                 join mau_sac ms on spct.id_mau_sac = ms.id
-                where spct.deleted = 0
+                left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
+                where spct.deleted = false
+                and spct.trang_thai != 0
                 and (:#{#req.gioiTinh} is null or spct.gioi_tinh = :#{#req.gioiTinh})
                 and (:#{#req.keyword} is null
                     or sp.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
@@ -143,7 +154,8 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 join kieu_dang kd on spct.id_kieu_dang = kd.id
                 join tinh_nang tn on spct.id_tinh_nang = tn.id
                 join mau_sac ms on spct.id_mau_sac = ms.id
-                where spct.deleted = 0
+                where spct.deleted = false
+                and spct.trang_thai != 0
                 and (:#{#req.gioiTinh} is null or spct.gioi_tinh = :#{#req.gioiTinh})
                 and (:#{#req.keyword} is null
                     or sp.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
@@ -161,5 +173,35 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
             """, nativeQuery = true)
     Page<AdminProductDetailSaleModuleResponse> getProductDetailsByProductId(AdminFindProductDetailSaleModuleRequest req, Pageable pageable);
 
+
+    @Query(value = """
+             select
+                    spct.id,
+                    spct.ma_san_pham_chi_tiet,
+                    spct.ten,
+                    spct.gia,
+                    CONCAT(sp.ten, ' ', dm.ten) as ten_san_pham,
+                    th.ten as ten_thuong_hieu,
+                    spct.gioi_tinh,
+                    spct.so_luong,
+                    kc.ten as kich_co,
+                    coalesce(anh.url, 'default-product-detail-image-url.jpg') as link_anh,
+                    CONCAT(ca.ten, ',', ta.ten, ',', ht.ten, ',', cl.ten, ',', kd.ten, ',', tn.ten, ',', ms.ma_mau_sac, ',', ms.ten) as phong_cach
+                from san_pham_chi_tiet spct
+                join san_pham sp on spct.id_san_pham = sp.id
+                join danh_muc dm on dm.id = sp.id_danh_muc
+                join thuong_hieu th on spct.id_thuong_hieu = th.id
+                join kich_co kc on spct.id_kich_co = kc.id
+                join co_ao ca on spct.id_co_ao = ca.id
+                join tay_ao ta on spct.id_tay_ao = ta.id
+                join hoa_tiet ht on spct.id_hoa_tiet = ht.id
+                join chat_lieu cl on spct.id_chat_lieu = cl.id
+                join kieu_dang kd on spct.id_kieu_dang = kd.id
+                join tinh_nang tn on spct.id_tinh_nang = tn.id
+                join mau_sac ms on spct.id_mau_sac = ms.id
+                left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
+                where spct.id = ?1
+            """, nativeQuery = true)
+    Optional<AdminProductDetailSaleModuleResponse> getProductDetailById(String id);
 
 }

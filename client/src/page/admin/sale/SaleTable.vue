@@ -41,7 +41,7 @@
           {{ getDateFormat(record.ngayKetThuc, true) }}
         </div>
         <div v-else-if="column.key === 'trangThai'" class="text-center">
-          <a-tag v-if="record.trangThai === 'IN_PROGRESS'" color="success">Đang trong đợt</a-tag>
+          <a-tag v-if="record.trangThai === 'IN_PROGRESS'" color="success">Đang diễn ra</a-tag>
           <a-tag v-else-if="record.trangThai === 'INACTIVE'" color="warning">Bị vô hiệu hóa</a-tag>
           <a-tag v-else-if="record.trangThai === 'PENDING'" color="warning">Chưa diễn ra</a-tag>
           <a-tag v-else-if="record.trangThai === 'FINISHED'" color="warning">Đã kết thúc</a-tag>
@@ -49,16 +49,19 @@
         </div>
         <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
           <a-popconfirm
-              :title="record.trangThai == 'INACTIVE' ? 'Tắt vô hiệu hóa đợt giảm giá này?' : 'Vô hiệu hóa đợt giảm giá này'"
+              :title="record.trangThai == 'INACTIVE' ? 'Kích hoạt đợt giảm giá này?' : 'Vô hiệu hóa đợt giảm giá này'"
               ok-text="Có"
               cancel-text="Hủy"
               @confirm="handleChangeStatusSale(record.id, record.trangThai == 'INACTIVE' ? 'ACTIVE': 'INACTIVE')"
+              :disabled="record.ngayKetThuc <= Date.now()"
           >
             <a-tooltip
+                placement="left"
                 :title="record.ngayKetThuc <= Date.now() ? 'Không đổi trạng thái khi đợt giảm giá đã kết thúc' : 'Đổi trạng thái hoạt động'"
                 trigger="hover"
             >
               <a-button
+
                   class="bg-purple-100"
                   size="middle"
                   shape="round"

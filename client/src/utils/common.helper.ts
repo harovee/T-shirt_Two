@@ -45,6 +45,18 @@ export const convertDateFormatTime = (inputDate: number): string => {
   return parsedDate.format('DD/MM/YYYY'); // Định dạng theo yêu cầu
 };
 
+export const formatCurrency = (amount: number, currency: string, locale: string = "en-US"): string => {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+  }).format(amount);
+}
+// // Ví dụ sử dụng:
+// console.log(formatCurrency(123456.78, "USD", "en-US")); // $123,456.78
+// console.log(formatCurrency(123456.78, "GBP", "en-GB")); // £123,456.78
+// console.log(formatCurrency(123456.78, "VND", "vi-VN")); // 123.456,78 ₫
+// console.log(formatCurrency(123456.78, "JPY", "ja-JP")); // ￥123,457
+
 export const confirmModal = (message, onConfirm) => {
   Modal.confirm({
     content: message,
@@ -108,3 +120,6 @@ export const getCurrentTimeStampSecond = (): number => {
 export const formatCurrencyVND = (value: number): string => {
   return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
+
+export const defaultProductImageSaleUrl =
+  'https://static.vecteezy.com/system/resources/previews/015/079/128/large_2x/orange-empty-stage-product-show-3d-render-png.png';

@@ -15,6 +15,7 @@ import java.util.List;
 @ToString
 public class AdminSaleProductRequest {
 
+
     private List<String> idSanPhamChiTiets;
 
     private String idDotGiamGia;
@@ -23,7 +24,8 @@ public class AdminSaleProductRequest {
 
     private Double giaTriGiamGia;
 
-    private String nhanVien;
+    private Double giaTriGiamToiDa;
 
+    private String nhanVien;
 
 }
