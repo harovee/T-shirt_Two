@@ -18,6 +18,11 @@ import {
 
     SaleAndSaleProductRequest,
     saveSaleAndSaleProduct,
+    deleteSaleProductById,
+    updateSaleAndSaleProduct,
+
+    FindSaleProductDetailRequest,
+    getSaleProductDetails
 } from "../../api/admin/sale.api";
 
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
@@ -95,6 +100,24 @@ export const useCreateSaleAndSaleProduct = () => {
     });
 };
 
+export const useUpdateSaleAndSaleProduct = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ saleId, data, }: { saleId: string; data: SaleAndSaleProductRequest; })=> updateSaleAndSaleProduct(data, saleId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.sale.saleProductList],
+            })
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.sale.productDetailList],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.sale.saleProductList, "🚀 ~ saleProductCreate ~ error:", error);
+        },
+    });
+};
+
 
 export const useGetSaleById = (
     saleId: Ref<string | null>, options?: any
@@ -113,6 +136,7 @@ export const useUpdateSale = () => {
         mutationFn: ({ saleId, data, }: { saleId: string; data: SaleRequest; }) => updateSale(saleId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.saleList], });
+            queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.saleProductList], });
         },
         onError: (error: any) => {
             console.log(queryKey.admin.sale.saleList + "🚀 ~ saleUpdate ~ error:", error);
@@ -142,7 +166,33 @@ export const useDeleteSale = () => {
             queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.saleList], });
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.sale.saleList + "🚀 ~ clientDelete ~ error:", error);
+            console.log(queryKey.admin.sale.saleList + "🚀 ~ saleDelete ~ error:", error);
+        },
+    });
+};
+
+
+
+export const useGetSaleProductDetails = (
+    params: Ref<FindSaleProductDetailRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getSaleProductDetails>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.sale.saleProductList, params],
+        queryFn: () => getSaleProductDetails(params),
+        ...options,
+    });
+};
+
+export const useDeleteSaleProduct = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (saleId: string) => deleteSaleProductById(saleId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.saleProductList], });
+            queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.productDetailList] });
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.sale.saleProductList + "🚀 ~ saleProductDelete ~ error:", error);
         },
     });
 };

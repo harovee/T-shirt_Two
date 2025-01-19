@@ -39,7 +39,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { debounce } from "lodash";
 import { defineEmits, ref, watch } from "vue";
 import { FindSaleRequest, PropertySaleParams } from "@/infrastructure/services/api/admin/sale.api.ts";
-import { convertDateFormat } from "@/utils/common.helper.ts";
+import { convertDateFormat } from "@/page/admin/sale/base/DefaultConfig";
 
 const emit = defineEmits([
   "filter"
