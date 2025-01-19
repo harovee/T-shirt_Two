@@ -13,7 +13,7 @@
       </div>
   </div>
   <div class="p-3 grid grid-cols-5 gap-6">
-      <div class="col-span-5 md:col-span-5 lg:col-span-2 w-full h-96 shadow-md flex justify-center">
+      <div class="col-span-5 md:col-span-5 lg:col-span-2 w-full h-96 shadow-md flex justify-center h-fit">
           <div class="w-[30rem] p-5">
               <!-- FORM CHI TIẾT ĐỢT GIẢM GIÁ -->
               <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
