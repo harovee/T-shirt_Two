@@ -27,6 +27,8 @@
 
     <!-- Bill History -->
     <bill-history class="shadow p-4 rounded-lg bg-white"
+      :data-source="historyData"
+      :loading="isHistoryLoading"
     />
 
     <!-- Bill Detail Table -->
@@ -34,12 +36,32 @@
       class="shadow p-4 rounded-lg bg-white"
       :columns="columnsBill"
       :data-source="detailDataSource?.data?.data"
+      :bill-data="billData"
       :loading="isLoading"
       :pagination-params="paginationParams || {}"
       :total-pages="detailDataSource?.data?.totalPages || 1"
       @update:paginationParams="$emit('update:paginationParams', $event)"
     />
   </div>
+
+  <div class="shadow p-4 rounded-lg bg-white mt-6">
+      <!-- <div class="flex justify-between mb-4">
+        <span class="text-lg">Mã giảm giá:</span>
+        <span class="text-lg">{{ detailData?.data?.data?.[0]. || 'Chưa có mã giảm giá' }}</span>
+      </div> -->
+      <div class="flex justify-between mb-4">
+        <span class="text-lg">Giảm giá:</span>
+        <span class="text-lg text-green-500">{{ detailData?.data?.data?.[0] ? `- ${formatCurrencyVND(detailData?.data?.data?.[0].tienGiamHD)}` : '0 VND' }}</span>
+      </div>
+      <div class="flex justify-between mb-4">
+        <span class="text-lg">Phí vận chuyển:</span>
+        <span class="text-lg">{{ detailData?.data?.data?.[0] ? `${formatCurrencyVND(detailData?.data?.data?.[0].tienShip)}` : '0 VND' }}</span>
+      </div>
+      <div class="flex justify-between font-semibold text-xl">
+        <span>Tổng tiền:</span>
+        <span>{{detailData?.data?.data?.[0] ? formatCurrencyVND(detailData?.data?.data?.[0].tongTienHD) : '0 VND' }}</span>
+      </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -52,6 +74,10 @@ import { computed, onMounted, ref, watch } from "vue";
 import BillHistory from "./BillHistory.vue";
 import BillDetailTable from "./BillDetailTable.vue";
 import { ColumnType } from "ant-design-vue/es/table";
+import { useGetBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
+import { FindBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
+import { useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
+import { formatCurrencyVND } from "@/utils/common.helper";
 
 const handleRedirectBillManager = () => {
   router.push({
@@ -64,6 +90,14 @@ const params = ref<FindBillDetailRequest>({
   size: 10,
   idHoaDon: "",
 });
+
+const paramsHistory = ref<FindBillHistoryRequest>({
+  page: 1,
+  size: 10,
+  idHoaDon: "",
+});
+
+const billId = ref<string | null>(null); // Tạo một ref cho billId
 
 const emit = defineEmits(["update:paginationParams"]);
 
@@ -78,6 +112,10 @@ const getIdHoaDonFromUrl = () => {
 
 onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
+  paramsHistory.value.idHoaDon = getIdHoaDonFromUrl();
+  billId.value = getIdHoaDonFromUrl();
+  console.log(billId.value);
+  
 });
 
 const {
@@ -89,9 +127,25 @@ const {
   placeholderData: keepPreviousData,
 });
 
-const handleDetailPaginationChange = (newParams: FindBillDetailRequest) => {
-  params.value = { ...params.value, ...newParams };
-};
+const {
+  data: historyData,
+  isLoading: isHistoryLoading,
+  isFetching: isHistoryFetching
+} = useGetBillHistory(paramsHistory, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const { data: billData, isLoading: isBillLoading } = useGetBillById(billId, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+  enabled: !!billId.value,
+});
+
+watch(historyData, (newData) => {
+  console.log("History data updated:", newData);
+});
+
 
 const detailDataSource = computed(() => detailData.value || []);
 
@@ -127,6 +181,7 @@ const columnsBill: ColumnType[] = [
     ellipsis: true,
     width: 150,
     align: "center",
+    
   },
   {
     title: "Thành tiền",

@@ -13,4 +13,7 @@ import lombok.Setter;
 public class AdminFindBillRequest extends PageableRequest {
     private String keyword;
     private String trangThai;
+    private Long ngayBatDau;
+    private Long ngayKetThuc;
+    private String loaiHD;
 }

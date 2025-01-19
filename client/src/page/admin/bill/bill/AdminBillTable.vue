@@ -4,8 +4,7 @@
       <div>
         <h3 class="text-xl font-semibold text-gray-800">Danh sách hóa đơn</h3>
       </div>
-      <div class="p-2.5">
-      </div>
+      <div class="p-2.5"></div>
     </div>
     <table-example
       wrapperClassName="min-h-[410px]"
@@ -18,17 +17,27 @@
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'another'" class="text-center"></div>
+        <div v-else-if="column.key === 'ngayTao'" class="text-center">
+          {{ convertDateFormatTime(record.ngayTao) }}
+        </div>
+        <div v-else-if="column.key === 'tongTien'" class="text-center">
+          {{ formatCurrencyVND(record.tongTien) }}
+        </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.trangThai === 'Thành công'" color="success"
             >Thành công</a-tag
-          >
+          > 
           <a-tag v-else-if="record.trangThai === 'Chờ xác nhận'" color="warning"
             >Chờ xác nhận</a-tag
           >
-          <a-tag v-else-if="record.trangThai === 'Chờ giao hàng'" color="processing"
+          <a-tag
+            v-else-if="record.trangThai === 'Chờ giao hàng'"
+            color="processing"
             >Chờ giao hàng</a-tag
           >
-          <a-tag v-else-if="record.trangThai === 'Đang vận chuyển'" color="default"
+          <a-tag
+            v-else-if="record.trangThai === 'Đang vận chuyển'"
+            color="default"
             >Đang vận chuyển</a-tag
           >
           <a-tag v-else-if="record.trangThai === 'Trả hàng'" color="error"
@@ -41,8 +50,9 @@
             >Online</a-tag
           >
           <a-tag v-else-if="record.loaiHD === 'Tại quầy'" color="default"
-            >Tại quầy</a-tag>
-          
+            >Tại quầy</a-tag
+          >
+
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
         <div
@@ -67,15 +77,14 @@
 
 <script lang="ts" setup>
 import { ColumnType } from "ant-design-vue/es/table";
-import {defineEmits} from "vue";
+import { defineEmits } from "vue";
 import TableExample from "@/components/ui/TableExample.vue";
-import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
-import router from "@/infrastructure/routes/router.ts";
+import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
+import router from "@/infrastructure/routes/router";
+import { convertDateFormatTime, formatCurrencyVND } from "@/utils/common.helper";
 
 
-const emit = defineEmits([
-  "update:paginationParams",
-]);
+const emit = defineEmits(["update:paginationParams",]);
 
 const props = defineProps({
   dataSource: Object,
@@ -85,12 +94,15 @@ const props = defineProps({
 
 const handleRedirectBillDetail = (idHoaDon: string) => {
   const detailBillPath = {
-    path: ROUTES_CONSTANTS.ADMIN.path + '/' + ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.path,
-    query: {idHoaDon}
-    }
-    // console.log(detailBillPath)
-    router.push(detailBillPath);
-}
+    path:
+      ROUTES_CONSTANTS.ADMIN.path +
+      "/" +
+      ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.path,
+    query: { idHoaDon },
+  };
+  // console.log(detailBillPath)
+  router.push(detailBillPath);
+};
 
 const columnsBill: ColumnType[] = [
   {
@@ -122,7 +134,7 @@ const columnsBill: ColumnType[] = [
     dataIndex: "tenKhachHang",
     key: "tenKhachHang",
     ellipsis: true,
-    width: 200,
+    width: 140,
     align: "center",
   },
   {
@@ -138,7 +150,7 @@ const columnsBill: ColumnType[] = [
     dataIndex: "loaiHD",
     key: "loaiHD",
     ellipsis: true,
-    width: 120,
+    width: 110,
     align: "center",
   },
   {
@@ -146,10 +158,19 @@ const columnsBill: ColumnType[] = [
     dataIndex: "tongTien",
     key: "tongTien",
     ellipsis: true,
-    width: 140,
+    width: 110,
     align: "center",
   },
-  
+
+  {
+    title: "Ngày tạo",
+    dataIndex: "ngayTao",
+    key: "ngayTao",
+    ellipsis: true,
+    width: 110,
+    align: "center",
+  },
+
   {
     title: "Trạng thái",
     dataIndex: "trangThai",
@@ -163,7 +184,7 @@ const columnsBill: ColumnType[] = [
     key: "action",
     align: "center",
     width: 100,
-    fixed: "right"
+    fixed: "right",
   },
 ];
 </script>

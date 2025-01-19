@@ -35,18 +35,44 @@
       </a-select>
     </a-form-item>
 
-    <a-form-item
-     label="Từ ngày" 
-     class="col-span-2 md:col-span-1 lg:col-span-1"
-     >
-      <a-date-picker placeholder="Chọn ngày bắt đầu" format="YYYY-MM-DD" />
+    <a-form-item label="Từ ngày" class="col-span-2 md:col-span-1 lg:col-span-1">
+      <a-date-picker
+        placeholder="Chọn ngày bắt đầu"
+        format="YYYY-MM-DD"
+        style="width: 100%"
+        @change="onChangeFilter('ngayBatDau', $event)"
+      />
     </a-form-item>
 
     <a-form-item
       label="Đến ngày"
       class="col-span-2 md:col-span-1 lg:col-span-1"
     >
-      <a-date-picker placeholder="Chọn ngày kết thúc" format="YYYY-MM-DD" />
+      <a-date-picker
+        placeholder="Chọn ngày kết thúc"
+        format="YYYY-MM-DD"
+        style="width: 100%"
+        @change="onChangeFilter('ngayKetThuc', $event)"
+      />
+    </a-form-item>
+
+    <!-- Loại hóa đơn -->
+    <a-form-item
+      label="Loại hóa đơn"
+      class="col-span-4 md:col-span-2 lg:col-span-1"
+    >
+      <a-radio-group
+        v-model:value="params.loaiHD"
+        @change="onChangeFilter('loaiHD', $event.target.value)"
+      >
+        <a-radio
+          v-for="typeHD in typeOptions"
+          :key="typeHD.value"
+          :value="typeHD.value"
+        >
+          {{ typeHD.label }}</a-radio
+        >
+      </a-radio-group>
     </a-form-item>
   </a-form>
 </template>
@@ -65,6 +91,9 @@ const params = ref<BillPropsParams>({
   page: 1,
   keyword: null,
   trangThai: null,
+  ngayBatDau: null,
+  ngayKetThuc: null,
+  loaiHD: null,
 });
 
 const statusOptions = [
@@ -76,16 +105,27 @@ const statusOptions = [
   { label: "Trả hàng", value: "Trả hàng" },
 ];
 
+const typeOptions = [
+  { label: "Tất cả", value: null },
+  { label: "Tại quầy", value: "Tại quầy" },
+  { label: "Online", value: "Online" },
+];
+
 const debouncedEmit = debounce(() => {
   const payload = { ...params.value };
-  //   if (Array.isArray(payload.genre)) {
-  //     payload.genre = payload.genre.join(",");
-  //   }
   emit("filter", payload);
 }, 1000);
 
 function onChangeFilter(key: keyof FindBillRequest, value: any) {
-  params.value[key] = value;
+  if (value && typeof value === "object") {
+    // Nếu value là một đối tượng Date, chuyển thành timestamp
+    params.value[key] = value instanceof Date ? value.getTime() : new Date(value).getTime();  
+  } else if (value) {
+    params.value[key] = value;
+  } else {
+    params.value[key] = null;
+  }
+
   debouncedEmit();
 }
 

@@ -9,6 +9,7 @@
       />
       <h3 class="text-2xl m-0">Quản lý hóa đơn</h3>
     </div>
+
     <div
       class="p-4 rounded-xl border-2 shadow-purple-950 shadow-xl flex flex-col gap-6"
     >
@@ -18,6 +19,7 @@
       </div>
       <admin-bill-filter @filter="handleFilter"/>
     </div>
+
     <div class="rounded-xl">
       <admin-bill-table
         :data-source="dataSource"
@@ -25,13 +27,10 @@
         :pagination-params="params"
         @update:pagination-params="handlePaginationChange"
       />
+
     </div>
+    
   </div>
-  <!-- <admin-bill-modal
-    :open="isOpenModalUpdateBill"
-    @handleClose="handleCloseModalUpdateBill"
-    @onCancel="isOpenModalUpdateBill = false"
-  /> -->
 </template>
 
 <script lang="ts" setup>
@@ -65,6 +64,8 @@ const dataSource = computed(() => data?.value?.data || []);
 const handlePaginationChange = (newParams: FindBillRequest) => {
   params.value = { ...params.value, ...newParams };
 };
+
+
 
 watch(
   () => data.value,

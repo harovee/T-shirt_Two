@@ -13,11 +13,29 @@
       <a-button type="default" @click="nextStep" style="margin-right: 8px">
         Xác nhận đơn
       </a-button>
-      <a-button danger="true"> Hủy đơn </a-button>
-      <a-button type="primary"  class="right-button bg-orange-500 hover:bg-orange-600 text-white">
+      <a-button danger> Hủy đơn </a-button>
+      <a-button
+        type="primary"
+        class="right-button bg-orange-500 hover:bg-orange-600 text-white"
+        @click="showDetailModal"
+      >
         Chi tiết
       </a-button>
     </div>
+
+    <!-- Modal -->
+    <a-modal
+      v-model:visible="isDetailModalVisible"
+      title="Lịch sử chi tiết"
+      @ok="handleModalOk"
+      @cancel="handleModalCancel"
+    >
+      <ul>
+        <li v-for="(item, index) in dataSource?.data?.data" :key="index">
+          {{ item.moTa }} - {{ item.ngayTao }}
+        </li>
+      </ul>
+    </a-modal>
   </div>
 </template>
 
@@ -42,72 +60,62 @@ interface Step {
 export default defineComponent({
   name: "DynamicSteps",
   components: {
-    StepContainer, // Register component
+    StepContainer,
     CheckCircleOutlined,
     FileTextOutlined,
     CarOutlined,
     ReloadOutlined,
     CloseOutlined,
   },
+
+  props: {
+    dataSource: Array,
+    loading: {
+      type: Boolean,
+      required: true,
+    },
+  },
+
   data() {
     return {
       currentStepIndex: 1,
+      isDetailModalVisible: false, // Trạng thái hiển thị modal
       allSteps: [
-        {
-          title: "Tạo đơn hàng",
-          time: "23-12-2023 13:48:17",
-          icon: h(CheckCircleOutlined),
-        },
-        {
-          title: "Chờ xác nhận",
-          time: "21-12-2023 13:52:38",
-          icon: h(FileTextOutlined),
-        },
-        {
-          title: "Chờ giao hàng",
-          time: "21-12-2023 13:53:23",
-          icon: h(CarOutlined),
-        },
-        {
-          title: "Đang giao hàng",
-          time: "21-12-2023 13:54:52",
-          icon: h(ReloadOutlined),
-        },
-        {
-          title: "Đã giao hàng",
-          time: "21-12-2023 13:54:52",
-          icon: h(CheckCircleOutlined),
-        },
-        {
-          title: "Thành công",
-          time: "23-12-2023 13:48:17",
-          icon: h(CheckCircleOutlined),
-        },
-        {
-          title: "Trả hàng",
-          time: "21-12-2023 14:00:00",
-          icon: h(CloseOutlined),
-        },
+        { title: "Tạo đơn hàng", time: "", icon: h(CheckCircleOutlined) },
+        { title: "Chờ xác nhận", time: "", icon: h(FileTextOutlined) },
+        { title: "Chờ giao hàng", time: "", icon: h(CarOutlined) },
+        { title: "Đang giao hàng", time: "", icon: h(ReloadOutlined) },
+        { title: "Đã giao hàng", time: "", icon: h(CheckCircleOutlined) },
+        { title: "Thành công", time: "", icon: h(CheckCircleOutlined) },
+        { title: "Trả hàng", time: "", icon: h(CloseOutlined) },
       ],
       steps: [
-        {
-          title: "Tạo đơn hàng",
-          time: "23-12-2023 13:48:17",
-          status: "finish",
-          icon: h(CheckCircleOutlined),
-        },
-        {
-          title: "Chờ xác nhận",
-          time: "21-12-2023 13:52:38",
-          status: "process",
-          icon: h(FileTextOutlined),
-        },
+        { title: "Tạo đơn hàng", time: "", status: "finish", icon: h(CheckCircleOutlined) },
+        { title: "Chờ xác nhận", time: "", status: "process", icon: h(FileTextOutlined) },
       ] as Step[],
     };
   },
+
   methods: {
-    nextStep(): void {
-      if (this.currentStepIndex < this.allSteps.length - 2) {
+    updateStepsBasedOnStatus() {
+      // Lấy trạng thái hiện tại từ dataSource
+      const trangThai = this.dataSource?.data?.data || "Tạo đơn hàng";
+      // console.log(this.dataSource?.data?.data?.[0].trangThai);
+
+      // Tìm chỉ số bước hiện tại
+      const currentStepIndex = this.allSteps.findIndex((step) => step.title === trangThai);
+
+      if (currentStepIndex !== -1) {
+        // Cập nhật steps dựa trên trạng thái
+        this.steps = this.allSteps.slice(0, currentStepIndex + 1).map((step, idx) => ({
+          ...step,
+          status: idx < currentStepIndex ? "finish" : "process",
+        }));
+        this.currentStepIndex = currentStepIndex;
+      }
+    },
+    nextStep() {
+      if (this.currentStepIndex < this.allSteps.length - 1) {
         this.currentStepIndex++;
         const nextStep = {
           ...this.allSteps[this.currentStepIndex],
@@ -118,20 +126,40 @@ export default defineComponent({
         this.steps.push(nextStep);
       }
     },
-    prevStep(): void {
-      if (this.currentStepIndex > 1 && this.currentStepIndex) {
+    prevStep() {
+      if (this.currentStepIndex > 1) {
+        this.steps.pop(); // Xóa bước cuối
         this.currentStepIndex--;
-        const prevStep = {
-          ...this.allSteps[this.currentStepIndex],
-          status: "process",
-        };
-        this.steps[this.steps.length - 1].status = "finish";
-        this.steps.push(prevStep);
+        this.steps[this.steps.length - 1].status = "process"; // Đặt bước trước đó thành "process"
       }
+    },
+    showDetailModal() {
+      console.log(this.dataSource);
+      this.isDetailModalVisible = true; // Hiển thị modal
+    },
+    handleModalOk() {
+      this.isDetailModalVisible = false; // Đóng modal khi nhấn OK
+    },
+    handleModalCancel() {
+      this.isDetailModalVisible = false; // Đóng modal khi nhấn Cancel
+    },
+  },
+
+  watch: {
+    // Watch để cập nhật steps khi dataSource thay đổi
+    dataSource: {
+      handler(newValue) {
+        if (newValue) {
+          this.updateStepsBasedOnStatus();
+        }
+      },
+      immediate: true, // Gọi ngay lập tức khi component được khởi tạo
+      deep: true, // Theo dõi các thay đổi sâu bên trong object
     },
   },
 });
 </script>
+
 
 <style scoped>
 .history {

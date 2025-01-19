@@ -37,6 +37,14 @@ export const convertDateFormat = (inputDate: number): string => {
   return parsedDate.format('DD/MM/YYYY HH:mm:ss'); // Định dạng theo yêu cầu
 };
 
+export const convertDateFormatTime = (inputDate: number): string => {
+  const parsedDate = dayjs(inputDate);
+  if (!parsedDate.isValid()) {
+    throw new Error('Ngày tháng không hợp lệ');
+  }
+  return parsedDate.format('DD/MM/YYYY'); // Định dạng theo yêu cầu
+};
+
 export const confirmModal = (message, onConfirm) => {
   Modal.confirm({
     content: message,
@@ -96,3 +104,7 @@ export const addMinutes = (date: Date, minutes: number): Date => {
 export const getCurrentTimeStampSecond = (): number => {
   return Math.floor(Date.now() / 1000);
 }
+
+export const formatCurrencyVND = (value: number): string => {
+  return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+};

@@ -20,7 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminBillDetailServiceImpl implements AdminBillDetailService {
@@ -74,10 +76,11 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         HoaDonChiTiet billDetail;
         if (existingBillDetailOpt.isPresent()) {
             billDetail = existingBillDetailOpt.get();
-            billDetail.setSoLuong((short) (billDetail.getSoLuong() + request.getSoLuong()));
             BigDecimal currentPrice = billDetail.getGia();
-            BigDecimal quantity = new BigDecimal(request.getSoLuong());
-            billDetail.setThanhTien(billDetail.getThanhTien().add(currentPrice.multiply(quantity)));
+            BigDecimal additionalAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
+
+            billDetail.setSoLuong((short) (billDetail.getSoLuong() + request.getSoLuong()));
+            billDetail.setThanhTien(billDetail.getThanhTien().add(additionalAmount));
         } else {
             billDetail = new HoaDonChiTiet();
             billDetail.setHoaDon(hoaDon);
@@ -85,17 +88,22 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             billDetail.setSoLuong(request.getSoLuong());
 
             BigDecimal currentPrice = sanPhamChiTiet.getGia();
-            BigDecimal quantity = new BigDecimal(request.getSoLuong());
-            billDetail.setThanhTien(currentPrice.multiply(quantity));
+            BigDecimal totalAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
+            billDetail.setThanhTien(totalAmount);
         }
 
         adminBillDetailRepository.save(billDetail);
+
+        // Cập nhật tổng tiền hóa đơn
+        updateBillTotalAmount(hoaDon);
 
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.CREATE_SUCCESS
         );
     }
+
+
 
 
     @Override
@@ -110,21 +118,47 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         }
 
         HoaDonChiTiet billDetail = billDetailOpt.get();
+        HoaDon hoaDon = billDetail.getHoaDon();
 
         if (request.getSoLuong() <= 0) {
+            // Xóa chi tiết hóa đơn nếu số lượng <= 0
             adminBillDetailRepository.delete(billDetail);
         } else {
-            billDetail.setSoLuong(request.getSoLuong());
+            // Cập nhật chi tiết hóa đơn
             BigDecimal currentPrice = billDetail.getGia();
-            BigDecimal quantity = new BigDecimal(billDetail.getSoLuong());
-            billDetail.setThanhTien(currentPrice.multiply(quantity));
+            BigDecimal newAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
+
+            billDetail.setSoLuong(request.getSoLuong());
+            billDetail.setThanhTien(newAmount);
             adminBillDetailRepository.save(billDetail);
         }
+
+        // Cập nhật tổng tiền hóa đơn
+        updateBillTotalAmount(hoaDon);
 
         return ResponseObject.successForward(
                 HttpStatus.OK,
                 Message.Success.UPDATE_SUCCESS
         );
     }
+
+
+    private void updateBillTotalAmount(HoaDon hoaDon) {
+        // Tìm tất cả các chi tiết hóa đơn liên quan đến hóa đơn
+        List<HoaDonChiTiet> billDetails = adminBillDetailRepository.findAll()
+                .stream()
+                .filter(detail -> detail.getHoaDon().equals(hoaDon))
+                .collect(Collectors.toList());
+
+        // Tính tổng tiền dựa trên thành tiền
+        BigDecimal totalAmount = billDetails.stream()
+                .map(HoaDonChiTiet::getThanhTien)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Cập nhật tổng tiền của hóa đơn
+        hoaDon.setTongTien(totalAmount);
+        hoaDonRepository.save(hoaDon);
+    }
+
 
 }
