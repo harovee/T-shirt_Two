@@ -36,13 +36,18 @@
           </a-tooltip>
         </div>
       </div>
-      <div class="text-center">
-        aaaaaaaaaaaaa
+      <div class="mt-5 p-5 w-full h-full bg-white rounded-xl">
+        <h3 class="text-center text-xl font-semibold text-gray-700 mb-7">{{ detailRef.fullName }}</h3>
+        <p class="text-gray-500">Mã nhân viên: {{convertTextCode(detailRef.fullName)}}{{ detailRef.code }}</p>
+        <p class="text-gray-500">Người tạo: {{ detailRef.createdBy || 'Chưa xác định' }} lúc
+          {{ convertDateFormat(detailRef.createdDate) }}</p>
+        <p class="text-gray-500">Người chỉnh sửa lần cuối: {{ detailRef.lastModifiedBy || 'Chưa xác định' }} lúc
+          {{ convertDateFormat(detailRef.lastModifiedDate) }}</p>
       </div>
     </div>
-    <div class="col-span-3 md:col-span-5 lg:col-span-3 rounded-xl border-2 shadow-purple-500 shadow-xl">
-      <a-form layout="vertical" class="p-5">
-        <template v-for="field in formFields">
+    <div class="col-span-3 md:col-span-5 p-5 lg:col-span-3 rounded-xl border-2 shadow-purple-500 shadow-xl h-fit">
+      <a-form layout="vertical" class="grid grid-cols-2 gap-4">
+        <template class="col-span-1 md:col-span-1 lg:col-span-1" v-for="field in formFields">
           <a-form-item
               :label="field.label"
               :name="field.name"
@@ -52,7 +57,15 @@
                 v-if="field.component === 'a-input'"
                 v-model:value="modelRef[field.name]"
                 :placeholder="field.placeholder"
+                :type="field.type"
             ></a-input>
+
+            <a-input-password
+                v-if="field.component === 'a-input-password'"
+                v-model:value="modelRef[field.name]"
+                :placeholder="field.placeholder"
+                :type="field.type"
+            ></a-input-password>
 
             <a-radio-group
                 v-if="field.component === 'a-radio-group'"
@@ -68,7 +81,7 @@
                 class="w-full"
                 v-else-if="field.component === 'a-date-picker'"
                 v-model:value="modelRef[field.name]"
-                format="YYYY-MM-DD HH:mm"
+                format="YYYY-MM-DD"
                 show-time
                 :placeholder="field.placeholder"
             ></a-date-picker>
@@ -76,8 +89,11 @@
           </a-form-item>
         </template>
       </a-form>
+      <div class="flex justify-end gap-4">
+        <a-button @click="handleReset()">Đặt lại</a-button>
+        <a-button type="primary" @click="handleUpdate()">Cập nhật</a-button>
+      </div>
     </div>
-
   </div>
 </template>
 
@@ -195,7 +211,8 @@ const rulesRef = reactive({
   ],
 });
 
-const {resetFields, validate, validateInfos} = Form.useForm(
+
+const {validate, validateInfos} = Form.useForm(
     modelRef,
     rulesRef
 );
@@ -204,12 +221,14 @@ const formFields = computed(() => [
   {
     label: "Tên nhân viên",
     name: "name",
+    type: "string",
     component: "a-input",
     placeholder: "Nhâp tên nhân viên"
   },
   {
     label: "Email",
     name: "email",
+    type: "string",
     component: "a-input",
     placeholder: "Nhâp email"
   },
