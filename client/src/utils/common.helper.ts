@@ -178,3 +178,6 @@ export function convertTextCode(input: string | null): string {
 
 const removeAccents = (str: string): string =>
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+
+export const defaultProductImageSaleUrl =
+  'https://static.vecteezy.com/system/resources/previews/015/079/128/large_2x/orange-empty-stage-product-show-3d-render-png.png';

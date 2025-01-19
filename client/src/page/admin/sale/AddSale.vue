@@ -20,12 +20,6 @@
                     <a-form-item class="m-0 mt-2" ref="ten" label="Tên" name="ten" required>
                         <a-input v-model:value="formState.ten" />
                     </a-form-item>
-                    <a-form-item class="m-0 mt-2" ref="loai" label="Loại" name="loai" required>
-                            <a-radio-group v-model:value="formState.loai">
-                              <a-radio value="PERCENT">%</a-radio>
-                              <a-radio value="VND">vnđ</a-radio>
-                            </a-radio-group>
-                    </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
                         <a-input-number v-model:value="formState.giaTri" min="0" style="width: 100%"></a-input-number>
                     </a-form-item>

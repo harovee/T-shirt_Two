@@ -74,7 +74,7 @@
                         <span><FileDoneOutlined />Sản phẩm áp dụng trong đợt</span>
                     </template>
                         <div>
-                            <product-detail-table-in-detail-sale 
+                            <product-detail-table-in-detail-sale
                             :id-dot-giam-gia="saleId || ''"
                             :current-status="currentStatus"
                             ></product-detail-table-in-detail-sale>
@@ -88,20 +88,20 @@
                             <product-table
                             :categories="listAttributes.data.value?.data.categories"
                             :id-san-phams="idSanPhams"
-                            @update:idSanPhams="handleUpdateIdSanPhams"  
+                            @update:idSanPhams="handleUpdateIdSanPhams"
                             />
                         </div>
-                        
+
                     </a-tab-pane>
                 </a-tabs>
                 <div class="p-3 rounded-sm shadow-md"  v-if="!currentStatus">
-                    <product-detail-table-in-detail-sale 
+                    <product-detail-table-in-detail-sale
                             :id-dot-giam-gia="saleId || ''"
                             :current-status="currentStatus"
                             ></product-detail-table-in-detail-sale>
                 </div>
         </div>
-        
+
     </div>
 
     <template v-if="idSanPhams.length > 0">
@@ -120,10 +120,10 @@
   </div>
   <div class="p-1">
     <ProductDetailTable
-    :attributes="listAttributes.data.value?.data" 
+    :attributes="listAttributes.data.value?.data"
     :id-san-phams="idSanPhams"
     :id-san-pham-chi-tiets="idSanPhamChiTiets"
-    @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"  
+    @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"
      />
   </div>
   </template>
@@ -151,7 +151,7 @@ import { toast } from "vue3-toastify";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { useAuthStore } from "@/infrastructure/stores/auth.ts";
 import { SaleRequest, SaleAndSaleProductRequest } from "@/infrastructure/services/api/admin/sale.api.ts";
-import { useGetSaleById, useUpdateSale, useGetAttributes, useUpdateSaleAndSaleProduct 
+import { useGetSaleById, useUpdateSale, useGetAttributes, useUpdateSaleAndSaleProduct
     } from "@/infrastructure/services/service/admin/sale.action.ts";
 import dayjs from 'dayjs';
 import { getDateFormat } from "@/utils/common.helper";
@@ -162,7 +162,7 @@ import {
      defaultSaleDatePickerRules,
      defaultSaleRequest,
      FormState,
-     disabledDate, disabledDateTime 
+     disabledDate, disabledDateTime
      } from "./base/DefaultConfig";
 
 
