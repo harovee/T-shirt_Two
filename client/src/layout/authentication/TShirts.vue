@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-// import logoSpotifyFirst from "@/assets/image/logo/nobg/svg/logo-big-1.svg";
+import logoSpotifyFirst from "@/assets/image/logo/T-ShirtTwo.png";
 </script>
 
 <style scoped>

@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-// import logo from "@/assets/image/logo/nobg/svg/logo-big-1.svg"
+import logo from "@/assets/image/logo/T-ShirtTwo.png"
 import {computed, h, reactive, ref, VueElement} from 'vue';
 import {useRouter} from 'vue-router';
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
