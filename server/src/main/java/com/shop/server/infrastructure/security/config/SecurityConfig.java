@@ -128,7 +128,7 @@ public class SecurityConfig {
                                 Helper.appendWildcard(MappingConstant.PATH_OAUTH2),
                                 Helper.appendWildcard(MappingConstant.API_EMBED_PREFIX),
                                 Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_VOUCHER)
+                                Helper.appendWildcard(MappingConstant.API_VERSION_PREFIX)
                         )
                         .permitAll()
         );

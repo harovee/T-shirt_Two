@@ -30,6 +30,8 @@ export type ClientResponse = ResponseList & {
     id: string | null;
     name: string | null;
     email: string | null;
+    code: string | null;
+    status: string | null;
 };
 
 export type DetailClientResponse = {
