@@ -23,6 +23,8 @@ public class AdminSaleProductRequest {
 
     private Double giaTriGiamGia;
 
+    private Double giaTriGiamToiDa;
+
     private String nhanVien;
 
 

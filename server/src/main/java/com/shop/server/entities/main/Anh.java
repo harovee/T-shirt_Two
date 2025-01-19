@@ -32,4 +32,7 @@ public class Anh extends PrimaryEntity implements Serializable {
     @Column(name = "url")
     private String url;
 
+    @Column(name = "is_top")
+    private Boolean isTop;
+
 }

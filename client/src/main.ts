@@ -10,6 +10,7 @@ import Vue3Toastify, { type ToastContainerOptions } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { createPinia } from "pinia";
+import { notification } from 'ant-design-vue';
 
 const AllIcon = Object.values({...AllIcons});
 addIcons(...AllIcon);
@@ -24,6 +25,7 @@ app.use(Vue3Toastify, {
 app.use(VueQueryPlugin);
 app.use(createPinia());
 app.component("v-icon", OhVueIcon);
+app.config.globalProperties.$notify = notification;
 
 app.mount('#app');
 

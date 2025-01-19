@@ -14,29 +14,30 @@
   </div>
   <div class="p-3 grid grid-cols-5 gap-6">
       <div class="col-span-5 md:col-span-5 lg:col-span-2 w-full h-96 shadow-md flex justify-center">
-          <div class="w-[30rem] p-6">
+          <div class="w-[30rem] p-5">
               <!-- FORM CHI TIẾT ĐỢT GIẢM GIÁ -->
               <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
                     <a-form-item class="m-0 mt-2" ref="ten" label="Tên" name="ten" required>
                         <a-input v-model:value="formState.ten" />
                     </a-form-item>
-                    <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required>
-                        <a-input-number v-model:value="formState.giaTri" min="0">
-                            <template #addonAfter>
-                                <a-select v-model:value="formState.loai" style="width: 60px">
-                                    <a-select-option value="PERCENT">%</a-select-option>
-                                    <a-select-option value="VND">đ</a-select-option>
-                                </a-select>
-                            </template>
-                        </a-input-number>
+                    <a-form-item class="m-0 mt-2" ref="loai" label="Loại" name="loai" required>
+                            <a-radio-group v-model:value="formState.loai">
+                              <a-radio value="PERCENT">%</a-radio>
+                              <a-radio value="VND">vnđ</a-radio>
+                            </a-radio-group>
+                    </a-form-item>
+                    <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
+                        <a-input-number v-model:value="formState.giaTri" min="0" style="width: 100%"></a-input-number>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
-                        <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10">
+                        <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10" style="width: 100%">
                             <template #addonAfter>đ</template>
                         </a-input-number>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" label="Thời gian" required name="ngayBatDauVaKetThuc">
                         <a-range-picker size="large" style="" show-time format="DD/MM/YYYY HH:mm"
+                            :disabled-date="disabledDate"
+                            :disabled-date-time="disabledDateTime"
                             v-model:value="formState.ngayBatDauVaKetThuc"
                             :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']" :presets="rangePresets" />
                     </a-form-item>
@@ -77,7 +78,7 @@
           <div v-if="idSanPhamChiTiets.length > 0" class="flex items-center gap-2 scale-75 cursor-pointer"
            @click="onSubmit(2)">
                 <PlusCircleOutlined two-tone-color="black" style="font-size: 35px;"  />
-              <h3 class="text-xl m-0">Thêm mới</h3>
+              <h3 class="text-xl m-0">Áp dụng</h3>
           </div>
       </div>
   </div>
@@ -103,19 +104,20 @@ export default {
 
 <script lang="ts" setup>
 import router from "@/infrastructure/routes/router.ts";
-import { computed, onMounted, watch, reactive, ref, createVNode } from "vue";
+import { reactive, ref, createVNode } from "vue";
 import type { UnwrapRef } from 'vue';
-import {Modal} from "ant-design-vue";
+import {Modal, notification} from "ant-design-vue";
 import {ExclamationCircleOutlined, PlusCircleOutlined} from "@ant-design/icons-vue";
 import type { Rule } from 'ant-design-vue/es/form';
 import { toast } from "vue3-toastify";
 import { keepPreviousData } from "@tanstack/vue-query";
+import dayjs from 'dayjs';
 
 import { SaleAndSaleProductRequest, SaleRequest } from "@/infrastructure/services/api/admin/sale.api.ts";
 import { useCreateSale, useCreateSaleAndSaleProduct, useGetAttributes } from "@/infrastructure/services/service/admin/sale.action.ts";
 import ProductTable from "./ProductTable.vue";
-import ProductDetailTable from "./ProductDetailTable.vue";
-import { defaultSaleDatePickerRules, defaultSaleRequest, FormState } from "./base/DefaultConfig";
+import ProductDetailTable from "./ProductDetailTableInAddSale.vue";
+import { defaultSaleDatePickerRules, defaultSaleRequest, FormState, disabledDate, disabledDateTime} from "./base/DefaultConfig";
 
 const listAttributes = useGetAttributes({
   refetchOnWindowFocus: false,
@@ -134,7 +136,7 @@ const formState: UnwrapRef<FormState> = reactive( {
     giaTriGiamToiDa: null,
     ngayBatDauVaKetThuc: [],
     nguoiSua: undefined,
-    trangThai: false,
+    trangThai: true,
     createdDate: null,
     lastModifiedDate: null,
 });
@@ -166,12 +168,32 @@ const rules: Record<string, Rule[]> = {
               if (formState.loai === 'VND' && value != null && value <= 0 ) {
                   return Promise.reject('Giá trị giảm tối đa phải lớn hơn 0');
               }
+              if (formState.loai === 'VND' && value > formState.giaTri && value != null ) {
+                    return Promise.reject('Giá trị giảm tối đa không được lớn hơn giá trị giảm');
+              }
               return Promise.resolve();
           },
           trigger: 'change',
       },
   ],
-  ngayBatDauVaKetThuc: [{ required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', trigger: 'change', type: 'array' }],
+  ngayBatDauVaKetThuc: [{ required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', trigger: 'change', type: 'array'},
+    {
+          validator: (rule, value) => {
+          const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
+          dayjs(date).valueOf()
+          );
+          const now = dayjs().valueOf();
+          if (ngayBatDau < now) {
+            return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+          }
+          if (ngayKetThuc < ngayBatDau) {
+            return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
+          }
+          return Promise.resolve();
+          },
+          trigger: 'change',
+    }
+  ],
   loai: [{ required: true, message: 'Vui lòng chọn loại đợt giảm giá', trigger: 'change' }],
 };
 
@@ -181,7 +203,7 @@ const { mutate: createSaleAndSaleProduct } = useCreateSaleAndSaleProduct();
 
 const handleCreateSale = (dataRequest: SaleRequest) => {
     Modal.confirm({
-    content: "Bạn chắc chắn muốn thêm?",
+    content: "Bạn chắc chắn muốn thêm mới mà không gán cho sản phẩm chi tiết?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
     async onOk() {
@@ -223,22 +245,12 @@ const handleAddSaleAndSaleProduct = (dataRequest: SaleAndSaleProductRequest) => 
     async onOk() {
       try {
         createSaleAndSaleProduct(dataRequest, {
-          onSuccess: (result) => {
-            toast.success(result?.message);
-            handleRedirectClient();
-          },
-          onError: (error: any) => {
-            toast.error(
-                error?.response?.data?.message
-            );
-          },
+          onSuccess: (res: any) => {toast.success(res.data.message);},
+          onError: (error: any) => {toast.error(error?.response?.data?.message)},
         });
       } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {
-          toast.warning(
-              error?.response?.data?.message
-          );
+          toast.warning(error?.response?.data?.message);
         } else if (error?.errorFields) {
           toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
         }
@@ -267,10 +279,11 @@ const onSubmit = (x: number) => {
           x == 1 ? handleCreateSale(saleRequest.value) : handleAddSaleAndSaleProduct(
             {
                 saleRequest: saleRequest.value,
-                saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value.join(',')}
+                saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value}
             }
           );
-
+      }).catch(() => {
+        toast.error('Vui lòng nhập đầy đủ các trường dữ liệu.')
       });
 };
 const resetForm = () => {
@@ -281,8 +294,7 @@ const handleUpdateIdSanPhams = (newIdSanPhams: string[]) => {
     idSanPhams.value = newIdSanPhams;
 };
 const handleUpdateIdSanPhamChiTiets = (newIdSanPhamChiTiets: string[]) => {
-    console.log(newIdSanPhamChiTiets);
-    // idSanPhamChiTiets.value = newIdSanPhamChiTiets;
+    idSanPhamChiTiets.value = newIdSanPhamChiTiets;
 };
 
 

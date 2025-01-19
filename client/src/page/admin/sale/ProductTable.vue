@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-space direction="line" class="flex justify-start items-center">
+    <a-space class="flex justify-start items-center">
         <a-input-search
         class="m-2"
         v-model:value="params.key"
@@ -20,6 +20,7 @@
    
   </div>
   <a-table
+    :loading="isLoading"
     :row-selection="rowSelection"
     :columns="columns"
     :data-source="dataSource"
@@ -67,7 +68,13 @@ const columns: TableColumnType<DataType>[] = [
   {
     title: "Tên Danh Mục",
     dataIndex: "tenDanhMuc",
+  },
+  {
+    title: "Tổng số lượng",
+    dataIndex: "tongSoLuong",
+    align: 'center',
   }
+
 ];
 
 const params = ref<FindProductRequest>({
@@ -77,7 +84,7 @@ const params = ref<FindProductRequest>({
   idDanhMuc: null,
 });
 
-const { data } = useGetProducts(params, {
+const { data, isLoading } = useGetProducts(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
@@ -88,6 +95,7 @@ const dataSource: DataType[] | any = computed(() => {
       key: e.id || "",
       ten: e.ten || "",
       tenDanhMuc: e.tenDanhMuc || "",
+      tongSoLuong: e.tongSoLuong || "",
     })) || []
   );
 });
