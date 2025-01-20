@@ -11,7 +11,7 @@
     </div>
 
     <div
-      class="p-4 rounded-xl border-2 shadow-purple-950 shadow-xl flex flex-col gap-6"
+      class="p-4 rounded-xl border-2  flex flex-col gap-6"
     >
       <div class="flex items-center gap-2">
         <v-icon name="si-iconfinder" size="x-large" width="24" height="24" />

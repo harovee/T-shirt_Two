@@ -16,4 +16,6 @@ public interface AdminBillService {
     ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult bindingResult);
 
     ResponseObject<?> updateBill(String id, @Valid AdminUpdateBillRequest request, BindingResult bindingResult);
+
+    ResponseObject<?> changeStatusBill(String id, AdminUpdateBillRequest request);
 }

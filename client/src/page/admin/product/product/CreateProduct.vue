@@ -203,10 +203,10 @@
       </template>
     </div>
     <div>
-      <a-button
+      <a-button type="primary" class="w-full"
         @click="handleCreateProduct()"
       >
-        @click="handleCreateProduct"
+        Hoàn thành
       </a-button>
     </div>
   </div>
