@@ -15,7 +15,7 @@
           <a-button
             class="bg-purple-300 flex justify-between items-center gap-2"
             size="large"
-            @click="$emit('handleOpenModalCreate', $event)"
+            @click="handleRedirectVoucherAdd"
           >
             <v-icon name="md-addcircle" />
           </a-button>
@@ -59,7 +59,7 @@
           >
             <a-button  class="bg-blue-100"  size="middle" shape="round"
             :disabled="record.trangThai === 'ACTIVE' || record.trangThai === 'EXPIRED'"
-              @click="$emit('handleOpenModalUpdateVoucher', record)"
+              @click="handleRedirectVoucherDetail(record.id)"
             >
               <v-icon name="fa-edit" />
             </a-button>
@@ -95,13 +95,10 @@ import { ColumnType } from "ant-design-vue/es/table";
 import { toast } from "vue3-toastify";
 import { defineEmits, watch } from "vue";
 import { useDeleteVoucher } from "@/infrastructure/services/service/admin/voucher/voucher.action";
+import router from "@/infrastructure/routes/router.ts";
 
 const emit = defineEmits([
-  "update:paginationParams",
-  "handleOpenModalCreate",
-  "handleCloseModalCreate",
-  "handleOpenModalUpdateVoucher",
-  "handleCloseModalUpdateVoucher",
+  "update:paginationParams"
 ]);
 
 const props = defineProps({
@@ -129,6 +126,13 @@ const handleDeleteVoucher = async (id: string) => {
   }
 };
 
+const handleRedirectVoucherAdd = () => {
+    router.push({ name: 'admin-voucher-add' });
+}
+
+const handleRedirectVoucherDetail = (id: string) => {
+    router.push({ name: 'admin-voucher-detail', params: { id: id } });
+}
 const columnsVoucher: ColumnType[] = [
 {
     title: "#",

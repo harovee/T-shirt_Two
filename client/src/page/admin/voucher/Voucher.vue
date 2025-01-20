@@ -17,19 +17,12 @@
       <voucher-table
           :data-source="VoucherData"
           :loading="isLoading || isFetching"
-          @handleOpenModalCreate="handleOpenModalCreateVoucher"
-          @handleCloseModalCreate="handleCloseModalCreateVoucher"
           :pagination-params="params"
           @update:pagination-params="handlePaginationChange"
           @handleOpenModalUpdateVoucher = "handleOpenModalUpdateVoucher"
       />
     </div>
   </div>
-  <voucher-model-c
-      :open="openCreate"
-      @handleClose="handleCloseModalCreateVoucher"
-      @onCancel="openCreate = false" 
-  />
   <voucher-model-u
       :open="openUpdate"
       @handleClose="handleCloseModalUpdateVoucher"
@@ -46,7 +39,6 @@ import {useGetListVoucher, useGetVoucherById} from "@/infrastructure/services/se
 import {keepPreviousData} from "@tanstack/vue-query";
 import VoucherFilter from "@/page/admin/voucher/VoucherFilter.vue";
 import VoucherTable from "@/page/admin/voucher/VoucherTable.vue";
-import VoucherModelC from "@/page/admin/voucher/VoucherModelC.vue";
 import VoucherModelU from "@/page/admin/voucher/VoucherModelU.vue";
 
 /*** Table - Pagination - Filter  ***/
@@ -84,17 +76,8 @@ const handlePaginationChange = (newParams: FindVoucherRequest) => {
 };
 
 /*** Create Employee ***/
-const openCreate = ref(false);
 
 const openUpdate = ref(false)
-
-const handleOpenModalCreateVoucher = () => {
-  openCreate.value = true;
-};
-
-const handleCloseModalCreateVoucher = () => {
-  openCreate.value = false;
-};
 
 const handleOpenModalUpdateVoucher = (record : VoucherResponse) =>{
   openUpdate.value = true;

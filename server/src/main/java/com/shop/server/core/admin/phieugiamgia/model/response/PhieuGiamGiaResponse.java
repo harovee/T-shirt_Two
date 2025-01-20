@@ -24,5 +24,7 @@ public interface PhieuGiamGiaResponse extends BaseResponse {
 
     LocalDate getNgayKetThuc();
 
+    Boolean getKieu();
+
     String getTrangThai();
 }

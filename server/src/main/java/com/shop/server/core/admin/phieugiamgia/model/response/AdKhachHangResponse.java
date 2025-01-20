@@ -8,4 +8,6 @@ public interface AdKhachHangResponse extends BaseResponse {
     String getEmail();
 
     String getPhone();
+
+    String getNgaySinh();
 }

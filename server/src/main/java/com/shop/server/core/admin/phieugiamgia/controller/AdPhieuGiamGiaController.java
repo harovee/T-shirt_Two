@@ -61,11 +61,11 @@ public class AdPhieuGiamGiaController {
     public ResponseEntity<?> getSanPham(@PathVariable("idSanPham") String id) {
         return Helper.createResponseEntity(adPhieuGiamGiaServices.getProductDetailById(id));
     }
-    @GetMapping("/khach_hang")
-    public ResponseEntity<?> getKhachHang(@Valid AdminKhachHangSearchRequest request) {
+    @GetMapping("/khach-hang")
+    public ResponseEntity<?> getKhachHang(@Valid final AdminKhachHangSearchRequest request) {
         return Helper.createResponseEntity(adPhieuGiamGiaServices.getAllKhachHang(request));
     }
-    @GetMapping("/khach_hang/{id}")
+    @GetMapping("/khach-hang/{id}")
     public ResponseEntity<?> getKhachHang(@PathVariable("idKhachHang") String id) {
         return Helper.createResponseEntity(adPhieuGiamGiaServices.getKhachHangById(id));
     }

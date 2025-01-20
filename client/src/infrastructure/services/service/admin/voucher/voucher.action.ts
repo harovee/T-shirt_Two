@@ -5,7 +5,9 @@ import {
     getVoucherById,
     getListVoucher,
     VoucherRequest,
-    updateVoucher
+    updateVoucher,
+    FindKhachHangRequest,
+    getListKhachHang
 } from "@/infrastructure/services/api/admin/voucher/voucher.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -23,6 +25,15 @@ export const useGetListVoucher = (
     });
 };
 
+export const useGetListKhachHang = (
+    params: Ref<FindKhachHangRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getListKhachHang>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.voucher.khachHangList, params],
+        queryFn: () => getListKhachHang(params),
+        ...options,
+    });
+};
 export const useCreateVoucher = () => {
     const queryClient = useQueryClient();
     return useMutation({
