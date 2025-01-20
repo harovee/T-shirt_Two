@@ -58,6 +58,7 @@ export type DetailVoucherResponse = {
     trangThai : string;
 };
 
+
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_VOUCHER}`,
@@ -108,4 +109,26 @@ export const deleteVoucher = async (VoucherId: string) => {
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>
     >;
+};
+export interface FindKhachHangRequest extends PaginationParams{
+    keyword : string | null;
+}
+
+export type KhachHangResponse = ResponseList & {
+    ten: string;
+    sdt: string;
+    email: string;
+    ngaySinh: Date;
+}
+
+export const getListKhachHang = async (params: Ref<FindKhachHangRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_VOUCHER}/khach-hang`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<KhachHangResponse>>>
+    >;
+
+    return res.data;
 };

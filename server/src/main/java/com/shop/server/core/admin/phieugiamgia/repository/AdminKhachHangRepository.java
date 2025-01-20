@@ -19,7 +19,8 @@ public interface AdminKhachHangRepository extends KhachHangRepository {
                 kh.id as id,
                 kh.ho_va_ten as ten,
                 kh.email as email,
-                kh.so_dien_thoai as phone
+                kh.so_dien_thoai as phone,
+                kh.ngay_sinh as ngaySinh
             FROM khach_hang kh
             WHERE 
                 :#{#request.keyword} IS NULL

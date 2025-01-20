@@ -94,6 +94,7 @@ export const queryKey = {
         voucher: {
             voucherList: "adVoucherListKey",
             voucherDetail: "adVoucherDetailKey",
+            khachHangList: "adKhachHangListKey"
         }
     },
 
