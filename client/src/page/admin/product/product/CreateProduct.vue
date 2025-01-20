@@ -24,16 +24,15 @@
               v-if="field.component === 'a-input'"
               v-model:value="modelRef[field.name]"
             ></a-input>
-            <div>
+            <div v-if="field.name === 'idSanPham'">
               <a-row gutter="{8}" align="middle">
                 <!-- Select Product -->
                 <a-col :span="23" class="pe-4">
                   <a-select
-                   v-if="field.name === 'idSanPham'"
                     v-model:value="modelRef[field.name]"
                     show-search
                     placeholder="Chọn tên sản phẩm"
-                    :options="dataProduct"
+                    :options="options"
                     :filter-option="filterOption"
                     @change="generateProductDetails"
                     style="width: 100%"
@@ -43,11 +42,11 @@
 
                 <a-col :span="1">
                   <a-button
-                    class="bg-purple-100 flex justify-between items-center"
+                    class="bg-purple-100 flex justify-between items-center gap-2"
                     size="medium"
                     @click="handleOpenModalCreateProduct"
                   >
-                    <v-icon name="md-addcircle" class="mx-2"/>
+                    <v-icon name="md-addcircle" />
                   </a-button>
                 </a-col>
               </a-row>
@@ -186,15 +185,29 @@
         @onCancel="isOpenModalCreateProduct = false"
       />
     </div>
-    <div class="p-10">
-      <div v-if="productDetails.length > 0" class="mb-5">Bảng sản phẩm chi tiết</div>
-      <product-detail-table
-      :product="dataProduct"
+    <!-- <div>
+      <div class="mb-5">Bảng sản phẩm chi tiết</div>
+      <product-detail-table :data-product-detail="productDetails" />
+    </div> -->
+    <div v-for="(color, index) in colorItem" :key="index">
+      <template v-if="color">
+        <h1>Màu: {{ getColorNameById(color) }}</h1>
+        <product-detail-table
+          :product="dataProduct"
           :material="listMaterial"
           :collar="listCollar"
           :trademark="listTrademark"
           :style="listStyle"
-          :data-product-detail="productDetails" />
+          :data-product-detail="filteredProductDetails(color)"
+        />
+      </template>
+    </div>
+    <div>
+      <a-button type="primary" class="w-full"
+        @click="handleCreateProduct()"
+      >
+        Hoàn thành
+      </a-button>
     </div>
   </div>
 </template>
@@ -556,7 +569,7 @@ const handleAddNewSleeve = async () => {
     successNotiSort("Thêm tay áo thành công!");
   } catch (error) {
     console.error(error);
-    error("Có lỗi xảy ra khi thêm tay áo!");
+    errorNotiSort("Có lỗi xảy ra khi thêm tay áo!");
   }
 };
 
