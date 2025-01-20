@@ -34,6 +34,13 @@
               </template>
             </a-input>
           </a-form-item>
+
+          <a-form-item v-if="formState.loaiGiam === true" class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
+            <a-input v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa">
+              <template #addonAfter>đ</template>
+            </a-input>
+          </a-form-item>
+
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
             <a-input-number v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" />
           </a-form-item>
@@ -72,7 +79,7 @@
       </div>
 
       <!-- Khách Hàng Section -->
-       
+
       <div  class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu">
         <h4 class="text-lg font-semibold mb-4">Danh sách khách hàng</h4>
         <div class="h-100 overflow-y-auto">
@@ -267,8 +274,8 @@ const handleAddVoucherAndCustomerVoucher = (dataRequest: VoucherAndCustomerVouch
 }
 
 const onSubmit = (x: number) => {
-  
-  
+
+
   formRef.value
       .validate()
       .then(() => {
@@ -281,14 +288,14 @@ const onSubmit = (x: number) => {
           voucherRequest.value.kieu = formState.kieu;
           voucherRequest.value.ngayBatDau = formState.ngayBatDauVaKetThuc[0]?.valueOf() || null;
           voucherRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
-          x === 1 ?   
-             handleCreateVoucher(voucherRequest.value)             
+          x === 1 ?
+             handleCreateVoucher(voucherRequest.value)
                     :
                 handleAddVoucherAndCustomerVoucher({
                   phieuGiamGiaRequest: voucherRequest.value,
-                  voucherKhachHangRequest : { idKhachHangs: idKhachHangs.value},        
+                  voucherKhachHangRequest : { idKhachHangs: idKhachHangs.value},
               });
-      
+
       });
 };
 const resetForm = () => {
@@ -298,6 +305,7 @@ const resetForm = () => {
 const handleUpdateIdKhachHangs = (newIdKhachHangs: string[]) => {
     idKhachHangs.value = newIdKhachHangs;
 };
+
 
 const handleRedirectClient = () => {
     router.push({ name: 'admin-voucher' });

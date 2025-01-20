@@ -45,8 +45,8 @@
                 Không xác định
           </span>
         </div>
-        <div v-if="column.key === 'dieuKienGiam'" class="text-left">   
-                {{ formatCurrencyVND(record.dieuKienGiam) }}   
+        <div v-if="column.key === 'dieuKienGiam'" class="text-left">
+                {{ formatCurrencyVND(record.dieuKienGiam) }}
         </div>
         <div v-else-if="column.key === 'trangThai'" class="text-center">
             <a-tag v-if="record.trangThai === 'ACTIVE' || record.trangThai === 'ACTIVE'" color="success">Đang áp dụng</a-tag>
