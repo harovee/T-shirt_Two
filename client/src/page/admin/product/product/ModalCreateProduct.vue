@@ -61,6 +61,7 @@ import {
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
+import { warningNotiSort, successNotiSort, errorNotiSort } from "@/utils/notification.config";
 import { useCreateProduct } from "@/infrastructure/services/service/admin/product.action";
 import { ProductAddRequest } from "@/infrastructure/services/api/admin/product.api";
 import { useGetListCategory, useCreateCategory } from "@/infrastructure/services/service/admin/category.action";
@@ -190,26 +191,25 @@ const handleCreateProduct = () => {
         await validate();
         create(modelRef, {
           onSuccess: (result) => {
-            toast.success(result?.message);
+            successNotiSort(result?.message);
             handleClose();
           },
           onError: (error: any) => {
-            toast.error(error?.response?.data?.message);
+            errorNotiSort(error?.response?.data?.message);
           },
         });
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {
-          toast.warning(error?.response?.data?.message);
+          warningNotiSort(error?.response?.data?.message);
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          warningNotiSort("Vui lòng nhập đầy đủ các trường dữ liệu");
         }
       }
     },
     cancelText: "Huỷ",
     onCancel() {
       Modal.destroyAll();
-      resetFields();
     },
   });
 };

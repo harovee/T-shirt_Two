@@ -38,6 +38,7 @@ import {
   reactive,
   watch,
 } from "vue";
+import { warningNotiSort, successNotiSort, errorNotiSort } from "@/utils/notification.config";
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
@@ -158,6 +159,15 @@ const handleAddOrUpdate = async () => {
     ten: modelRef.ten
   };
 
+  Modal.confirm({
+    content: props.MaterialDetail
+            ? "Bạn chắc chắn muốn cập nhật?"
+            : "Bạn chắc chắn muốn thêm mới?" ,
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+
+    async onOk() {
+
   try {
     await validate();
     if (props.MaterialDetail) {
@@ -171,7 +181,7 @@ const handleAddOrUpdate = async () => {
       resetFields();
     }
     
-    toast.success(
+    successNotiSort(
       props.MaterialDetail
         ? "Cập nhật chất liệu thành công"
         : "Thêm chất liệu thành công"
@@ -180,10 +190,10 @@ const handleAddOrUpdate = async () => {
     emit("handleClose");
   } catch (error: any) {
     console.error("🚀 ~ handleAddOrUpdate ~ error:", error);
-    toast.warning(
+    warningNotiSort(
       error?.response?.data?.message
     );
-  }
+  }}})
 };
 
 const handleClose = () => {

@@ -45,6 +45,7 @@ import { StyleRequest, StyleResponse } from "@/infrastructure/services/api/admin
 import { useGetListStyle, useCreateStyle, useUpdateStyle } from "@/infrastructure/services/service/admin/style.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { create } from "domain";
+import { successNotiSort, warningNotiSort } from "@/utils/notification.config";
 
 const props = defineProps({
   open: Boolean,
@@ -163,6 +164,15 @@ const handleAddOrUpdate = async () => {
     ten: modelRef.ten
   };
 
+  Modal.confirm({
+    content: props.StyleDetail
+            ? "Bạn chắc chắn muốn cập nhật?"
+            : "Bạn chắc chắn muốn thêm mới?" ,
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+
+    async onOk() {
+
   try {
     await validate();
     if (props.StyleDetail) {
@@ -176,7 +186,7 @@ const handleAddOrUpdate = async () => {
       resetFields();
     }
     
-    toast.success(
+    successNotiSort(
       props.StyleDetail
         ? "Cập nhật kiểu dáng thành công"
         : "Thêm kiểu dáng thành công"
@@ -185,10 +195,10 @@ const handleAddOrUpdate = async () => {
     emit("handleClose");
   } catch (error: any) {
     console.error("🚀 ~ handleAddOrUpdate ~ error:", error);
-    toast.warning(
+    warningNotiSort(
       error?.response?.data?.message
     );
-  }
+  }}})
 };
 
 const handleClose = () => {

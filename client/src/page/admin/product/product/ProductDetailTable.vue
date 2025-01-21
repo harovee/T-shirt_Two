@@ -45,11 +45,6 @@
         </th>
         <th scope="col" class="px-6 py-3">STT</th>
         <th scope="col" class="px-6 py-3">Tên sản phẩm</th>
-        <th scope="col" class="px-6 py-3">Chất liệu</th>
-        <th scope="col" class="px-6 py-3">Thương hiệu</th>
-        <th scope="col" class="px-6 py-3">Cổ áo</th>
-        <th scope="col" class="px-6 py-3">Kiểu dáng</th>
-        <th scope="col" class="px-6 py-3">Kích cỡ</th>
         <th scope="col" class="px-6 py-3">Số lượng</th>
         <th scope="col" class="px-6 py-3">Giá</th>
         <th scope="col" class="px-6 py-3">Hành động</th>
@@ -70,12 +65,16 @@
           />
         </td>
         <td class="px-6 py-4">{{ index + 1 }}</td>
-        <td class="px-6 py-4">{{ findSanPham(item.idSanPham) }}</td>
-        <td class="px-6 py-4">{{ findChatLieu(item.idChatLieu) }}</td>
-        <td class="px-6 py-4">{{ findThuongHieu(item.idThuongHieu) }}</td>
-        <td class="px-6 py-4">{{ findCoAo(item.idCoAo) }}</td>
-        <td class="px-6 py-4">{{ findKieuDang(item.idKieuDang) }}</td>
-        <td class="px-6 py-4">{{ findKichCo(item.idKichCo) }}</td>
+        <td class="px-6 py-4">
+          {{
+            findSanPham(item.idSanPham) +
+            " [ " +
+            findMau(item.idMauSac) +
+            " - " +
+            findKichCo(item.idKichCo) +
+            " ]"
+          }}
+        </td>
         <td class="px-6 py-4">
           <a-input
             v-model:value="item.soLuong"
@@ -102,10 +101,17 @@
       </tr>
     </tbody>
   </table>
+  <div v-if="copiedData.length > 0">
+    <a-button type="primary" class="w-full" @click="handleCreateProduct()">
+      Hoàn thành
+    </a-button>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, inject, computed, defineExpose } from "vue";
+import { ref, watch, inject, computed, defineExpose, createVNode } from "vue";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { Form, message, Modal, Upload } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import { ProductDetailRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { ListProductResponse } from "@/infrastructure/services/api/admin/product.api";
@@ -118,6 +124,7 @@ import { keepPreviousData } from "@tanstack/vue-query";
 import { useGetListColor } from "@/infrastructure/services/service/admin/color.action";
 import { useGetListSize } from "@/infrastructure/services/service/admin/size.action";
 import { toast } from "vue3-toastify";
+import { warningNotiSort, successNotiSort } from "@/utils/notification.config";
 import { useCreateProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import { useGetListProduct } from "@/infrastructure/services/service/admin/product.action";
@@ -182,7 +189,7 @@ const updateValuesGia = (field: string) => {
         // Nếu idKichCo của mục hiện tại trùng với idKichCo của selectedItem
         if (item.idKichCo === selectedItem) {
           if (newPrice.value !== null) {
-            item.gia = newPrice.value; // Cập nhật giá
+            item.gia = parseFloat(newPrice.value + ""); // Cập nhật giá
           }
         }
       });
@@ -200,7 +207,7 @@ const updateValuesSoLuong = (field: string) => {
         // Nếu idKichCo của mục hiện tại trùng với idKichCo của selectedItem
         if (item.idKichCo === selectedItem) {
           if (newQuantity.value !== null) {
-            item.soLuong = newQuantity.value; // Cập nhật giá
+            item.soLuong = parseFloat(newQuantity.value + ""); // Cập nhật giá
           }
         }
       });
@@ -377,7 +384,7 @@ const handleInputChangeSoLuong = (
   item: ProductDetailRequest,
   index: number
 ) => {
-  let value = item['soLuong'].toString();
+  let value = item["soLuong"].toString();
   value = value.replace(/[^0-9.]/g, "");
   if (value.split(".").length > 2) {
     value = value.substring(0, value.lastIndexOf("."));
@@ -385,14 +392,14 @@ const handleInputChangeSoLuong = (
   if (value === "") {
     value = "0";
   }
-  item['soLuong'] = parseFloat(value);
+  item["soLuong"] = parseFloat(value);
   copiedData.value[index] = { ...copiedData.value[index], ...item };
   console.log(copiedData);
   console.log(props.dataProductDetail);
 };
 
 const handleInputChangeGia = (item: ProductDetailRequest, index: number) => {
-  let value = item['gia'].toString();
+  let value = item["gia"].toString();
   value = value.replace(/[^0-9.]/g, "");
   if (value.split(".").length > 2) {
     value = value.substring(0, value.lastIndexOf("."));
@@ -400,48 +407,50 @@ const handleInputChangeGia = (item: ProductDetailRequest, index: number) => {
   if (value === "") {
     value = "0";
   }
-  item['gia'] = parseFloat(value);
+  item["gia"] = parseFloat(value);
   copiedData.value[index] = { ...copiedData.value[index], ...item };
   console.log(copiedData);
   console.log(props.dataProductDetail);
 };
 
 const handleDelete = (index: number) => {
-  // Xóa phần tử trong copiedData bằng index
   copiedData.value.splice(index, 1);
   if (copiedData.value.length === 0) {
     emit("update-data", true);
   }
 };
 
+// Thêm sản phẩm chi tiết toàn bộ list copitedData
 const { mutate: create } = useCreateProductDetail();
 
-const handleComplete = () => {
-  // if (!copiedData.value || copiedData.value.length === 0) {
-  //   return;
-  // }
-  // const promises = copiedData.value.map(async (item) => {
-  //   try {
-  //     await create(item);
-  //   } catch (error: any) {
-  //     console.error("🚀 ~ handleCreate ~ error:", error);
-  //     if (error?.response) {
-  //       toast.warning(error?.response?.data?.message);
-  //       return;
-  //     } else if (error?.errorFields) {
-  //       toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
-  //       return;
-  //     }
-  //   }
-  // });
-  // await Promise.all(promises);
-  // toast.success("Tất cả sản phẩm đã được tạo thành công!");
-  console.log("OKEEE");
+const handleCreateProduct = async () => {
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn thêm?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      if (!copiedData.value || copiedData.value.length === 0) {
+        return;
+      }
+      const promises = copiedData.value.map(async (item) => {
+        try {
+          create(item);
+        } catch (error: any) {
+          console.error("🚀 ~ handleCreate ~ error:", error);
+          if (error?.response) {
+            warningNotiSort(error?.response?.data?.message);
+            return;
+          } else if (error?.errorFields) {
+            warningNotiSort("Vui lòng nhập đầy đủ các trường dữ liệu");
+            return;
+          }
+        }
+      });
+      await Promise.all(promises);
+      successNotiSort("Tất cả sản phẩm đã được tạo thành công!");
+    },
+  });
 };
-
-defineExpose({
-  handleComplete,
-});
 </script>
 
 <style scoped>

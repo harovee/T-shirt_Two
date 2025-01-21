@@ -1,5 +1,5 @@
 <template>
-  <div class="grid justify-center">
+  <div>
     <div>
       <h3
         class="flex justify-center items-center text-1000 text-3xl font-semibold"
@@ -7,10 +7,10 @@
         Thêm sản phẩm
       </h3>
     </div>
-    <div class="w-[80rem]">
+    <div>
       <a-form
         layout="vertical"
-        class="p-5 grid grid-cols-4 gap-4 md:grid-cols-1 lg:grid-cols-3"
+        class="p-10 grid grid-cols-4 gap-4 md:grid-cols-1 lg:grid-cols-3"
       >
         <template v-for="field in formFields">
           <a-form-item
@@ -24,15 +24,16 @@
               v-if="field.component === 'a-input'"
               v-model:value="modelRef[field.name]"
             ></a-input>
-            <div v-if="field.name === 'idSanPham'">
+            <div>
               <a-row gutter="{8}" align="middle">
                 <!-- Select Product -->
                 <a-col :span="23" class="pe-4">
                   <a-select
+                   v-if="field.name === 'idSanPham'"
                     v-model:value="modelRef[field.name]"
                     show-search
                     placeholder="Chọn tên sản phẩm"
-                    :options="options"
+                    :options="dataProduct"
                     :filter-option="filterOption"
                     @change="generateProductDetails"
                     style="width: 100%"
@@ -42,11 +43,11 @@
 
                 <a-col :span="1">
                   <a-button
-                    class="bg-purple-100 flex justify-between items-center gap-2"
+                    class="bg-purple-100 flex justify-between items-center"
                     size="medium"
                     @click="handleOpenModalCreateProduct"
                   >
-                    <v-icon name="md-addcircle" />
+                    <v-icon name="md-addcircle" class="mx-2"/>
                   </a-button>
                 </a-col>
               </a-row>
@@ -185,29 +186,15 @@
         @onCancel="isOpenModalCreateProduct = false"
       />
     </div>
-    <!-- <div>
-      <div class="mb-5">Bảng sản phẩm chi tiết</div>
-      <product-detail-table :data-product-detail="productDetails" />
-    </div> -->
-    <div v-for="(color, index) in colorItem" :key="index">
-      <template v-if="color">
-        <h1>Màu: {{ getColorNameById(color) }}</h1>
-        <product-detail-table
-          :product="dataProduct"
+    <div class="p-10">
+      <div v-if="productDetails.length > 0" class="mb-5">Bảng sản phẩm chi tiết</div>
+      <product-detail-table
+      :product="dataProduct"
           :material="listMaterial"
           :collar="listCollar"
           :trademark="listTrademark"
           :style="listStyle"
-          :data-product-detail="filteredProductDetails(color)"
-        />
-      </template>
-    </div>
-    <div>
-      <a-button type="primary" class="w-full"
-        @click="handleCreateProduct()"
-      >
-        Hoàn thành
-      </a-button>
+          :data-product-detail="productDetails" />
     </div>
   </div>
 </template>
@@ -273,6 +260,7 @@ import ProductDetailTable from "@/page/admin/product/product/ProductDetailTable.
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { PlusOutlined } from "@ant-design/icons-vue";
 import { forEach } from "lodash";
+import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
 
 const props = defineProps({
   open: Boolean,
@@ -299,12 +287,19 @@ const colorItem = ref([]);
 const sizeItem = ref([]);
 
 //Lấy list id và tên product fill lên select option
-const { data } = useGetListProduct({
+const { data: products } = useGetListProduct({
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
 
-const dataProduct = computed(() => data?.value?.data || []);
+const dataProduct = computed(() =>{
+  return (
+    products?.value?.data.map((product: any) => ({
+      value: product.id,
+      label: product.ten,
+    })) || []
+  );
+});
 
 // lấy danh sách chất liệu
 const { data: materials } = useGetListMaterial({
@@ -480,10 +475,10 @@ const handleAddNewMaterial = async () => {
   try {
     await createMaterial(payload);
 
-    toast.success("Thêm chất liệu thành công!");
+    successNotiSort("Thêm chất liệu thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm chất liệu!");
+    errorNotiSort("Có lỗi xảy ra khi thêm chất liệu!");
   }
 };
 
@@ -519,10 +514,10 @@ const handleAddNewCollar = async () => {
   try {
     await createCollar(payload);
 
-    toast.success("Thêm cổ áo thành công!");
+    successNotiSort("Thêm cổ áo thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm cổ áo!");
+    errorNotiSort("Có lỗi xảy ra khi thêm cổ áo!");
   }
 };
 
@@ -558,10 +553,10 @@ const handleAddNewSleeve = async () => {
   try {
     await createSleeve(payload);
 
-    toast.success("Thêm tay áo thành công!");
+    successNotiSort("Thêm tay áo thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm tay áo!");
+    error("Có lỗi xảy ra khi thêm tay áo!");
   }
 };
 
@@ -597,10 +592,10 @@ const handleAddNewTrademark = async () => {
   try {
     await createTrademark(payload);
 
-    toast.success("Thêm thương hiệu thành công!");
+    successNotiSort("Thêm thương hiệu thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm thương hiệu!");
+    errorNotiSort("Có lỗi xảy ra khi thêm thương hiệu!");
   }
 };
 
@@ -636,10 +631,10 @@ const handleAddNewPattern = async () => {
   try {
     await createPattern(payload);
 
-    toast.success("Thêm họa tiết thành công!");
+    successNotiSort("Thêm họa tiết thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm họa tiết!");
+    errorNotiSort("Có lỗi xảy ra khi thêm họa tiết!");
   }
 };
 
@@ -675,10 +670,10 @@ const handleAddNewStyle = async () => {
   try {
     await createStyle(payload);
 
-    toast.success("Thêm kiểu dáng thành công!");
+    successNotiSort("Thêm kiểu dáng thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm kiểu dáng!");
+    errorNotiSort("Có lỗi xảy ra khi thêm kiểu dáng!");
   }
 };
 
@@ -714,10 +709,10 @@ const handleAddNewFeature = async () => {
   try {
     await createFeature(payload);
 
-    toast.success("Thêm tính năng thành công!");
+    successNotiSort("Thêm tính năng thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm tính năng!");
+    errorNotiSort("Có lỗi xảy ra khi thêm tính năng!");
   }
 };
 
@@ -753,10 +748,10 @@ const handleAddNewColor = async () => {
   try {
     await createColor(payload);
 
-    toast.success("Thêm màu sắc thành công!");
+    successNotiSort("Thêm màu sắc thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm màu sắc!");
+    errorNotiSort("Có lỗi xảy ra khi thêm màu sắc!");
   }
 };
 
@@ -795,10 +790,10 @@ const handleAddNewSize = async () => {
 
   try {
     await createSize(payload);
-    toast.success("Thêm kích cỡ thành công!");
+    successNotiSort("Thêm kích cỡ thành công!");
   } catch (error) {
     console.error(error);
-    toast.error("Có lỗi xảy ra khi thêm kích cỡ!");
+    errorNotiSort("Có lỗi xảy ra khi thêm kích cỡ!");
   }
 };
 
@@ -815,15 +810,15 @@ const rulesRef = reactive({
   ],
 });
 
-// Theo dõi dữ liệu đổ vào select
-const options = computed(() => {
-  return dataProduct?.value?.map((product) => ({
-    value: product.id,
-    label: product.ten,
-  }));
-});
+// // Theo dõi dữ liệu đổ vào select
+// const options = computed(() => {
+//   return dataProduct?.map((product: any) => ({
+//     value: product.id,
+//     label: product.ten,
+//   }));
+// });
 
-watch(options, (newOptions) => {
+watch(dataProduct, (newOptions) => {
   if (newOptions && newOptions.length > 0) {
     modelRef.idSanPham = newOptions[0].value;
   }
@@ -923,6 +918,7 @@ const generateProductDetails = () => {
   });
   productDetails.value = generatedDetails;
 };
+// ---------------------------------------
 
 const filterOption = (input: string, option: any) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
@@ -931,65 +927,6 @@ const filterOption = (input: string, option: any) => {
 const filteredProductDetails = (color: string) => {
   return productDetails.value.filter((product) => product.idMauSac === color);
 };
-
-// Hàm thêm product detail bên product table detail
-const productDetailTableRefs = ref([]);
-
-watch(productDetailTableRefs, (newValue, oldValue) => {
-  // Cập nhật giá trị trong mảng sau khi có sự thay đổi
-  productDetailTableRefs.value = newValue.map((item) => `${item}-updated`);
-  console.log("productDetailTableRefs đã thay đổi:", newValue);
-});
-
-
-const handleCreateProduct = async () => {
-  // Lặp qua tất cả các ref của các component con để gọi phương thức handleComplete
-  // productDetailTableRefs.value.forEach((componentRef) => {
-  //       if (componentRef) {
-  //         // componentRef.handleComplete();
-  //         console.log("OK");
-
-  //       } else {
-  //         console.error('handleComplete không phải là một function hoặc ref không tồn tại');
-  //       }
-  //     });
-  Modal.confirm({
-    content: "Bạn chắc chắn muốn thêm?",
-    icon: createVNode(ExclamationCircleOutlined),
-    centered: true,
-    async onOk() {
-      try {
-        // create(modelRef, {
-        //   onSuccess: (result) => {
-        //     toast.success(result?.message);
-        //     handleClose();
-        //   },
-        //   onError: (error: any) => {
-        //     toast.error(error?.response?.data?.message);
-        //   },
-        // });
-        // forEach()
-        console.log(productDetails.value);
-        
-      } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
-        if (error?.response) {
-          toast.warning(error?.response?.data?.message);
-        } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
-        }
-      }
-    },
-    cancelText: "Huỷ",
-    onCancel() {
-      Modal.destroyAll();
-    },
-  });
-};
-
-// watch(productDetailTableRef, (newVal) => {
-//   console.log('productDetailTable ref updated:', newVal);
-// });
 
 const { resetFields, validate, validateInfos } = Form.useForm(rulesRef);
 
