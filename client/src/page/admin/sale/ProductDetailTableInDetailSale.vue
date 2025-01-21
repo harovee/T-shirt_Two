@@ -42,6 +42,18 @@
                 <a-space>Số lượng: {{ record.soLuong }}</a-space>
                 <a-space>Giá gốc: <a-tag color="#108ee9"> {{ formatCurrency(record.gia, 'VND', 'vi-VN') }}</a-tag></a-space>
                 <a-space>Giá sau giảm:  <a-tag color="#f50">{{  formatCurrency(record.giaSauGiam, 'VND', 'vi-VN') }}</a-tag></a-space>
+                <a-popover placement="bottom">
+                    <template #content>
+                      <!-- <EventDetail /> -->
+                       <p>Giá trung bình trên các đợt đang diễn ra</p>
+                    </template>
+                    <template #title>
+                      <!-- <span>Giá trung bình trên các đợt đang diễn ra</span> -->
+                    </template>
+                   <a-typography-text type="danger" strong underline class="cursor-pointer">
+                        Giá bán hiện tại: {{ formatCurrency(record.giaHienTai ? record.giaHienTai : record.gia, 'VND', 'vi-VN')  }}
+                    </a-typography-text>
+                </a-popover>
             </a-space>
         </div>
         <div v-else-if="column.dataIndex === 'action'">
@@ -90,7 +102,8 @@ import {
   FindSaleProductDetailRequest,
 } from "@/infrastructure/services/api/admin/sale.api.ts";
 import { useGetSaleProductDetails, useDeleteSaleProduct } from "@/infrastructure/services/service/admin/sale.action.ts";
-import { errorNotiSort, openNotification, successNotiSort } from "@/utils/notification.config";
+import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
+import EventDetail from "./EventDetail.vue";
 
 
 const props = defineProps<{
@@ -151,7 +164,7 @@ const handleDelete = (id : any) => {
       successNotiSort('Xóa thành công');
     },
     onError(error) {
-      openNotification('error', 'Xóa thất bại',  error?.response?.data?.message);
+      errorNotiSort(error?.response?.data?.message);
     },
   });
 };

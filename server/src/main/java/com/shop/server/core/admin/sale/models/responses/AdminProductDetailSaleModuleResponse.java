@@ -10,7 +10,9 @@ public interface AdminProductDetailSaleModuleResponse extends BaseResponse {
 
     String getSoLuong();
 
-    String getGia();
+    Double getGia();
+
+    Double getGiaHienTai();
 
     String getTenSanPham();
 

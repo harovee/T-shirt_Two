@@ -103,6 +103,7 @@ import {defineEmits} from "vue";
 import {useChangeStatusSale} from "@/infrastructure/services/service/admin/sale.action.ts";
 import router from "@/infrastructure/routes/router.ts";
 import { formatCurrency, getDateFormat} from "@/utils/common.helper.ts";
+import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
 
 const emit = defineEmits([
   "update:paginationParams"
@@ -121,19 +122,14 @@ const handleChangeStatusSale = (id: string, trangThaiMoi: string) => {
     changeStatusSale(
       {saleId: id, trangThai: trangThaiMoi},
       {onSuccess: (res: any) => {
-        toast.success(res.data.message);
+        successNotiSort(res.data.message);
       },
       onError: (error: any) => {
-        toast.error(
-            error?.response?.data?.message
-        )
+        errorNotiSort(error?.response?.data?.message);
       },
     })
   } catch (error: any) {
-    console.error("🚀 ~ handleChangeStatus ~ error:", error);
-    toast.error(
-        error?.response?.data?.message
-    );
+    errorNotiSort(error?.response?.data?.message);
   }
 }
 

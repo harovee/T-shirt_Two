@@ -8,6 +8,7 @@ public interface AdminSaleProductDetailResponse {
     String getSoLuong();
     String getTen();
     Double getGia();
+    Double getGiaHienTai();
     Double getGiaSauGiam();
     String getLinkAnh();
 

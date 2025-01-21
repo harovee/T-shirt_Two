@@ -191,6 +191,7 @@ export type ProductDetailResponse = ResponseList & {
     maSanPhamChiTiet: string | null;
     ten: string | null;
     gia: number | null;
+    giaHienTai: number | null;
     tenSanPham: string | null;
     tenThuongHieu: string | null;
     gioiTinh: boolean | null;
@@ -275,6 +276,7 @@ export type SaleProductDetailResponse = ResponseList & {
     gia: number | null;
     soLuong: number | null;
     giaSauGiam: number | null;
+    giaHienTai: number | null;
     linkAnh: string | null;
 };
 export const getSaleProductDetails = async (params: Ref<FindSaleProductDetailRequest>) => {

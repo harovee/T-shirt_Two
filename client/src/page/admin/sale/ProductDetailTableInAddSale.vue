@@ -93,12 +93,10 @@
   <template #bodyCell="{ record, column }">
         <a-image-preview-group>
             <div v-if="column.dataIndex === 'linkAnh'" class="text-center">
-                  <a-badge-ribbon :text="'-??? đ'"  color="red">
-                        <a-image :width="140"
-                         :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
-                         :src="record.linkAnh != 'default-product-detail-image-url.jpg'
-                        ? record.linkAnh : defaultProductImageSaleUrl " />
-                  </a-badge-ribbon>
+                <a-image :width="140"
+                  :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
+                  :src="record.linkAnh != 'default-product-detail-image-url.jpg'
+                ? record.linkAnh : defaultProductImageSaleUrl " />
             </div>
             <div v-if="column.dataIndex === 'thongTinChung'" class="text-left">
               <a-space direction="vertical">
@@ -106,7 +104,18 @@
                 <a-space>Sản phẩm: {{ record.tenSanPham }}</a-space>
                 <a-space>Số lượng: {{ record.soLuong }}</a-space>
                 <a-space>Giá gốc: <a-tag color="#108ee9"> {{ formatCurrency(record.gia, 'VND', 'vi-VN') }}</a-tag></a-space>
-                
+                <a-popover placement="bottom">
+                    <template #content>
+                      <!-- <EventDetail /> -->
+                       <p>Giá trung bình trên các đợt đang diễn ra</p>
+                    </template>
+                    <template #title>
+                      <!-- <span>Giá trung bình trên các đợt đang diễn ra</span> -->
+                    </template>
+                   <a-typography-text type="danger" strong underline class="cursor-pointer">
+                        Giá bán hiện tại: {{ formatCurrency(record.giaHienTai ? record.giaHienTai : record.gia, 'VND', 'vi-VN')  }}
+                    </a-typography-text>
+                </a-popover>
               </a-space>
             </div>
             <div v-if="column.dataIndex === 'phongCach'" class="text-left">

@@ -155,7 +155,7 @@ import { useAuthStore } from "@/infrastructure/stores/auth.ts";
 import { SaleRequest, SaleAndSaleProductRequest } from "@/infrastructure/services/api/admin/sale.api.ts";
 import { useGetSaleById, useUpdateSale, useGetAttributes, useUpdateSaleAndSaleProduct
     } from "@/infrastructure/services/service/admin/sale.action.ts";
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { getDateFormat } from "@/utils/common.helper";
 import ProductTable from "./ProductTable.vue";
 import ProductDetailTable from "./ProductDetailTableInAddSale.vue";
@@ -202,6 +202,7 @@ const formState: UnwrapRef<FormState> = reactive( {
     createdDate: null,
     lastModifiedDate: null,
 });
+const validStartDate = ref<number | null> (dayjs().valueOf());
 const rangePresets = ref(defaultSaleDatePickerRules);
 const rules: Record<string, Rule[]> = {
     ten: [
@@ -246,8 +247,14 @@ const rules: Record<string, Rule[]> = {
                 dayjs(date).valueOf()
                 );
                 const now = dayjs().valueOf();
-                if (ngayBatDau < now) {
-                    return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+                if (validStartDate.value != null){
+                    if (now > validStartDate.value) {
+                        if (ngayBatDau < validStartDate.value) {
+                            return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm bắt đầu đã thêm ban đầu: ' + getDateFormat(validStartDate.value));
+                        }    
+                    }else if (ngayBatDau < now) {
+                        return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+                    }
                 }
                 if (ngayKetThuc < ngayBatDau) {
                     return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
@@ -280,13 +287,14 @@ watch(() => data.value?.data.data, (saleData) => {
             lastModifiedDate: saleData.lastModifiedDate,
         });
             currentStatus.value = saleData.ngayKetThuc ? (saleData.ngayKetThuc > Date.now() ? true : false) : null;
+            validStartDate.value = saleData.ngayBatDau ;
             // console.log(saleData.ngayKetThuc, Date.now());
     }
 });
 const { mutate: updateSale } = useUpdateSale();
 const handleUpdateSale = (id: string | any, dataRequest: SaleRequest) => {
     Modal.confirm({
-    title: "Bạn chắc chắn cập nhật đợt giảm giá nàyy?",
+    title: "Bạn chắc chắn cập nhật đợt giảm giá này?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
     async onOk() {

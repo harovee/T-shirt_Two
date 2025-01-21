@@ -153,6 +153,7 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             spct.id, spgg.id as id_san_pham_giam_gia,
             spct.ma_san_pham_chi_tiet, spct.so_luong,
             spct.ten, spct.gia, spgg.gia_sau_giam,
+            tinh_gia_hien_tai(spct.id) as gia_hien_tai,
             coalesce(anh.url, 'default-product-detail-image-url.jpg') as link_anh
             from san_pham_chi_tiet spct
             join san_pham_giam_gia spgg on spct.id = spgg.id_san_pham_chi_tiet and spgg.deleted = false
@@ -166,7 +167,7 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             or  spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
             or  sp.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
             or  dm.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
-            or  th.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
+            or  th.ten LIKE CONCAT('%', :#{#req.keyword}, ' %')
             or  spct.gioi_tinh = :#{#req.keyword}
             )
                     
