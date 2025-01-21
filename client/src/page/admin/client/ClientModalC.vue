@@ -21,27 +21,6 @@
               v-model:value="modelRef[field.name]"
               :placeholder="field.placeholder"
           ></a-input>
-
-          <a-radio-group
-              v-if="field.component === 'a-radio-group'"
-              v-for="option in field.options"
-              v-model:value="modelRef[field.name]"
-          >
-            <a-radio :value="option.value">
-              {{ option.name }}
-            </a-radio>
-          </a-radio-group>
-
-          <a-date-picker
-              class="w-full"
-              v-else-if="field.component === 'a-date-picker'"
-              v-model:value="modelRef[field.name]"
-              :format="field.format"
-              :presets="field.presets"
-              show-time
-              :placeholder="field.placeholder"
-          ></a-date-picker>
-
         </a-form-item>
       </template>
     </a-form>
@@ -49,13 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import {computed, createVNode, defineEmits, defineProps, reactive, ref} from "vue";
-import {Form, Modal} from "ant-design-vue";
+import {computed, createVNode, defineEmits, defineProps, reactive} from "vue";
+import {Form, Modal, notification} from "ant-design-vue";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
-import {toast} from "vue3-toastify";
 import {useCreateClient} from "@/infrastructure/services/service/admin/client.action.ts";
 import {ClientRequest} from "@/infrastructure/services/api/admin/client.api.ts";
-import dayjs from "dayjs";
 
 const props = defineProps({
   open: Boolean,
@@ -78,6 +55,7 @@ const modelRef = reactive<ClientRequest>({
 const rulesRef = reactive({
   name: [
     {
+      required: true,
       validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"),
       trigger: "blur"
     },
@@ -86,35 +64,17 @@ const rulesRef = reactive({
   email: [
     {required: true, message: "Vui lòng nhập email", trigger: "blur"},
     {
-      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/,
-      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com hoặc @fpt.edu.vn)",
+      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com)$/,
+      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com)",
       trigger: "blur"
     },
     {max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur"},
   ],
-  password: [
-    {required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"},
-    {
-      pattern: /^(?=.*[A-Z])(?=.*\W).{8,50}$/,
-      message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa, 1 ký tự đặc biệt, và dài từ 8 đến 50 ký tự",
-      trigger: "blur"
-    },
-  ],
-  birthday: [
-    {required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur"},
-    {
-      validator: (_, value) => new Date(value) < new Date() ? Promise.resolve() : Promise.reject("Ngày sinh phải là ngày trong quá khứ"),
-      trigger: "blur"
-    },
-  ],
-  gender: [
-    {required: true, message: "Vui lòng chọn giới tính", trigger: "blur"},
-  ],
   phoneNumber: [
     {required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur"},
     {
-      pattern: /^\+?[1-9]\d{1,14}$/,
-      message: "Số điện thoại không hợp lệ (bao gồm mã quốc gia nếu có) ví dụ: 84",
+      pattern: /^0[1-9]\d{8,9}$/,
+      message: "Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số.",
       trigger: "blur"
     },
   ],
@@ -125,13 +85,6 @@ const {resetFields, validate, validateInfos} = Form.useForm(
     rulesRef
 );
 
-const presets = ref([
-  {label: 'Yesterday', value: dayjs().subtract(1, 'day')},
-  {label: 'Last Week', value: dayjs().subtract(7, 'day')},
-  {label: 'Last Month', value: dayjs().subtract(1, 'month')},
-  {label: '18 Years Ago', value: dayjs().subtract(18, 'year')}, // Tùy chọn 18 năm trước
-]);
-
 const formFields = computed(() => [
   {
     label: "Tên khách hàng",
@@ -140,45 +93,16 @@ const formFields = computed(() => [
     placeholder: "Nhâp tên khách hàng"
   },
   {
-    label: "Email",
-    name: "email",
-    component: "a-input",
-    placeholder: "Nhâp email"
-  },
-  {
-    label: "Mật khẩu",
-    name: "password",
-    component: "a-input",
-    placeholder: "Nhâp mật khẩu",
-  },
-  {
-    label: "Ngày sinh",
-    name: "birthday",
-    component: "a-date-picker",
-    placeholder: "Nhâp ngày sinh",
-    format: 'DD-MM-YYYY',
-    presets: presets.value,
-  },
-  {
-    label: "Giới tính",
-    name: "gender",
-    component: "a-radio-group",
-    options: [
-      {
-        name: "Nam",
-        value: true,
-      },
-      {
-        name: "Nữ",
-        value: false,
-      }
-    ]
-  },
-  {
     label: "Số điện thoại",
     name: "phoneNumber",
     component: "a-input",
     placeholder: "Nhâp số điện thoại"
+  },
+  {
+    label: "Email",
+    name: "email",
+    component: "a-input",
+    placeholder: "Nhâp email"
   },
 ]);
 
@@ -191,24 +115,36 @@ const handleCreateClient = () => {
       try {
         await validate();
         create(modelRef, {
-          onSuccess: (result) => {
-            toast.success(result?.message);
+          onSuccess: (res) => {
+            notification.success({
+              message: 'Thông báo',
+              description: res?.message,
+              duration: 4,
+            });
             handleClose();
           },
           onError: (error: any) => {
-            toast.error(
-                error?.response?.data?.message
-            );
+            notification.error({
+              message: 'Thông báo',
+              description: error?.response?.data?.message,
+              duration: 4,
+            });
           },
         });
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {
-          toast.warning(
-              error?.response?.data?.message
-          );
+          notification.warning({
+            message: 'Thông báo',
+            description: error?.response?.data?.message,
+            duration: 4,
+          });
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đúng đủ các trường dữ liệu");
+          notification.warning({
+            message: 'Thông báo',
+            description: 'Vui lòng nhập đúng đủ các trường dữ liệu',
+            duration: 4,
+          });
         }
       }
     },

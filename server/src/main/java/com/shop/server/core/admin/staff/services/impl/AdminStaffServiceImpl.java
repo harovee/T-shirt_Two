@@ -95,6 +95,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setRole(Role.USER);
             staff.setStatus(Status.ACTIVE);
             staff.setDeleted(false);
+            staff.setProfilePicture("https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp");
             staff.setNguoiTao(infoUserTShirt.getId());
             staff.setNguoiSua(infoUserTShirt.getId());
             NhanVien newStaff = adminStaffRepository.save(staff);

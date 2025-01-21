@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 rounded-xl border-2 ">
+  <div class="p-4 rounded-xl border-2  shadow-xl">
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">Danh sách nhân viên</h3>

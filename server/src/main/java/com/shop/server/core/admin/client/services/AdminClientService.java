@@ -19,4 +19,6 @@ public interface AdminClientService {
 
     ResponseObject<?> updateClientAvatar(String id, AdminClientRequest request);
 
+    ResponseObject<?> getAddressByClientId(String id);
+
 }

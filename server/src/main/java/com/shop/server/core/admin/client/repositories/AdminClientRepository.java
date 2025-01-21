@@ -1,6 +1,7 @@
 package com.shop.server.core.admin.client.repositories;
 
 import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
+import com.shop.server.core.admin.client.models.responses.AdminAddressByClientIdResponse;
 import com.shop.server.core.admin.client.models.responses.AdminClientResponse;
 import com.shop.server.core.admin.client.models.responses.AdminDetailClientResponse;
 import com.shop.server.repositories.KhachHangRepository;
@@ -8,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface AdminClientRepository extends KhachHangRepository {
@@ -102,5 +105,14 @@ public interface AdminClientRepository extends KhachHangRepository {
             """, nativeQuery = true)
     Long existsClientByPhoneNumberAndIdNotEquals(String phoneNumber, String id);
 
+    @Query(value = """
+            SELECT
+                dckh.id AS id,
+                dckh.so_nha AS detailAddress,
+                dckh.mac_dinh
+            FROM dia_chi_khach_hang dckh
+            WHERE dckh.id_khach_hang = :clientId
+    """, nativeQuery = true)
+    List<AdminAddressByClientIdResponse> getAddressByClientId(String clientId);
 
 }

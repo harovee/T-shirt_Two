@@ -1,14 +1,16 @@
 package com.shop.server.core.admin.client.services.impl;
 
-import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
+import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
 import com.shop.server.core.admin.client.repositories.AdminClientRepository;
+import com.shop.server.core.admin.client.services.AdminClientMailService;
 import com.shop.server.core.admin.client.services.AdminClientService;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.KhachHang;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.infrastructure.security.oauth2.session.InfoUserTShirt;
+import com.shop.server.utils.AESPasswordCryptoUtil;
 import com.shop.server.utils.DateTimeUtil;
 import com.shop.server.utils.Helper;
 import org.springframework.data.domain.Pageable;
@@ -25,9 +27,12 @@ public class AdminClientServiceImpl implements AdminClientService {
 
     private final InfoUserTShirt infoUserTShirt;
 
-    public AdminClientServiceImpl(AdminClientRepository adminClientRepository, InfoUserTShirt infoUserTShirt) {
+    private final AdminClientMailService emailService;
+
+    public AdminClientServiceImpl(AdminClientRepository adminClientRepository, InfoUserTShirt infoUserTShirt, AdminClientMailService emailService) {
         this.adminClientRepository = adminClientRepository;
         this.infoUserTShirt = infoUserTShirt;
+        this.emailService = emailService;
     }
 
     @Override
@@ -64,19 +69,20 @@ public class AdminClientServiceImpl implements AdminClientService {
             );
         }
         KhachHang client = new KhachHang();
-        client.setPassword(request.getPassword());
+        String pass = AESPasswordCryptoUtil.genPassword(8L);
+        client.setPassword(pass);
         client.setFullName(request.getName());
         client.setEmail(request.getEmail());
         Long count = adminClientRepository.count() + 1;
         String formattedCode = String.format("%09d", count);
         client.setCode(formattedCode);
-        client.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
-        client.setGender(request.getGender());
         client.setPhoneNumber(request.getPhoneNumber());
+        client.setProfilePicture("https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp");
         client.setDeleted(false);
         client.setNguoiTao(infoUserTShirt.getId());
         client.setNguoiSua(infoUserTShirt.getId());
-        adminClientRepository.save(client);
+        KhachHang newClient = adminClientRepository.save(client);
+        emailService.sendMailCreateClient(newClient);
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.CREATE_SUCCESS
@@ -160,5 +166,10 @@ public class AdminClientServiceImpl implements AdminClientService {
                 HttpStatus.CREATED,
                 Message.Success.UPDATE_SUCCESS
         );
+    }
+
+    @Override
+    public ResponseObject<?> getAddressByClientId(String id) {
+        return null;
     }
 }
