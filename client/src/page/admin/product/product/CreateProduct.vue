@@ -24,15 +24,16 @@
               v-if="field.component === 'a-input'"
               v-model:value="modelRef[field.name]"
             ></a-input>
-            <div v-if="field.name === 'idSanPham'">
+            <div>
               <a-row gutter="{8}" align="middle">
                 <!-- Select Product -->
                 <a-col :span="23" class="pe-4">
                   <a-select
+                   v-if="field.name === 'idSanPham'"
                     v-model:value="modelRef[field.name]"
                     show-search
                     placeholder="Chọn tên sản phẩm"
-                    :options="options"
+                    :options="dataProduct"
                     :filter-option="filterOption"
                     @change="generateProductDetails"
                     style="width: 100%"
@@ -42,11 +43,11 @@
 
                 <a-col :span="1">
                   <a-button
-                    class="bg-purple-100 flex justify-between items-center gap-2"
+                    class="bg-purple-100 flex justify-between items-center"
                     size="medium"
                     @click="handleOpenModalCreateProduct"
                   >
-                    <v-icon name="md-addcircle" />
+                    <v-icon name="md-addcircle" class="mx-2"/>
                   </a-button>
                 </a-col>
               </a-row>
@@ -185,29 +186,15 @@
         @onCancel="isOpenModalCreateProduct = false"
       />
     </div>
-    <!-- <div>
-      <div class="mb-5">Bảng sản phẩm chi tiết</div>
-      <product-detail-table :data-product-detail="productDetails" />
-    </div> -->
-    <div v-for="(color, index) in colorItem" :key="index">
-      <template v-if="color">
-        <h1>Màu: {{ getColorNameById(color) }}</h1>
-        <product-detail-table
-          :product="dataProduct"
+    <div class="p-10">
+      <div v-if="productDetails.length > 0" class="mb-5">Bảng sản phẩm chi tiết</div>
+      <product-detail-table
+      :product="dataProduct"
           :material="listMaterial"
           :collar="listCollar"
           :trademark="listTrademark"
           :style="listStyle"
-          :data-product-detail="filteredProductDetails(color)"
-        />
-      </template>
-    </div>
-    <div>
-      <a-button type="primary" class="w-full"
-        @click="handleCreateProduct()"
-      >
-        Hoàn thành
-      </a-button>
+          :data-product-detail="productDetails" />
     </div>
   </div>
 </template>
