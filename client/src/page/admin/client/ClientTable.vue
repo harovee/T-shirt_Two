@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 rounded-xl border-2 shadow-purple-950 shadow-xl">
+  <div class="p-4 rounded-xl border-2  shadow-xl">
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">Danh sách khách hàng</h3>
@@ -35,7 +35,7 @@
         <div v-if="column.key === 'another'" class="text-center">
         </div>
         <div v-else-if="column.key === 'code'">
-          KH{{record.code}}
+          KH{{ record.code }}
         </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>
@@ -85,11 +85,11 @@
 <script setup lang="ts">
 import TableTShirt from "@/components/ui/Table.vue";
 import {ColumnType} from "ant-design-vue/es/table";
-import {toast} from "vue3-toastify";
 import {defineEmits} from "vue";
 import {useChangeStatusClient} from "@/infrastructure/services/service/admin/client.action.ts";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
+import {notification} from "ant-design-vue";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -109,19 +109,27 @@ const handleChangeStatusClient = (id: string) => {
   try {
     changeStatusClient(id, {
       onSuccess: (res: any) => {
-        toast.success(res.data.message);
+        notification.success({
+          message: 'Thông báo',
+          description: res?.data?.message,
+          duration: 4,
+        });
       },
       onError: (error: any) => {
-        toast.error(
-            error?.response?.data?.message
-        )
+        notification.error({
+          message: 'Thông báo',
+          description: error?.response?.data?.message,
+          duration: 4,
+        });
       },
     })
   } catch (error: any) {
     console.error("🚀 ~ handleChangeStatus ~ error:", error);
-    toast.error(
-        error?.response?.data?.message
-    );
+    notification.warning({
+      message: 'Thông báo',
+      description: error?.response?.data?.message,
+      duration: 4,
+    });
   }
 }
 
@@ -160,6 +168,14 @@ const columnsClient: ColumnType[] = [
     title: "Email khách hàng",
     dataIndex: "email",
     key: "email",
+    ellipsis: true,
+    width: 200,
+    resizable: true
+  },
+  {
+    title: "Số điện thoại",
+    dataIndex: "phoneNumber",
+    key: "phoneNumber",
     ellipsis: true,
     width: 200,
     resizable: true

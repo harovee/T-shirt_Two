@@ -22,16 +22,22 @@ import java.io.Serializable;
 public class DiaChiKhachHang extends PrimaryEntity implements Serializable {
 
     @Column(name = "mac_dinh")
-    private String macDinh;
+    private Boolean macDinh;
 
     @Column(name = "so_nha")
     private String soNha;
 
-    @Column(name = "xa")
-    private String xa;
+    @Column(name = "ten_khach_hang")
+    private String tenKhachHang;
 
-    @Column(name = "huyen")
-    private String huyen;
+    @Column(name = "so_dien_thoai")
+    private String soDienThoai;
+
+    @Column(name = "phuong_xa")
+    private String phuongXa;
+
+    @Column(name = "quan_huyen")
+    private String quanHuyen;
 
     @Column(name = "tinh_thanh_pho")
     private String tinhThanhPho;

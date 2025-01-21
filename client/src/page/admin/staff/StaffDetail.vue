@@ -45,7 +45,7 @@
           {{ convertDateFormat(detailRef.lastModifiedDate) }}</p>
       </div>
     </div>
-    <div class="col-span-3 md:col-span-5 p-5 lg:col-span-3 rounded-xl border-2 shadow-purple-500 shadow-xl h-fit">
+    <div class="col-span-3 md:col-span-5 p-5 lg:col-span-3 rounded-xl border-2 shadow-xl h-fit">
       <a-form layout="vertical" class="grid grid-cols-2 gap-4">
         <template class="col-span-1 md:col-span-1 lg:col-span-1" v-for="field in formFields">
           <a-form-item
@@ -179,8 +179,8 @@ const modelRef = reactive<StaffRequest>({
 
 const rulesRef = reactive({
   name: [
-    {required: true, message: "Vui lòng nhập tên nhân viên", trigger: "blur"},
     {
+      required: true,
       validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"),
       trigger: "blur"
     },
@@ -189,8 +189,8 @@ const rulesRef = reactive({
   email: [
     {required: true, message: "Vui lòng nhập email", trigger: "blur"},
     {
-      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/,
-      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com hoặc @fpt.edu.vn)",
+      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com)$/,
+      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com)",
       trigger: "blur"
     },
     {max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur"},

@@ -10,6 +10,8 @@ public interface AdminClientResponse extends BaseResponse {
 
     String getCode();
 
+    String getPhoneNumber();
+
     String getStatus();
 
 }
