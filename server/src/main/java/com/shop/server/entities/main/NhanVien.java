@@ -24,9 +24,6 @@ import java.io.Serializable;
 @Setter
 public class NhanVien extends PrimaryEntity implements Serializable {
 
-    @Column(name = "username", unique = true)
-    private String username;
-
     @Column(name = "ma_nhan_vien", unique = true)
     private String code;
 

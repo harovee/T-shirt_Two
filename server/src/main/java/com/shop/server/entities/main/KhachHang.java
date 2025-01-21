@@ -25,9 +25,6 @@ import java.io.Serializable;
 @Table(name = "khach_hang")
 public class KhachHang extends PrimaryEntity implements Serializable {
 
-    @Column(name = "username", unique = true)
-    private String username;
-
     @Column(name = "ma_khach_hang", unique = true)
     private String code;
 

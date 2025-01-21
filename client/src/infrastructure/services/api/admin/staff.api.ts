@@ -18,7 +18,6 @@ export interface FindStaffRequest extends PropertyStaffParams, PaginationParams 
 export interface StaffRequest {
     name: String | null;
     email: String | null;
-    username: String | null,
     password: String | null,
     birthday: String | null,
     gender: Boolean | null,
@@ -37,7 +36,6 @@ export type StaffResponse = ResponseList & {
 
 export type DetailStaffResponse = {
     id: string;
-    username: string | null;
     code: string | null;
     fullName: string | null;
     birthday: string | null;

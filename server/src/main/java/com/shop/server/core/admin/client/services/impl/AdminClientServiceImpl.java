@@ -57,12 +57,6 @@ public class AdminClientServiceImpl implements AdminClientService {
                     Message.Response.DUPLICATE + ", email"
             );
         }
-        if (adminClientRepository.existsClientByUsername(request.getUsername())) {
-            return ResponseObject.errorForward(
-                    HttpStatus.BAD_REQUEST,
-                    Message.Response.DUPLICATE + ", tên tài khoản"
-            );
-        }
         if (adminClientRepository.existsClientByPhoneNumber(request.getPhoneNumber())) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
@@ -70,7 +64,6 @@ public class AdminClientServiceImpl implements AdminClientService {
             );
         }
         KhachHang client = new KhachHang();
-        client.setUsername(request.getUsername());
         client.setPassword(request.getPassword());
         client.setFullName(request.getName());
         client.setEmail(request.getEmail());
@@ -105,12 +98,6 @@ public class AdminClientServiceImpl implements AdminClientService {
                     Message.Response.DUPLICATE + ", email"
             );
         }
-        if (adminClientRepository.existsClientByUsernameAndIdNotEquals(request.getUsername(), id) == 1) {
-            return ResponseObject.errorForward(
-                    HttpStatus.BAD_REQUEST,
-                    Message.Response.DUPLICATE + ", tên tài khoản"
-            );
-        }
         if (adminClientRepository.existsClientByPhoneNumberAndIdNotEquals(request.getPhoneNumber(), id) == 1) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
@@ -119,7 +106,6 @@ public class AdminClientServiceImpl implements AdminClientService {
         }
         try {
             KhachHang client = clientOptional.get();
-            client.setUsername(request.getUsername());
             client.setPassword(request.getPassword());
             client.setFullName(request.getName());
             client.setEmail(request.getEmail());

@@ -52,7 +52,6 @@ const {mutate: create} = useCreateClient();
 const modelRef = reactive<ClientRequest>({
   name: null,
   email: null,
-  username: null,
   password: null,
   birthday: null,
   gender: null,
@@ -67,14 +66,6 @@ const rulesRef = reactive({
       trigger: "blur"
     },
     {max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur"},
-  ],
-  username: [
-    {required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur"},
-    {
-      pattern: /^[a-zA-Z0-9]+$/,
-      message: "Tên tài khoản chỉ được chứa chữ và số, không dấu và không ký tự đặc biệt",
-      trigger: "blur"
-    },
   ],
   email: [
     {required: true, message: "Vui lòng nhập email", trigger: "blur"},
@@ -130,12 +121,6 @@ const formFields = computed(() => [
     name: "email",
     component: "a-input",
     placeholder: "Nhâp email"
-  },
-  {
-    label: "Tên tài khoản",
-    name: "username",
-    component: "a-input",
-    placeholder: "Nhâp tên tài khoản"
   },
   {
     label: "Mật khẩu",

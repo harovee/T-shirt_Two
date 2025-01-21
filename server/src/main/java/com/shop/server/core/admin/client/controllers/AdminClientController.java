@@ -26,7 +26,6 @@ public class AdminClientController {
         this.adminClientService = adminClientService;
     }
 
-
     @GetMapping()
     public ResponseEntity<?> getClients(@Valid final AdminFindClientRequest request) {
         return Helper.createResponseEntity(adminClientService.getClients(request));

@@ -149,7 +149,6 @@ const clientDetail = computed(() => data?.value?.data?.data || null);
 
 const detailRef = reactive<DetailClientResponse>({
   id: clientId.value,
-  username: null,
   code: null,
   fullName: null,
   birthday: null,
@@ -168,7 +167,6 @@ const detailRef = reactive<DetailClientResponse>({
 const modelRef = reactive<ClientRequest>({
   name: null,
   email: null,
-  username: null,
   password: null,
   birthday: null,
   gender: null,
@@ -183,14 +181,6 @@ const rulesRef = reactive({
       trigger: "blur"
     },
     {max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur"},
-  ],
-  username: [
-    {required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur"},
-    {
-      pattern: /^[a-zA-Z0-9]+$/,
-      message: "Tên tài khoản chỉ được chứa chữ và số, không dấu và không ký tự đặc biệt",
-      trigger: "blur"
-    },
   ],
   email: [
     {required: true, message: "Vui lòng nhập email", trigger: "blur"},
@@ -249,13 +239,6 @@ const formFields = computed(() => [
     type: "string",
     component: "a-input",
     placeholder: "Nhâp email"
-  },
-  {
-    label: "Tên tài khoản",
-    name: "username",
-    type: "string",
-    component: "a-input",
-    placeholder: "Nhâp tên tài khoản"
   },
   {
     label: "Mật khẩu",
@@ -369,7 +352,7 @@ const handleUpdate = () => {
               error?.response?.data?.message
           );
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          toast.warning("Vui lòng nhập đúng đủ các trường dữ liệu");
         }
       }
     },
@@ -390,18 +373,15 @@ const assignData = (client: DetailClientResponse) => {
   Object.assign(modelRef, {
     name: client.fullName,
     email: client.email,
-    username: client.username,
     password: client.password,
     birthday: convertToAntdDatePicker(client.birthday),
     gender: client.gender,
     phoneNumber: client.phoneNumber,
-    identity: client.identity,
     picture: client.picture,
   });
 
   Object.assign(detailRef, {
     id: client.id,
-    username: client.username,
     code: client.code,
     fullName: client.fullName,
     birthday: client.birthday,
@@ -409,7 +389,6 @@ const assignData = (client: DetailClientResponse) => {
     phoneNumber: client.phoneNumber,
     email: client.email,
     password: client.password,
-    identity: client.identity,
     status: client.status,
     picture: client.picture,
     createdBy: client.createdBy,

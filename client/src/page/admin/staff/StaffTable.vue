@@ -35,7 +35,7 @@
         <div v-if="column.key === 'another'" class="text-center">
         </div>
         <div v-else-if="column.key === 'code'">
-          {{ convertTextCode(record.name)}}{{record.code}}
+          {{ convertTextCode(record.name) }}{{ record.code }}
         </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>
@@ -85,12 +85,12 @@
 <script setup lang="ts">
 import TableTShirt from "@/components/ui/Table.vue";
 import {ColumnType} from "ant-design-vue/es/table";
-import {toast} from "vue3-toastify";
 import {defineEmits, watch} from "vue";
 import {useChangeStatusStaff} from "@/infrastructure/services/service/admin/staff.action.ts";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
 import {convertTextCode} from "@/utils/common.helper.ts";
+import {notification} from "ant-design-vue";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -110,19 +110,27 @@ const handleChangeStatusStaff = (id: string) => {
   try {
     changeStatusStaff(id, {
       onSuccess: (res: any) => {
-        toast.success(res.data.message);
+        notification.success({
+          message: 'Thông báo',
+          description: res?.data?.message,
+          duration: 4,
+        });
       },
       onError: (error: any) => {
-        toast.error(
-            error?.response?.data?.message
-        )
+        notification.error({
+          message: 'Thông báo',
+          description: error?.response?.data?.message,
+          duration: 4,
+        });
       },
     })
   } catch (error: any) {
     console.error("🚀 ~ handleChangeStatus ~ error:", error);
-    toast.error(
-        error?.response?.data?.message
-    );
+    notification.warning({
+      message: 'Thông báo',
+      description: error?.response?.data?.message,
+      duration: 4,
+    });
   }
 }
 
