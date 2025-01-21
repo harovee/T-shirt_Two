@@ -92,6 +92,7 @@ import {
 } from "@/infrastructure/services/service/admin/productdetail.action";
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { successNotiSort, warningNotiSort } from "@/utils/notification.config";
 
 const props = defineProps({
   dataSource: Object,
@@ -318,11 +319,11 @@ const handleEdit = () => {
             });
           })
         );
-        toast.success("Cập nhật sản phẩm chi tiết thành công");
+        successNotiSort("Cập nhật sản phẩm chi tiết thành công");
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {
-          toast.warning(error?.response?.data?.message);
+          warningNotiSort(error?.response?.data?.message);
         }
       }
     },

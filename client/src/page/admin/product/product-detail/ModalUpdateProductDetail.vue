@@ -44,6 +44,7 @@ import {
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
+import { warningNotiSort, successNotiSort } from "@/utils/notification.config";
 import { useUpdateProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
 import { ProductDetailUpdateRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useGetListCategory } from "@/infrastructure/services/service/admin/category.action";
@@ -261,7 +262,7 @@ const handleUpdateProductDetail = () => {
   };
 
   Modal.confirm({
-    content: "Bạn chắc chắn muốn sửa?",
+    content: "Bạn chắc chắn muốn cập nhật?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
 
@@ -272,19 +273,18 @@ const handleUpdateProductDetail = () => {
           id: props.ProductDetail.id,
           params: payload,
         });
-        toast.success("Cập nhật sản phẩm chi tiết thành công");
+        successNotiSort("Cập nhật sản phẩm chi tiết thành công");
         handleClose();
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {
-          toast.warning(error?.response?.data?.message);
+          warningNotiSort(error?.response?.data?.message);
         }
       }
     },
     cancelText: "Huỷ",
     onCancel() {
       Modal.destroyAll();
-      resetFields();
     },
   });
 };

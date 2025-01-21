@@ -157,4 +157,17 @@ public class AdminBillServiceImpl implements AdminBillService {
                 Message.Success.UPDATE_SUCCESS
         );
     }
+
+    @Override
+    public ResponseObject<?> changeStatusBill(String id, AdminUpdateBillRequest request) {
+        HoaDon hoaDon = adminBillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
+        hoaDon.setTrangThai(request.getTrangThai());
+        HoaDon hd1 = adminBillRepository.save(hoaDon);
+        return new ResponseObject<>(
+                hd1,
+                HttpStatus.OK,
+                Message.Success.UPDATE_SUCCESS
+        );
+    }
 }

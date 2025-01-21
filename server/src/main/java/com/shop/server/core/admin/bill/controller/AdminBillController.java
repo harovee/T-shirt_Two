@@ -47,4 +47,10 @@ public class AdminBillController {
                                               BindingResult result) {
         return Helper.createResponseEntity(adminBillService.updateBill(id, request, result));
     }
+
+    @PutMapping("/status-bill/{id}")
+    public ResponseEntity<?> changeBillStatus(@PathVariable String id,
+                                              @Valid @RequestBody final AdminUpdateBillRequest request) {
+        return Helper.createResponseEntity(adminBillService.changeStatusBill(id, request));
+    }
 }

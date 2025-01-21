@@ -38,11 +38,19 @@ import {
   reactive,
   watch,
 } from "vue";
+import { warningNotiSort, successNotiSort, errorNotiSort } from "@/utils/notification.config";
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
-import { CategoryRequest, CategoryResponse } from "@/infrastructure/services/api/admin/category.api";
-import { useGetListCategory, useCreateCategory, useUpdateCategory } from "@/infrastructure/services/service/admin/category.action";
+import {
+  CategoryRequest,
+  CategoryResponse,
+} from "@/infrastructure/services/api/admin/category.api";
+import {
+  useGetListCategory,
+  useCreateCategory,
+  useUpdateCategory,
+} from "@/infrastructure/services/service/admin/category.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { create } from "domain";
 
@@ -58,14 +66,13 @@ watch(
   (newData) => console.log(newData)
 );
 
-
 const emit = defineEmits(["handleClose"]);
 
 const { mutate: createCategory } = useCreateCategory();
 const { mutate: updateCategory } = useUpdateCategory();
 
 const modelRef = reactive<CategoryRequest>({
-  ten: ""
+  ten: "",
 });
 
 const regString = /^-?\d+(\.\d+)?$/;
@@ -81,10 +88,14 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
-        
-        const allCategoryDatas = Array.isArray(props.allCategoryData) ? props.allCategoryData : [];
-        if (props.CategoryDetail && props.CategoryDetail.ten.toLowerCase() === value.toLowerCase()) {
-            return Promise.resolve();
+        const allCategoryDatas = Array.isArray(props.allCategoryData)
+          ? props.allCategoryData
+          : [];
+        if (
+          props.CategoryDetail &&
+          props.CategoryDetail.ten.toLowerCase() === value.toLowerCase()
+        ) {
+          return Promise.resolve();
         }
         const isNameExists = allCategoryDatas.some(
           (cate) => cate.ten.trim().toLowerCase() === value.trim().toLowerCase()
@@ -93,9 +104,9 @@ const rulesRef = reactive({
           return Promise.reject("Tên danh mục đã tồn tại");
         }
         return Promise.resolve();
-        },
-        trigger: "blur",
       },
+      trigger: "blur",
+    },
   ],
 });
 
@@ -105,15 +116,11 @@ const { resetFields, validate, validateInfos } = Form.useForm(
 );
 
 const modalTitle = computed(() =>
-  props.CategoryDetail
-    ? "Cập nhật danh mục"
-    : "Thêm danh mục"
+  props.CategoryDetail ? "Cập nhật danh mục" : "Thêm danh mục"
 );
 
 const okText = computed(() =>
-  props.CategoryDetail
-    ? "Cập nhật danh mục"
-    : "Thêm danh mục"
+  props.CategoryDetail ? "Cập nhật danh mục" : "Thêm danh mục"
 );
 
 watch(
@@ -121,10 +128,9 @@ watch(
   (newVal) => {
     if (newVal) {
       Object.assign(modelRef, {
-        ten: newVal.ten
+        ten: newVal.ten,
       });
       console.log(modelRef);
-      
     } else {
       resetFields();
     }
@@ -155,40 +161,46 @@ const formFields = computed(() => [
     name: "ten",
     component: "a-input",
     placeholder: "Nhâp tên danh mục",
-  }
+  },
 ]);
 
 const handleAddOrUpdate = async () => {
   const payload = {
-    ten: modelRef.ten
+    ten: modelRef.ten,
   };
+  Modal.confirm({
+    content: props.CategoryDetail
+            ? "Bạn chắc chắn muốn cập nhật?"
+            : "Bạn chắc chắn muốn thêm mới?" ,
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
 
-  try {
-    await validate();
-    if (props.CategoryDetail) {
-      await updateCategory({
-        id: props.CategoryDetail.id,
-        data: payload,
-      });
-      
-    } else {
-      await createCategory(payload);
-      resetFields();
-    }
-    
-    toast.success(
-      props.CategoryDetail
-        ? "Cập nhật danh mục thành công"
-        : "Thêm danh mục thành công"
-    );
-    
-    emit("handleClose");
-  } catch (error: any) {
-    console.error("🚀 ~ handleAddOrUpdate ~ error:", error);
-    toast.warning(
-      error?.response?.data?.message
-    );
-  }
+    async onOk() {
+      try {
+        await validate();
+        if (props.CategoryDetail) {
+          await updateCategory({
+            id: props.CategoryDetail.id,
+            data: payload,
+          });
+        } else {
+          await createCategory(payload);
+          resetFields();
+        }
+
+        successNotiSort(
+          props.CategoryDetail
+            ? "Cập nhật danh mục thành công"
+            : "Thêm danh mục thành công"
+        );
+
+        emit("handleClose");
+      } catch (error: any) {
+        console.error("🚀 ~ handleAddOrUpdate ~ error:", error);
+        warningNotiSort(error?.response?.data?.message);
+      }
+    },
+  });
 };
 
 const handleClose = () => {
