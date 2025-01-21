@@ -4,8 +4,6 @@ public interface AdminDetailClientResponse {
 
     String getId();
 
-    String getUsername();
-
     String getCode();
 
     String getFullName();

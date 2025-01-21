@@ -36,8 +36,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.email LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     nv.so_dien_thoai LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     nv.ma_nhan_vien LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    nv.identity LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    nv.username LIKE CONCAT('%', :#{#req.keyword}, '%'))
+                    nv.identity LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.status} IS NULL OR nv.deleted = :#{#req.status})
                 AND (nv.role = 1)
                 ORDER BY nv.ngay_tao DESC
@@ -51,8 +50,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.email LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     nv.so_dien_thoai LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     nv.ma_nhan_vien LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    nv.identity LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    nv.username LIKE CONCAT('%', :#{#req.keyword}, '%'))
+                    nv.identity LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.status} IS NULL OR nv.deleted = :#{#req.status})
                 AND (nv.role = 1)
             """, nativeQuery = true)
@@ -61,7 +59,6 @@ public interface AdminStaffRepository extends NhanVienRepository {
     @Query(value = """
                 SELECT
                     nv.id AS id,
-                    nv.username AS username,
                     nv.ma_nhan_vien AS code,
                     nv.ho_va_ten as fullName,
                     nv.ngay_sinh as birthday,
@@ -93,8 +90,6 @@ public interface AdminStaffRepository extends NhanVienRepository {
 
     boolean existsStaffByIdentity(String identity);
 
-    boolean existsStaffByUsername(String username);
-
     boolean existsStaffByPhoneNumber(String phoneNumber);
 
     @Query(value = """
@@ -114,15 +109,6 @@ public interface AdminStaffRepository extends NhanVienRepository {
             )
             """, nativeQuery = true)
     Long existsStaffByIdentityAndIdNotEquals(String identity, String id);
-
-    @Query(value = """
-            SELECT EXISTS (
-                SELECT 1
-                FROM nhan_vien nv
-                WHERE nv.username = :username AND id != :id
-            )
-            """, nativeQuery = true)
-    Long existsStaffByUsernameAndIdNotEquals(String username, String id);
 
     @Query(value = """
             SELECT EXISTS (

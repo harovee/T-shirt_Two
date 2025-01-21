@@ -5,6 +5,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
+import java.util.Random;
 
 public class AESPasswordCryptoUtil {
 
@@ -38,6 +39,36 @@ public class AESPasswordCryptoUtil {
         return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
     }
 
+    public static String genPassword(Long charter) {
+        String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String specialChars = "!@#$%^&*()-_+=<>?/";
+        String digits = "0123456789";
+        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        String allChars = upperCase + specialChars + digits + lowerCase;
+        Random random = new Random();
+
+        char randomUpperCase = upperCase.charAt(random.nextInt(upperCase.length()));
+        char randomSpecialChar = specialChars.charAt(random.nextInt(specialChars.length()));
+
+        StringBuilder password = new StringBuilder();
+        password.append(randomUpperCase);
+        password.append(randomSpecialChar);
+
+        for (int i = 0; i < charter - 2; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = 0; i < passwordArray.length; i++) {
+            int randomIndex = random.nextInt(passwordArray.length);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[randomIndex];
+            passwordArray[randomIndex] = temp;
+        }
+
+        return new String(passwordArray);
+    }
+
     public static void main(String[] args) {
         try {
             SecretKey secretKey = AESPasswordCryptoUtil.generateSecretKey();
@@ -59,6 +90,8 @@ public class AESPasswordCryptoUtil {
             String decryptedPasswordWithRestoredKey = AESPasswordCryptoUtil.decrypt(encryptedPassword, restoredKey);
             System.out.println("Decrypted Email with Restored Key: " + decryptedPasswordWithRestoredKey);
 
+            Long charter = 8L;
+            System.out.println("AESPasswordCryptoUtil.genPassword(charter): " + AESPasswordCryptoUtil.genPassword(charter));
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

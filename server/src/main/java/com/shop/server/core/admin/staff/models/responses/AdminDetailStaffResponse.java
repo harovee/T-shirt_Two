@@ -4,8 +4,6 @@ public interface AdminDetailStaffResponse {
 
     String getId();
 
-    String getUsername();
-
     String getCode();
 
     String getFullName();

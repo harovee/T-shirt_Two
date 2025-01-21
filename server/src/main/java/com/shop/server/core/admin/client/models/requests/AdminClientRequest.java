@@ -11,8 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AdminClientRequest {
 
-    String username;
-
     String password;
 
     String name;

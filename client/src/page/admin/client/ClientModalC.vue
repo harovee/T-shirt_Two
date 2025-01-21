@@ -36,7 +36,8 @@
               class="w-full"
               v-else-if="field.component === 'a-date-picker'"
               v-model:value="modelRef[field.name]"
-              format="YYYY-MM-DD"
+              :format="field.format"
+              :presets="field.presets"
               show-time
               :placeholder="field.placeholder"
           ></a-date-picker>
@@ -48,12 +49,13 @@
 </template>
 
 <script setup lang="ts">
-import {computed, createVNode, defineEmits, defineProps, reactive} from "vue";
+import {computed, createVNode, defineEmits, defineProps, reactive, ref} from "vue";
 import {Form, Modal} from "ant-design-vue";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 import {toast} from "vue3-toastify";
 import {useCreateClient} from "@/infrastructure/services/service/admin/client.action.ts";
 import {ClientRequest} from "@/infrastructure/services/api/admin/client.api.ts";
+import dayjs from "dayjs";
 
 const props = defineProps({
   open: Boolean,
@@ -66,7 +68,6 @@ const {mutate: create} = useCreateClient();
 const modelRef = reactive<ClientRequest>({
   name: null,
   email: null,
-  username: null,
   password: null,
   birthday: null,
   gender: null,
@@ -76,32 +77,46 @@ const modelRef = reactive<ClientRequest>({
 
 const rulesRef = reactive({
   name: [
-    { validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"), trigger: "blur" },
-    { max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur" },
-  ],
-  username: [
-    { required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur" },
-    { pattern: /^[a-zA-Z0-9]+$/, message: "Tên tài khoản chỉ được chứa chữ và số, không dấu và không ký tự đặc biệt", trigger: "blur" },
+    {
+      validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"),
+      trigger: "blur"
+    },
+    {max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur"},
   ],
   email: [
-    { required: true, message: "Vui lòng nhập email", trigger: "blur" },
-    { pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/, message: "Email không hợp lệ (chỉ chấp nhận @gmail.com hoặc @fpt.edu.vn)", trigger: "blur" },
-    { max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur" },
+    {required: true, message: "Vui lòng nhập email", trigger: "blur"},
+    {
+      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/,
+      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com hoặc @fpt.edu.vn)",
+      trigger: "blur"
+    },
+    {max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur"},
   ],
   password: [
-    { required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur" },
-    { pattern: /^(?=.*[A-Z])(?=.*\W).{8,50}$/, message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa, 1 ký tự đặc biệt, và dài từ 8 đến 50 ký tự", trigger: "blur" },
+    {required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"},
+    {
+      pattern: /^(?=.*[A-Z])(?=.*\W).{8,50}$/,
+      message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa, 1 ký tự đặc biệt, và dài từ 8 đến 50 ký tự",
+      trigger: "blur"
+    },
   ],
   birthday: [
-    { required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur" },
-    { validator: (_, value) => new Date(value) < new Date() ? Promise.resolve() : Promise.reject("Ngày sinh phải là ngày trong quá khứ"), trigger: "blur" },
+    {required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur"},
+    {
+      validator: (_, value) => new Date(value) < new Date() ? Promise.resolve() : Promise.reject("Ngày sinh phải là ngày trong quá khứ"),
+      trigger: "blur"
+    },
   ],
   gender: [
-    { required: true, message: "Vui lòng chọn giới tính", trigger: "blur" },
+    {required: true, message: "Vui lòng chọn giới tính", trigger: "blur"},
   ],
   phoneNumber: [
-    { required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur" },
-    { pattern: /^\+?[1-9]\d{1,14}$/, message: "Số điện thoại không hợp lệ (bao gồm mã quốc gia nếu có) ví dụ: 84", trigger: "blur" },
+    {required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur"},
+    {
+      pattern: /^\+?[1-9]\d{1,14}$/,
+      message: "Số điện thoại không hợp lệ (bao gồm mã quốc gia nếu có) ví dụ: 84",
+      trigger: "blur"
+    },
   ],
 });
 
@@ -109,6 +124,13 @@ const {resetFields, validate, validateInfos} = Form.useForm(
     modelRef,
     rulesRef
 );
+
+const presets = ref([
+  {label: 'Yesterday', value: dayjs().subtract(1, 'day')},
+  {label: 'Last Week', value: dayjs().subtract(7, 'day')},
+  {label: 'Last Month', value: dayjs().subtract(1, 'month')},
+  {label: '18 Years Ago', value: dayjs().subtract(18, 'year')}, // Tùy chọn 18 năm trước
+]);
 
 const formFields = computed(() => [
   {
@@ -124,22 +146,18 @@ const formFields = computed(() => [
     placeholder: "Nhâp email"
   },
   {
-    label: "Tên tài khoản",
-    name: "username",
-    component: "a-input",
-    placeholder: "Nhâp tên tài khoản"
-  },
-  {
     label: "Mật khẩu",
     name: "password",
     component: "a-input",
-    placeholder: "Nhâp mật khẩu"
+    placeholder: "Nhâp mật khẩu",
   },
   {
     label: "Ngày sinh",
     name: "birthday",
     component: "a-date-picker",
-    placeholder: "Nhâp ngày sinh"
+    placeholder: "Nhâp ngày sinh",
+    format: 'DD-MM-YYYY',
+    presets: presets.value,
   },
   {
     label: "Giới tính",
@@ -190,7 +208,7 @@ const handleCreateClient = () => {
               error?.response?.data?.message
           );
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          toast.warning("Vui lòng nhập đúng đủ các trường dữ liệu");
         }
       }
     },

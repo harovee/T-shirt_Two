@@ -21,7 +21,7 @@ public interface AdminClientRepository extends KhachHangRepository {
      */
     @Query(value = """
                 SELECT
-                    ROW_NUMBER() OVER(ORDER BY kh.id DESC) AS catalog,
+                    ROW_NUMBER() OVER(ORDER BY kh.ngay_tao DESC) AS catalog,
                 	kh.id AS id,
                     kh.ho_va_ten as name,
                     kh.email as email,
@@ -34,8 +34,7 @@ public interface AdminClientRepository extends KhachHangRepository {
                     kh.ho_va_ten LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     kh.email LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     kh.so_dien_thoai LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    kh.ma_khach_hang LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    kh.username LIKE CONCAT('%', :#{#req.keyword}, '%'))
+                    kh.ma_khach_hang LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.status} IS NULL OR kh.deleted = :#{#req.status})
                 ORDER BY kh.ngay_tao DESC
             """, countQuery = """
@@ -47,17 +46,14 @@ public interface AdminClientRepository extends KhachHangRepository {
                     kh.ho_va_ten LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     kh.email LIKE CONCAT('%', :#{#req.keyword}, '%') OR
                     kh.so_dien_thoai LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    kh.ma_khach_hang LIKE CONCAT('%', :#{#req.keyword}, '%') OR
-                    kh.username LIKE CONCAT('%', :#{#req.keyword}, '%'))
+                    kh.ma_khach_hang LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.status} IS NULL OR kh.deleted = :#{#req.status})
-                ORDER BY kh.ngay_tao DESC
             """, nativeQuery = true)
     Page<AdminClientResponse> getClientByRequest(Pageable pageable, AdminFindClientRequest req);
 
     @Query(value = """
                 SELECT
                     kh.id AS id,
-                    kh.username AS username,
                     kh.ma_khach_hang AS code,
                     kh.ho_va_ten as fullName,
                     kh.ngay_sinh as birthday,
@@ -86,8 +82,6 @@ public interface AdminClientRepository extends KhachHangRepository {
 
     boolean existsClientByEmail(String email);
 
-    boolean existsClientByUsername(String username);
-
     boolean existsClientByPhoneNumber(String phoneNumber);
 
     @Query(value = """
@@ -98,15 +92,6 @@ public interface AdminClientRepository extends KhachHangRepository {
             )
             """, nativeQuery = true)
     Long existsClientByEmailAndIdNotEquals(String email, String id);
-
-    @Query(value = """
-            SELECT EXISTS (
-                SELECT 1
-                FROM khach_hang kh
-                WHERE kh.username = :username AND id != :id
-            )
-            """, nativeQuery = true)
-    Long existsClientByUsernameAndIdNotEquals(String username, String id);
 
     @Query(value = """
             SELECT EXISTS (
