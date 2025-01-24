@@ -29,8 +29,7 @@ export const getBillHistory = async (params: Ref<FindBillHistoryRequest>) => {
         method: 'GET',
         params: params.value
     })) as AxiosResponse<
-        DefaultResponse<Array<PaginationResponse<BillHistoryParams>>>
+        DefaultResponse<Array<PaginationResponse<BillHistoryResponse>>>
     >;
-
     return res.data
 }

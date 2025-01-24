@@ -19,7 +19,7 @@ export const useGetBillById = (
 ): UseQueryReturnType<Awaited<ReturnType<typeof getBillById>>, Error> => {
     return useQuery({
         queryKey: [queryKey.admin.bill.billById, billId,],
-        queryFn: () => getBillById(billId),
+        queryFn: () => getBillById(billId.value),
         ...options,
     });
 };
@@ -27,7 +27,7 @@ export const useGetBillById = (
 export const useUpdateBill = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({billId, data,}: { billId: string; data: BillRequest; }) => updateBill(billId, data),
+        mutationFn: ({idBill, params}: { idBill: string; params: BillRequest; }) => updateBill(idBill, params),
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billList],});
         },

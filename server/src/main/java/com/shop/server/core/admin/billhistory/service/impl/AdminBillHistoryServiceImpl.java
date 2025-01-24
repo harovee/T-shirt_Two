@@ -1,7 +1,6 @@
 package com.shop.server.core.admin.billhistory.service.impl;
 
 import com.shop.server.core.admin.bill.repository.AdminBillRepository;
-import com.shop.server.core.admin.billhistory.model.request.AdminCreateBillHistoryRequest;
 import com.shop.server.core.admin.billhistory.model.request.AdminCreateHistoryRequest;
 import com.shop.server.core.admin.billhistory.model.request.AdminFindBillHistoryRequest;
 import com.shop.server.core.admin.billhistory.repository.AdminBillHistoryRepository;
@@ -28,23 +27,13 @@ public class AdminBillHistoryServiceImpl implements AdminBillHistoryService {
 
     @Override
     public ResponseObject<?> getAdminBillHistory(AdminFindBillHistoryRequest request) {
-        Pageable pageable = Helper.createPageable(request);
         return new ResponseObject<>(
-                PageableObject.of(adminBillHistoryRepository.getAdminBillHistoryByRequest(pageable, request)),
+                adminBillHistoryRepository.getAllAdminBillHistory(request),
                 HttpStatus.OK,
                 Message.Success.GET_SUCCESS
         );
     }
 
-
-    @Override
-    public ResponseObject<?> getAdminBillHistoryById(String id) {
-        return new ResponseObject<>(
-                adminBillHistoryRepository.getAdminBillHistoryById(id),
-                HttpStatus.OK,
-                Message.Success.GET_SUCCESS
-        );
-    }
 
     @Override
     public ResponseObject<?> createAdminBillHistory(AdminCreateHistoryRequest request) {
@@ -53,6 +42,7 @@ public class AdminBillHistoryServiceImpl implements AdminBillHistoryService {
         lshd.setMoTa(request.getMoTa());
         lshd.setHanhDong(request.getHanhDong());
         lshd.setTrangThai(request.getTrangThai());
+        lshd.setNguoiTao(request.getNguoiTao());
         lshd.setDeleted(false);
         LichSuHoaDon lshd1 = adminBillHistoryRepository.save(lshd);
         return new ResponseObject<>(lshd1, HttpStatus.CREATED, "Tạo lịch sử hóa đơn thành công.");
