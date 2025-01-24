@@ -22,22 +22,16 @@
       </div>
       <div class="w-full grid justify-center">
         <div class="w-[20rem] h-[20rem]">
-          <a-tooltip
-              title="Tải Ảnh Lên"
-              trigger="hover"
+          <a-avatar
+              shape="circle"
+              :src="modelRef['picture']"
+              class="w-full h-full text-center scale-95 hover:scale-100 transition-all cursor-pointer"
           >
-            <a-avatar
-                @click="openWidget()"
-                shape="circle"
-                :src="modelRef['picture']"
-                class="w-full h-full text-center scale-95 hover:scale-100 transition-all cursor-pointer"
-            >
-            </a-avatar>
-          </a-tooltip>
+          </a-avatar>
         </div>
       </div>
       <div class="mt-5 p-5 w-full h-full bg-white rounded-xl">
-        <h4 class="text-center text-xl font-semibold text-gray-700">{{ detailRef.fullName }}</h4>
+        <h4 class="text-center text-xl font-semibold mb-5 text-gray-700">{{ detailRef.fullName }}</h4>
         <p class="text-gray-500">Mã khách hàng: KH{{ detailRef.code }}</p>
         <p class="text-gray-500">Người tạo: {{ detailRef.createdBy || 'Chưa xác định' }} lúc
           {{ convertDateFormat(detailRef.createdDate) }}</p>
@@ -45,57 +39,104 @@
           {{ convertDateFormat(detailRef.lastModifiedDate) }}</p>
       </div>
     </div>
-    <div class="col-span-3 md:col-span-5 p-5 lg:col-span-3 rounded-xl border-2 shadow-purple-500 shadow-xl h-fit">
-      <a-form layout="vertical" class="grid grid-cols-2 gap-4">
-        <template class="col-span-1 md:col-span-1 lg:col-span-1" v-for="field in formFields">
-          <a-form-item
-              :label="field.label"
-              :name="field.name"
-              v-bind="validateInfos[field.name]"
-          >
-            <a-input
-                v-if="field.component === 'a-input'"
-                v-model:value="modelRef[field.name]"
-                :placeholder="field.placeholder"
-                :type="field.type"
-            ></a-input>
-
-            <a-input-password
-                v-if="field.component === 'a-input-password'"
-                v-model:value="modelRef[field.name]"
-                :placeholder="field.placeholder"
-                :type="field.type"
-            ></a-input-password>
-
-            <a-radio-group
-                v-if="field.component === 'a-radio-group'"
-                v-for="option in field.options"
-                v-model:value="modelRef[field.name]"
+    <div class="col-span-3 md:col-span-5 lg:col-span-3">
+      <div class="rounded-xl border-2 shadow-xl p-5 h-fit">
+        <a-form layout="vertical" class="grid grid-cols-2 gap-4">
+          <template class="col-span-1 md:col-span-1 lg:col-span-1" v-for="field in formFields">
+            <a-form-item
+                :label="field.label"
+                :name="field.name"
+                v-bind="validateInfos[field.name]"
+                class="m-0"
             >
-              <a-radio :value="option.value">
-                {{ option.name }}
-              </a-radio>
-            </a-radio-group>
+              <a-input
+                  v-if="field.component === 'a-input'"
+                  v-model:value="modelRef[field.name]"
+                  :placeholder="field.placeholder"
+                  :type="field.type"
+              ></a-input>
 
-            <a-date-picker
-                class="w-full"
-                v-else-if="field.component === 'a-date-picker'"
-                v-model:value="modelRef[field.name]"
-                format="YYYY-MM-DD"
-                show-time
-                :placeholder="field.placeholder"
-            ></a-date-picker>
+              <a-input-password
+                  v-if="field.component === 'a-input-password'"
+                  v-model:value="modelRef[field.name]"
+                  :placeholder="field.placeholder"
+                  :type="field.type"
+              ></a-input-password>
 
-          </a-form-item>
-        </template>
-        <div class="flex justify-end items-center gap-4">
+              <a-radio-group
+                  v-if="field.component === 'a-radio-group'"
+                  v-for="option in field.options"
+                  v-model:value="modelRef[field.name]"
+              >
+                <a-radio :value="option.value">
+                  {{ option.name }}
+                </a-radio>
+              </a-radio-group>
+
+              <a-date-picker
+                  class="w-full"
+                  v-else-if="field.component === 'a-date-picker'"
+                  v-model:value="modelRef[field.name]"
+                  :format="field.format"
+                  :presets="field.presets"
+                  show-time
+                  :placeholder="field.placeholder"
+              ></a-date-picker>
+
+            </a-form-item>
+          </template>
+        </a-form>
+        <div class="flex justify-end gap-4">
           <a-button @click="handleReset()">Đặt lại</a-button>
           <a-button type="primary" @click="handleUpdate()">Cập nhật</a-button>
         </div>
-      </a-form>
-      <client-address/>
+      </div>
+      <div class="rounded-xl border-2 shadow-xl h-fit mt-10 p-5">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 m-0">Địa chỉ khách hàng</h3>
+          </div>
+          <a-tooltip
+              title="Thêm địa chỉ"
+              trigger="hover"
+          >
+            <a-button
+                class="bg-purple-300 flex justify-between items-center gap-2"
+                size="large"
+                @click="handleOpenModalCreateClientAddress()"
+            >
+              <v-icon name="md-addcircle"/>
+            </a-button>
+          </a-tooltip>
+        </div>
+        <div class="grid gap-3">
+          <a-collapse
+              v-for="(clientAddress, index) in clientAddresses"
+              v-model:activeKey="activeKey"
+              accordion
+              expand-icon-position="end"
+              @change="handleChangeCollapse"
+          >
+            <a-collapse-panel
+                :key="index"
+                :header="clientAddress.isDefault ? `Địa chỉ mặc định: ${clientAddress.line}` : `Địa chỉ thường: ${clientAddress.line}`"
+            >
+              <client-address
+                  :data-source="clientAddress"
+                  :isRefresh="isRefresh"
+                  @handleResetActiveKey="handleResetActiveKey"
+              />
+            </a-collapse-panel>
+          </a-collapse>
+        </div>
+      </div>
     </div>
   </div>
+  <client-address-modal-c
+      :open="isOpenModalCreateClientAddress"
+      :clientId="clientId"
+      @handleClose="handleCloseModalCreateClientAddress"
+  />
 </template>
 
 <script lang="ts">
@@ -106,23 +147,27 @@ export default {
 
 <script lang="ts" setup>
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
-import {computed, createVNode, reactive, watch} from "vue";
-import {DetailClientResponse, ClientRequest} from "@/infrastructure/services/api/admin/client.api.ts";
-import {Form, Modal} from "ant-design-vue";
+import {computed, createVNode, reactive, ref, watch} from "vue";
 import {
+  DetailClientResponse,
+  ClientRequest,
+  ClientAddressResponse,
+} from "@/infrastructure/services/api/admin/client.api.ts";
+import {Form, Modal, notification} from "ant-design-vue";
+import {
+  useGetClientAddressesByClientId,
   useGetClientById,
-  useUpdateClient,
-  useUpdateClientAvatar
+  useUpdateClient
 } from "@/infrastructure/services/service/admin/client.action.ts";
 import {keepPreviousData} from "@tanstack/vue-query";
 import router from "@/infrastructure/routes/router.ts";
-import {CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET} from "@/infrastructure/constants/cloudinary.ts";
 import {
   convertDateFormat, convertToAntdDatePicker
 } from "@/utils/common.helper.ts";
-import {toast} from "vue3-toastify";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 import ClientAddress from "@/page/admin/client/ClientAddress.vue";
+import dayjs from "dayjs";
+import ClientAddressModalC from "@/page/admin/client/ClientAddressModalC.vue";
 
 const clientId = computed(() => {
   const currentUrl = window.location.href;
@@ -131,7 +176,11 @@ const clientId = computed(() => {
     return match[1];
   } else {
     router.push({name: ROUTES_CONSTANTS.NOT_FOUND.name})
-    toast.warning("Không tìm thấy người dùng trên");
+    notification.warning({
+      message: 'Thông báo',
+      description: 'Không tìm thấy người dùng trên',
+      duration: 4
+    });
     return "idNotFound";
   }
 });
@@ -149,7 +198,6 @@ const clientDetail = computed(() => data?.value?.data?.data || null);
 
 const detailRef = reactive<DetailClientResponse>({
   id: clientId.value,
-  username: null,
   code: null,
   fullName: null,
   birthday: null,
@@ -168,7 +216,6 @@ const detailRef = reactive<DetailClientResponse>({
 const modelRef = reactive<ClientRequest>({
   name: null,
   email: null,
-  username: null,
   password: null,
   birthday: null,
   gender: null,
@@ -179,24 +226,17 @@ const modelRef = reactive<ClientRequest>({
 const rulesRef = reactive({
   name: [
     {
+      required: true,
       validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"),
       trigger: "blur"
     },
     {max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur"},
   ],
-  username: [
-    {required: true, message: "Vui lòng nhập tên tài khoản", trigger: "blur"},
-    {
-      pattern: /^[a-zA-Z0-9]+$/,
-      message: "Tên tài khoản chỉ được chứa chữ và số, không dấu và không ký tự đặc biệt",
-      trigger: "blur"
-    },
-  ],
   email: [
     {required: true, message: "Vui lòng nhập email", trigger: "blur"},
     {
-      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com|fpt\.edu\.vn)$/,
-      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com hoặc @fpt.edu.vn)",
+      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com)$/,
+      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com)",
       trigger: "blur"
     },
     {max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur"},
@@ -204,16 +244,38 @@ const rulesRef = reactive({
   password: [
     {required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"},
     {
-      pattern: /^(?=.*[A-Z])(?=.*\W).{8,50}$/,
-      message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa, 1 ký tự đặc biệt, và dài từ 8 đến 50 ký tự",
+      pattern: /[A-Z]/,
+      message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa",
       trigger: "blur"
     },
+    {
+      pattern: /\W/,
+      message: "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+      trigger: "blur"
+    },
+    {min: 8, message: "Mật khẩu phải có độ dài từ 8 ký tự trở lên"},
+    {max: 50, message: "Mật khẩu phải có độ dài từ 50 ký tự trở xuống"}
   ],
   birthday: [
     {required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur"},
     {
-      validator: (_, value) => new Date(value) < new Date() ? Promise.resolve() : Promise.reject("Ngày sinh phải là ngày trong quá khứ"),
-      trigger: "blur"
+      validator: (_, value) => {
+        const birthDate = new Date(value);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+
+        const hasHadBirthdayThisYear =
+            today.getMonth() > birthDate.getMonth() ||
+            (today.getMonth() === birthDate.getMonth() &&
+                today.getDate() >= birthDate.getDate());
+
+        const actualAge = hasHadBirthdayThisYear ? age : age - 1;
+
+        return actualAge >= 18
+            ? Promise.resolve()
+            : Promise.reject("Ngày sinh phải đủ 18 tuổi");
+      },
+      trigger: "blur",
     },
   ],
   gender: [
@@ -222,18 +284,21 @@ const rulesRef = reactive({
   phoneNumber: [
     {required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur"},
     {
-      pattern: /^\+?[1-9]\d{1,14}$/,
-      message: "Số điện thoại không hợp lệ (bao gồm mã quốc gia nếu có) ví dụ: 84",
+      pattern: /^0[1-9]\d{8,9}$/,
+      message: "Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số.",
       trigger: "blur"
     },
   ],
 });
 
-
 const {validate, validateInfos} = Form.useForm(
     modelRef,
     rulesRef
 );
+
+const presets = ref([
+  {label: '18 Years Ago', value: dayjs().subtract(18, 'year')},
+]);
 
 const formFields = computed(() => [
   {
@@ -251,13 +316,6 @@ const formFields = computed(() => [
     placeholder: "Nhâp email"
   },
   {
-    label: "Tên tài khoản",
-    name: "username",
-    type: "string",
-    component: "a-input",
-    placeholder: "Nhâp tên tài khoản"
-  },
-  {
     label: "Mật khẩu",
     name: "password",
     type: "string",
@@ -268,7 +326,9 @@ const formFields = computed(() => [
     label: "Ngày sinh",
     name: "birthday",
     component: "a-date-picker",
-    placeholder: "Nhâp ngày sinh"
+    placeholder: "Nhâp ngày sinh",
+    format: 'DD-MM-YYYY',
+    presets: presets.value,
   },
   {
     label: "Số điện thoại",
@@ -294,49 +354,7 @@ const formFields = computed(() => [
   },
 ]);
 
-// * HandleUpload * \\
-const {mutate: updateClientAvatar} = useUpdateClientAvatar();
-
-const myWidget = cloudinary.createUploadWidget(
-    {
-      cloudName: CLOUDINARY_CLOUD_NAME,
-      uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-    },
-    (error: any, result: any) => {
-      if (!error && result && result.event === "success") {
-        modelRef.picture = result.info.url;
-        const id = clientId.value;
-        uploadAvatarClient(id, modelRef);
-      }
-    }
-);
-
-const uploadAvatarClient = (clientId: string, data: ClientRequest) => {
-  try {
-    updateClientAvatar({clientId, data}, {
-      onSuccess: (res: any) => {
-        toast.success(res.data.message);
-        refetch();
-      },
-      onError: (error: any) => {
-        toast.error(
-            error?.response?.data?.message
-        )
-      },
-    })
-  } catch (error: any) {
-    console.error("🚀 ~ handleChangeStatus ~ error:", error);
-    toast.error(
-        error?.response?.data?.message
-    );
-  }
-}
-
-const openWidget = () => {
-  myWidget.open();
-}
-
-// * HandleForm * \\
+/*** HandleForm ***/
 const {mutate: updateClient} = useUpdateClient();
 
 const handleUpdate = () => {
@@ -353,23 +371,35 @@ const handleUpdate = () => {
         };
         updateClient(request, {
           onSuccess: (res: any) => {
-            toast.success(res.data.message);
+            notification.success({
+              message: 'Thông báo',
+              description: res.data.message,
+              duration: 4,
+            });
             refetch();
           },
           onError: (error: any) => {
-            toast.error(
-                error?.response?.data?.message
-            )
+            notification.error({
+              message: 'Thông báo',
+              description: error?.response?.data?.message,
+              duration: 4,
+            });
           },
         })
       } catch (error: any) {
         console.error("🚀 ~ handleUpdate ~ error:", error);
         if (error?.response) {
-          toast.warning(
-              error?.response?.data?.message
-          );
+          notification.error({
+            message: 'Thông báo',
+            description: error?.response?.data?.message,
+            duration: 4,
+          });
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          notification.warning({
+            message: 'Thông báo',
+            description: "Vui lòng nhập đúng đủ các trường dữ liệu",
+            duration: 4,
+          });
         }
       }
     },
@@ -390,18 +420,15 @@ const assignData = (client: DetailClientResponse) => {
   Object.assign(modelRef, {
     name: client.fullName,
     email: client.email,
-    username: client.username,
     password: client.password,
     birthday: convertToAntdDatePicker(client.birthday),
     gender: client.gender,
     phoneNumber: client.phoneNumber,
-    identity: client.identity,
     picture: client.picture,
   });
 
   Object.assign(detailRef, {
     id: client.id,
-    username: client.username,
     code: client.code,
     fullName: client.fullName,
     birthday: client.birthday,
@@ -409,7 +436,6 @@ const assignData = (client: DetailClientResponse) => {
     phoneNumber: client.phoneNumber,
     email: client.email,
     password: client.password,
-    identity: client.identity,
     status: client.status,
     picture: client.picture,
     createdBy: client.createdBy,
@@ -418,6 +444,41 @@ const assignData = (client: DetailClientResponse) => {
     lastModifiedDate: client.lastModifiedDate,
   })
 }
+
+/*** GetClientAddress  ***/
+const {data: clientAddressesData} = useGetClientAddressesByClientId(clientId.value, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const clientAddresses = computed(() =>
+    clientAddressesData?.value?.data || Array<ClientAddressResponse>
+);
+
+const activeKey = ref(['0']);
+
+const handleResetActiveKey = () => {
+  activeKey.value = ['0'];
+}
+
+const isRefresh = ref(false);
+
+const handleChangeCollapse = () => {
+  isRefresh.value = !isRefresh.value;
+}
+
+isRefresh.value = !isRefresh.value;
+
+/*** Create Client Address ***/
+const isOpenModalCreateClientAddress = ref(false);
+
+const handleOpenModalCreateClientAddress = () => {
+  isOpenModalCreateClientAddress.value = true;
+};
+
+const handleCloseModalCreateClientAddress = () => {
+  isOpenModalCreateClientAddress.value = false;
+};
 
 watch(
     clientDetail,

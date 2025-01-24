@@ -18,7 +18,6 @@ export interface FindClientRequest extends PropertyClientParams, PaginationParam
 export interface ClientRequest {
     name: String | null;
     email: String | null;
-    username: String | null;
     password: String | null;
     birthday: String | null;
     gender: String | null;
@@ -36,7 +35,6 @@ export type ClientResponse = ResponseList & {
 
 export type DetailClientResponse = {
     id: string;
-    username: string | null;
     code: string | null;
     fullName: string | null;
     birthday: string | null;
@@ -51,6 +49,33 @@ export type DetailClientResponse = {
     createdDate: number | null;
     lastModifiedDate: number | null;
 };
+
+export type ClientAddressRequest = {
+    name: string;
+    phoneNumber: string,
+    line: string,
+    ward: string,
+    district: string,
+    province: string,
+    isDefault: string,
+    clientId: string,
+}
+
+export type ClientAddressCommonOptionsResponse = {
+    id: string,
+    name: string,
+}
+
+export type ClientAddressResponse = {
+    id: string,
+    name: string,
+    phoneNumber: string,
+    line: string,
+    ward: string,
+    district: string,
+    province: string,
+    isDefault: string,
+}
 
 export const getClients = async (params: Ref<FindClientRequest>) => {
     const res = (await request({
@@ -76,7 +101,7 @@ export const createClient = async (data: ClientRequest) => {
     return res.data;
 };
 
-export const getClientById = async (clientId: Ref<string | null>) => {
+export const getClientById = async (clientId: string) => {
     return await request({
         url: `${PREFIX_API_ADMIN_CLIENT}/${clientId}`,
         method: "GET"
@@ -112,4 +137,81 @@ export const updateAvatarClient = async (clientId: string, data: ClientRequest) 
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>
     >;
+}
+
+export const getProvinces = async () => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/province`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<ClientAddressCommonOptionsResponse>>
+    >;
+
+    return res.data;
+};
+
+export const getDistrictsByProvinceId = async (provinceId: number) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/district/${provinceId}`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<ClientAddressCommonOptionsResponse>>
+    >;
+
+    return res.data;
+};
+
+export const getWardsByDistrictId = async (districtId: number) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/ward/${districtId}`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<ClientAddressCommonOptionsResponse>>
+    >;
+
+    return res.data;
+};
+
+export const createClientAddress = async (data: ClientAddressRequest) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/address`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+
+    return res.data;
+};
+
+export const updateClientAddress = async (addressId: string, data: ClientAddressRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/address/${addressId}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+}
+
+export const changeClientAddressDefault = async (addressId: string) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/address/default/${addressId}`,
+        method: "PUT",
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+
+    return res.data;
+}
+
+export const getClientAddressesResponseByClientId = async (clientId: string) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/address/${clientId}`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<ClientAddressResponse>>
+    >;
+
+    return res.data;
 }

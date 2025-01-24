@@ -3,6 +3,7 @@ package com.shop.server.core.admin.staff.services.impl;
 import com.shop.server.core.admin.staff.models.requests.AdminFindStaffRequest;
 import com.shop.server.core.admin.staff.models.requests.AdminStaffRequest;
 import com.shop.server.core.admin.staff.repositories.AdminStaffRepository;
+import com.shop.server.core.admin.staff.services.AdminStaffMailService;
 import com.shop.server.core.admin.staff.services.AdminStaffService;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
@@ -11,6 +12,7 @@ import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.infrastructure.security.oauth2.session.InfoUserTShirt;
+import com.shop.server.utils.AESPasswordCryptoUtil;
 import com.shop.server.utils.DateTimeUtil;
 import com.shop.server.utils.Helper;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +30,15 @@ public class AdminStaffServiceImpl implements AdminStaffService {
 
     private final InfoUserTShirt infoUserTShirt;
 
-    public AdminStaffServiceImpl(AdminStaffRepository adminStaffRepository, InfoUserTShirt infoUserTShirt) {
+    private final AdminStaffMailService emailService;
+
+    public AdminStaffServiceImpl(
+            AdminStaffRepository adminStaffRepository,
+            InfoUserTShirt infoUserTShirt,
+            AdminStaffMailService emailService) {
         this.adminStaffRepository = adminStaffRepository;
         this.infoUserTShirt = infoUserTShirt;
+        this.emailService = emailService;
     }
 
     @Override
@@ -60,12 +68,6 @@ public class AdminStaffServiceImpl implements AdminStaffService {
                     Message.Response.DUPLICATE + ", email"
             );
         }
-        if (adminStaffRepository.existsStaffByUsername(request.getUsername())) {
-            return ResponseObject.errorForward(
-                    HttpStatus.BAD_REQUEST,
-                    Message.Response.DUPLICATE + ", tên tài khoản"
-            );
-        }
         if (adminStaffRepository.existsStaffByIdentity(request.getIdentity())) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
@@ -80,8 +82,8 @@ public class AdminStaffServiceImpl implements AdminStaffService {
         }
         try {
             NhanVien staff = new NhanVien();
-            staff.setUsername(request.getUsername());
-            staff.setPassword(request.getPassword());
+            String pass = AESPasswordCryptoUtil.genPassword(8L);
+            staff.setPassword(pass);
             staff.setFullName(request.getName());
             staff.setEmail(request.getEmail());
             Long count = adminStaffRepository.countNhanVienByRole(Role.USER) + 1;
@@ -93,9 +95,11 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setRole(Role.USER);
             staff.setStatus(Status.ACTIVE);
             staff.setDeleted(false);
+            staff.setProfilePicture("https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp");
             staff.setNguoiTao(infoUserTShirt.getId());
             staff.setNguoiSua(infoUserTShirt.getId());
-            adminStaffRepository.save(staff);
+            NhanVien newStaff = adminStaffRepository.save(staff);
+            emailService.sendMailCreateStaff(newStaff);
         } catch (Exception e) {
             e.printStackTrace(System.out);
             return ResponseObject.errorForward(
@@ -118,17 +122,10 @@ public class AdminStaffServiceImpl implements AdminStaffService {
                     Message.Response.NOT_FOUND + ", nhân viên"
             );
         }
-        log.info("adminStaffRepository.existsStaffByEmailAndIdNotEquals(request.getEmail(), id) + {}", adminStaffRepository.existsStaffByEmailAndIdNotEquals(request.getEmail(), id));
         if (adminStaffRepository.existsStaffByEmailAndIdNotEquals(request.getEmail(), id) == 1L) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
                     Message.Response.DUPLICATE + ", email"
-            );
-        }
-        if (adminStaffRepository.existsStaffByUsernameAndIdNotEquals(request.getUsername(), id) == 1L) {
-            return ResponseObject.errorForward(
-                    HttpStatus.BAD_REQUEST,
-                    Message.Response.DUPLICATE + ", tên tài khoản"
             );
         }
         if (adminStaffRepository.existsStaffByIdentityAndIdNotEquals(request.getIdentity(), id) == 1L) {
@@ -145,7 +142,6 @@ public class AdminStaffServiceImpl implements AdminStaffService {
         }
         try {
             NhanVien staff = staffOptional.get();
-            staff.setUsername(request.getUsername());
             staff.setPassword(request.getPassword());
             staff.setFullName(request.getName());
             staff.setEmail(request.getEmail());

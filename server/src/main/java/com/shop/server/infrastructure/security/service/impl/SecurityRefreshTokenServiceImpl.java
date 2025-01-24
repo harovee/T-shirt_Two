@@ -77,7 +77,7 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
     @Override
     public ResponseObject<?> login(AuthLoginRequest request) {
         try {
-            Optional<NhanVien> nhanVienOptional = authStaffRepository.findByUsername(request.getUserName());
+            Optional<NhanVien> nhanVienOptional = authStaffRepository.findByPhoneNumber(request.getUserName());
             if (nhanVienOptional.isPresent()) {
                 NhanVien staff = nhanVienOptional.get();
                 if (staff.getPassword().equals(request.getPassword())) {
