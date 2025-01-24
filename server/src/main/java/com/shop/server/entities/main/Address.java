@@ -19,34 +19,34 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Entity
 @Table(name = "dia_chi_khach_hang")
-public class DiaChiKhachHang extends PrimaryEntity implements Serializable {
+public class Address extends PrimaryEntity implements Serializable {
 
-    @Column(name = "mac_dinh")
-    private Boolean macDinh;
-
-    @Column(name = "so_nha")
-    private String soNha;
-
-    @Column(name = "ten_khach_hang")
-    private String tenKhachHang;
+    @Column(name = "ten")
+    private String name;
 
     @Column(name = "so_dien_thoai")
-    private String soDienThoai;
-
-    @Column(name = "phuong_xa")
-    private String phuongXa;
-
-    @Column(name = "quan_huyen")
-    private String quanHuyen;
+    private String phoneNumber;
 
     @Column(name = "tinh_thanh_pho")
-    private String tinhThanhPho;
+    private Long province;
+
+    @Column(name = "quan_huyen")
+    private Long district;
+
+    @Column(name = "phuong_xa")
+    private String ward;
+
+    @Column(name = "so_nha")
+    private String line;
+
+    @Column(name = "mac_dinh")
+    private Boolean isDefault;
 
     @Column(name = "mo_ta")
-    private String moTa;
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "id_khach_hang", referencedColumnName = "id")
-    private KhachHang khachHang;
+    private KhachHang ClientId;
 
 }

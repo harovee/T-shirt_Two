@@ -13,6 +13,14 @@ export const queryKey = {
         client: {
             clientList: "adClientListKey",
             clientDetail: "adClientDetailKey",
+            address: {
+                addressList: "adClientAddressListKey",
+                province: "adClientAddressProvince",
+                district: "adClientAddressDistrict",
+                districtM: "adClientAddressDistrictM",
+                ward: "adClientAddressWard",
+                wardM: "adClientAddressWardM",
+            }
         },
         staff: {
             staffList: "adStaffListKey",

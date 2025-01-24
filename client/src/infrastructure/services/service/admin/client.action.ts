@@ -1,12 +1,20 @@
 import {
+    changeClientAddressDefault,
     changeStatusClient,
+    ClientAddressRequest,
     ClientRequest,
     createClient,
+    createClientAddress,
     FindClientRequest,
+    getClientAddressesResponseByClientId,
     getClientById,
     getClients,
+    getDistrictsByProvinceId,
+    getProvinces,
+    getWardsByDistrictId,
     updateAvatarClient,
-    updateClient
+    updateClient,
+    updateClientAddress
 } from "@/infrastructure/services/api/admin/client.api.ts";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -37,7 +45,6 @@ export const useCreateClient = () => {
         },
     });
 };
-
 
 export const useGetClientById = (
     clientId: string, options?: any
@@ -91,3 +98,118 @@ export const useUpdateClientAvatar = () => {
         },
     });
 }
+
+export const useGetProvinces = (
+    options?: any,
+): UseQueryReturnType<Awaited<ReturnType<typeof getProvinces>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.client.address.province],
+        queryFn: () => getProvinces(),
+        ...options,
+    });
+};
+
+export const useGetDistrictsByProvinceIdQuery = (
+    provinceId: number,
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getDistrictsByProvinceId>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.client.address.district, provinceId],
+        queryFn: () => getDistrictsByProvinceId(provinceId),
+        ...options,
+    });
+};
+
+export const useGetWardsByDistrictIdQuery = (districtId: number, options?: any): UseQueryReturnType<Awaited<ReturnType<typeof getWardsByDistrictId>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.client.address.ward, districtId],
+        queryFn: () => getWardsByDistrictId(districtId),
+        ...options,
+    });
+};
+
+export const useGetDistrictsByProvinceId = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (provinceId: number) => getDistrictsByProvinceId(provinceId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.client.address.districtM, 'useMutation'],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.client.address.district, "🚀 ~ address.district get ~ error:", error);
+        },
+    });
+};
+
+export const useGetWardsByDistrictId = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (districtId: number) => getWardsByDistrictId(districtId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.client.address.wardM],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.client.address.ward, "🚀 ~ address.ward get ~ error:", error);
+        },
+    });
+};
+
+export const useCreateClientAddress = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: ClientAddressRequest) => createClientAddress(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.client.address.addressList],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.client.address.addressList, "🚀 ~ clientAddressCreate ~ error:", error);
+        },
+    });
+};
+
+export const useUpdateClientAddress = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({addressId, data,}: {
+            addressId: string;
+            data: ClientAddressRequest;
+        }) => updateClientAddress(addressId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.client.address.addressList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.client.address.addressList + "🚀 ~ useUpdateClientAddress ~ error:", error);
+        },
+    });
+};
+
+export const useChangeClientAddressDefault = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (addressId: string) => changeClientAddressDefault(addressId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.client.address.addressList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.client.address.addressList + "🚀 ~ useChangeClientAddressDefault ~ error:", error);
+        },
+    });
+};
+
+
+export const useGetClientAddressesByClientId = (
+    clientId: string,
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getClientAddressesResponseByClientId>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.client.address.addressList, clientId],
+        queryFn: () => getClientAddressesResponseByClientId(clientId),
+        ...options,
+    });
+};

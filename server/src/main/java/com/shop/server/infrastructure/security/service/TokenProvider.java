@@ -34,7 +34,7 @@ public class TokenProvider {
     @Value("${jwt.secret}")
     private String tokenSecret;
 
-    private final long TOKEN_EXP = 2 * 60 * 60 * 1000;
+    private final long TOKEN_EXP = 10 * 60 * 60 * 1000;
 
     @Setter(onMethod_ = @Autowired)
     private SecurityNhanVienRepository userAuthRepository;

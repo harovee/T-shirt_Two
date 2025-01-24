@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.client.services;
 
+import com.shop.server.core.admin.client.models.requests.AdminClientAddressRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
 import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
 import com.shop.server.core.common.base.ResponseObject;
@@ -19,6 +20,20 @@ public interface AdminClientService {
 
     ResponseObject<?> updateClientAvatar(String id, AdminClientRequest request);
 
-    ResponseObject<?> getAddressByClientId(String id);
+    // ** Filter province district ward ** \\
+
+    ResponseObject<?> getProvinces();
+
+    ResponseObject<?> getDistrictsByProvinceId(Long provinceId);
+
+    ResponseObject<?> getWardsByDistrictId(Long districtId);
+
+    ResponseObject<?> createClientAddress(AdminClientAddressRequest request);
+
+    ResponseObject<?> updateClientAddress(String id, AdminClientAddressRequest request);
+
+    ResponseObject<?> changeDefaultClientAddress(String id);
+
+    ResponseObject<?> getAddressesByClientId(String id);
 
 }

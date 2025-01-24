@@ -151,7 +151,6 @@ const handleCreateClient = () => {
     cancelText: "Huỷ",
     onCancel() {
       Modal.destroyAll();
-      resetFields();
     },
   });
 };

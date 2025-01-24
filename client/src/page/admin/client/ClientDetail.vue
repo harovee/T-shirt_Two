@@ -31,7 +31,7 @@
         </div>
       </div>
       <div class="mt-5 p-5 w-full h-full bg-white rounded-xl">
-        <h4 class="text-center text-xl font-semibold text-gray-700">{{ detailRef.fullName }}</h4>
+        <h4 class="text-center text-xl font-semibold mb-5 text-gray-700">{{ detailRef.fullName }}</h4>
         <p class="text-gray-500">Mã khách hàng: KH{{ detailRef.code }}</p>
         <p class="text-gray-500">Người tạo: {{ detailRef.createdBy || 'Chưa xác định' }} lúc
           {{ convertDateFormat(detailRef.createdDate) }}</p>
@@ -39,58 +39,104 @@
           {{ convertDateFormat(detailRef.lastModifiedDate) }}</p>
       </div>
     </div>
-    <div class="col-span-3 md:col-span-5 p-5 lg:col-span-3 rounded-xl border-2 shadow-xl h-fit">
-      <a-form layout="vertical" class="grid grid-cols-2 gap-4">
-        <template class="col-span-1 md:col-span-1 lg:col-span-1" v-for="field in formFields">
-          <a-form-item
-              :label="field.label"
-              :name="field.name"
-              v-bind="validateInfos[field.name]"
-          >
-            <a-input
-                v-if="field.component === 'a-input'"
-                v-model:value="modelRef[field.name]"
-                :placeholder="field.placeholder"
-                :type="field.type"
-            ></a-input>
-
-            <a-input-password
-                v-if="field.component === 'a-input-password'"
-                v-model:value="modelRef[field.name]"
-                :placeholder="field.placeholder"
-                :type="field.type"
-            ></a-input-password>
-
-            <a-radio-group
-                v-if="field.component === 'a-radio-group'"
-                v-for="option in field.options"
-                v-model:value="modelRef[field.name]"
+    <div class="col-span-3 md:col-span-5 lg:col-span-3">
+      <div class="rounded-xl border-2 shadow-xl p-5 h-fit">
+        <a-form layout="vertical" class="grid grid-cols-2 gap-4">
+          <template class="col-span-1 md:col-span-1 lg:col-span-1" v-for="field in formFields">
+            <a-form-item
+                :label="field.label"
+                :name="field.name"
+                v-bind="validateInfos[field.name]"
+                class="m-0"
             >
-              <a-radio :value="option.value">
-                {{ option.name }}
-              </a-radio>
-            </a-radio-group>
+              <a-input
+                  v-if="field.component === 'a-input'"
+                  v-model:value="modelRef[field.name]"
+                  :placeholder="field.placeholder"
+                  :type="field.type"
+              ></a-input>
 
-            <a-date-picker
-                class="w-full"
-                v-else-if="field.component === 'a-date-picker'"
-                v-model:value="modelRef[field.name]"
-                :format="field.format"
-                :presets="field.presets"
-                show-time
-                :placeholder="field.placeholder"
-            ></a-date-picker>
+              <a-input-password
+                  v-if="field.component === 'a-input-password'"
+                  v-model:value="modelRef[field.name]"
+                  :placeholder="field.placeholder"
+                  :type="field.type"
+              ></a-input-password>
 
-          </a-form-item>
-        </template>
-      </a-form>
-      <div class="flex justify-end gap-4">
-        <a-button @click="handleReset()">Đặt lại</a-button>
-        <a-button type="primary" @click="handleUpdate()">Cập nhật</a-button>
+              <a-radio-group
+                  v-if="field.component === 'a-radio-group'"
+                  v-for="option in field.options"
+                  v-model:value="modelRef[field.name]"
+              >
+                <a-radio :value="option.value">
+                  {{ option.name }}
+                </a-radio>
+              </a-radio-group>
+
+              <a-date-picker
+                  class="w-full"
+                  v-else-if="field.component === 'a-date-picker'"
+                  v-model:value="modelRef[field.name]"
+                  :format="field.format"
+                  :presets="field.presets"
+                  show-time
+                  :placeholder="field.placeholder"
+              ></a-date-picker>
+
+            </a-form-item>
+          </template>
+        </a-form>
+        <div class="flex justify-end gap-4">
+          <a-button @click="handleReset()">Đặt lại</a-button>
+          <a-button type="primary" @click="handleUpdate()">Cập nhật</a-button>
+        </div>
       </div>
-      <client-address/>
+      <div class="rounded-xl border-2 shadow-xl h-fit mt-10 p-5">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 m-0">Địa chỉ khách hàng</h3>
+          </div>
+          <a-tooltip
+              title="Thêm địa chỉ"
+              trigger="hover"
+          >
+            <a-button
+                class="bg-purple-300 flex justify-between items-center gap-2"
+                size="large"
+                @click="handleOpenModalCreateClientAddress()"
+            >
+              <v-icon name="md-addcircle"/>
+            </a-button>
+          </a-tooltip>
+        </div>
+        <div class="grid gap-3">
+          <a-collapse
+              v-for="(clientAddress, index) in clientAddresses"
+              v-model:activeKey="activeKey"
+              accordion
+              expand-icon-position="end"
+              @change="handleChangeCollapse"
+          >
+            <a-collapse-panel
+                :key="index"
+                :header="clientAddress.isDefault ? `Địa chỉ mặc định: ${clientAddress.line}` : `Địa chỉ thường: ${clientAddress.line}`"
+            >
+              <client-address
+                  :data-source="clientAddress"
+                  :isRefresh="isRefresh"
+                  @handleResetActiveKey="handleResetActiveKey"
+              />
+            </a-collapse-panel>
+          </a-collapse>
+        </div>
+      </div>
     </div>
   </div>
+  <client-address-modal-c
+      :open="isOpenModalCreateClientAddress"
+      :clientId="clientId"
+      @handleClose="handleCloseModalCreateClientAddress"
+  />
 </template>
 
 <script lang="ts">
@@ -102,9 +148,14 @@ export default {
 <script lang="ts" setup>
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import {computed, createVNode, reactive, ref, watch} from "vue";
-import {DetailClientResponse, ClientRequest} from "@/infrastructure/services/api/admin/client.api.ts";
+import {
+  DetailClientResponse,
+  ClientRequest,
+  ClientAddressResponse,
+} from "@/infrastructure/services/api/admin/client.api.ts";
 import {Form, Modal, notification} from "ant-design-vue";
 import {
+  useGetClientAddressesByClientId,
   useGetClientById,
   useUpdateClient
 } from "@/infrastructure/services/service/admin/client.action.ts";
@@ -116,6 +167,7 @@ import {
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 import ClientAddress from "@/page/admin/client/ClientAddress.vue";
 import dayjs from "dayjs";
+import ClientAddressModalC from "@/page/admin/client/ClientAddressModalC.vue";
 
 const clientId = computed(() => {
   const currentUrl = window.location.href;
@@ -239,7 +291,6 @@ const rulesRef = reactive({
   ],
 });
 
-
 const {validate, validateInfos} = Form.useForm(
     modelRef,
     rulesRef
@@ -303,49 +354,7 @@ const formFields = computed(() => [
   },
 ]);
 
-// // * HandleUpload * \\
-// const {mutate: updateClientAvatar} = useUpdateClientAvatar();
-//
-// const myWidget = cloudinary.createUploadWidget(
-//     {
-//       cloudName: CLOUDINARY_CLOUD_NAME,
-//       uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-//     },
-//     (error: any, result: any) => {
-//       if (!error && result && result.event === "success") {
-//         modelRef.picture = result.info.url;
-//         const id = clientId.value;
-//         uploadAvatarClient(id, modelRef);
-//       }
-//     }
-// );
-//
-// const uploadAvatarClient = (clientId: string, data: ClientRequest) => {
-//   try {
-//     updateClientAvatar({clientId, data}, {
-//       onSuccess: (res: any) => {
-//         toast.success(res.data.message);
-//         refetch();
-//       },
-//       onError: (error: any) => {
-//         toast.error(
-//             error?.response?.data?.message
-//         )
-//       },
-//     })
-//   } catch (error: any) {
-//     console.error("🚀 ~ handleChangeStatus ~ error:", error);
-//     toast.error(
-//         error?.response?.data?.message
-//     );
-//   }
-// }
-//
-// const openWidget = () => {
-//   myWidget.open();
-// }
-
-// * HandleForm * \\
+/*** HandleForm ***/
 const {mutate: updateClient} = useUpdateClient();
 
 const handleUpdate = () => {
@@ -435,6 +444,41 @@ const assignData = (client: DetailClientResponse) => {
     lastModifiedDate: client.lastModifiedDate,
   })
 }
+
+/*** GetClientAddress  ***/
+const {data: clientAddressesData} = useGetClientAddressesByClientId(clientId.value, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const clientAddresses = computed(() =>
+    clientAddressesData?.value?.data || Array<ClientAddressResponse>
+);
+
+const activeKey = ref(['0']);
+
+const handleResetActiveKey = () => {
+  activeKey.value = ['0'];
+}
+
+const isRefresh = ref(false);
+
+const handleChangeCollapse = () => {
+  isRefresh.value = !isRefresh.value;
+}
+
+isRefresh.value = !isRefresh.value;
+
+/*** Create Client Address ***/
+const isOpenModalCreateClientAddress = ref(false);
+
+const handleOpenModalCreateClientAddress = () => {
+  isOpenModalCreateClientAddress.value = true;
+};
+
+const handleCloseModalCreateClientAddress = () => {
+  isOpenModalCreateClientAddress.value = false;
+};
 
 watch(
     clientDetail,

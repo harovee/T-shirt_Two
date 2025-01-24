@@ -4,12 +4,20 @@ public interface AdminAddressByClientIdResponse {
 
     String getId();
 
-    String getClientId();
-
     String getName();
 
     String getPhoneNumber();
 
-    String getDetailAddress();
+    String getLine();
+
+    String getWard();
+
+    Long getDistrict();
+
+    Long getProvince();
+
+    String getClientId();
+
+    Boolean getIsDefault();
 
 }

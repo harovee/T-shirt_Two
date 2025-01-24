@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.client.controllers;
 
+import com.shop.server.core.admin.client.models.requests.AdminClientAddressRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
 import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
 import com.shop.server.core.admin.client.services.AdminClientService;
@@ -54,6 +55,43 @@ public class AdminClientController {
     @PutMapping("/avatar/{id}")
     public ResponseEntity<?> updateClientAvatar(@PathVariable String id, @RequestBody final AdminClientRequest request) {
         return Helper.createResponseEntity(adminClientService.updateClientAvatar(id, request));
+    }
+
+    // ** Filter province - district - ward ** \\
+
+    @GetMapping("/province")
+    public ResponseEntity<?> getProvinces() {
+        return Helper.createResponseEntity(adminClientService.getProvinces());
+    }
+
+    @GetMapping("/district/{id}")
+    public ResponseEntity<?> getDistrictsByProvinceId(@PathVariable Long id) {
+        return Helper.createResponseEntity(adminClientService.getDistrictsByProvinceId(id));
+    }
+
+    @GetMapping("/ward/{id}")
+    public ResponseEntity<?> getWardsByProvinceId(@PathVariable Long id) {
+        return Helper.createResponseEntity(adminClientService.getWardsByDistrictId(id));
+    }
+
+    @GetMapping("/address/{id}")
+    public ResponseEntity<?> getClientAddressesByClientId(@PathVariable String id) {
+        return Helper.createResponseEntity(adminClientService.getAddressesByClientId(id));
+    }
+
+    @PostMapping("/address")
+    public ResponseEntity<?> createClientAddress(@RequestBody final AdminClientAddressRequest request) {
+        return Helper.createResponseEntity(adminClientService.createClientAddress(request));
+    }
+
+    @PutMapping("/address/{id}")
+    public ResponseEntity<?> updateClientAddress(@PathVariable String id, @RequestBody final AdminClientAddressRequest request) {
+        return Helper.createResponseEntity(adminClientService.updateClientAddress(id, request));
+    }
+
+    @PutMapping("/address/default/{id}")
+    public ResponseEntity<?> updateClientAddressDefault(@PathVariable String id) {
+        return Helper.createResponseEntity(adminClientService.changeDefaultClientAddress(id));
     }
 
 }
