@@ -47,6 +47,8 @@ export const PREFIX_API_ADMIN_SALE = `${API_URL}/admin/sale` as string;
 export const API_ADMIN_BILL = `${API_URL}/admin/bill` as string;
 export const API_ADMIN_BILL_DETAIL = `${API_URL}/admin/bill-detail` as string;
 export const API_ADMIN_BILL_HISTORY = `${API_URL}/admin/bill-history` as string;
+export const API_ADMIN_PAY_HISTORY = `${API_URL}/admin/pay-history` as string;
+
 
 
 

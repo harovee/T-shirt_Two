@@ -1,15 +1,16 @@
 <template>
   <a-modal
     :open="props.open"
-    title="Thông tin hóa đơn"
+    title="Cập nhật hóa đơn "
     @cancel="handleClose"
     ok-text="Cập nhật"
+    @ok="handleUpdateBill"
     cancel-text="Hủy"
     destroyOnClose
     centered
   >
     <a-form layout="vertical" class="pt-3">
-      <template v-for="field in formFields">
+      <template v-for="field in formFields" :key="field.name">
         <a-form-item
           :label="field.label"
           :name="field.name"
@@ -31,15 +32,21 @@
 import { BillRequest } from "@/infrastructure/services/api/admin/bill.api";
 import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.action";
 import { Form, Modal } from "ant-design-vue";
-import { computed, createVNode, defineEmits, reactive } from "vue";
+import { computed, createVNode, defineEmits, reactive, watch } from "vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
+import { errorNotiSort, successNotiSort, warningNotiSort } from "@/utils/notification.config";
 
 const props = defineProps({
   open: Boolean,
+  billData: {
+    type: Object as () => Record<string, any> | null,
+    required: false,
+    default: null,
+  }
 });
 
-const emit = defineEmits(["handleClose"]);
+const emit = defineEmits(["handleClose", "updated"]);
 
 const { mutate: update } = useUpdateBill();
 
@@ -51,15 +58,29 @@ const modelRef = reactive<BillRequest>({
   ghiChu: null,
 });
 
-const { resetFields, validate, validateInfos } = Form.useForm(modelRef);
+const { validate, validateInfos } = Form.useForm(modelRef);
+
+watch(
+  () => props.billData,
+  (newBillData) => {
+    if (newBillData) {
+      modelRef.soDienThoai = newBillData.soDienThoai || null;
+      modelRef.diaChiNguoiNhan = newBillData.diaChiNguoiNhan || null;
+      modelRef.idKhachHang = newBillData.idKhachHang || null;
+      modelRef.tenNguoiNhan = newBillData.tenNguoiNhan || null;
+      modelRef.ghiChu = newBillData.ghiChu || null;
+    }
+  },
+  { immediate: true } // Theo dõi ngay khi component mount
+);
 
 const formFields = computed(() => [
-  {
-    label: "Tên khách hàng",
-    name: "name",
-    component: "a-input",
-    placeholder: "Nhâp tên khách hàng",
-  },
+  // {
+  //   label: "Tên khách hàng",
+  //   name: "name",
+  //   component: "a-input",
+  //   placeholder: "Nhâp tên khách hàng",
+  // },
   {
     label: "Số điện thoại",
     name: "soDienThoai",
@@ -86,7 +107,23 @@ const formFields = computed(() => [
   },
 ]);
 
+const getIdHoaDonFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("idHoaDon") || "";
+};
+
+const billId = getIdHoaDonFromUrl();
+// console.log(billId);
+
 const handleUpdateBill = () => {
+  const payload = {
+    idKhachHang: modelRef.idKhachHang,
+    soDienThoai: modelRef.soDienThoai,
+    diaChiNguoiNhan: modelRef.diaChiNguoiNhan,
+    tenNguoiNhan: modelRef.tenNguoiNhan,
+    ghiChu: modelRef.ghiChu,
+  };
+
   Modal.confirm({
     content: "Bạn chắc chắn muốn sửa?",
     icon: createVNode(ExclamationCircleOutlined),
@@ -94,34 +131,33 @@ const handleUpdateBill = () => {
     async onOk() {
       try {
         await validate();
-        update(modelRef, {
+        update(({idBill:billId, params: payload}), {
           onSuccess: (result) => {
-            toast.success(result?.message);
+            successNotiSort('Cập nhật hóa đơn thành công');
+            emit("updated", result.data);
             handleClose();
           },
           onError: (error: any) => {
-            toast.error(error?.response?.data?.message);
+            errorNotiSort('Cập nhật hóa đơn thất bại');
           },
         });
       } catch (error: any) {
         console.error("🚀 ~ handleUpdate ~ error:", error);
         if (error?.response) {
-          toast.warning(error?.response?.data?.message);
+          warningNotiSort(error?.response?.data?.message);
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          warningNotiSort("Vui lòng nhập đúng các trường dữ liệu");
         }
       }
     },
     cancelText: "Huỷ",
     onCancel() {
       Modal.destroyAll();
-      resetFields();
     },
   });
 };
 
 const handleClose = () => {
   emit("handleClose");
-  resetFields();
 };
 </script>

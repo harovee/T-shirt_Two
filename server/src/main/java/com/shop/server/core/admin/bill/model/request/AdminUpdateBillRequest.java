@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminUpdateBillRequest extends PageableRequest {
+public class AdminUpdateBillRequest {
     private String trangThai;
 
     private String idKhachHang;
@@ -24,4 +24,5 @@ public class AdminUpdateBillRequest extends PageableRequest {
     private String soDienThoai;
 
     private String ghiChu;
+
 }

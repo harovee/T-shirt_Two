@@ -4,6 +4,7 @@ import { DefaultResponse, PaginationParams, PaginationResponse, ResponseList } f
 import { Ref } from 'vue';
 import request from "@/infrastructure/services/request.ts";
 
+
 export interface BillPropsParams {
     keyword?: string | null;
     trangThai? :string | null;
@@ -30,11 +31,29 @@ export type BillResponse = ResponseList & {
     ma: string | null;
     maNhanVien: string | null;
     loaiHD: string | null;
+    trangThaiHD: string | null;
     tongTien: number | null;
+    tienShip: number | null;
+    tienGiam: number | null;
     trangThai: string | null;
     tenKhachHang: string | null;
     soDienThoai: string | null;
+    diaChiNguoiNhan: string | null;
+    tenNguoiNhan: string | null;
+    ghiChu: string | null;
 }
+
+// export type billDataResponse = {
+//     catalog: number | null;
+//     ma: string | null;
+//     maNhanVien: string | null;
+//     loaiHD: string | null;
+//     tongTien: number | null;
+//     trangThai: string | null;
+//     tenKhachHang: string | null;
+//     soDienThoai: string | null;
+
+// }
 
 
 export const getBills = async (params: Ref<FindBillRequest>) => {
@@ -49,7 +68,7 @@ export const getBills = async (params: Ref<FindBillRequest>) => {
     return res.data;
 }
 
-export const getBillById = async (billId: Ref<string | null>) => {
+export const getBillById = async (billId: string | null) => {
     return await request ({
         url: `${API_ADMIN_BILL}/${billId}`,
         method: 'GET'
@@ -58,11 +77,11 @@ export const getBillById = async (billId: Ref<string | null>) => {
     >;
 }
 
-export const updateBill = async (billId: string, data: BillRequest) => {
+export const updateBill = async (idBill: string, params: BillRequest) => {
     return await request({
-        url: `${API_ADMIN_BILL}/${billId}`,
+        url: `${API_ADMIN_BILL}/${idBill}`,
         method: "PUT",
-        data: data
+        data: params
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>
     >;

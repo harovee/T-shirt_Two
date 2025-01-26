@@ -56,12 +56,15 @@ public class AdminClientMailServiceImpl implements AdminClientMailService {
                 client.getPhoneNumber(),
                 client.getPassword()
         );
-        emailService.sendSimpleMail(
+
+        String attachmentPath = System.getProperty("user.dir") + "temp/TShirtsTwoTutorial.pdf";
+
+        emailService.sendMailWithAttachment(
                 new EmailDetails(
                         client.getEmail(),
                         emailContent,
                         "Hệ Thống TShirtsTwo Thông Báo",
-                        null
+                        attachmentPath
                 )
         );
     }

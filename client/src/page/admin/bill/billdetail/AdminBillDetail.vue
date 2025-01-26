@@ -25,8 +25,7 @@
       </div>
     </div>
 
-    <!-- Bill History -->
-    <bill-history class="shadow p-4 rounded-lg bg-white"
+    <admin-bill-history
       :data-source="historyData"
       :loading="isHistoryLoading"
     />
@@ -36,8 +35,8 @@
       class="shadow p-4 rounded-lg bg-white"
       :columns="columnsBill"
       :data-source="detailDataSource?.data?.data"
-      :bill-data="billData"
-      :loading="isLoading"
+      :bill-data="billDataById"
+      :loading="isLoadingBillData || isFetchingBillData"
       :pagination-params="paginationParams || {}"
       :total-pages="detailDataSource?.data?.totalPages || 1"
       @update:paginationParams="$emit('update:paginationParams', $event)"
@@ -45,23 +44,35 @@
   </div>
 
   <div class="shadow p-4 rounded-lg bg-white mt-6">
-      <!-- <div class="flex justify-between mb-4">
+    <!-- <div class="flex justify-between mb-4">
         <span class="text-lg">Mã giảm giá:</span>
         <span class="text-lg">{{ detailData?.data?.data?.[0]. || 'Chưa có mã giảm giá' }}</span>
       </div> -->
-      <div class="flex justify-between mb-4">
-        <span class="text-lg">Giảm giá:</span>
-        <span class="text-lg text-green-500">{{ detailData?.data?.data?.[0] ? `- ${formatCurrencyVND(detailData?.data?.data?.[0].tienGiamHD)}` : '0 VND' }}</span>
-      </div>
-      <div class="flex justify-between mb-4">
-        <span class="text-lg">Phí vận chuyển:</span>
-        <span class="text-lg">{{ detailData?.data?.data?.[0] ? `${formatCurrencyVND(detailData?.data?.data?.[0].tienShip)}` : '0 VND' }}</span>
-      </div>
-      <div class="flex justify-between font-semibold text-xl">
-        <span>Tổng tiền:</span>
-        <span>{{detailData?.data?.data?.[0] ? formatCurrencyVND(detailData?.data?.data?.[0].tongTienHD) : '0 VND' }}</span>
-      </div>
+    <div class="flex justify-between mb-4">
+      <span class="text-lg">Giảm giá:</span>
+      <span v-if="detailData" class="text-lg text-green-500">{{
+        detailData?.data?.data?.[0]
+          ? `- ${formatCurrencyVND(detailData?.data?.data?.[0].tienGiamHD)}`
+          : "0 VND"
+      }}</span>
     </div>
+    <div class="flex justify-between mb-4">
+      <span class="text-lg">Phí vận chuyển:</span>
+      <span v-if="detailData" class="text-lg">{{
+        detailData?.data?.data?.[0]
+          ? `${formatCurrencyVND(detailData?.data?.data?.[0].tienShip)}`
+          : "0 VND"
+      }}</span>
+    </div>
+    <div class="flex justify-between font-semibold text-xl">
+      <span>Tổng tiền:</span>
+      <span v-if="detailData">{{
+        detailData?.data?.data?.[0]
+          ? formatCurrencyVND(detailData?.data?.data?.[0].tongTienHD)
+          : "0 VND"
+      }}</span>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -71,7 +82,7 @@ import { FindBillDetailRequest } from "@/infrastructure/services/api/admin/bill-
 import { useGetBillDetails } from "@/infrastructure/services/service/admin/bill-detail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { computed, onMounted, ref, watch } from "vue";
-import BillHistory from "./BillHistory.vue";
+import AdminBillHistory from "./AdminBillHistory.vue";
 import BillDetailTable from "./BillDetailTable.vue";
 import { ColumnType } from "ant-design-vue/es/table";
 import { useGetBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
@@ -114,14 +125,13 @@ onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
   paramsHistory.value.idHoaDon = getIdHoaDonFromUrl();
   billId.value = getIdHoaDonFromUrl();
-  console.log(billId.value);
-  
+  // console.log(billId.value);
 });
 
 const {
   data: detailData,
-  isLoading,
-  isFetching,
+  isLoading: isLoadingDetailData,
+  isFetching: isFetchingDetailData,
 } = useGetBillDetails(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
@@ -130,24 +140,36 @@ const {
 const {
   data: historyData,
   isLoading: isHistoryLoading,
-  isFetching: isHistoryFetching
+  isFetching: isHistoryFetching,
 } = useGetBillHistory(paramsHistory, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
 
-const { data: billData, isLoading: isBillLoading } = useGetBillById(billId, {
+const {
+  data: billData,
+  isLoading: isLoadingBillData,
+  isFetching: isFetchingBillData,
+  refetch,
+} = useGetBillById(billId, {
   refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-  enabled: !!billId.value,
+  enabled: () => !!billId.value,
 });
 
-watch(historyData, (newData) => {
-  console.log("History data updated:", newData);
-});
+const billDataById = computed(() => billData?.value?.data?.data);
 
+// watch(historyData, (newData) => {
+//   console.log("History data updated:", newData);
+// });
+
+watch(billId, (newVal) => {
+  if (newVal && newVal !== null) {
+    refetch();
+  }
+});
 
 const detailDataSource = computed(() => detailData.value || []);
+console.log(detailDataSource);
 
 const columnsBill: ColumnType[] = [
   {
@@ -181,7 +203,6 @@ const columnsBill: ColumnType[] = [
     ellipsis: true,
     width: 150,
     align: "center",
-    
   },
   {
     title: "Thành tiền",
@@ -202,7 +223,6 @@ const columnsBill: ColumnType[] = [
 </script>
 
 <style scoped>
-
 .component-container {
   padding: 16px;
   border-radius: 8px;
@@ -210,5 +230,4 @@ const columnsBill: ColumnType[] = [
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   /* margin-bottom: 16px; Khoảng cách giữa các component */
 }
-
 </style>

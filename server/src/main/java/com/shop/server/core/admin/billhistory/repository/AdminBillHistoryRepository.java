@@ -8,19 +8,46 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface AdminBillHistoryRepository extends LichSuHoaDonRepository {
+//    @Query(value = """
+//        SELECT
+//            ROW_NUMBER() OVER (ORDER BY ls.id DESC) AS catalog,
+//            ls.id AS id,
+//            hd.ma_hoa_don AS maHoaDon,
+//            ls.hanh_dong AS hanhDong,
+//            ls.mo_ta AS moTa,
+//            ls.ngay_tao AS ngayTao,
+//            ls.ngay_sua AS ngaySua,
+//            ls.nguoi_tao AS nguoiTao,
+//            ls.nguoi_sua AS nguoiSua,
+//            ls.trang_thai AS trangThai
+//            FROM lich_su_hoa_don ls
+//            JOIN hoa_don hd ON hd.id = ls.id_hoa_don
+//            WHERE
+//                (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
+//        """, countQuery = """
+//            SELECT
+//                COUNT(ls.id)
+//            FROM lich_su_hoa_don ls
+//            JOIN hoa_don hd ON hd.id = ls.id_hoa_don
+//            WHERE
+//                (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
+//        """, nativeQuery = true)
+//    Page<AdminBillHistoryResponse> getAdminBillHistoryByRequest(Pageable pageable,
+//                                                       AdminFindBillHistoryRequest req);
+
     @Query(value = """
         SELECT
-            ROW_NUMBER() OVER (ORDER BY ls.id DESC) AS catalog,
+            ROW_NUMBER() OVER (ORDER BY ls.ngay_tao DESC) AS catalog,
             ls.id AS id,
             hd.ma_hoa_don AS maHoaDon,
             ls.hanh_dong AS hanhDong,
             ls.mo_ta AS moTa,
             ls.ngay_tao AS ngayTao,
-            ls.ngay_sua AS ngaySua,
             ls.nguoi_tao AS nguoiTao,
-            ls.nguoi_sua AS nguoiSua,
             ls.trang_thai AS trangThai
             FROM lich_su_hoa_don ls
             JOIN hoa_don hd ON hd.id = ls.id_hoa_don
@@ -34,19 +61,5 @@ public interface AdminBillHistoryRepository extends LichSuHoaDonRepository {
             WHERE
                 (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
         """, nativeQuery = true)
-    Page<AdminBillHistoryResponse> getAdminBillHistoryByRequest(Pageable pageable,
-                                                       AdminFindBillHistoryRequest req);
-
-    @Query(value = """
-        SELECT
-            ls.id AS id,
-            hd.ma_hoa_don AS maHoaDon,
-            ls.hanh_dong AS hanhDong,
-            ls.mo_ta AS moTa,
-            ls.trang_thai AS trangThai
-        FROM lich_su_hoa_don ls
-        JOIN hoa_don hd ON hd.id = ls.id_hoa_don
-        WHERE ls.id = :id
-    """, nativeQuery = true)
-    AdminBillHistoryResponse getAdminBillHistoryById(String id);
+    List<AdminBillHistoryResponse> getAllAdminBillHistory(AdminFindBillHistoryRequest req);
 }

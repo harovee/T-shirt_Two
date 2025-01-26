@@ -30,6 +30,9 @@ public class ChiTietPhuongThucThanhToan extends PrimaryEntity implements Seriali
     @JoinColumn(name = "id_phuong_thuc_thanh_toan")
     private PhuongThucThanhToan phuongThucThanhToan;
 
+    @Column(name = "ma_giao_dich")
+    private String maGiaoDich;
+
     @Column(name = "tien_khach_dua")
     private BigDecimal tienKhachDua;
 
