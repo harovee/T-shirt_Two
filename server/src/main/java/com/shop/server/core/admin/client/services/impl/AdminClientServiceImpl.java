@@ -158,7 +158,7 @@ public class AdminClientServiceImpl implements AdminClientService {
             );
         }
         return ResponseObject.successForward(
-                HttpStatus.CREATED,
+                HttpStatus.OK,
                 Message.Success.UPDATE_SUCCESS
         );
     }
@@ -176,7 +176,7 @@ public class AdminClientServiceImpl implements AdminClientService {
         khachHang.setDeleted(!khachHang.getDeleted());
         adminClientRepository.save(khachHang);
         return ResponseObject.successForward(
-                HttpStatus.CREATED,
+                HttpStatus.OK,
                 Message.Success.UPDATE_SUCCESS
         );
     }
@@ -194,7 +194,7 @@ public class AdminClientServiceImpl implements AdminClientService {
         client.setProfilePicture(request.getPicture());
         adminClientRepository.save(client);
         return ResponseObject.successForward(
-                HttpStatus.CREATED,
+                HttpStatus.OK,
                 Message.Success.UPDATE_SUCCESS
         );
     }
@@ -318,8 +318,8 @@ public class AdminClientServiceImpl implements AdminClientService {
         }
         adminClientAddressRepository.save(address);
         return ResponseObject.successForward(
-                HttpStatus.CREATED,
-                Message.Success.CREATE_SUCCESS
+                HttpStatus.OK,
+                Message.Success.UPDATE_SUCCESS
         );
     }
 

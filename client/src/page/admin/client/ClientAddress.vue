@@ -298,7 +298,7 @@ const handleChangeDefault = (id: string) => {
           onSuccess: (res: any) => {
             notification.success({
               message: 'Thông báo',
-              description: res.data.message,
+              description: res.message,
               duration: 4,
             });
             emit("handleResetActiveKey");

@@ -51,22 +51,23 @@ public class EmailServiceImpl implements EmailService {
     public CompletableFuture<String> sendMailWithAttachment(EmailDetails details) {
         MimeMessage mimeMessage
                 = javaMailSender.createMimeMessage();
-        MimeMessageHelper mimeMessageHelper;
-
+        log.info("come Here 1 : {}", mimeMessage);
         try {
-            mimeMessageHelper
-                    = new MimeMessageHelper(mimeMessage, true);
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setTo(details.getRecipient());
-            mimeMessageHelper.setText(details.getMsgBody());
-            mimeMessageHelper.setSubject(
-                    details.getSubject());
-            FileSystemResource file
-                    = new FileSystemResource(
-                    new File(details.getAttachment()));
-
-            mimeMessageHelper.addAttachment(
-                    file.getFilename(), file);
+            mimeMessageHelper.setText(details.getMsgBody(), true);
+            mimeMessageHelper.setSubject(details.getSubject());
+            if (details.getAttachment() != null) {
+                File file = new File(details.getAttachment());
+                if (file.exists()) {
+                    mimeMessageHelper.addAttachment(file.getName(), file);
+                } else {
+                    log.warn("Attachment file not found: [{}]", details.getAttachment());
+                }
+            }
+            log.info("come Here 2 : {}", mimeMessageHelper);
+            log.info("come Here 3 : {}", mimeMessage);
             javaMailSender.send(mimeMessage);
             Thread.sleep(2000);
             log.info("sendMailWithAttachment + {}", details.getRecipient());

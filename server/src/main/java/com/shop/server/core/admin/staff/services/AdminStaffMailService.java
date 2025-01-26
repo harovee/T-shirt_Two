@@ -6,4 +6,6 @@ public interface AdminStaffMailService {
 
     void sendMailCreateStaff(NhanVien staff);
 
+    void sendMailUpdateStaff(NhanVien staff);
+
 }
