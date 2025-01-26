@@ -313,7 +313,7 @@ public class AdminClientServiceImpl implements AdminClientService {
         address.setWard(request.getWard());
         address.setLine(request.getLine());
         address.setName(request.getName());
-        if (adminClientAddressRepository.existsAddressByClientId(request.getClientId()) == 0) {
+        if (adminClientAddressRepository.existsAddressByClientId(address.getClientId().getId()) == 0) {
             address.setIsDefault(true);
         }
         adminClientAddressRepository.save(address);

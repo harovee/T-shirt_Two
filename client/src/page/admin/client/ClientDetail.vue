@@ -109,7 +109,7 @@
             </a-button>
           </a-tooltip>
         </div>
-        <div class="grid gap-3">
+        <div class="grid gap-3" :key="refreshKey">
           <a-collapse
               v-for="(clientAddress, index) in clientAddresses"
               v-model:activeKey="activeKey"
@@ -466,6 +466,17 @@ const isRefresh = ref(false);
 const handleChangeCollapse = () => {
   isRefresh.value = !isRefresh.value;
 }
+
+const refreshKey = ref(0);
+
+watch(
+    clientAddresses,
+    (newVal) => {
+      console.log("Danh sách clientAddresses đã thay đổi:", newVal);
+      refreshKey.value++;
+    },
+    {deep: true, immediate: true}
+);
 
 isRefresh.value = !isRefresh.value;
 

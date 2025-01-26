@@ -1,6 +1,6 @@
 package com.shop.server.entities.main;
 
-import com.shop.server.entities.base.SimplePrimaryEntity;
+import com.shop.server.entities.base.PrimaryEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -17,7 +17,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "refresh_token")
-public class RefreshToken extends SimplePrimaryEntity implements Serializable {
+public class RefreshToken extends PrimaryEntity implements Serializable {
 
     @Column(name = "refresh_token", length = 8000)
     private String refreshToken;
