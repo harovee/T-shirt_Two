@@ -17,4 +17,5 @@ public class AdminSaveBillRequest {
     private String idNhanVien;
 
     private String idPhieuGiamGia;
+
 }

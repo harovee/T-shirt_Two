@@ -1,37 +1,37 @@
 <template>
   <div class="p-4 bg-white rounded-lg shadow">
-    <h3 class="text-lg font-bold" v-if="dataSource">
-      Thông tin đơn hàng - Đơn hàng {{ billData?.loaiHoaDon }}
+    <h3 class="text-lg font-bold">
+      Thông tin đơn hàng - Đơn hàng {{ copiedBillData?.loaiHD }}
     </h3>
     <div class="border-t mt-2 mb-4"></div>
     <div class="grid grid-cols-2 gap-4 text-sm">
       <div class="flex items-center">
         <span class="font-medium">Mã:</span>
-        <span class="ml-2">{{ dataSource[0]?.maHoaDon }}</span>
+        <span class="ml-2">{{ copiedBillData?.ma }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Tên khách hàng:</span>
-        <span class="ml-2">{{ dataSource[0]?.tenKhachHang }}</span>
+        <span class="ml-2">{{ copiedBillData?.tenKhachHang }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">SĐT người nhận:</span>
-        <span class="ml-2">{{ dataSource[0]?.soDienThoai }}</span>
+        <span class="ml-2">{{ copiedBillData?.soDienThoai }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Trạng thái:</span>
-        <a-tag class="ml-2" color="orange">{{
-          dataSource[0]?.trangThaiHD
-        }}</a-tag>
+        <a-tag class="ml-2" color="orange">{{copiedBillData?.trangThaiHD}}</a-tag>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Địa chỉ người nhận:</span>
-        <span class="ml-2" color="blue">{{ 
-          dataSource[0]?.diaChiNguoiNhan || "..."
-        }}</span>
+        <span class="ml-2" color="blue">{{ copiedBillData?.diaChiNguoiNhan || ""}}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Tên người nhận:</span>
-        <span class="ml-2">{{ dataSource[0]?.tenNguoiNhan || "..."}}</span>
+        <span class="ml-2">{{ copiedBillData?.tenNguoiNhan || ""}}</span>
+      </div>
+      <div class="flex items-center">
+        <span class="font-medium">Ghi chú:</span>
+        <span class="ml-2">{{ copiedBillData?.ghiChu || ""}}</span>
       </div>
     </div>
     <div class="flex justify-end mt-4">
@@ -45,30 +45,44 @@
     </div>
     <update-bill-modal
       :open="isOpenModalUpdateBill"
+      :billData="copiedBillData"
       @handleClose="handleCloseModalUpdateBill"
       @onCancel="isOpenModalUpdateBill = false"
+      @updated="updateBillData"
     />
   </div>
 
-  <div class="flex justify-end mt-4">
+  <!-- Lịch sử thanh toán -->
+  <div class="p-4 bg-white rounded-lg shadow">
+    <h3 class="text-lg font-bold">
+      Lịch sử thanh toán
+    </h3>
+    <admin-pay-history/>
+  </div>
+
+  <!-- danh sách sản phẩm chi tiết -->
+  <div class="p-4 bg-white rounded-lg shadow">
+    <!-- Nút thêm sản phẩm -->
+    <div class="flex justify-end mt-4">
     <a-button
       type="primary"
       class="bg-orange-500 hover:bg-orange-600 text-white"
+      style="margin-bottom: 10px;"
     >
       Thêm sản phẩm
     </a-button>
   </div>
 
-  <table-example
+  <!-- Bảng sản phẩm -->
+  <table-example class="min-h-[15rem]"
     v-if="props"
     :wrapperClassName="props.wrapperClassName"
     :columns="props.columns"
     :data-source="props.dataSource"
     :loading="props.loading"
     :pagination-params="props.paginationParams"
-    :total-pages="props.totalPages"
+    :total-pages="props.totalPages || 1"
     @update:pagination-params="updatePaginationParams"
-    style="height: 100px;"
   >
     <template #bodyCell="{ column, record }">
       <div v-if="column.key === 'status'" class="text-center">
@@ -97,31 +111,43 @@
 
       <div v-else-if="column.key === 'chiTietSanPham'">
         <p>{{ record.tenSanPhamChiTiet }} -  <a-tag> {{ record.tenKichCo }}</a-tag></p>
-        <!-- <p>size: {{ record.tenKichCo }}</p> -->
         <p style="color: red">{{ record.gia ? formatCurrencyVND(record.gia) : "Không có dữ liệu" }}</p>
       </div>
+
+      <div v-if="column.key === 'soLuong'" class="flex items-center justify-center space-x-2">
+          <input
+            type="number"
+            v-model.number="record.soLuong"
+            @change="validateQuantity(record)"
+            class="w-16 text-center border rounded"
+          />
+        </div>
       
     </template>
   </table-example>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import TableExample from "@/components/ui/TableExample.vue";
 import { ColumnType } from "ant-design-vue/es/table";
 import { ref, watch } from "vue";
+import AdminPayHistory from "./AdminPayHistory.vue";
 import UpdateBillModal from "../bill/UpdateBillModal.vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
+import { BillResponse, getBillById } from "@/infrastructure/services/api/admin/bill.api";
 
 const props = defineProps({
   wrapperClassName: {
     type: String,
-    required: false,
-    default: "min-h-\[20rem\]",
+    required: false,  
+    default: "min-h-/[35rem/]",
   },
   columns: {
     type: Array as () => ColumnType[],
     required: true,
   },
+  class: String,
   dataSource: Array,
   billData: Object,
   loading: {
@@ -138,6 +164,7 @@ const props = defineProps({
   },
 });
 
+
 const emit = defineEmits(["update:paginationParams"]);
 
 const updatePaginationParams = (params: any) => {
@@ -145,22 +172,24 @@ const updatePaginationParams = (params: any) => {
 };
 
 watch(
-  () => props?.dataSource,
+  () => props?.billData,
   (result) => {
     if (result) {
-      console.log("bill detail: ", result);
+      // console.log("bill data: ", result);
     }
   }
 );
 
+const copiedBillData = ref<BillResponse | null>(null);
+
 watch(() => props?.billData, (newBillData) => {
-  console.log("Bill Data: ", newBillData);
+  copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
+  // console.log(copiedBillData.value); 
 });
 
-// Log 'bill-data' khi component được mount
-// onMounted(() => {
-//   console.log("Bill Data on Mounted: ", props['bill-data']);
-// });
+const updateBillData = (updatedBill) => {
+  copiedBillData.value = updatedBill; // Cập nhật dữ liệu mới từ API
+};
 
 const isOpenModalUpdateBill = ref(false);
 
@@ -171,6 +200,36 @@ const handleOpenModalUpdateBill = () => {
 const handleCloseModalUpdateBill = () => {
   isOpenModalUpdateBill.value = false;
 };
+
+const increaseQuantity = (record: any) => {
+  if (record.soLuong !== undefined) {
+    record.soLuong++; // Tăng số lượng
+    updateTotal(record);
+  }
+};
+
+const decreaseQuantity = (record: any) => {
+  if (record.soLuong !== undefined && record.soLuong > 1) {
+    record.soLuong--; // Giảm số lượng
+    updateTotal(record);
+  }
+};
+
+const validateQuantity = (record: any) => {
+  if (record.soLuong < 1 || isNaN(record.soLuong)) {
+    record.soLuong = 1; // Đảm bảo số lượng >= 1
+  }
+  updateTotal(record);
+};
+
+const updateTotal = (record: any) => {
+  // Cập nhật tổng tiền dựa trên số lượng mới
+  if (record.gia) {
+    record.thanhTien = record.gia * record.soLuong;
+  }
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>

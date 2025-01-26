@@ -23,27 +23,9 @@ public interface AdminBillDetailResponse extends BaseResponse {
 
     BigDecimal getThanhTien();
 
-    String getTrangThaiHD();
-
     BigDecimal getTongTienHD();
 
     BigDecimal getTienGiamHD();
 
-    String getLoaiHoaDon();
-
-    String getTenNguoiNhan();
-
-    String getSoDienThoai();
-
-    String getDiaChiNguoiNhan();
-
     BigDecimal getTienShip();
-
-    String getNgayShip();
-
-    String getGhiChuHD();
-
-    String getTenNhanVien();
-
-    String getTenKhachHang();
 }

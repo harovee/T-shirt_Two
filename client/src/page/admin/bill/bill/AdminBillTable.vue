@@ -26,25 +26,41 @@
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.trangThai === 'Thành công'" color="success"
             >Thành công</a-tag
-          > 
+          >
+
           <a-tag v-else-if="record.trangThai === 'Chờ xác nhận'" color="warning"
             >Chờ xác nhận</a-tag
           >
+
           <a-tag
             v-else-if="record.trangThai === 'Chờ giao hàng'"
             color="processing"
             >Chờ giao hàng</a-tag
           >
+
           <a-tag
             v-else-if="record.trangThai === 'Đang vận chuyển'"
             color="default"
             >Đang vận chuyển</a-tag
           >
+
+          <a-tag v-else-if="record.trangThai === 'Đã giao hàng'" color="default"
+            >Đã giao hàng</a-tag
+          >
+
+          <a-tag
+            v-else-if="record.trangThai === 'Đã thanh toán'"
+            color="default"
+            >Đã thanh toán</a-tag
+          >
+
           <a-tag v-else-if="record.trangThai === 'Trả hàng'" color="error"
             >Trả hàng</a-tag
           >
+
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
+
         <div v-else-if="column.key === 'loaiHD'" class="text-center">
           <a-tag v-if="record.loaiHD === 'Online'" color="success"
             >Online</a-tag
@@ -81,10 +97,12 @@ import { defineEmits } from "vue";
 import TableExample from "@/components/ui/TableExample.vue";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import router from "@/infrastructure/routes/router";
-import { convertDateFormatTime, formatCurrencyVND } from "@/utils/common.helper";
+import {
+  convertDateFormatTime,
+  formatCurrencyVND,
+} from "@/utils/common.helper";
 
-
-const emit = defineEmits(["update:paginationParams",]);
+const emit = defineEmits(["update:paginationParams"]);
 
 const props = defineProps({
   dataSource: Object,

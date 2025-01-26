@@ -102,6 +102,8 @@ const statusOptions = [
   { label: "Chờ xác nhận", value: "Chờ xác nhận" },
   { label: "Chờ giao hàng", value: "Chờ giao hàng" },
   { label: "Đang vận chuyển", value: "Đang vận chuyển" },
+  { label: "Đã giao hàng", value: "Đã giao hàng" },
+  { label: "Đã thanh toán", value: "Đã thanh toán" },
   { label: "Trả hàng", value: "Trả hàng" },
 ];
 

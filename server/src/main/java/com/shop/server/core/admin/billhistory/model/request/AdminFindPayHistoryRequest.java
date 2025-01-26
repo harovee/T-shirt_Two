@@ -5,19 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminCreateHistoryRequest {
-
-    private String idHoaDon;
-
-    private String hanhDong;
-
-    private String moTa;
-
-    private String trangThai;
-
-    private String nguoiTao;
+public class AdminFindPayHistoryRequest {
+    String idHoaDon;
 }

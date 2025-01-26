@@ -21,23 +21,14 @@ export interface BillDetailRequest {
 
 export type BillDetailResponse = ResponseList & {
     catalog: number | null;
+    id: string | null;
     maHoaDon: string | null;
     tenSanPhamChiTiet: string | null;
     soLuong: number | null;
     gia: number | null;
     thanhTien: number | null;
-    trangThaiHD: string | null;
-    tongTienHD: number | null;
     tienGiamHD: number | null;
-    loaiHoaDon: string | null;
-    tenNguoiNhan: string | null;
-    soDienThoai: string | null;
-    diaChiNguoiNhan: string | null;
     tienShip: number | null;
-    ngayShip: string | null;
-    ghiChuHD: string | null;
-    tenNhanVien: string | null;
-    tenKhachHang: string | null;
 }
 
 export const getBillDetailsByIdHoaDon = async (params: Ref<FindBillDetailRequest>) => {

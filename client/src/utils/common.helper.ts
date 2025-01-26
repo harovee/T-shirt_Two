@@ -79,7 +79,10 @@ export const confirmModal = (message, onConfirm) => {
   });
 };
 
-export const formatCurrencyVND = (value: number): string => {
+export const formatCurrencyVND = (value: number | null): string => {
+  if (value === null) {
+    return "0 đ"
+  }
   return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 

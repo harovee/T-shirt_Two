@@ -14,4 +14,6 @@ public interface AdminBillDetailService {
     ResponseObject<?> createBillDetail(@Valid AdminCreateBillDetailRequest request);
 
     ResponseObject<?> updateBillDetail(String id, @Valid AdminUpdateBillDetailRequest request);
+
+
 }
