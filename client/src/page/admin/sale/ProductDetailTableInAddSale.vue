@@ -101,13 +101,12 @@
             <div v-if="column.dataIndex === 'thongTinChung'" class="text-left">
               <a-space direction="vertical">
                 <a-space>{{ record.maSanPhamChiTiet }} - {{ record.ten }}</a-space>
-                <a-space>Sản phẩm: {{ record.tenSanPham }}</a-space>
                 <a-space>Số lượng: {{ record.soLuong }}</a-space>
                 <a-space>Giá gốc: <a-tag color="#108ee9"> {{ formatCurrency(record.gia, 'VND', 'vi-VN') }}</a-tag></a-space>
                 <a-popover placement="bottom">
                     <template #content>
                       <!-- <EventDetail /> -->
-                       <p>Giá trung bình trên các đợt đang diễn ra</p>
+                       <p>Giá trung bình trên số đợt đang diễn ra</p>
                     </template>
                     <template #title>
                       <!-- <span>Giá trung bình trên các đợt đang diễn ra</span> -->
@@ -120,6 +119,7 @@
             </div>
             <div v-if="column.dataIndex === 'phongCach'" class="text-left">
               <a-space direction="vertical">
+                <a-space>Sản phẩm: {{ record.tenSanPham }}</a-space>
                 <a-space>Giới tính: {{ record.gioiTinh ? 'Nam' : 'Nữ' }}</a-space>
                 <a-space>Kích cỡ: {{ record.kichCo }}</a-space>
                 <a-space>Khác: {{ record.phongCach }}</a-space>
@@ -214,6 +214,7 @@ const dataSource: DataType[] | any = computed(() => {
       maSanPhamChiTiet: e.maSanPhamChiTiet || null,
       ten: e.ten || "",
       gia: e.gia || 0,
+      giaHienTai: e.giaHienTai || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
       gioiTinh: e.gioiTinh ? "Nam": e.gioiTinh == false ? "Nữ" : "Không xác định",

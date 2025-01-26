@@ -68,9 +68,9 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
                     dgg.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.trangThai} IS NULL
                     OR (:#{#req.trangThai} = 'IN_PROGRESS' AND dgg.trang_thai = 'ACTIVE' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
-                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 > dgg.ngay_ket_thuc)
+                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 >= dgg.ngay_ket_thuc)
                     OR (:#{#req.trangThai} = 'PENDING' AND dgg.trang_thai = 'ACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
-                    OR dgg.trang_thai = :#{#req.trangThai}
+                    OR (:#{#req.trangThai} = 'INACTIVE' AND dgg.trang_thai = 'INACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_ket_thuc)
                     )
                 AND (:#{#req.ngayBatDau} IS NULL OR dgg.ngay_bat_dau >= :#{#req.ngayBatDau})
                 AND (:#{#req.ngayKetThuc} IS NULL OR dgg.ngay_ket_thuc <= :#{#req.ngayKetThuc})
@@ -86,9 +86,9 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
                     dgg.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.trangThai} IS NULL
                     OR (:#{#req.trangThai} = 'IN_PROGRESS' AND dgg.trang_thai = 'ACTIVE' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
-                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 > dgg.ngay_ket_thuc)
+                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 >= dgg.ngay_ket_thuc)
                     OR (:#{#req.trangThai} = 'PENDING' AND dgg.trang_thai = 'ACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
-                    OR dgg.trang_thai = :#{#req.trangThai}
+                    OR (:#{#req.trangThai} = 'INACTIVE' AND dgg.trang_thai = 'INACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_ket_thuc)
                     )
                 AND (:#{#req.ngayBatDau} IS NULL OR dgg.ngay_bat_dau >= :#{#req.ngayBatDau})
                 AND (:#{#req.ngayKetThuc} IS NULL OR dgg.ngay_ket_thuc <= :#{#req.ngayKetThuc})

@@ -68,7 +68,7 @@ const onRangeChange = (dates: RangeValue, dateStrings: string[]) => {
 };
 
 const rangePresets = ref([
-  { label: 'Hôm qua', value: [dayjs().add(-1, 'd'), dayjs()] },
+  {  label: 'Hôm qua', value: [dayjs().startOf('d').add(-1, 'd'), dayjs().endOf('d').add(-1, 'd')] },
   { label: '7 ngày trước', value: [dayjs().add(-7, 'd'), dayjs()] },
   { label: '14 ngày trước', value: [dayjs().add(-14, 'd'), dayjs()] },
   { label: '30 ngày trước', value: [dayjs().add(-30, 'd'), dayjs()] },

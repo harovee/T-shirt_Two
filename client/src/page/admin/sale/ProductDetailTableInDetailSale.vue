@@ -45,7 +45,7 @@
                 <a-popover placement="bottom">
                     <template #content>
                       <!-- <EventDetail /> -->
-                       <p>Giá trung bình trên các đợt đang diễn ra</p>
+                       <p>Giá trung bình trên số đợt đang diễn ra</p>
                     </template>
                     <template #title>
                       <!-- <span>Giá trung bình trên các đợt đang diễn ra</span> -->

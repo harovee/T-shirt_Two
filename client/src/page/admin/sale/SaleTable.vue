@@ -39,10 +39,10 @@
           <span v-else="record.loai === 'PHAN_TRAM'">{{ record.giaTri + ' %' }}</span>
         </div>
         <div v-if="column.key === 'ngayBatDau'" class="text-center">
-          {{ getDateFormat(record.ngayBatDau, true) }}
+          {{ getDateFormatMinute(record.ngayBatDau, true) }}
         </div>
         <div v-if="column.key === 'ngayKetThuc'" class="text-center">
-          {{ getDateFormat(record.ngayKetThuc, true) }}
+          {{ getDateFormatMinute(record.ngayKetThuc, true) }}
         </div>
         <div v-else-if="column.key === 'trangThai'" class="text-center">
           <a-tag v-if="record.trangThai === 'IN_PROGRESS'" color="success">Đang diễn ra</a-tag>
@@ -98,11 +98,10 @@
 <script setup lang="ts">
 import TableSpotify from "@/components/ui/Table.vue";
 import {ColumnType} from "ant-design-vue/es/table";
-import {toast} from "vue3-toastify";
 import {defineEmits} from "vue";
 import {useChangeStatusSale} from "@/infrastructure/services/service/admin/sale.action.ts";
 import router from "@/infrastructure/routes/router.ts";
-import { formatCurrency, getDateFormat} from "@/utils/common.helper.ts";
+import { formatCurrency, getDateFormatMinute} from "@/utils/common.helper.ts";
 import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
 
 const emit = defineEmits([
