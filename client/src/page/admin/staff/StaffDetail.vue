@@ -208,7 +208,7 @@ const rulesRef = reactive({
       trigger: "blur"
     },
     {min: 8, message: "Mật khẩu phải có độ dài từ 8 ký tự trở lên"},
-    {max: 50, message: "Mật khẩu phải có độ dài từ 50 ký tự trở xuống"}
+    {max: 20, message: "Mật khẩu phải có độ dài từ 20 ký tự trở xuống"}
   ],
   birthday: [
     {required: true, message: "Vui lòng nhập ngày sinh", trigger: "blur"},

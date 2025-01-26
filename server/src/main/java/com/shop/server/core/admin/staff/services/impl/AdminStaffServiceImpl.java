@@ -151,6 +151,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setPhoneNumber(request.getPhoneNumber());
             staff.setNguoiSua(infoUserTShirt.getId());
             adminStaffRepository.save(staff);
+            emailService.sendMailUpdateStaff(staff);
         } catch (Exception e) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
