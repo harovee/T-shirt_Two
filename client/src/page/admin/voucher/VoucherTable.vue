@@ -66,6 +66,17 @@
         <div v-if="column.key === 'ngayKetThuc'" class="text-left">
             <span>{{ getDateFormat(record.ngayKetThuc) }}</span>
         </div>
+        <div v-else-if="column.key === 'kieu'" >
+            <a-tag v-if="record.kieu === true || record.kieu === 'true'" color="blue">Cá nhân</a-tag>
+            <a-tag v-else-if="record.kieu === false || record.kieu === 'false'" color="green">Công khai</a-tag>
+            <span v-else color="secondary">Không xác định</span>
+        </div>
+        <div v-if="column.key === 'ngayBatDau'" class="text-left">
+            <span>{{ getDateFormat(record.ngayBatDau) }}</span>
+        </div>
+        <div v-if="column.key === 'ngayKetThuc'" class="text-left">
+            <span>{{ getDateFormat(record.ngayKetThuc) }}</span>
+        </div>
         <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
           <a-tooltip
             trigger="hover"

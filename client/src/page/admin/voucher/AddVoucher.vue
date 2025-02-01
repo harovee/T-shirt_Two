@@ -34,13 +34,6 @@
               </template>
             </a-input>
           </a-form-item>
-
-          <a-form-item v-if="formState.loaiGiam === true" class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
-            <a-input v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa">
-              <template #addonAfter>đ</template>
-            </a-input>
-          </a-form-item>
-
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
             <a-input-number v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" />
           </a-form-item>
@@ -305,7 +298,6 @@ const resetForm = () => {
 const handleUpdateIdKhachHangs = (newIdKhachHangs: string[]) => {
     idKhachHangs.value = newIdKhachHangs;
 };
-
 
 const handleRedirectClient = () => {
     router.push({ name: 'admin-voucher' });
