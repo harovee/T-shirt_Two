@@ -115,10 +115,9 @@ import { useUpdateVoucher, useUpdateCustomerVoucher,
 } from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import KhachHangTableInVoucher from "./KhachHangTableInVoucher.vue";
 import { defaultVoucherDatePickerRules, defaultVoucherRequest, FormState } from "./base/DefaultConfig";
-import { errorNotiSort, notificationType, openNotification, successNotiSort, warningNotiSort } from "@/utils/notification.config";
+import { notificationType, openNotification } from "@/utils/notification.config";
 import { useRoute } from "vue-router";
 import dayjs, { Dayjs } from 'dayjs';
-import { updateFeature } from "@/infrastructure/services/api/admin/feature.api";
 
 const params = ref<FindKhachHangRequest>({
   page: 1,
@@ -182,18 +181,6 @@ const rules: Record<string, Rule[]> = {
               }
               if (formState.loaiGiam === false && value > 100) {
                   return Promise.reject('Giá trị giảm chỉ bé hơn hoặc bằng 100%');
-              }
-              return Promise.resolve();
-          },
-          trigger: 'change',
-      },
-  ],
-  giamToiDa: [
-      { required: true, message: 'Vui lòng nhập giá trị giảm tối đa', trigger: 'change' },
-      {
-          validator: (rule, value) => {
-              if (formState.loaiGiam === true && value != null && value <= 0 ) {
-                  return Promise.reject('Giá trị giảm tối đa phải lớn hơn 0');
               }
               return Promise.resolve();
           },
@@ -380,7 +367,7 @@ watch(
     if (listKhachHang) {
       idKhachHangs.value = listKhachHang.map(khachHang => khachHang.id);
     }
-    //console.log(idKhachHangs.value);
+  console.log(idKhachHangs.value);
     
   },
   { immediate: true }

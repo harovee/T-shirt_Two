@@ -9,10 +9,10 @@ import com.shop.server.core.admin.phieugiamgia.model.response.PhieuGiamGiaRespon
 import com.shop.server.core.admin.phieugiamgia.repository.AdKhachHangPhieuGiamGiaRepository;
 import com.shop.server.core.admin.phieugiamgia.repository.AdPhieuGiamGiaRepository;
 import com.shop.server.core.admin.phieugiamgia.repository.AdminKhachHangRepository;
+import com.shop.server.core.admin.phieugiamgia.services.AdPhieuGiamGiaMailService;
 import com.shop.server.core.admin.phieugiamgia.services.AdPhieuGiamGiaServices;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
-import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.KhachHangPhieuGiamGia;
 import com.shop.server.entities.main.PhieuGiamGia;
 import com.shop.server.repositories.KhachHangRepository;
@@ -24,16 +24,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +39,8 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
     private final AdminKhachHangRepository adminKhachHangRepository;
 
     private final AdKhachHangPhieuGiamGiaRepository adKhachHangPhieuGiamGiaRepository;
-    private final KhachHangRepository khachHangRepository;
+
+    private  final AdPhieuGiamGiaMailService adPhieuGiamGiaMailService;
 
     @Override
     public ResponseObject<?> getAllPhieuGiamGia(PhieuGiamGiaSearchRequest request) {
@@ -192,6 +188,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
                 KhachHangPhieuGiamGia khachHangPhieuGiamGia = new KhachHangPhieuGiamGia();
                 khachHangPhieuGiamGia.setKhachHang(adminKhachHangRepository.findById(idKhachHang).get());
                 khachHangPhieuGiamGia.setPhieuGiamGia(adPhieuGiamGiaRepository.findById(khachHangVoucher.getIdPhieuGiamGia()).get());
+                adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHangPhieuGiamGia.getKhachHang(),khachHangPhieuGiamGia.getPhieuGiamGia());
                 adKhachHangPhieuGiamGiaRepository.save(khachHangPhieuGiamGia);
             }
             //adKhachHangPhieuGiamGiaRepository.saveVoucherAndCustomerVoucher(khachHangVoucher);
@@ -225,6 +222,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
                     khachHangPhieuGiamGia.setPhieuGiamGia(phieuGiamGia);
                     khachHangPhieuGiamGia.setKhachHang(adminKhachHangRepository.findById(idKhachHang).get());
                     khachHangPhieuGiamGia.setDeleted(false);
+                    adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHangPhieuGiamGia.getKhachHang(), phieuGiamGia);
                     adKhachHangPhieuGiamGiaRepository.save(khachHangPhieuGiamGia);
                 }
             }

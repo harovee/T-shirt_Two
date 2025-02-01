@@ -108,8 +108,7 @@ import {  FindKhachHangRequest, VoucherAndCustomerVoucherRequest, PhieuGiamGiaRe
 import { useCreateCustomerVoucher, useCreateVoucher, useGetListKhachHang} from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import KhachHangTable from "./KhachHangTable.vue";
 import { defaultVoucherDatePickerRules, defaultVoucherRequest, FormState } from "./base/DefaultConfig";
-import { errorNotiSort, notificationType, openNotification, successNotiSort, warningNotiSort } from "@/utils/notification.config";
-import { convertToAntdDatePicker } from "@/utils/common.helper";
+import {  notificationType, openNotification,  warningNotiSort } from "@/utils/notification.config";
 
 const params = ref<FindKhachHangRequest>({
   page: 1,
