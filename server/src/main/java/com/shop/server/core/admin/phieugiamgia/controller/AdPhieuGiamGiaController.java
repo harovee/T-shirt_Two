@@ -2,8 +2,7 @@ package com.shop.server.core.admin.phieugiamgia.controller;
 
 
 import com.shop.server.core.admin.phieugiamgia.model.request.AdminKhachHangSearchRequest;
-import com.shop.server.core.admin.phieugiamgia.model.request.AdminProductSearchRequest;
-import com.shop.server.core.admin.phieugiamgia.model.request.AdminVoucherSanPhamKhachHangRequest;
+import com.shop.server.core.admin.phieugiamgia.model.request.AdVoucherKhachHangRequest;
 import com.shop.server.core.admin.phieugiamgia.model.request.PhieuGiamGiaRequest;
 import com.shop.server.core.admin.phieugiamgia.model.request.PhieuGiamGiaSearchRequest;
 import com.shop.server.core.admin.phieugiamgia.services.Impl.AdPhieuGiamGiaServicesImpl;
@@ -31,7 +30,7 @@ public class AdPhieuGiamGiaController {
     private final AdPhieuGiamGiaServicesImpl adPhieuGiamGiaServices;
 
     @GetMapping
-    public ResponseEntity<?> getAdPhieuGiamGia(PhieuGiamGiaSearchRequest request) {
+    public ResponseEntity<?> getAdPhieuGiamGia(@Valid final PhieuGiamGiaSearchRequest request) {
         return Helper.createResponseEntity(adPhieuGiamGiaServices.getAllPhieuGiamGia(request));
     }
 
@@ -49,30 +48,32 @@ public class AdPhieuGiamGiaController {
     public ResponseEntity<?> getAdPhieuGiamGiaById(@PathVariable String id) {
         return Helper.createResponseEntity(adPhieuGiamGiaServices.getPhieuGiamGiaById(id));
     }
+
+    @PutMapping("/change-status/{id}/{trangThai}")
+    public ResponseEntity<?> updateAdPhieuGiamGia(@PathVariable("id") String id,@PathVariable("trangThai") String trangThai) {
+        return Helper.createResponseEntity(adPhieuGiamGiaServices.changeStatusPhieuGiamGia(id,trangThai));
+    }
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAdPhieuGiamGia(@PathVariable String id) {
         return Helper.createResponseEntity(adPhieuGiamGiaServices.deletePhieuGiamGiaById(id));
     }
-    @GetMapping("/san_pham")
-    public ResponseEntity<?> getSanPham(@Valid AdminProductSearchRequest request) {
-        return Helper.createResponseEntity(adPhieuGiamGiaServices.getAllProductDetail(request));
-    }
-    @GetMapping("/san_pham/{id}")
-    public ResponseEntity<?> getSanPham(@PathVariable("idSanPham") String id) {
-        return Helper.createResponseEntity(adPhieuGiamGiaServices.getProductDetailById(id));
-    }
+
     @GetMapping("/khach-hang")
     public ResponseEntity<?> getKhachHang(@Valid final AdminKhachHangSearchRequest request) {
         return Helper.createResponseEntity(adPhieuGiamGiaServices.getAllKhachHang(request));
     }
+
     @GetMapping("/khach-hang/{id}")
-    public ResponseEntity<?> getKhachHang(@PathVariable("idKhachHang") String id) {
-        return Helper.createResponseEntity(adPhieuGiamGiaServices.getKhachHangById(id));
+    public ResponseEntity<?> getKhachHangByIdPhieuGiamGia(@PathVariable("id") String id) {
+        return Helper.createResponseEntity(adPhieuGiamGiaServices.getKhachHangByIdPhieuGiamGia(id));
     }
 
-    @PostMapping("/save_voucher-san_pham_khach_hang")
-    public ResponseEntity<?> addVoucherSanPhamKhachHang(@Valid final @RequestBody AdminVoucherSanPhamKhachHangRequest request){
-        System.out.println(request.getVoucherSanPhamKhachHangRequest().getIdVoucher());
-        return Helper.createResponseEntity(adPhieuGiamGiaServices.createVoucherSanphamKhachHang(request.getPhieuGiamGiaRequest(), request.getVoucherSanPhamKhachHangRequest()));
+    @PostMapping("/save-voucher-khach-hang")
+    public ResponseEntity<?> addVoucherSanPhamKhachHang(@Valid final @RequestBody AdVoucherKhachHangRequest request){
+        return Helper.createResponseEntity(adPhieuGiamGiaServices.createVoucherKhachHang(request.getPhieuGiamGiaRequest(), request.getVoucherKhachHangRequest()));
+    }
+    @PutMapping("/save-voucher-khach-hang/{id}")
+    public ResponseEntity<?> updateVoucherSanPhamKhachHang(@PathVariable String id,@Valid final @RequestBody AdVoucherKhachHangRequest request){
+        return Helper.createResponseEntity(adPhieuGiamGiaServices.updateVoucherKhachHang(id,request));
     }
 }

@@ -8,4 +8,6 @@ import lombok.Setter;
 @Setter
 public class AdminKhachHangSearchRequest  extends PageableRequest {
     String keyword;
+
+    String idPhieuGiamGia;
 }

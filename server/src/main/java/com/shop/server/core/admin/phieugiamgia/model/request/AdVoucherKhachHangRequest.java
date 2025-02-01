@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AdminVoucherSanPhamKhachHangRequest {
+public class AdVoucherKhachHangRequest {
     private PhieuGiamGiaRequest phieuGiamGiaRequest;
 
-    private VoucherSanPhamKhachHangRequest voucherSanPhamKhachHangRequest;
+    private VoucherKhachHangRequest voucherKhachHangRequest;
 }

@@ -1,10 +1,8 @@
 <template>
-  <div class="p-4 grid grid-cols-1 gap-6">
-    <!-- Header -->
     <div class="flex justify-between items-center bg-white rounded-md shadow p-4">
       <div class="flex items-center gap-4">
         <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48" />
-        <h3 class="text-2xl font-semibold m-0">Thêm phiếu giảm giá</h3>
+        <h3 class="text-2xl font-semibold m-0">Cập nhật phiếu giảm giá</h3>
       </div>
       <div 
         class="flex items-center gap-2 cursor-pointer text-gray-500 transition hover:scale-105 hover:text-red-500" 
@@ -34,6 +32,13 @@
               </template>
             </a-input>
           </a-form-item>
+
+          <a-form-item  class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
+            <a-input v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa">
+              <template #addonAfter>đ</template>
+            </a-input>
+          </a-form-item>
+
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
             <a-input-number v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" />
           </a-form-item>
@@ -55,7 +60,7 @@
             />
           </a-form-item>
 
-          <a-form-item class="mb-4" label="Loại phiếu giảm giá" name="trangThai">
+          <a-form-item class="mb-4" label="Loại phiếu giảm giá" name="kieu">
             <a-radio-group v-model:value="formState.kieu" option-type="default" button-style="solid">
               <a-radio :value="false">Công khai</a-radio>
               <a-radio :value="true">Cá nhân<nav></nav></a-radio>
@@ -64,7 +69,7 @@
 
           <a-form-item class="mt-6">
             <div class="flex gap-4">
-              <a-button type="primary" @click="onSubmit(formState.kieu ? 2 : 1)">Thêm</a-button>
+              <a-button type="primary" @click="onSubmit(formState.kieu ? 2 : 1)">Cập nhật</a-button>
               <a-button @click="resetForm">Xóa form</a-button>
             </div>
           </a-form-item>
@@ -72,31 +77,31 @@
       </div>
 
       <!-- Khách Hàng Section -->
-       
-      <div  class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu">
+      <div class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu">
         <h4 class="text-lg font-semibold mb-4">Danh sách khách hàng</h4>
         <div class="h-100 overflow-y-auto">
-          <khach-hang-table
+          <khach-hang-table-in-voucher
             :data="dataSource"
             :id-khach-hangs="idKhachHangs"
+            :disable="formState.kieu"
             @update:idKhachHangs="handleUpdateIdKhachHangs"
           />
         </div>
       </div>
     </div>
-  </div>
+  
 </template>
 
 
 <script lang="ts">
 export default {
-  name: 'admin add voucher',
+  name: 'admin detail voucher',
 };
 </script>
 
 <script lang="ts" setup>
 import router from "@/infrastructure/routes/router.ts";
-import { computed, watch, reactive, ref, createVNode } from "vue";
+import { computed, watch, reactive, ref, createVNode, onMounted } from "vue";
 import type { UnwrapRef } from 'vue';
 import {Modal} from "ant-design-vue";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
@@ -104,12 +109,16 @@ import type { Rule } from 'ant-design-vue/es/form';
 import { toast } from "vue3-toastify";
 import { keepPreviousData } from "@tanstack/vue-query";
 
-import {  FindKhachHangRequest, VoucherAndCustomerVoucherRequest, PhieuGiamGiaRequest } from "@/infrastructure/services/api/admin/voucher/voucher.api";
-import { useCreateCustomerVoucher, useCreateVoucher, useGetListKhachHang} from "@/infrastructure/services/service/admin/voucher/voucher.action";
-import KhachHangTable from "./KhachHangTable.vue";
+import {  FindKhachHangRequest, VoucherAndCustomerVoucherRequest, PhieuGiamGiaRequest} from "@/infrastructure/services/api/admin/voucher/voucher.api";
+import { useUpdateVoucher, useUpdateCustomerVoucher,
+  useGetListKhachHang, useGetVoucherById, useGetCusTomerByIdPhieuGiamGia
+} from "@/infrastructure/services/service/admin/voucher/voucher.action";
+import KhachHangTableInVoucher from "./KhachHangTableInVoucher.vue";
 import { defaultVoucherDatePickerRules, defaultVoucherRequest, FormState } from "./base/DefaultConfig";
 import { errorNotiSort, notificationType, openNotification, successNotiSort, warningNotiSort } from "@/utils/notification.config";
-import { convertToAntdDatePicker } from "@/utils/common.helper";
+import { useRoute } from "vue-router";
+import dayjs, { Dayjs } from 'dayjs';
+import { updateFeature } from "@/infrastructure/services/api/admin/feature.api";
 
 const params = ref<FindKhachHangRequest>({
   page: 1,
@@ -122,6 +131,21 @@ const { data } = useGetListKhachHang(params, {
   placeholderData: keepPreviousData,
 });
 
+const voucherId = ref<string | null>('');
+  
+onMounted(() => {
+    voucherId.value = useRoute().params.id as string;
+});
+
+const { data: dataDetail , isLoading, isFetching} = useGetVoucherById(
+    voucherId,
+    {
+      refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData,
+    }
+  );  
+
+const { data: customerData } = useGetCusTomerByIdPhieuGiamGia(voucherId);
 
 const idKhachHangs = ref<string[]>([]);
 
@@ -134,10 +158,10 @@ const formRef = ref();
 const formState: UnwrapRef<FormState> = reactive( {
     ten: "",
     loaiGiam: false,
-    giaTriGiam: "0",
+    giaTriGiam: "",
     giamToiDa: "",
     soLuong: 0,
-    dieuKienGiam: "0",
+    dieuKienGiam: "",
     ngayBatDauVaKetThuc: [],
     kieu: false
 });
@@ -158,6 +182,18 @@ const rules: Record<string, Rule[]> = {
               }
               if (formState.loaiGiam === false && value > 100) {
                   return Promise.reject('Giá trị giảm chỉ bé hơn hoặc bằng 100%');
+              }
+              return Promise.resolve();
+          },
+          trigger: 'change',
+      },
+  ],
+  giamToiDa: [
+      { required: true, message: 'Vui lòng nhập giá trị giảm tối đa', trigger: 'change' },
+      {
+          validator: (rule, value) => {
+              if (formState.loaiGiam === true && value != null && value <= 0 ) {
+                  return Promise.reject('Giá trị giảm tối đa phải lớn hơn 0');
               }
               return Promise.resolve();
           },
@@ -191,48 +227,55 @@ const rules: Record<string, Rule[]> = {
       trigger: 'change' }],
 };
 
-const { mutate: createVoucher } = useCreateVoucher();
-const { mutate: createCustomerVoucher } = useCreateCustomerVoucher();
+const { mutate: updateVoucher } = useUpdateVoucher();
+const { mutate: updateCustomerVoucher} = useUpdateCustomerVoucher();
 
 
-const handleCreateVoucher = (dataRequest: PhieuGiamGiaRequest) => {
-
+const handleUpdateVoucher = (id :string | any,dataRequest: PhieuGiamGiaRequest) => {
     Modal.confirm({
-    content: "Bạn chắc chắn muốn thêm?",
     icon: createVNode(ExclamationCircleOutlined),
+    title: "Xác nhận cập nhật phiếu giảm giá",
+    content: "Bạn có chắc chắn muốn cập nhật thông tin phiếu giảm giá này không?",
     centered: true,
     async onOk() {
       try {
-        createVoucher(dataRequest, {
-          onSuccess: (result) => {
-            openNotification(notificationType.success, result?.message, '');
-            handleRedirectClient();
-          },
-          onError: (error: any) => {
-            toast.error(
-              openNotification(notificationType.error, error?.response?.data?.message, '')
-            );
-          },
-        });
+        updateVoucher(
+          { voucherId: id,
+            data : dataRequest,
+        },
+          {
+            onSuccess: () => {
+              toast.success("Cập nhật phiếu giảm giá thành công!");
+              handleRedirectClient();
+            },
+            onError: (error: any) => {
+              toast.error(
+                error?.response?.data?.message || "Đã xảy ra lỗi khi cập nhật phiếu giảm giá!"
+              );
+            },
+          }
+        );
+        
       } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
-        if (error?.response) {
-          toast.warning(
-            warningNotiSort(error?.response?.data?.message)
-          );
-        } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+        // Handle form validation errors
+        console.error("🚀 ~ handleUpdateVoucher ~ error:", error);
+
+        if (error?.errorFields) {
+          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu bắt buộc!");
+        } else {
+          toast.warning("Đã xảy ra lỗi không xác định!");
         }
       }
     },
-    cancelText: "Huỷ",
+    cancelText: "Hủy",
     onCancel() {
-        Modal.destroyAll();
+      Modal.destroyAll();
+      resetForm();
     },
   });
-}
+};
 
-const handleAddVoucherAndCustomerVoucher = (dataRequest: VoucherAndCustomerVoucherRequest) => {
+const handleUpdateVoucherAndCustomerVoucher = (id: string | any ,dataRequest: VoucherAndCustomerVoucherRequest) => {
   console.log(dataRequest);
     Modal.confirm({
     content: "Bạn chắc chắn có muốn thêm phiếu giảm giá cho khách hàng không?",
@@ -240,9 +283,9 @@ const handleAddVoucherAndCustomerVoucher = (dataRequest: VoucherAndCustomerVouch
     centered: true,
     async onOk() {
       try {
-        createCustomerVoucher(dataRequest, {
+        updateCustomerVoucher({ voucherId: id, data: dataRequest }, {
           onSuccess: (result) => {
-            openNotification(notificationType.success, result?.message, '');
+            openNotification(notificationType.success, result?.data.message, '');
             handleRedirectClient();
           },
           onError: (error: any) => {
@@ -250,13 +293,10 @@ const handleAddVoucherAndCustomerVoucher = (dataRequest: VoucherAndCustomerVouch
           },
         });
       } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {
-          toast.warning(
-              error?.response?.data?.message
-          );
+          openNotification(notificationType.error, error?.response?.data?.message, '');
         } else if (error?.errorFields) {
-          toast.warning("Vui lòng nhập đầy đủ các trường dữ liệu");
+          openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
         }
       }
     },
@@ -268,8 +308,6 @@ const handleAddVoucherAndCustomerVoucher = (dataRequest: VoucherAndCustomerVouch
 }
 
 const onSubmit = (x: number) => {
-  
-  
   formRef.value
       .validate()
       .then(() => {
@@ -282,14 +320,14 @@ const onSubmit = (x: number) => {
           voucherRequest.value.kieu = formState.kieu;
           voucherRequest.value.ngayBatDau = formState.ngayBatDauVaKetThuc[0]?.valueOf() || null;
           voucherRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
-          x === 1 ?   
-             handleCreateVoucher(voucherRequest.value)             
-                    :
-                handleAddVoucherAndCustomerVoucher({
-                  phieuGiamGiaRequest: voucherRequest.value,
-                  voucherKhachHangRequest : { idKhachHangs: idKhachHangs.value},        
-              });
-      
+          if ( x == 1 ) {
+                 handleUpdateVoucher(voucherId.value, voucherRequest.value)
+            }else{
+                handleUpdateVoucherAndCustomerVoucher(voucherId.value || '',{
+                phieuGiamGiaRequest: voucherRequest.value,
+                voucherKhachHangRequest: {idKhachHangs: idKhachHangs.value}
+            });
+            }          
       });
 };
 const resetForm = () => {
@@ -300,23 +338,55 @@ const handleUpdateIdKhachHangs = (newIdKhachHangs: string[]) => {
     idKhachHangs.value = newIdKhachHangs;
 };
 
+
+// watch(
+//   () => formState.kieu,
+//   (newValue) => {
+//     if (newValue) {
+//       // Nếu đổi sang "Cá nhân"
+//       //console.log("Đã chuyển sang phiếu giảm giá Cá nhân");
+//       idKhachHangs.value = []; // Reset danh sách khách hàng được chọn
+//     } else {
+//       // Nếu đổi về "Công khai"
+//      // console.log("Đã chuyển sang phiếu giảm giá Công khai");
+//       idKhachHangs.value = []; // Reset danh sách khách hàng
+//     }
+//   }
+// );
+// console.log(dataDetail.value?.data?.data);
+
+watch(() => dataDetail.value?.data.data, (detail) => {
+    if (detail) {
+        Object.assign(formState, {
+            ten: detail.ten || "",
+            loaiGiam: detail.loaiGiam,
+            giaTriGiam: detail.giaTriGiam || "",
+            kieu: detail.kieu,
+            soLuong :detail.soLuong || 0,
+            giamToiDa: detail.giamToiDa || "",
+            dieuKienGiam : detail.dieuKienGiam || "",
+            ngayBatDauVaKetThuc: [
+            detail.ngayBatDau ? dayjs(detail.ngayBatDau) : null,
+            detail.ngayKetThuc ? dayjs(detail.ngayKetThuc) : null,
+            ],
+        });
+    }
+},  { immediate: true }
+);
+
+watch(
+  () => customerData.value?.data,
+  (listKhachHang) => {  
+    if (listKhachHang) {
+      idKhachHangs.value = listKhachHang.map(khachHang => khachHang.id);
+    }
+    //console.log(idKhachHangs.value);
+    
+  },
+  { immediate: true }
+  
+);
 const handleRedirectClient = () => {
     router.push({ name: 'admin-voucher' });
 }
-
-watch(
-  () => formState.kieu,
-  (newValue) => {
-    if (newValue) {
-      // Nếu đổi sang "Cá nhân"
-      //console.log("Đã chuyển sang phiếu giảm giá Cá nhân");
-      idKhachHangs.value = []; // Reset danh sách khách hàng được chọn
-    } else {
-      // Nếu đổi về "Công khai"
-     // console.log("Đã chuyển sang phiếu giảm giá Công khai");
-      idKhachHangs.value = []; // Reset danh sách khách hàng
-    }
-  }
-);
-
 </script>

@@ -20,9 +20,9 @@ public interface PhieuGiamGiaResponse extends BaseResponse {
 
     Double getGiaTriGiam();
 
-    LocalDate getNgayBatDau();
+    Long getNgayBatDau();
 
-    LocalDate getNgayKetThuc();
+    Long getNgayKetThuc();
 
     Boolean getKieu();
 

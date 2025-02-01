@@ -33,18 +33,17 @@ import { keepPreviousData } from "@tanstack/vue-query";
 import {
   FindKhachHangRequest
 } from "@/infrastructure/services/api/admin/voucher/voucher.api";
-import { useGetListKhachHang } from "@/infrastructure/services/service/admin/voucher/voucher.action";
+import { useGetListKhachHang,useGetCusTomerByIdPhieuGiamGia } from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import { convertDateFormatTime } from "@/utils/common.helper";
 import { useRoute } from "vue-router";
 
 const pageSize = ref(5);
 const current1 = ref(1);
-defineProps<{
+const props = defineProps<{
   data: Object,
   idKhachHangs: string[] | undefined,
-  
+  disable: boolean | false,
 }>();
-
 
 const emit = defineEmits(['update:idKhachHangs']);
 
@@ -98,7 +97,6 @@ const dataSource: DataType[] | any = computed(() => {
   );
 });
 
-
 const handleSearch = (newValue: string) => { 
   params.value.keyword = newValue;
   params.value.page = 1;
@@ -116,7 +114,6 @@ const rowSelection: TableProps["rowSelection"] = {
     const updatedIds = [...selectedRowKeys];
       emit("update:idKhachHangs", updatedIds);
    }
-  
   },
 };
 

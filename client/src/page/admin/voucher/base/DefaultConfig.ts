@@ -1,10 +1,11 @@
 
-import { VoucherRequest } from '@/infrastructure/services/api/admin/voucher/voucher.api';
+import { PhieuGiamGiaRequest } from '@/infrastructure/services/api/admin/voucher/voucher.api';
 import dayjs, { Dayjs } from 'dayjs';
 
 export interface FormState {
     ten: string;
     loaiGiam: boolean;
+    kieu: boolean;
     giaTriGiam: string;
     giamToiDa: string ;
     soLuong: number | 0;
@@ -12,9 +13,10 @@ export interface FormState {
     ngayBatDauVaKetThuc: [Dayjs, Dayjs] | [];
 }
 
-export const defaultVoucherRequest: VoucherRequest = {
+export const defaultVoucherRequest: PhieuGiamGiaRequest = {
     ten: "",
     loaiGiam: false,
+    kieu: false,
     giaTriGiam: "",
     giamToiDa: "",
     dieuKienGiam: "",
@@ -25,6 +27,7 @@ export const defaultVoucherRequest: VoucherRequest = {
 export const defaultFormState: FormState = {
     ten: '',
     loaiGiam: false,
+    kieu: false,
     giaTriGiam: "",
     giamToiDa: "",
     dieuKienGiam: "",

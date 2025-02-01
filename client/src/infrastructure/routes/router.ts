@@ -243,6 +243,15 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.VOUCHER_DETAIL.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.VOUCHER_DETAIL.name,
+                component: () => import('@/page/admin/voucher/VoucherDetail.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.SALE_DETAIL.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.SALE_DETAIL.name,
                 component: () => import('@/page/admin/sale/SaleDetail.vue'),
