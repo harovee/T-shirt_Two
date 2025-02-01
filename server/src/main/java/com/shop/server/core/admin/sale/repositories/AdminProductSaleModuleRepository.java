@@ -126,7 +126,7 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 join mau_sac ms on spct.id_mau_sac = ms.id
                 left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
                 where spct.deleted = false
-                and spct.trang_thai != 0
+                and spct.trang_thai = 0
                 and (:#{#req.gioiTinh} is null or spct.gioi_tinh = :#{#req.gioiTinh})
                 and (:#{#req.keyword} is null
                     or sp.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
@@ -156,7 +156,7 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
                 left join tinh_nang tn on spct.id_tinh_nang = tn.id
                 join mau_sac ms on spct.id_mau_sac = ms.id
                 where spct.deleted = false
-                and spct.trang_thai != 0
+                and spct.trang_thai = 0
                 and (:#{#req.gioiTinh} is null or spct.gioi_tinh = :#{#req.gioiTinh})
                 and (:#{#req.keyword} is null
                     or sp.ten LIKE CONCAT('%', :#{#req.keyword}, '%')

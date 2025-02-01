@@ -34,7 +34,7 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'another'" class="text-center">
         </div>
-        <div v-if="column.key === 'giaTri'">
+        <div v-if="column.key === 'giaTri'" class="text-right">
           <span v-if="record.loai === 'VND'">{{ formatCurrency(record.giaTri, "VND", "vi-VN") }}</span>
           <span v-else="record.loai === 'PHAN_TRAM'">{{ record.giaTri + ' %' }}</span>
         </div>
@@ -141,11 +141,11 @@ const handleRedirectSaleAdd = () => {
 
 const columnsSale: ColumnType[] = [
   {
-    title: "#",
+    title: "STT",
     dataIndex: "catalog",
     key: "catalog",
     ellipsis: true,
-    width: 30,
+    width: 45,
     align: "center"
   },
   {
@@ -170,7 +170,8 @@ const columnsSale: ColumnType[] = [
     key: "giaTri",
     ellipsis: true,
     width: 100,
-    resizable: true
+    resizable: true,
+    align: "center"
   },
   {
     title: "Bắt đầu",
@@ -201,7 +202,7 @@ const columnsSale: ColumnType[] = [
     title: "Hành động",
     key: "action",
     align: "center",
-    width: 200,
+    width: 140,
     fixed: "right"
   },
 ];

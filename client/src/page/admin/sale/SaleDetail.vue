@@ -2,7 +2,7 @@
     <div class="p-3 grid grid-cols-1 gap-6">
         <div class="flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48" />
+                <v-icon name="md-percent-round" size="x-large" width="48" height="48" />
                 <h3 class="text-xl m-0">Thông tin đợt giảm giá </h3>
             </div>
             <div class="flex items-center gap-2 scale-75 transition-all cursor-pointer
@@ -45,12 +45,12 @@
                         </a-input-number>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" label="Thời gian" required name="ngayBatDauVaKetThuc">
-                        <a-range-picker size="large" style="" show-time format="DD/MM/YYYY HH:mm"
+                        <a-range-picker size="" style="width: 100%;" show-time format="DD/MM/YYYY HH:mm"
                             v-model:value="formState.ngayBatDauVaKetThuc"
                             :disabled-date="disabledDate"
                             :disabled-date-time="disabledDateTime"
                             :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']" :presets="rangePresets" />
-                        <div class="text-right text-sm text-red-500">{{ currentStatus ? '':'Đã kết thúc' }}</div>
+                        
                     </a-form-item>
 
                     <a-form-item class="m-0 mt-2" label="" name="trangThai" v-if="currentStatus">
@@ -66,6 +66,19 @@
                         <a-button style="margin-left: 10px" @click="resetForm">Clear form</a-button>
                     </a-form-item>
                 </a-form>
+
+
+
+                <a-typography-text type="danger" strong>
+                    {{ currentStatus ? '':'Đã kết thúc |' }}
+                    <a-popconfirm title="Nhân bản đợt giảm giá này?" placement="right" okText="OK" cancelText="Hủy" @confirm="handleCopySale()" >
+                        <a-typography-text v-if="!currentStatus" type="danger" strong underline class="cursor-pointer">
+                            <CopyOutlined /> Copy
+                        </a-typography-text>
+                    </a-popconfirm>
+                </a-typography-text>
+
+
 
             </div>
         </div>
@@ -144,7 +157,8 @@ import { useRoute } from 'vue-router';
 import {
     TagsOutlined, FileDoneOutlined,
     ExclamationCircleOutlined,
-    PlusCircleOutlined
+    PlusCircleOutlined,
+    CopyOutlined
 } from '@ant-design/icons-vue';
 import { Modal } from "ant-design-vue";
 import { computed, onMounted, watch, reactive, ref, createVNode } from "vue";
@@ -166,7 +180,8 @@ import {
      FormState,
      disabledDate, disabledDateTime
      } from "./base/DefaultConfig";
-import { openNotification, notificationType } from "@/utils/notification.config";
+import { openNotification, notificationType, warningNotiSort } from "@/utils/notification.config";
+import { useSaleStore } from "./base/SaleStore";
 
 
 const auth = useAuthStore();
@@ -338,11 +353,17 @@ const onSubmit = (x: number) => {
             saleRequest.value.trangThai = formState.trangThai ? 'ACTIVE' : 'INACTIVE';
             if ( x == 1 ) {
                  handleUpdateSale(saleId.value, saleRequest.value)
-            }else{
+            }else if ( x == 2 ){
                 handleUpdateSaleProduct(saleId.value || '',{
                 saleRequest: saleRequest.value,
                 saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value}
             });
+            }else {
+                const saleStore = useSaleStore();
+                saleStore.setSaleData(saleRequest.value);
+                router.push({name: 'admin-sale-add'}).then(() => {
+                    warningNotiSort("Vui lòng nhập lại thời gian cho đợt giảm giá.");
+                });
             }
         });
 };
@@ -385,7 +406,7 @@ const handleUpdateSaleProduct = (saleId: string | '', data: SaleAndSaleProductRe
         if (error?.response) {
           openNotification(notificationType.error, error?.response?.data?.message, '');
         } else if (error?.errorFields) {
-          openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
+          openNotification(notificationType.warning, "Vui lòng nhập đúng các trường dữ liệu", '');
         }
       }
     },
@@ -396,6 +417,10 @@ const handleUpdateSaleProduct = (saleId: string | '', data: SaleAndSaleProductRe
   });
 
 
+}
+
+const handleCopySale = () => {
+    onSubmit(3)
 }
 
 </script>

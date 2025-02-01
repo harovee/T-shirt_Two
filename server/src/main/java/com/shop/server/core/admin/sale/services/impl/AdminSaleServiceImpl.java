@@ -9,6 +9,7 @@ import com.shop.server.core.admin.sale.models.requests.AdminSaleProductRequest;
 import com.shop.server.core.admin.sale.models.requests.AdminSaleRequest;
 import com.shop.server.core.admin.sale.models.responses.AdminDetailSaleResponse;
 import com.shop.server.core.admin.sale.models.responses.AdminProductDetailSaleModuleResponse;
+import com.shop.server.core.admin.sale.models.responses.AdminSaleResponse;
 import com.shop.server.core.admin.sale.repositories.AdminProductSaleModuleRepository;
 import com.shop.server.core.admin.sale.repositories.AdminSaleProductRepository;
 import com.shop.server.core.admin.sale.repositories.AdminSaleRepository;
@@ -21,12 +22,19 @@ import com.shop.server.entities.main.SanPhamGiamGia;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.repositories.SanPhamChiTietRepository;
 import com.shop.server.utils.Helper;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileInputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -281,8 +289,8 @@ public class AdminSaleServiceImpl implements AdminSaleService {
             idProductDetails.forEach((e) -> {
                 SanPhamGiamGia sanPhamGiamGia;
                 SanPhamChiTiet spct = sanPhamChiTietRepository.findById(e).orElseThrow();
-                Optional<SanPhamGiamGia> sanPhamGiamGiaOptional =sanPhamGiamGiaRepository
-                                .findBySanPhamChiTietIdAndDotGiamGiaIdAndDeletedIsFalse(spct.getId(), dotGiamGia.getId());
+                Optional<SanPhamGiamGia> sanPhamGiamGiaOptional = sanPhamGiamGiaRepository
+                        .findBySanPhamChiTietIdAndDotGiamGiaIdAndDeletedIsFalse(spct.getId(), dotGiamGia.getId());
                 if (sanPhamGiamGiaOptional.isEmpty()) {
                     sanPhamGiamGia = new SanPhamGiamGia(giaSauGiam(dotGiamGia, spct.getGia()), dotGiamGia, spct);
                     sanPhamGiamGia.setDeleted(false);
@@ -314,7 +322,55 @@ public class AdminSaleServiceImpl implements AdminSaleService {
         if (loai.equals("VND") && spct < giaTriGiam && spct >= giaTriGiamToiDa) {
             return BigDecimal.valueOf(spct - giaTriGiamToiDa);
         }
-        return BigDecimal.valueOf(spct/2);
+        return BigDecimal.valueOf(spct / 2);
+    }
+
+    @Override
+    public ResponseObject<?> generateExcel(AdminFindSaleRequest request,
+                                           HttpServletResponse response) {
+        try {
+            Pageable pageable = Helper.createPageable(request, "ngay_tao", "desc");
+            if (request.getSortBy() == null || request.getSortBy().isEmpty()) {
+                request.setSortBy("ngay_tao");
+            }
+            List<AdminSaleResponse> list = adminSaleRepository.getPromotionByRequest(pageable, request).getContent();
+            try (
+                 HSSFWorkbook workbook = new HSSFWorkbook()) {
+
+                HSSFSheet sheet = workbook.createSheet("Đợt giảm giá " + LocalDate.now());
+                HSSFRow row = sheet.createRow(0);
+                row.createCell(0).setCellValue("Mã");
+                row.createCell(1).setCellValue("Tên");
+                row.createCell(2).setCellValue("Loại");
+                row.createCell(3).setCellValue("Giá trị giảm");
+                row.createCell(4).setCellValue("Bắt đầu");
+                row.createCell(5).setCellValue("Kết thúc");
+                row.createCell(6).setCellValue("Trạng thái");
+
+                int id = 1;
+                for (AdminSaleResponse res: list) {
+                    HSSFRow rowData = sheet.createRow(id);
+                    rowData.createCell(0).setCellValue(res.getMaDotGiamGia());
+                    rowData.createCell(1).setCellValue(res.getTen());
+                    rowData.createCell(2).setCellValue(res.getLoai());
+                    rowData.createCell(3).setCellValue(res.getGiaTri());
+                    rowData.createCell(4).setCellValue(res.getNgayBatDau());
+                    rowData.createCell(5).setCellValue(res.getNgayKetThuc());
+                    rowData.createCell(6).setCellValue(res.getTrangThai());
+                    id++;
+                }
+
+                ServletOutputStream ops = response.getOutputStream();
+                workbook.write(ops);
+                workbook.close();
+                ops.close();
+            }
+
+
+            return ResponseObject.successForward("API gen Excel", Message.Success.GET_SUCCESS);
+        } catch (Exception ex) {
+            return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
 

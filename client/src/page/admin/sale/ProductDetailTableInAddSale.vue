@@ -120,7 +120,7 @@
             <div v-if="column.dataIndex === 'phongCach'" class="text-left">
               <a-space direction="vertical">
                 <a-space>Sản phẩm: {{ record.tenSanPham }}</a-space>
-                <a-space>Giới tính: {{ record.gioiTinh ? 'Nam' : 'Nữ' }}</a-space>
+                <a-space>Giới tính: {{ record.gioiTinh }}</a-space>
                 <a-space>Kích cỡ: {{ record.kichCo }}</a-space>
                 <a-space>Khác: {{ record.phongCach }}</a-space>
                 

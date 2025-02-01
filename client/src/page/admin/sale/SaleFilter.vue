@@ -23,12 +23,15 @@
       </a-select>
     </a-form-item>
 
-    <a-form-item label="Tìm trong khoảng thời gian" class="col-span-4 md:col-span-3 lg:col-span-2">
-        <a-range-picker size="large" style="" show-time format="DD/MM/YYYY HH:mm" :presets="rangePresets"
+    <a-form-item label="Tìm trong khoảng thời gian" class="col-span-4 md:col-span-3 lg:col-span-1">
+        <a-range-picker size="" style="" show-time format="DD/MM/YYYY HH:mm" :presets="rangePresets"
           :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
           @change="onRangeChange" />
     </a-form-item>
 
+    <a-form-item label=" ">
+      <a-button type="dashed" @click="removeSaleFiler()">Bỏ lọc</a-button>
+    </a-form-item>
     
 
   </a-form>
@@ -103,6 +106,17 @@ function onChangeFilter(key: keyof FindSaleRequest, value: any) {
 function onChangeInput(key: keyof FindSaleRequest, e: any) {
   params.value[key] = e.target.value;
   debouncedEmit();
+}
+
+function removeSaleFiler() {
+  params.value = {
+    page: 1,
+    keyword: null,
+    loai: null,
+    trangThai: null,
+    ngayBatDau: null,
+    ngayKetThuc: null
+  }
 }
 
 watch(

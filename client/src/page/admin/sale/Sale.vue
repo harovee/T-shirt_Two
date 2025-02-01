@@ -1,7 +1,7 @@
 <template>
   <div class="p-6 grid grid-cols-1 gap-6">
     <div class="flex items-center gap-2">
-      <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48"/>
+      <v-icon name="md-percent-round" size="x-large" width="48" height="48"/>
       <h3 class="text-2xl m-0">Quản lý đợt giảm giá</h3>
     </div>
     <div class="p-4 rounded-xl border-2 flex flex-col gap-6">

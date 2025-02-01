@@ -161,7 +161,7 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             join danh_muc dm on sp.id_danh_muc = dm.id
             join thuong_hieu th on spct.id_thuong_hieu = th.id
             left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
-            where spct.deleted = false and (spct.trang_thai = 1 or spct.trang_thai is null)
+            where spct.deleted = false and (spct.trang_thai = 0 or spct.trang_thai is null)
             and spgg.id_dot_giam_gia = :#{#req.idDotGiamGia}
             and (:#{#req.keyword} is null
             or  spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
@@ -178,7 +178,7 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             join san_pham sp on spct.id_san_pham = sp.id
             join danh_muc dm on sp.id_danh_muc = dm.id
             join thuong_hieu th on spct.id_thuong_hieu = th.id
-            where spct.deleted = false and (spct.trang_thai = 1 or spct.trang_thai is null)
+            where spct.deleted = false and (spct.trang_thai = 0 or spct.trang_thai is null)
             and spgg.id_dot_giam_gia = :#{#req.idDotGiamGia}
             and (:#{#req.keyword} is null
             or  spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%')

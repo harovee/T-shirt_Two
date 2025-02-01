@@ -2,7 +2,7 @@
   <div class=" flex justify-between">
     <a-space class="text-lg" v-if="currentStatus">Các sản phẩm chi tiết đang được áp dụng</a-space>
     <a-space class="text-lg" v-if="!currentStatus">Các sản phẩm chi tiết đã được áp dụng</a-space>
-    <a-statistic title="Số lượng" :value="data?.data.data.length" style="margin-right: 50px" />
+    <a-statistic title="Số lượng" :value="data?.data.totalElements" style="margin-right: 50px" />
   </div>
   <div>
     <a-space class="flex justify-start items-end flex-wrap">
@@ -85,12 +85,12 @@
       </a-image-preview-group>
       </template>
   </a-table>
-  <!-- <a-pagination
+  <a-pagination
       class="m-2"
-      v-model:current="data?.data.currentPage"
-      v-model:pageSize="params.size"
+      v-model:current="current1"
+      v-model:pageSize="pageSize"
       :total="data?.data.totalElements"
-    /> -->
+    />
   </div>
   
 </template>
@@ -135,6 +135,9 @@ const columns = [
 
 ];
 
+
+const pageSize = ref(5);
+const current1 = ref(1);
 const params = ref<FindSaleProductDetailRequest>({
   page: 1,
   idDotGiamGia: props.idDotGiamGia,
@@ -149,6 +152,9 @@ const { data, isLoading } = useGetSaleProductDetails(params, {
 const handleChangeKey = () =>{
   params.value.page = 1;
 }
+watch(current1, () => {
+  params.value.page = current1.value == 0 ? 1 : current1.value;
+});
 
 watch(
       () => props.idDotGiamGia,
