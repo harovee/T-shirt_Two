@@ -68,9 +68,9 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
                     dgg.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.trangThai} IS NULL
                     OR (:#{#req.trangThai} = 'IN_PROGRESS' AND dgg.trang_thai = 'ACTIVE' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
-                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 > dgg.ngay_ket_thuc)
+                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 >= dgg.ngay_ket_thuc)
                     OR (:#{#req.trangThai} = 'PENDING' AND dgg.trang_thai = 'ACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
-                    OR dgg.trang_thai = :#{#req.trangThai}
+                    OR (:#{#req.trangThai} = 'INACTIVE' AND dgg.trang_thai = 'INACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_ket_thuc)
                     )
                 AND (:#{#req.ngayBatDau} IS NULL OR dgg.ngay_bat_dau >= :#{#req.ngayBatDau})
                 AND (:#{#req.ngayKetThuc} IS NULL OR dgg.ngay_ket_thuc <= :#{#req.ngayKetThuc})
@@ -86,9 +86,9 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
                     dgg.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
                 AND (:#{#req.trangThai} IS NULL
                     OR (:#{#req.trangThai} = 'IN_PROGRESS' AND dgg.trang_thai = 'ACTIVE' AND (UNIX_TIMESTAMP()*1000 BETWEEN dgg.ngay_bat_dau AND dgg.ngay_ket_thuc))
-                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 > dgg.ngay_ket_thuc)
+                    OR (:#{#req.trangThai} = 'FINISHED' AND UNIX_TIMESTAMP()*1000 >= dgg.ngay_ket_thuc)
                     OR (:#{#req.trangThai} = 'PENDING' AND dgg.trang_thai = 'ACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_bat_dau)
-                    OR dgg.trang_thai = :#{#req.trangThai}
+                    OR (:#{#req.trangThai} = 'INACTIVE' AND dgg.trang_thai = 'INACTIVE' AND UNIX_TIMESTAMP()*1000 < dgg.ngay_ket_thuc)
                     )
                 AND (:#{#req.ngayBatDau} IS NULL OR dgg.ngay_bat_dau >= :#{#req.ngayBatDau})
                 AND (:#{#req.ngayKetThuc} IS NULL OR dgg.ngay_ket_thuc <= :#{#req.ngayKetThuc})
@@ -161,7 +161,7 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             join danh_muc dm on sp.id_danh_muc = dm.id
             join thuong_hieu th on spct.id_thuong_hieu = th.id
             left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
-            where spct.deleted = false and (spct.trang_thai = 1 or spct.trang_thai is null)
+            where spct.deleted = false and (spct.trang_thai = 0 or spct.trang_thai is null)
             and spgg.id_dot_giam_gia = :#{#req.idDotGiamGia}
             and (:#{#req.keyword} is null
             or  spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%')
@@ -178,7 +178,7 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             join san_pham sp on spct.id_san_pham = sp.id
             join danh_muc dm on sp.id_danh_muc = dm.id
             join thuong_hieu th on spct.id_thuong_hieu = th.id
-            where spct.deleted = false and (spct.trang_thai = 1 or spct.trang_thai is null)
+            where spct.deleted = false and (spct.trang_thai = 0 or spct.trang_thai is null)
             and spgg.id_dot_giam_gia = :#{#req.idDotGiamGia}
             and (:#{#req.keyword} is null
             or  spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%')

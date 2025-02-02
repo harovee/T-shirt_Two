@@ -2,7 +2,7 @@
   <div class="p-2 grid grid-cols-1 gap-6">
       <div class="flex justify-between items-center">
           <div class="flex items-center gap-2">
-              <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48" />
+              <v-icon name="md-percent-round" size="x-large" width="48" height="48" />
               <h3 class="text-xl m-0">Thêm đợt giảm giá </h3>
           </div>
           <div class="flex items-center gap-2 scale-75 transition-all cursor-pointer
@@ -35,7 +35,7 @@
                         </a-input-number>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" label="Thời gian" required name="ngayBatDauVaKetThuc">
-                        <a-range-picker size="large" style="" show-time format="DD/MM/YYYY HH:mm"
+                        <a-range-picker size="" style="width: 100%;" show-time format="DD/MM/YYYY HH:mm"
                             :disabled-date="disabledDate"
                             :disabled-date-time="disabledDateTime"
                             v-model:value="formState.ngayBatDauVaKetThuc"
@@ -104,7 +104,7 @@ export default {
 
 <script lang="ts" setup>
 import router from "@/infrastructure/routes/router.ts";
-import { reactive, ref, createVNode } from "vue";
+import { reactive, ref, createVNode, onMounted, watch } from "vue";
 import type { UnwrapRef } from 'vue';
 import {Modal} from "ant-design-vue";
 import {ExclamationCircleOutlined, PlusCircleOutlined} from "@ant-design/icons-vue";
@@ -118,6 +118,9 @@ import ProductTable from "./ProductTable.vue";
 import ProductDetailTable from "./ProductDetailTableInAddSale.vue";
 import { defaultSaleDatePickerRules, defaultSaleRequest, FormState, disabledDate, disabledDateTime} from "./base/DefaultConfig";
 import { notificationType, openNotification } from "@/utils/notification.config";
+import { useSaleStore } from "./base/SaleStore";
+
+const saleStore = useSaleStore();
 
 const listAttributes = useGetAttributes({
   refetchOnWindowFocus: false,
@@ -128,7 +131,7 @@ const idSanPhamChiTiets = ref<string[]>([]);
 
 const saleRequest = ref<SaleRequest>(defaultSaleRequest)
 const formRef = ref();
-const formState: UnwrapRef<FormState> = reactive( {
+let formState: UnwrapRef<FormState> = reactive( {
     ma: '',
     ten: '',
     loai: 'PERCENT',
@@ -196,6 +199,32 @@ const rules: Record<string, Rule[]> = {
   ],
   loai: [{ required: true, message: 'Vui lòng chọn loại đợt giảm giá', trigger: 'change' }],
 };
+
+function loadDataFromStore() {
+  const savedSaleData = saleStore.saleData;
+  if (savedSaleData) {
+        Object.assign(formState, {
+            ma: savedSaleData.maDotGiamGia || '',
+            ten: savedSaleData.ten || '',
+            loai: savedSaleData.loai || '',
+            giaTri: savedSaleData.giaTri || 0,
+            giaTriGiamToiDa: savedSaleData.giaTriGiamToiDa || null,
+            ngayBatDauVaKetThuc: [
+                savedSaleData.ngayBatDau ? dayjs(savedSaleData.ngayBatDau) : null,
+                savedSaleData.ngayKetThuc ? dayjs(savedSaleData.ngayKetThuc) : null,
+            ],
+            nguoiSua: savedSaleData.nguoiSua || '',
+            trangThai: savedSaleData.trangThai === 'ACTIVE',
+            createdDate: savedSaleData.createdDate,
+            lastModifiedDate: savedSaleData.lastModifiedDate,
+        });
+        saleStore.setSaleData(null);
+    }
+}
+
+onMounted(() => {
+  loadDataFromStore();
+});
 
 const { mutate: createSale } = useCreateSale();
 const { mutate: createSaleAndSaleProduct } = useCreateSaleAndSaleProduct();
@@ -284,7 +313,7 @@ const onSubmit = (x: number) => {
             }
           );
       }).catch(() => {
-        openNotification(notificationType.warning, "Vui lòng nhập đầy đủ các trường dữ liệu", '');
+        openNotification(notificationType.warning, "Vui lòng nhập đúng các trường dữ liệu", '');
       });
 };
 const resetForm = () => {

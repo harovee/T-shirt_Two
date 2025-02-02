@@ -137,6 +137,7 @@ export const useUpdateSale = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.saleList], });
             queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.saleProductList], });
+            queryClient.invalidateQueries({ queryKey: [queryKey.admin.sale.productDetailList], });
         },
         onError: (error: any) => {
             console.log(queryKey.admin.sale.saleList + "🚀 ~ saleUpdate ~ error:", error);

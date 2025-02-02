@@ -1,5 +1,7 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.service.impl;
 
+import com.shop.server.core.admin.anh_san_pham.model.request.AdCreateUpdateAnhRequest;
+import com.shop.server.core.admin.anh_san_pham.repository.AdAnhRepository;
 import com.shop.server.core.admin.chat_lieu.repository.AdChatLieuRepository;
 import com.shop.server.core.admin.co_ao.repository.AdCoAoRepository;
 import com.shop.server.core.admin.hoa_tiet.repository.AdHoaTietRepository;
@@ -16,6 +18,7 @@ import com.shop.server.core.admin.thuong_hieu.repository.AdThuongHieuRepository;
 import com.shop.server.core.admin.tinh_nang.repository.AdTinhNangRepository;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
+import com.shop.server.entities.main.Anh;
 import com.shop.server.entities.main.SanPhamChiTiet;
 import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.utils.Helper;
@@ -54,9 +57,21 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
 
     private final AdminProductRepository adminProductRepository;
 
+    private final AdAnhRepository adAnhRepository;
+
 
     @Override
     public ResponseObject<?> getSanPhamChiTiets(AdFindSpctRequest request) {
+        Pageable pageable = Helper.createPageable(request);
+        return new ResponseObject<>(
+                PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTietsByIdSanPham(pageable, request)),
+                HttpStatus.OK,
+                "Lấy dữ liệu thành công."
+        );
+    }
+
+    @Override
+    public ResponseObject<?> getALlSanPhamChiTiets(AdFindSpctRequest request) {
         Pageable pageable = Helper.createPageable(request);
         return new ResponseObject<>(
                 PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTiets(pageable, request)),
@@ -106,6 +121,16 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         spct.setTinhNang(request.getIdTinhNang() != null ? adTinhNangRepository.findById(request.getIdTinhNang()).orElse(null) : null);
         spct.setDeleted(false);
         SanPhamChiTiet addedSPCT = adSanPhamChiTietRepository.save(spct);
+        if (request.getListAnh().size() > 0 || request.getListAnh() != null) {
+            for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+                Anh anh = new Anh();
+                anh.setSanPhamChiTiet(addedSPCT);
+                anh.setUrl(anhRequest.getUrl());
+                anh.setTen(anhRequest.getName());
+                anh.setDeleted(false);
+                adAnhRepository.save(anh);
+            }
+        }
         return new ResponseObject<>(addedSPCT, HttpStatus.CREATED, "Tạo sản phẩm chi tiết thành công.");
     }
 

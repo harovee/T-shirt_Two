@@ -8,6 +8,7 @@ import com.shop.server.core.admin.sale.models.requests.AdminSaleAndSaleProductDe
 import com.shop.server.core.admin.sale.models.requests.AdminSaleProductRequest;
 import com.shop.server.core.admin.sale.models.requests.AdminSaleRequest;
 import com.shop.server.core.common.base.ResponseObject;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 public interface AdminSaleService {
@@ -42,5 +43,6 @@ public interface AdminSaleService {
 
     ResponseObject<?> updateSaleAndSaveSaleProduct(String saleId, AdminSaleAndSaleProductDetailRequest request);
 
-
+    ResponseObject<?> generateExcel(AdminFindSaleRequest request,
+                                    HttpServletResponse response);
 }

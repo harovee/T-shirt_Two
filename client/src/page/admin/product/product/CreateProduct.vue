@@ -18,7 +18,7 @@
             :name="field.name"
             v-bind="validateInfos[field.name]"
             v-if="field.name === 'idSanPham'"
-            class="col-span-3 md:col-span-3 lg:col-span-3"
+            class="col-span-3 md:col-span-3 lg:col-span-3 label-bold"
           >
             <a-input
               v-if="field.component === 'a-input'"
@@ -29,7 +29,7 @@
                 <!-- Select Product -->
                 <a-col :span="23" class="pe-4">
                   <a-select
-                   v-if="field.name === 'idSanPham'"
+                    v-if="field.name === 'idSanPham'"
                     v-model:value="modelRef[field.name]"
                     show-search
                     placeholder="Chọn tên sản phẩm"
@@ -47,13 +47,113 @@
                     size="medium"
                     @click="handleOpenModalCreateProduct"
                   >
-                    <v-icon name="md-addcircle" class="mx-2"/>
+                    <v-icon name="md-addcircle" class="mx-2" />
                   </a-button>
                 </a-col>
               </a-row>
             </div>
           </a-form-item>
+
           <a-form-item
+            :label="field.label"
+            :name="field.name"
+            v-bind="validateInfos[field.name]"
+            v-else-if="field.name === 'idMauSac'"
+            class="col-span-3 md:col-span-3 lg:col-span-3 label-bold"
+          >
+            <a-select
+              v-if="field.name === 'idMauSac'"
+              v-model:value="colorItem"
+              mode="multiple"
+              style="width: 100%"
+              placeholder="Chọn màu sắc"
+              :options="listColor"
+              @change="generateProductDetails"
+              :show-search="true"
+              :filter-option="filterOptionColor"
+              :not-found-content="notFoundContentColor"
+              @search="handleInputColor"
+            >
+              <template #option="{ label, maMauSac }">
+                <span
+                  :style="{
+                    display: 'inline-block',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: maMauSac,
+                    borderRadius: '50%',
+                    marginRight: '10px',
+                    verticalAlign: 'middle',
+                  }"
+                ></span>
+                <span style="vertical-align: middle">{{ label }}</span>
+              </template>
+              <template
+                #tagRender="{ label, option ,closable, onClose }"
+              >
+                <a-tag
+                  :closable="closable"
+                  @close="onClose"
+                   style="vertical-align: middle"
+                >
+                  <span
+                  :style="{
+                    display: 'inline-block',
+                    width: '15px',
+                    height: '15px',
+                    backgroundColor: option.maMauSac,
+                    borderRadius: '50%',
+                    marginRight: '10px',
+                    verticalAlign: 'middle',
+                  }"
+                ></span>
+                <span style="vertical-align: middle">{{ label }}</span>
+                </a-tag>
+              </template>
+              <!-- <a-select-option
+                v-for="(color, index) in listColor"
+                :key="index"
+                :value="color.value"
+              >
+                <span
+                  :style="{
+                    display: 'inline-block',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: color.maMauSac,
+                    borderRadius: '50%',
+                    marginRight: '10px',
+                    verticalAlign: 'middle'
+                  }"
+                ></span>
+                <span style="vertical-align: middle;">{{ color.label }}</span>
+              </a-select-option> -->
+            </a-select>
+          </a-form-item>
+          <a-form-item
+            :label="field.label"
+            :name="field.name"
+            v-bind="validateInfos[field.name]"
+            v-else-if="field.name === 'idKichCo'"
+            class="col-span-3 md:col-span-3 lg:col-span-3 label-bold"
+          >
+            <a-select
+              v-if="field.name === 'idKichCo'"
+              v-model:value="sizeItem"
+              mode="multiple"
+              style="width: 100%"
+              placeholder="Chọn kích cỡ"
+              @change="generateProductDetails"
+              :options="listSize"
+              :show-search="true"
+              :filter-option="filterOptionSize"
+              :not-found-content="notFoundContentSize"
+              @search="handleInputSize"
+            />
+          </a-form-item>
+
+          <a-form-item
+            class="label-bold"
             :label="field.label"
             :name="field.name"
             v-bind="validateInfos[field.name]"
@@ -151,7 +251,7 @@
               @search="handleInputFeature"
               style="margin-right: 8px"
             ></a-select>
-            <a-select
+            <!-- <a-select
               v-if="field.name === 'idMauSac'"
               v-model:value="colorItem"
               mode="multiple"
@@ -163,8 +263,8 @@
               :filter-option="filterOptionColor"
               :not-found-content="notFoundContentColor"
               @search="handleInputColor"
-            />
-            <a-select
+            /> -->
+            <!-- <a-select
               v-if="field.name === 'idKichCo'"
               v-model:value="sizeItem"
               mode="multiple"
@@ -176,7 +276,7 @@
               :filter-option="filterOptionSize"
               :not-found-content="notFoundContentSize"
               @search="handleInputSize"
-            />
+            /> -->
           </a-form-item>
         </template>
       </a-form>
@@ -187,14 +287,26 @@
       />
     </div>
     <div class="p-10">
-      <div v-if="productDetails.length > 0" class="mb-5">Bảng sản phẩm chi tiết</div>
-      <product-detail-table
+      <div v-if="productDetails.length > 0" class="mb-5 label-bold">
+        <h1>Bảng sản phẩm chi tiết</h1>
+      </div>
+      <!-- <product-detail-table
       :product="dataProduct"
           :material="listMaterial"
           :collar="listCollar"
           :trademark="listTrademark"
           :style="listStyle"
-          :data-product-detail="productDetails" />
+          :data-product-detail="productDetails" /> -->
+
+      <product-table-detail
+        :data-product-detail="productDetails"
+        :products="dataProduct"
+        :colors="listColor"
+        :sizes="listSize"
+        @updateDataProductDetail="handleUpdateDataProductDetail"
+        @updatePrice="handleUpdatePrice"
+        @updateQuantity="handleUpdateQuantity"
+      />
     </div>
   </div>
 </template>
@@ -217,7 +329,10 @@ import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { ProductRequest } from "@/infrastructure/services/api/admin/product.api";
-import { ProductDetailRequest } from "@/infrastructure/services/api/admin/product_detail.api";
+import {
+  ProductDetailRequest,
+  RenProductDetailResponse,
+} from "@/infrastructure/services/api/admin/product_detail.api";
 import { useGetListProduct } from "@/infrastructure/services/service/admin/product.action";
 import {
   useGetListMaterial,
@@ -257,6 +372,7 @@ import {
 } from "@/infrastructure/services/service/admin/trademark.action";
 import ModalCreateProduct from "@/page/admin/product/product/ModalCreateProduct.vue";
 import ProductDetailTable from "@/page/admin/product/product/ProductDetailTable.vue";
+import ProductTableDetail from "@/page/admin/product/product/ProductTableDetail.vue";
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { PlusOutlined } from "@ant-design/icons-vue";
 import { forEach } from "lodash";
@@ -281,6 +397,7 @@ const modelRef = reactive<ProductDetailRequest>({
   idThuongHieu: null,
   idTinhNang: null,
   idSanPham: null,
+  listAnh: [] || null,
 });
 
 const colorItem = ref([]);
@@ -292,7 +409,7 @@ const { data: products } = useGetListProduct({
   placeholderData: keepPreviousData,
 });
 
-const dataProduct = computed(() =>{
+const dataProduct = computed(() => {
   return (
     products?.value?.data.map((product: any) => ({
       value: product.id,
@@ -342,6 +459,7 @@ const listColor = computed(() => {
     colors?.value?.data.map((color) => ({
       value: color.id,
       label: color.ten,
+      maMauSac: color.maMauSac,
     })) || []
   );
 });
@@ -556,7 +674,7 @@ const handleAddNewSleeve = async () => {
     successNotiSort("Thêm tay áo thành công!");
   } catch (error) {
     console.error(error);
-    error("Có lỗi xảy ra khi thêm tay áo!");
+    errorNotiSort("Có lỗi xảy ra khi thêm tay áo!");
   }
 };
 
@@ -893,13 +1011,15 @@ const handleCloseModalCreateProduct = () => {
 };
 
 // Ren ra các biến thể theo màu sắc. Mỗi màu sắc có nhiều biến thể kích thước khác nhau
-const productDetails = ref<ProductDetailRequest[]>([]);
+const productDetails = ref<RenProductDetailResponse[]>([]);
 
 const generateProductDetails = () => {
-  const generatedDetails: ProductDetailRequest[] = [];
+  let idCounter = 1;
+  const generatedDetails: RenProductDetailResponse[] = [];
   colorItem.value.forEach((color) => {
     sizeItem.value.forEach((size) => {
       generatedDetails.push({
+        id: `product-${idCounter++}`,
         trangThai: modelRef.trangThai,
         gia: modelRef.gia,
         soLuong: modelRef.soLuong,
@@ -918,6 +1038,42 @@ const generateProductDetails = () => {
   });
   productDetails.value = generatedDetails;
 };
+
+// Xóa phần tử trong dataProductDetail để cập nhật lại bảng khi xóa 1 biến thể
+
+const handleUpdateDataProductDetail = (recordToDelete) => {
+  productDetails.value = productDetails.value.filter(
+    (item) => item.id !== recordToDelete.id
+  );
+};
+
+const handleUpdatePrice = (dataSource) => {
+  dataSource.forEach((updateItem) => {
+    const product = productDetails.value.find(
+      (item) => item.id === updateItem.id
+    );
+    if (product) {
+      product.gia = updateItem.gia;
+      // console.log(updateItem.gia);
+    }
+  });
+};
+
+const handleUpdateQuantity = (dataSource) => {
+  dataSource.forEach((updateItem) => {
+    const product = productDetails.value.find(
+      (item) => item.id === updateItem.id
+    );
+    if (product) {
+      product.soLuong = updateItem.soLuong;
+      // console.log(updateItem.soLuong);
+    }
+  });
+};
+
+// watch (() => productDetails.value, (newValue) => console.log(newValue)
+// )
+
 // ---------------------------------------
 
 const filterOption = (input: string, option: any) => {
@@ -1006,5 +1162,9 @@ const formFields = computed(() => [
   display: flex;
   flex-direction: column; /* Sản phẩm và nút Thêm sản phẩm sẽ nằm dọc */
   margin-bottom: 16px; /* Khoảng cách giữa sản phẩm và phần tử bên dưới */
+}
+
+.label-bold {
+  font-weight: bold;
 }
 </style>

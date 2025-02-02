@@ -10,6 +10,7 @@ import com.shop.server.core.admin.sale.models.requests.AdminSaleRequest;
 import com.shop.server.core.admin.sale.services.AdminSaleService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
 
 @RequestMapping(MappingConstant.API_ADMIN_PROMOTION)
 @RestController
@@ -62,6 +65,14 @@ public class AdminSaleController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSale(@PathVariable String id) {
         return Helper.createResponseEntity(adminSaleService.deleteSale(id));
+    }
+
+    @GetMapping("/excel")
+    public ResponseEntity<?> generateExcel(@Valid final AdminFindSaleRequest request,
+                                           HttpServletResponse response) {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=T-Shirt-Two.xlsx");
+        return Helper.createResponseEntity(adminSaleService.generateExcel(request, response));
     }
 
     @GetMapping("/product-detail-attributes")

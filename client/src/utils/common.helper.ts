@@ -28,6 +28,13 @@ export const getDateFormat = (
   return dayjs(unix).format(showTime ? "DD/MM/YYYY HH:mm:ss" : "DD/MM/YYYY");
 };
 
+export const getDateFormatMinute = (
+  unix: number | any,
+  showTime: boolean = false
+) => {
+  return dayjs(unix).format(showTime ? "DD/MM/YYYY HH:mm" : "DD/MM/YYYY");
+};
+
 export const getDateTimeMinutesFormat = (
   unix: number,
   showTime: boolean = false

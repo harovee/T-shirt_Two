@@ -14,6 +14,7 @@ export interface FindColorRequest extends PropertyColorParams, PaginationParams 
 }
 
 export interface ColorRequest {
+    maMauSac: string | null
     ten: string | null
 }
 
@@ -24,7 +25,8 @@ export type ColorResponse = ResponseList & {
 
 export type ListColorResponse = {
     id: string | null,
-    ten: string | null
+    ten: string | null,
+    maMauSac: string | null
 };
 
 export const getColors = async (params: Ref<FindColorRequest>) => {

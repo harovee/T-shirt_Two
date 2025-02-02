@@ -80,14 +80,20 @@ export const createSale = async (data: SaleRequest) => {
 };
 
 export const getSaleById = async (saleId: Ref<string | null>) => {
-    if (saleId.value != null ) {
-        return await request({
-            url: `${PREFIX_API_ADMIN_SALE}/${saleId.value}`,
-            method: "GET"
-        }) as AxiosResponse<
-            DefaultResponse<DetailSaleResponse>
-        >;
-    } else { return null}
+    if (saleId.value && saleId.value.trim() !== '') {
+        const url = `${PREFIX_API_ADMIN_SALE}/${saleId.value}`;
+        return request({
+            url: url,
+            method: "GET",
+        }).then((response) => {
+            return response as AxiosResponse<DefaultResponse<DetailSaleResponse>>;
+        }).catch((error) => {
+            console.error("Error fetching sale:", error);
+            return null; // Hoặc xử lý lỗi theo ý bạn
+        });
+    } else {
+        return Promise.resolve(null);
+    }
 };
 
 export const updateSale = async (saleId: string, data: SaleRequest) => {

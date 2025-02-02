@@ -66,7 +66,7 @@ const columns: TableColumnType<DataType>[] = [
     dataIndex: "ten",
   },
   {
-    title: "Tên Danh Mục",
+    title: "Tên danh mục",
     dataIndex: "tenDanhMuc",
   },
   {
