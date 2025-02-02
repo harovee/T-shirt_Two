@@ -37,7 +37,8 @@ public interface AdMauSacRepository extends MauSacRepository {
 
     @Query(value = """
     SELECT ms.id AS id,
-    ms.ten AS ten
+    ms.ten AS ten,
+    ms.maMauSac AS maMauSac
     FROM MauSac ms
     ORDER BY ms.createdDate DESC
 """)

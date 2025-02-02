@@ -22,6 +22,11 @@ public class AdSanPhamChiTietController {
         return Helper.createResponseEntity(adSanPhamChiTietService.getSanPhamChiTiets(request));
     }
 
+    @GetMapping("/all-product-detail")
+    public ResponseEntity<?> getAllSanPhamChiTiet(@Valid final AdFindSpctRequest request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.getALlSanPhamChiTiets(request));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getDetailSanPhamChiTiet(@PathVariable final String id) {
         return Helper.createResponseEntity(adSanPhamChiTietService.getSanPhamChiTietById(id));

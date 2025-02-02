@@ -25,7 +25,7 @@ public interface AdminProductRepository extends SanPhamRepository {
      */
     @Query(value = """
         SELECT 
-            ROW_NUMBER() OVER(ORDER BY sp.id DESC) AS catalog,
+            ROW_NUMBER() OVER(ORDER BY sp.ngay_tao DESC) AS catalog,
             sp.id as id,
             sp.ma_san_pham as maSanPham,
             sp.ten AS ten,
@@ -53,7 +53,7 @@ public interface AdminProductRepository extends SanPhamRepository {
 
     @Query(value = """
                 SELECT
-        			ROW_NUMBER() OVER(ORDER BY spct.id DESC) AS catalog,
+        			ROW_NUMBER() OVER(ORDER BY spct.ngay_tao DESC) AS catalog,
                     spct.id as id,
                     spct.ma_san_pham_chi_tiet as maSanPhamChitiet,
                     spct.ten AS ten,

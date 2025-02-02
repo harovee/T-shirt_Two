@@ -67,14 +67,18 @@ public class AdMauSacServiceImpl implements AdMauSacService {
             }
         }
 
+        if (adMauSacRepository.existsMauSacByMaMauSac(request.getMaMauSac()) && request.getMaMauSac() != null) {
+            return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "Mã màu sắc đã tồn tại, xin vui lòng nhập lại.");
+        }
+
         MauSac MauSac = new MauSac();
-        Random random = new Random();
-        String code;
-        do {
-            int number = random.nextInt(1000);
-            code = String.format("MS%04d", number);
-        } while (adMauSacRepository.existsMauSacByMaMauSac(code));
-        MauSac.setMaMauSac(code);
+//        Random random = new Random();
+//        String code;
+//        do {
+//            int number = random.nextInt(1000);
+//            code = String.format("MS%04d", number);
+//        } while (adMauSacRepository.existsMauSacByMaMauSac(code));
+        MauSac.setMaMauSac(request.getMaMauSac());
         MauSac.setTen(request.getTen());
         MauSac.setDeleted(false);
         MauSac addedMauSac = adMauSacRepository.save(MauSac);
@@ -96,8 +100,13 @@ public class AdMauSacServiceImpl implements AdMauSacService {
             }
         }
 
+        if (adMauSacRepository.existsMauSacByMaMauSac(request.getMaMauSac()) && request.getMaMauSac() != null) {
+            return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "Mã màu sắc đã tồn tại, xin vui lòng nhập lại.");
+        }
+
         Optional<MauSac> MauSac = adMauSacRepository.findById(id)
                 .map(MauSac1 -> {
+                    MauSac1.setMaMauSac(request.getMaMauSac());
                     MauSac1.setTen(request.getTen());
                     return adMauSacRepository.save(MauSac1);
                 });

@@ -5,4 +5,6 @@ public interface AdGetMauSacResponse {
     String getTen();
 
     String getId();
+
+    String getMaMauSac();
 }

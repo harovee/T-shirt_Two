@@ -23,7 +23,8 @@ export interface FindProductDetailRequest extends PropertyProductDetailParams, P
     idSanPham?: string;
 }
 
-
+export interface FindAllProductDetailRequest extends PropertyProductDetailParams, PaginationParams {
+}
 
 export interface ProductDetailRequest {
 
@@ -52,7 +53,48 @@ export interface ProductDetailRequest {
     idTinhNang: string | null
 
     idSanPham: string | null
+
+    listAnh: Array<anh> | null
 }
+
+export interface anh {
+    url: string | null,
+
+    name: string | null
+}
+
+export interface RenProductDetailResponse {
+
+    id: string | null,
+
+    trangThai: number | null,
+
+    gia: number | null,
+
+    soLuong:number | null
+
+    idChatLieu: string | null
+
+    idCoAo: string | null
+
+    idHoaTiet: string | null
+
+    idMauSac: string | null
+
+    idKichCo: string | null
+
+    idKieuDang: string | null
+
+    idTayAo: string | null
+
+    idThuongHieu: string | null
+
+    idTinhNang: string | null
+
+    idSanPham: string | null
+}
+
+
 
 export interface ProductDetailUpdateRequest {
     gia: number | null,
@@ -98,6 +140,18 @@ export const getProductDetails = async (params: Ref<FindProductDetailRequest>) =
         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}`,
         method: "GET",
         params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ProductDetailResponse>>>
+    >;
+
+    return res.data;
+};
+
+export const getAllProductDetails = async (paramsAll: Ref<FindAllProductDetailRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-product-detail`,
+        method: "GET",
+        params: paramsAll.value,
     })) as AxiosResponse<
         DefaultResponse<PaginationResponse<Array<ProductDetailResponse>>>
     >;
