@@ -12,9 +12,9 @@ public class PhieuGiamGiaSearchRequest extends PageableRequest {
 
     private String keyword;
 
-    private String startDate;
+    private Long startDate;
 
-    private String endDate;
+    private Long endDate;
 
     private Boolean loaiGiam;
 

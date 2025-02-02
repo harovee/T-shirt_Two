@@ -47,6 +47,9 @@ dependencies {
 
 
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation group: 'com.google.zxing', name: 'core', version: '3.5.3'
+    implementation group: 'com.google.zxing', name: 'javase', version: '3.5.3'
 }
 
 tasks.named('test') {

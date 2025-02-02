@@ -60,7 +60,7 @@
     >
       <a-range-picker
           v-model:value="dateRange"
-          format="YYYY-MM-DD"
+          format="DD-MM-YYYY"
           @change="onChangeDateRange"
       />
     </a-form-item>
@@ -80,8 +80,8 @@ const dateRange = ref<[string | null, string | null] | null>(null);
 
 function onChangeDateRange(dates: [Date | null, Date | null] | null) {
   if (dates) {
-    params.value.startDate = dates[0] ? dates[0].toISOString().split('T')[0] : null;
-    params.value.endDate = dates[1] ? dates[1].toISOString().split('T')[0] : null;
+    params.value.startDate = dates[0] ? dates[0].valueOf() : null;
+    params.value.endDate = dates[1] ? dates[1].valueOf() : null;
   } else {
     // Nếu không có ngày nào được chọn
     params.value.startDate = null;
@@ -108,7 +108,7 @@ const loaiGiamOptions = [
 
 const trangThaiOptions = [
   {label: "Tất cả", value: null},
-  {label: "Đang áp dụng", value: "ACTIVE"},
+  {label: "Đang áp dụng", value: "IN_PROGRESS"},
   {label: "Sắp diễn ra", value: "NOT_STARTED"},
   {label: "Hết hạn", value: "EXPIRED"}
 ]
@@ -123,7 +123,7 @@ const debouncedEmit = debounce(() => {
 
 function onChangeFilter(key: keyof FindVoucherRequest, value: any) {
   if (key === 'startDate' || key === 'endDate') {
-    params.value[key] = value ? value.toISOString().split('T')[0] : null;
+    params.value[key] = value ? value.valueOf() : null;
   } else {
     params.value[key] = value;
   }

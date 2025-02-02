@@ -6,8 +6,8 @@ import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
     keyword?: string | null;
-    startDate?: Date | null;
-    endDate?: Date | null;
+    startDate?: number | null;
+    endDate?: number | null;
     loaiGiam? : boolean | null;
     trangThai? : string | null;
     
@@ -18,7 +18,7 @@ export interface FindVoucherRequest extends PropertyVoucherParams, PaginationPar
 
 }
 
-export interface VoucherRequest {
+export interface PhieuGiamGiaRequest {
     // name: string | null;
     // email: string | null;
     ten : string;
@@ -26,9 +26,10 @@ export interface VoucherRequest {
     dieuKienGiam: string;
     giamToiDa: string;
     loaiGiam: boolean;
+    kieu: boolean;
     giaTriGiam: string;
-    ngayBatDau: Date | null;
-    ngayKetThuc: Date | null;
+    ngayBatDau: number | null;
+    ngayKetThuc: number | null;
 }
 
 export type VoucherResponse = ResponseList & {
@@ -39,9 +40,10 @@ export type VoucherResponse = ResponseList & {
     dieuKienGiam: string;
     giamToiDa: string;
     loaiGiam: boolean;
+    kieu: boolean;
     giaTriGiam: string;
-    ngayBatDau: Date;
-    ngayKetThuc: Date;
+    ngayBatDau: number;
+    ngayKetThuc: number;
     trangThai : string;
 };
 
@@ -52,11 +54,13 @@ export type DetailVoucherResponse = {
     dieuKienGiam: string;
     giamToiDa: string;
     loaiGiam: boolean;
+    kieu: boolean;
     giaTriGiam: string;
-    ngayBatDau: Date;
-    ngayKetThuc: Date;
+    ngayBatDau: number;
+    ngayKetThuc: number;
     trangThai : string;
 };
+
 
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
@@ -70,7 +74,7 @@ export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     return res.data;
 };
 
-export const createVoucher = async (data: VoucherRequest) => {
+export const createVoucher = async (data: PhieuGiamGiaRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_VOUCHER}`,
         method: "POST",
@@ -85,13 +89,14 @@ export const createVoucher = async (data: VoucherRequest) => {
 export const getVoucherById = async (VoucherId: Ref<string | null>) => {
     return await request({
         url: `${PREFIX_API_ADMIN_VOUCHER}/${VoucherId.value}`,
-        method: "GET"
+        method: "GET",
     }) as AxiosResponse<
-        DefaultResponse<PaginationResponse<Array<DetailVoucherResponse>>>
+        DefaultResponse<DetailVoucherResponse>
     >;
+    
 };
 
-export const updateVoucher = async (VoucherId: string, data: VoucherRequest) => {
+export const updateVoucher = async (VoucherId: string, data: PhieuGiamGiaRequest) => {
     return await request({
         url: `${PREFIX_API_ADMIN_VOUCHER}/${VoucherId}`,
         method: "PUT",
@@ -109,3 +114,77 @@ export const deleteVoucher = async (VoucherId: string) => {
         DefaultResponse<DefaultResponse<null>>
     >;
 };
+export interface FindKhachHangRequest extends PaginationParams{
+    keyword : string | null;
+}
+
+export type KhachHangResponse = ResponseList & {
+    name: string;
+    phone: string;
+    email: string;
+    ngaySinh: number;
+}
+
+export const getListKhachHang = async (params: Ref<FindKhachHangRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_VOUCHER}/khach-hang`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<KhachHangResponse>>>
+    >;
+
+    return res.data;
+};
+
+export const getKhachHangInPhieuGiamGia = async (VoucherId: Ref<string | null>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_VOUCHER}/khach-hang/${VoucherId.value}`,
+        method: "GET",
+    })) as AxiosResponse<
+    DefaultResponse<Array<KhachHangResponse>>
+    >;
+    return res.data;
+};
+
+export interface VoucherKhachHangRequest {
+    idKhachHangs : string[] | null;
+    idPhieuGiamGia?: string | null;
+    nhanVien?: string | null;
+}
+export interface VoucherAndCustomerVoucherRequest{
+    phieuGiamGiaRequest : PhieuGiamGiaRequest | null;
+    voucherKhachHangRequest : VoucherKhachHangRequest | null;
+}
+
+export const createCustomerVoucher = async (data: VoucherAndCustomerVoucherRequest) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_VOUCHER}/save-voucher-khach-hang`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+
+    return res.data;
+};
+
+export const updateCustomerVoucher = async (VoucherId: string, data: VoucherAndCustomerVoucherRequest) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_VOUCHER}/save-voucher-khach-hang/${VoucherId}`,
+        method: "PUT",
+        data: data
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};
+
+export const changeStatusVoucher = async (VoucherId: string, trangThai: string) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_VOUCHER}/change-status/${VoucherId}/${trangThai}`,
+        method: "PUT",
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};
+

@@ -38,3 +38,5 @@ out/
 
 ### Env ###
 .env
+#### static upload###
+!**/src/main/resources/static/uploads/barcodes/

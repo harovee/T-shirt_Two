@@ -44,11 +44,14 @@ public class PhieuGiamGia extends PrimaryEntity implements Serializable {
     @Column(name = "loai_giam")
     private Boolean loaiGiam; // 1 tiền // 0 %
 
+    @Column(name = "loai_phieu")
+    private Boolean kieu; // 1 cá nhân // 0 công khai
+
     @Column(name = "ngay_bat_dau")
-    private LocalDate ngayBatDau;
+    private Long ngayBatDau;
 
     @Column(name = "ngay_ket_thuc")
-    private LocalDate ngayKetThuc;
+    private Long ngayKetThuc;
 
     @Column(name = "trang_thai")
     private String trangThai;

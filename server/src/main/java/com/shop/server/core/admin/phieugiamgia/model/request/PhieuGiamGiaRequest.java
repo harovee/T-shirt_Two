@@ -22,9 +22,11 @@ public class PhieuGiamGiaRequest {
 
     private Double giaTriGiam;
 
-    private LocalDate ngayBatDau;
+    private Boolean kieu;
 
-    private LocalDate ngayKetThuc;
+    private Long ngayBatDau;
 
-    private String trangThai;
+    private Long ngayKetThuc;
+
+    private String trangThai = "ACTIVE";
 }
