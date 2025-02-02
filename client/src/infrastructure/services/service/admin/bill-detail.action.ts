@@ -1,7 +1,8 @@
 import { Ref } from "vue";
 import { FindBillDetailRequest, getBillDetailsByIdHoaDon } from "../../api/admin/bill-detail.api";
-import { useQuery, UseQueryReturnType } from "@tanstack/vue-query";
+import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey";
+import { BillRequest, updateBill } from "../../api/admin/bill.api";
 
 
 export const useGetBillDetails = (
@@ -13,3 +14,16 @@ export const useGetBillDetails = (
         ...options,
     });
 }
+
+export const useUpdateBillDetails = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({idBill, params}: { idBill: string; params: BillRequest; }) => updateBill(idBill, params),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billById]});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.bill.billList + "🚀 ~ billUpdate ~ error:", error);
+        },
+    });
+};

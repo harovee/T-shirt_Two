@@ -18,8 +18,6 @@ public interface AdminBillResponse extends BaseResponse {
 
     String getLoaiHD();
 
-    String getTrangThaiHD();
-
     String getTenNguoiNhan();
 
     String getSoDienThoai();

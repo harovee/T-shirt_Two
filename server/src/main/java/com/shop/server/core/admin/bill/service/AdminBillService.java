@@ -7,6 +7,8 @@ import com.shop.server.core.common.base.ResponseObject;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 
+import java.util.Map;
+
 public interface AdminBillService {
 
     ResponseObject<?> getBills(AdminFindBillRequest request);
@@ -18,4 +20,6 @@ public interface AdminBillService {
     ResponseObject<?> updateBill(String id, @Valid AdminUpdateBillRequest request, BindingResult bindingResult);
 
     ResponseObject<?> changeStatusBill(String id, AdminUpdateBillRequest request);
+
+    Map<String, Integer> getBillCountsByStatus();
 }
