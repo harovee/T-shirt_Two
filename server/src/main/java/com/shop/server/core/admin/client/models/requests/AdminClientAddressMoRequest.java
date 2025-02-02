@@ -9,11 +9,19 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminClientRequest {
-
-    private String password;
+public class AdminClientAddressMoRequest {
 
     private String name;
+
+    private String phoneNumber;
+
+    private String line;
+
+    private String ward;
+
+    private Long district;
+
+    private Long province;
 
     private String email;
 
@@ -22,8 +30,6 @@ public class AdminClientRequest {
     private String birthday;
 
     private Boolean gender;
-
-    private String phoneNumber;
 
     private String picture;
 

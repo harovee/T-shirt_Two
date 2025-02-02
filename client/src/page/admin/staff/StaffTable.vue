@@ -7,7 +7,40 @@
           Hiển thị danh sách nhân viên T-Shirts Two
         </p>
       </div>
-      <div class="p-2.5">
+      <div class="p-2.5 flex justify-between items-center gap-5">
+        <a-tooltip
+            title="Quét thông tin căn cước"
+            trigger="hover"
+        >
+          <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+          >
+            <v-icon name="bi-qr-code-scan"/>
+          </a-button>
+        </a-tooltip>
+        <a-tooltip
+            title="Xuất danh sách nhân viên"
+            trigger="hover"
+        >
+          <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+          >
+            <v-icon name="fa-file-export"/>
+          </a-button>
+        </a-tooltip>
+        <a-tooltip
+            title="Nhập danh sách nhân viên"
+            trigger="hover"
+        >
+          <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+          >
+            <v-icon name="fa-file-import"/>
+          </a-button>
+        </a-tooltip>
         <a-tooltip
             title="Thêm nhân viên"
             trigger="hover"
@@ -15,7 +48,7 @@
           <a-button
               class="bg-purple-300 flex justify-between items-center gap-2"
               size="large"
-              @click="$emit('handleOpenModalCreate', $event)"
+              @click="handleRedirectStaffCreate"
           >
             <v-icon name="md-addcircle"/>
           </a-button>
@@ -138,6 +171,10 @@ const handleRedirectStaffDetail = (id: string) => {
   const staffDetailPath =
       ROUTES_CONSTANTS.ADMIN.children.STAFF_DETAIL.path.replace(':id', id);
   router.push(staffDetailPath);
+}
+
+const handleRedirectStaffCreate = () => {
+  router.push({name: ROUTES_CONSTANTS.ADMIN.children.STAFF_CREATE.name})
 }
 
 const columnsStaff: ColumnType[] = [

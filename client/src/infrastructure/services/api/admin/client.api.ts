@@ -51,7 +51,7 @@ export type DetailClientResponse = {
 };
 
 export type ClientAddressRequest = {
-    name: string;
+    name: string,
     phoneNumber: string,
     line: string,
     ward: string,
@@ -59,6 +59,19 @@ export type ClientAddressRequest = {
     province: string,
     isDefault: string,
     clientId: string,
+}
+
+export type ClientAddressRequestCreate = {
+    name: String,
+    phoneNumber: String,
+    email: String,
+    birthday: String,
+    gender: String,
+    picture: String,
+    line: String,
+    ward: String,
+    district: String,
+    province: String,
 }
 
 export type ClientAddressCommonOptionsResponse = {
@@ -92,6 +105,18 @@ export const getClients = async (params: Ref<FindClientRequest>) => {
 export const createClient = async (data: ClientRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_CLIENT}`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+
+    return res.data;
+};
+
+export const createClientAddressMo = async (data: ClientAddressRequestCreate) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_CLIENT}/mo`,
         method: "POST",
         data: data
     })) as AxiosResponse<

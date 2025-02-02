@@ -32,8 +32,10 @@ public interface AdminClientRepository extends KhachHangRepository {
                 kh.email as email,
                 kh.ma_khach_hang as code,
                 kh.so_dien_thoai as phoneNumber,
-                kh.deleted as status
+                kh.deleted as status,
+                dckh.so_nha as address
             FROM khach_hang kh
+            LEFT JOIN dia_chi_khach_hang dckh ON ( kh.id = dckh.id_khach_hang AND dckh.mac_dinh = 1)
             WHERE
                 (:#{#req.keyword} IS NULL OR
                 kh.ho_va_ten LIKE CONCAT('%', :#{#req.keyword}, '%') OR
@@ -46,6 +48,7 @@ public interface AdminClientRepository extends KhachHangRepository {
             SELECT
                 COUNT(kh.id)
             FROM khach_hang kh
+            LEFT JOIN dia_chi_khach_hang dckh ON ( kh.id = dckh.id_khach_hang AND dckh.mac_dinh = 1)
             WHERE
                 (:#{#req.keyword} IS NULL OR
                 kh.ho_va_ten LIKE CONCAT('%', :#{#req.keyword}, '%') OR
