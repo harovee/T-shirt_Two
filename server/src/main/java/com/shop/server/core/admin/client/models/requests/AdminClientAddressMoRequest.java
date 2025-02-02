@@ -23,8 +23,6 @@ public class AdminClientAddressMoRequest {
 
     private Long province;
 
-    private String password;
-
     private String email;
 
     private String code;

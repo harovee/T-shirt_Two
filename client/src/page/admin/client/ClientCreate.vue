@@ -217,7 +217,6 @@ const modelRef = reactive<ClientAddressRequestCreate>({
   name: "",
   phoneNumber: "",
   email: "",
-  password: "",
   birthday: "",
   gender: "",
   line: "",
@@ -244,21 +243,6 @@ const rulesRef = reactive({
       trigger: "blur"
     },
     {max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur"},
-  ],
-  password: [
-    {required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"},
-    {
-      pattern: /[A-Z]/,
-      message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa",
-      trigger: "blur"
-    },
-    {
-      pattern: /\W/,
-      message: "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
-      trigger: "blur"
-    },
-    {min: 8, message: "Mật khẩu phải có độ dài từ 8 ký tự trở lên"},
-    {max: 20, message: "Mật khẩu phải có độ dài từ 20 ký tự trở xuống"}
   ],
   birthday: [
     {
@@ -334,13 +318,6 @@ const formFields = computed(() => [
     type: "string",
     component: "a-input",
     placeholder: "Nhâp email"
-  },
-  {
-    label: "Mật khẩu",
-    name: "password",
-    type: "string",
-    component: "a-input-password",
-    placeholder: "Nhâp mật khẩu"
   },
   {
     label: "Ngày sinh",
