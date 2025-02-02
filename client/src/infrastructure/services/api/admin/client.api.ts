@@ -65,7 +65,6 @@ export type ClientAddressRequestCreate = {
     name: String,
     phoneNumber: String,
     email: String,
-    password: String,
     birthday: String,
     gender: String,
     picture: String,
