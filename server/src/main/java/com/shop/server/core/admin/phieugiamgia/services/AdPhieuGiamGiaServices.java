@@ -20,9 +20,7 @@ public interface AdPhieuGiamGiaServices {
     public  ResponseObject<?> updatePhieuGiamGiaById(PhieuGiamGiaRequest request,String id);
 
     public ResponseObject<?> deletePhieuGiamGiaById(String id);
-
-    public ResponseObject<?> updateTrangThai();
-
+    
     public  ResponseObject<?> getAllKhachHang(AdminKhachHangSearchRequest request);
 
     public ResponseObject<?> createVoucherKhachHang(PhieuGiamGiaRequest voucher, VoucherKhachHangRequest voucherSanPhamKhachHang);

@@ -1,8 +1,8 @@
 <template>
   <div class="p-6 grid grid-cols-1 gap-6">
-    <div class="flex items-center gap-2">
-      <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48"/>
-      <h3 class="text-2xl m-0">Quản lý phiếu giảm giá</h3>
+    <div class="flex justify-center items-center gap-2">
+      <!-- <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48"/> -->
+      <h3 class="text-2xl m-0 text-center">Quản lý phiếu giảm giá</h3>
     </div>
     <div class="p-4 rounded-xl border-2 shadow-purple-950 flex flex-col gap-6">
       <div class="flex items-center gap-2">

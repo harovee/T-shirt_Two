@@ -33,9 +33,9 @@ import { keepPreviousData } from "@tanstack/vue-query";
 import {
   FindKhachHangRequest
 } from "@/infrastructure/services/api/admin/voucher/voucher.api";
-import { useGetListKhachHang,useGetCusTomerByIdPhieuGiamGia } from "@/infrastructure/services/service/admin/voucher/voucher.action";
+import { useGetListKhachHang } from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import { convertDateFormatTime } from "@/utils/common.helper";
-import { useRoute } from "vue-router";
+import { Key } from "ant-design-vue/es/_util/type";
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -106,15 +106,18 @@ watch(current1, () => {
   params.value.page = current1.value === 0 ? 1 : current1.value;
 });
 
+const selectedRowKeys = ref<Key[]>(props.idKhachHangs || []);
+
 const rowSelection: TableProps["rowSelection"] = {
-  onChange: (selectedRowKeys: string[] | any) => {
-   if (selectedRowKeys.length == 0 ) {
-    emit('update:idKhachHangs', []);
-   }else {
-    const updatedIds = [...selectedRowKeys];
-      emit("update:idKhachHangs", updatedIds);
-   }
+  selectedRowKeys: selectedRowKeys.value, // Gán danh sách đã chọn
+  onChange: (selectedKeys: Key[]) => {
+    selectedRowKeys.value = selectedKeys;
+    emit("update:idKhachHangs", selectedKeys.map(String));
   },
 };
+
+watch(() => props.idKhachHangs, (newVal) => {
+  selectedRowKeys.value = newVal || [];
+}, { deep: true });
 
 </script>

@@ -86,11 +86,11 @@ export const confirmModal = (message, onConfirm) => {
   });
 };
 
-export const formatCurrencyVND = (value: number | null): string => {
-  if (value === null) {
-    return "0 đ"
+export const formatCurrencyVND = (value: string | number | null): string => {
+  if (value === null || value === "" || isNaN(Number(value))) {
+    return "0 đ";
   }
-  return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+  return Number(value).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
 export const defaultProductImageSaleUrl =

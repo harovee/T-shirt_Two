@@ -33,7 +33,7 @@
             </a-input>
           </a-form-item>
 
-          <a-form-item  class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
+          <a-form-item  class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa">
             <a-input v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa">
               <template #addonAfter>đ</template>
             </a-input>
@@ -364,11 +364,10 @@ watch(() => dataDetail.value?.data.data, (detail) => {
 watch(
   () => customerData.value?.data,
   (listKhachHang) => {  
-    if (listKhachHang) {
-      idKhachHangs.value = listKhachHang.map(khachHang => khachHang.id);
+    if (Array.isArray(listKhachHang)) {
+      idKhachHangs.value.splice(0, idKhachHangs.value.length, ...listKhachHang.map(khachHang => khachHang.id));
     }
   console.log(idKhachHangs.value);
-    
   },
   { immediate: true }
   

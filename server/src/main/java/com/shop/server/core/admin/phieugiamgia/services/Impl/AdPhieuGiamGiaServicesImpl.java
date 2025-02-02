@@ -18,6 +18,7 @@ import com.shop.server.entities.main.PhieuGiamGia;
 import com.shop.server.repositories.KhachHangRepository;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
 
@@ -93,7 +95,6 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
 
         PhieuGiamGia phieuGiamGia = new PhieuGiamGia();
         BeanUtils.copyProperties(request, phieuGiamGia);
-        updateTrangThai();
         return new ResponseObject<>(adPhieuGiamGiaRepository.save(phieuGiamGia), HttpStatus.OK, "Thêm Phiếu giảm giá thành công");
     }
 
@@ -144,7 +145,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             phieuGiamGia.setNgayKetThuc(request.getNgayKetThuc());
             phieuGiamGia.setSoLuong(request.getSoLuong());
             phieuGiamGia.setTen(request.getTen());
-            updateTrangThai();
+            phieuGiamGia.setTrangThai(request.getTrangThai());
             return new ResponseObject<>(adPhieuGiamGiaRepository.save(phieuGiamGia), HttpStatus.OK, "Cập nhật phiếu giảm giá thành công");
         }
         return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "PhieuGiamGia không tìm thấy");
@@ -247,23 +248,6 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             return new ResponseObject<>(null, HttpStatus.OK, "Cập nhật thành công");
         }
         return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "PhieuGiamGia không tìm thấy");
-    }
-
-    @Override
-    public ResponseObject<?> updateTrangThai() {
-        List<PhieuGiamGia> updatedDanhSachPhieu = adPhieuGiamGiaRepository.findAll().stream().map(phieu -> {
-            Long today = LocalDate.now().toEpochDay();
-            if (phieu.getNgayKetThuc()< today) {
-                phieu.setTrangThai("EXPIRED");
-            } else if (Objects.equals(phieu.getNgayBatDau(), today)) {
-                phieu.setTrangThai("ACTIVE");
-            } else {
-                phieu.setTrangThai("NOT_STARTED");
-            }
-            return phieu;
-        }).toList();
-        adPhieuGiamGiaRepository.saveAll(updatedDanhSachPhieu);
-        return new ResponseObject<>(updatedDanhSachPhieu, HttpStatus.OK, "Trạng thái cập nhật thành công");
     }
 
 }

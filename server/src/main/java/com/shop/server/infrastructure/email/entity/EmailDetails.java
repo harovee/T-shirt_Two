@@ -19,6 +19,4 @@ public class EmailDetails {
 
     private String attachment;
 
-    public EmailDetails(String email, String emailContent, String s) {
-    }
 }

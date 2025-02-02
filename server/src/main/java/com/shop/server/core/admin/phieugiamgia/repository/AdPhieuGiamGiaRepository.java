@@ -68,8 +68,8 @@ public interface AdPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
                     OR ph.ma_phieu_giam_gia LIKE CONCAT('%',:#{#request.keyword}, '%')
                     OR ph.ten LIKE CONCAT('%',:#{#request.keyword}, '%')
                     )
-                    AND ((:#{#request.startDate} IS NULL OR :#{#request.endDate} IS NULL)
-                        OR (ph.ngay_bat_dau >= :#{#request.startDate} AND ph.ngay_ket_thuc <= :#{#request.endDate}))
+                    AND (:#{#request.startDate} IS NULL  OR ph.ngay_bat_dau >= :#{#request.startDate})
+                    AND (:#{#request.endDate} IS NULL OR ph.ngay_ket_thuc <= :#{#request.endDate})
                     AND (:#{#request.loaiGiam} IS NULL OR ph.loai_giam = :#{#request.loaiGiam})
                     AND (:#{#request.trangThai} IS NULL
                             OR (:#{#request.trangThai} = 'IN_PROGRESS' AND ph.trang_thai = 'ACTIVE' AND (UNIX_TIMESTAMP()*1000 BETWEEN ph.ngay_bat_dau AND ph.ngay_ket_thuc))

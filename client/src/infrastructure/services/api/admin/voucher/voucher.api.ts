@@ -6,8 +6,8 @@ import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
     keyword?: string | null;
-    startDate?: Date | null;
-    endDate?: Date | null;
+    startDate?: number | null;
+    endDate?: number | null;
     loaiGiam? : boolean | null;
     trangThai? : string | null;
     
@@ -91,7 +91,7 @@ export const getVoucherById = async (VoucherId: Ref<string | null>) => {
         url: `${PREFIX_API_ADMIN_VOUCHER}/${VoucherId.value}`,
         method: "GET",
     }) as AxiosResponse<
-        DefaultResponse<Array<DetailVoucherResponse>>
+        DefaultResponse<DetailVoucherResponse>
     >;
     
 };
@@ -142,7 +142,7 @@ export const getKhachHangInPhieuGiamGia = async (VoucherId: Ref<string | null>) 
         url: `${PREFIX_API_ADMIN_VOUCHER}/khach-hang/${VoucherId.value}`,
         method: "GET",
     })) as AxiosResponse<
-        Array<KhachHangResponse>
+    DefaultResponse<Array<KhachHangResponse>>
     >;
     return res.data;
 };
