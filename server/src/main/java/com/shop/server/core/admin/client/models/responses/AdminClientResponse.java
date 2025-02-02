@@ -14,4 +14,6 @@ public interface AdminClientResponse extends BaseResponse {
 
     String getStatus();
 
+    String getAddress();
+
 }

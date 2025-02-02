@@ -28,16 +28,12 @@ public class AdminStaffServiceImpl implements AdminStaffService {
 
     private final AdminStaffRepository adminStaffRepository;
 
-    private final InfoUserTShirt infoUserTShirt;
-
     private final AdminStaffMailService emailService;
 
     public AdminStaffServiceImpl(
             AdminStaffRepository adminStaffRepository,
-            InfoUserTShirt infoUserTShirt,
             AdminStaffMailService emailService) {
         this.adminStaffRepository = adminStaffRepository;
-        this.infoUserTShirt = infoUserTShirt;
         this.emailService = emailService;
     }
 
@@ -95,9 +91,12 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setRole(Role.USER);
             staff.setStatus(Status.ACTIVE);
             staff.setDeleted(false);
-            staff.setProfilePicture("https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp");
-            staff.setNguoiTao(infoUserTShirt.getId());
-            staff.setNguoiSua(infoUserTShirt.getId());
+            if (request.getPicture().isEmpty()) {
+                String defaultImage = "https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp";
+                staff.setProfilePicture(defaultImage);
+            } else {
+                staff.setProfilePicture(request.getPicture());
+            }
             NhanVien newStaff = adminStaffRepository.save(staff);
             emailService.sendMailCreateStaff(newStaff);
         } catch (Exception e) {
@@ -149,8 +148,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
             staff.setGender(request.getGender());
             staff.setPhoneNumber(request.getPhoneNumber());
-            staff.setNguoiSua(infoUserTShirt.getId());
-            adminStaffRepository.save(staff);
+             adminStaffRepository.save(staff);
             emailService.sendMailUpdateStaff(staff);
         } catch (Exception e) {
             return ResponseObject.errorForward(

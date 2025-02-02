@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.client.services.impl;
 
+import com.shop.server.core.admin.client.models.requests.AdminClientAddressMoRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientAddressRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
 import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
@@ -44,13 +45,10 @@ public class AdminClientServiceImpl implements AdminClientService {
 
     private final AdminClientWardRepository adminClientWardRepository;
 
-    private final InfoUserTShirt infoUserTShirt;
-
     private final AdminClientMailService emailService;
 
     public AdminClientServiceImpl(
             AdminClientRepository adminClientRepository,
-            InfoUserTShirt infoUserTShirt,
             AdminClientMailService emailService,
             AdminClientAddressRepository adminClientAddressRepository,
             AdminClientProvinceRepository adminClientProvinceRepository,
@@ -58,7 +56,6 @@ public class AdminClientServiceImpl implements AdminClientService {
             AdminClientWardRepository adminClientWardRepository
     ) {
         this.adminClientRepository = adminClientRepository;
-        this.infoUserTShirt = infoUserTShirt;
         this.emailService = emailService;
         this.adminClientAddressRepository = adminClientAddressRepository;
         this.adminClientProvinceRepository = adminClientProvinceRepository;
@@ -110,10 +107,74 @@ public class AdminClientServiceImpl implements AdminClientService {
         client.setPhoneNumber(request.getPhoneNumber());
         client.setProfilePicture("https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp");
         client.setDeleted(false);
-        client.setNguoiTao(infoUserTShirt.getId());
-        client.setNguoiSua(infoUserTShirt.getId());
         KhachHang newClient = adminClientRepository.save(client);
         emailService.sendMailCreateClient(newClient);
+        return ResponseObject.successForward(
+                HttpStatus.CREATED,
+                Message.Success.CREATE_SUCCESS
+        );
+    }
+
+    @Override
+    public ResponseObject<?> createClientMo(AdminClientAddressMoRequest request) {
+        if (adminClientRepository.existsClientByEmail(request.getEmail())) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", email"
+            );
+        }
+        if (adminClientRepository.existsClientByPhoneNumber(request.getPhoneNumber())) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.DUPLICATE + ", số điện thoại"
+            );
+        }
+        Optional<Province> provinceOptional = adminClientProvinceRepository.findById(request.getProvince());
+        if (provinceOptional.isEmpty()) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.NOT_FOUND + ", tỉnh"
+            );
+        }
+        Optional<District> districtOptional = adminClientDistrictRepository.findById(request.getDistrict());
+        if (districtOptional.isEmpty()) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.NOT_FOUND + ", thành phố/quận/huyện"
+            );
+        }
+        Optional<Ward> wardOptional = adminClientWardRepository.findById(request.getWard());
+        if (wardOptional.isEmpty()) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.NOT_FOUND + ", phường/xã"
+            );
+        }
+        KhachHang client = new KhachHang();
+        String pass = AESPasswordCryptoUtil.genPassword(8L);
+        client.setPassword(pass);
+        client.setFullName(request.getName());
+        client.setEmail(request.getEmail());
+        Long count = adminClientRepository.count() + 1;
+        String formattedCode = String.format("%09d", count);
+        client.setCode(formattedCode);
+        client.setPhoneNumber(request.getPhoneNumber());
+        client.setProfilePicture(request.getPicture());
+        client.setDeleted(false);
+        KhachHang newClient = adminClientRepository.save(client);
+        emailService.sendMailCreateClient(newClient);
+        Address address = new Address();
+        address.setClientId(newClient);
+        address.setPhoneNumber(request.getPhoneNumber());
+        address.setProvince(request.getProvince());
+        address.setDistrict(request.getDistrict());
+        address.setWard(request.getWard());
+        address.setLine(request.getLine());
+        address.setName(request.getName());
+        address.setDeleted(false);
+        address.setIsDefault(false);
+        address.setIsDefault(true);
+        adminClientAddressRepository.save(address);
         return ResponseObject.successForward(
                 HttpStatus.CREATED,
                 Message.Success.CREATE_SUCCESS
@@ -149,7 +210,6 @@ public class AdminClientServiceImpl implements AdminClientService {
             client.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
             client.setGender(request.getGender());
             client.setPhoneNumber(request.getPhoneNumber());
-            client.setNguoiSua(infoUserTShirt.getId());
             adminClientRepository.save(client);
         } catch (Exception e) {
             return ResponseObject.errorForward(

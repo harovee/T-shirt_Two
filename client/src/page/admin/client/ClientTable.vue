@@ -7,7 +7,7 @@
           Hiển thị danh sách khách hàng T-Shirts Two
         </p>
       </div>
-      <div class="p-2.5">
+      <div class="p-2.5 flex justify-between items-center gap-5">
         <a-tooltip
             title="Thêm khách hàng"
             trigger="hover"
@@ -15,7 +15,19 @@
           <a-button
               class="bg-purple-300 flex justify-between items-center gap-2"
               size="large"
-              @click="$emit('handleOpenModalCreate', $event)"
+              @click="handleRedirectClientC"
+          >
+            <v-icon name="md-addcircle"/>
+          </a-button>
+        </a-tooltip>
+        <a-tooltip
+            title="Thêm nhanh khách hàng"
+            trigger="hover"
+        >
+          <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+              @click="emit('handleOpenModalCreate', $event)"
           >
             <v-icon name="md-addcircle"/>
           </a-button>
@@ -139,6 +151,10 @@ const handleRedirectClientDetail = (id: string) => {
   router.push(clientDetailPath);
 }
 
+const handleRedirectClientC = () => {
+  router.push({name: ROUTES_CONSTANTS.ADMIN.children.CLIENT_CREATE.name});
+}
+
 const columnsClient: ColumnType[] = [
   {
     title: "#",
@@ -176,6 +192,14 @@ const columnsClient: ColumnType[] = [
     title: "Số điện thoại",
     dataIndex: "phoneNumber",
     key: "phoneNumber",
+    ellipsis: true,
+    width: 200,
+    resizable: true
+  },
+  {
+    title: "Địa chỉ mặc định",
+    dataIndex: "address",
+    key: "address",
     ellipsis: true,
     width: 200,
     resizable: true
