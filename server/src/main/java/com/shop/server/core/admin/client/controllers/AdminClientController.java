@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.client.controllers;
 
+import com.shop.server.core.admin.client.models.requests.AdminClientAddressMoRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientAddressRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
 import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
@@ -40,6 +41,11 @@ public class AdminClientController {
     @PostMapping()
     public ResponseEntity<?> createClient(@Valid @RequestBody final AdminClientRequest request) {
         return Helper.createResponseEntity(adminClientService.createClient(request));
+    }
+
+    @PostMapping("/mo")
+    public ResponseEntity<?> createClientMo(@Valid @RequestBody final AdminClientAddressMoRequest request) {
+        return Helper.createResponseEntity(adminClientService.createClientMo(request));
     }
 
     @PutMapping("/{id}")

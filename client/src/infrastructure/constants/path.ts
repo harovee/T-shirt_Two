@@ -98,6 +98,10 @@ export const ROUTES_CONSTANTS = {
                 path: "staff",
                 name: "admin-staff",
             },
+            STAFF_CREATE: {
+                path: "staff/create",
+                name: "admin-staff-create",
+            },
             STAFF_DETAIL: {
                 path: "staff/:id",
                 name: "admin-staff-detail",
@@ -119,7 +123,7 @@ export const ROUTES_CONSTANTS = {
             },
             VOUCHER: {
                 path: "voucher",
-                name: "admin-voucher",   
+                name: "admin-voucher",
             },
             VOUCHER_ADD: {
                 path: "voucher/add",
@@ -132,6 +136,10 @@ export const ROUTES_CONSTANTS = {
             CLIENT: {
                 path: "client",
                 name: "admin-client",
+            },
+            CLIENT_CREATE: {
+                path: "client/create",
+                name: "admin-client-create",
             },
             CLIENT_DETAIL: {
                 path: "client/:id",

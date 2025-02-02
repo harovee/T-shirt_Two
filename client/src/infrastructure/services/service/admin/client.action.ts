@@ -2,9 +2,11 @@ import {
     changeClientAddressDefault,
     changeStatusClient,
     ClientAddressRequest,
+    ClientAddressRequestCreate,
     ClientRequest,
     createClient,
     createClientAddress,
+    createClientAddressMo,
     FindClientRequest,
     getClientAddressesResponseByClientId,
     getClientById,
@@ -35,6 +37,21 @@ export const useCreateClient = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data: ClientRequest) => createClient(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.client.clientList],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.client.clientList, "🚀 ~ clientCreate ~ error:", error);
+        },
+    });
+};
+
+export const useCreateClientAddressMo = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: ClientAddressRequestCreate) => createClientAddressMo(data),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.client.clientList],

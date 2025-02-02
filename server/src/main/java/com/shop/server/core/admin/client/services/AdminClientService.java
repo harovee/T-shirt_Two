@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.client.services;
 
+import com.shop.server.core.admin.client.models.requests.AdminClientAddressMoRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientAddressRequest;
 import com.shop.server.core.admin.client.models.requests.AdminClientRequest;
 import com.shop.server.core.admin.client.models.requests.AdminFindClientRequest;
@@ -13,6 +14,8 @@ public interface AdminClientService {
     ResponseObject<?> getClientById(String id);
 
     ResponseObject<?> createClient(@Valid AdminClientRequest request);
+
+    ResponseObject<?> createClientMo(@Valid AdminClientAddressMoRequest request);
 
     ResponseObject<?> updateClient(String id, @Valid AdminClientRequest request);
 

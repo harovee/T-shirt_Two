@@ -279,6 +279,15 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.STAFF_CREATE.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.STAFF_CREATE.name,
+                component: () => import('@/page/admin/staff/StaffCreate.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.STAFF_DETAIL.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.STAFF_DETAIL.name,
                 component: () => import('@/page/admin/staff/StaffDetail.vue'),
@@ -291,6 +300,15 @@ const routes: Array<RouteRecordRaw> = [
                 path: ROUTES_CONSTANTS.ADMIN.children.CLIENT.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.CLIENT.name,
                 component: () => import('@/page/admin/client/Client.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.CLIENT_CREATE.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.CLIENT_CREATE.name,
+                component: () => import('@/page/admin/client/ClientCreate.vue'),
                 meta: {
                     requiresRole: ROLES.ADMIN,
                     requiresAuth: true
