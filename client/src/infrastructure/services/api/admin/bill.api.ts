@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { API_ADMIN_BILL } from '@/infrastructure/constants/url';
+import { API_ADMIN_BILL, API_ADMIN_COUNT_BILL } from '@/infrastructure/constants/url';
 import { DefaultResponse, PaginationParams, PaginationResponse, ResponseList } from '@/infrastructure/types/api.common';
 import { Ref } from 'vue';
 import request from "@/infrastructure/services/request.ts";
@@ -31,7 +31,6 @@ export type BillResponse = ResponseList & {
     ma: string | null;
     maNhanVien: string | null;
     loaiHD: string | null;
-    trangThaiHD: string | null;
     tongTien: number | null;
     tienShip: number | null;
     tienGiam: number | null;
@@ -43,17 +42,9 @@ export type BillResponse = ResponseList & {
     ghiChu: string | null;
 }
 
-// export type billDataResponse = {
-//     catalog: number | null;
-//     ma: string | null;
-//     maNhanVien: string | null;
-//     loaiHD: string | null;
-//     tongTien: number | null;
-//     trangThai: string | null;
-//     tenKhachHang: string | null;
-//     soDienThoai: string | null;
-
-// }
+export interface CountBillByStatusResponse {
+    [key: string]: number;
+  }
 
 
 export const getBills = async (params: Ref<FindBillRequest>) => {
@@ -86,3 +77,10 @@ export const updateBill = async (idBill: string, params: BillRequest) => {
         DefaultResponse<DefaultResponse<null>>
     >;
 };
+
+export const getBillStatusCount  = async () => {
+    return await request({
+        url: `${API_ADMIN_COUNT_BILL}`,
+        method: 'GET'
+    }) as AxiosResponse<CountBillByStatusResponse>;
+}

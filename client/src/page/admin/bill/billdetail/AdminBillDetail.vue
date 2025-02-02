@@ -9,7 +9,7 @@
           width="48"
           height="48"
         />
-        <h3 class="text-2xl m-0">Chi tiết hóa đơn:</h3>
+        <h3 class="text-2xl m-0">Chi tiết hóa đơn</h3>
       </div>
       <div
         class="flex items-center gap-2 scale-75 transition-all cursor-pointer hover:scale-100 hover:text-red-500"

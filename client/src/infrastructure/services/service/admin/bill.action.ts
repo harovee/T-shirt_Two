@@ -29,7 +29,7 @@ export const useUpdateBill = () => {
     return useMutation({
         mutationFn: ({idBill, params}: { idBill: string; params: BillRequest; }) => updateBill(idBill, params),
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billList],});
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billById],});
         },
         onError: (error: any) => {
             console.log(queryKey.admin.bill.billList + "🚀 ~ billUpdate ~ error:", error);

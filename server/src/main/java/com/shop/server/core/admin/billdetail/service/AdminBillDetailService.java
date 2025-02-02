@@ -6,6 +6,8 @@ import com.shop.server.core.admin.billdetail.model.request.AdminUpdateBillDetail
 import com.shop.server.core.common.base.ResponseObject;
 import jakarta.validation.Valid;
 
+import java.util.Map;
+
 public interface AdminBillDetailService {
     ResponseObject<?> getBillDetailsByRequest(AdminFindBillDetailRequest request);
 
@@ -14,6 +16,5 @@ public interface AdminBillDetailService {
     ResponseObject<?> createBillDetail(@Valid AdminCreateBillDetailRequest request);
 
     ResponseObject<?> updateBillDetail(String id, @Valid AdminUpdateBillDetailRequest request);
-
 
 }

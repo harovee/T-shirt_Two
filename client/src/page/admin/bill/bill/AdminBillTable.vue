@@ -1,10 +1,20 @@
 <template>
-  <div class="p-4 rounded-xl border-2 ">
+  <div class="p-4 rounded-xl border-2">
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">Danh sách hóa đơn</h3>
       </div>
-      <div class="p-2.5"></div>
+      <div class="ml-auto p-2.5">
+        <a-tooltip title="Xuất file Excel" trigger="hover">
+          <a-button
+            class="bg-purple-300 flex justify-between items-center gap-2"
+            size="large"
+            @click="exportToExcel"
+          >
+            <FileExcelOutlined />
+          </a-button>
+        </a-tooltip>
+      </div>
     </div>
     <table-example
       wrapperClassName="min-h-[410px]"
@@ -97,10 +107,12 @@ import { defineEmits } from "vue";
 import TableExample from "@/components/ui/TableExample.vue";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import router from "@/infrastructure/routes/router";
+import { FilePdfOutlined, FileExcelOutlined } from "@ant-design/icons-vue";
 import {
   convertDateFormatTime,
   formatCurrencyVND,
 } from "@/utils/common.helper";
+import * as XLSX from 'xlsx';
 
 const emit = defineEmits(["update:paginationParams"]);
 
@@ -109,6 +121,50 @@ const props = defineProps({
   loading: Boolean,
   paginationParams: Object,
 });
+
+const exportToExcel = () => {
+  const data = props.dataSource?.data || [];
+
+  // Định nghĩa các cột và tên cột tương ứng
+  const columnsMapping = [
+    { key: 'ma', title: 'Mã hóa đơn' },
+    { key: 'maNhanVien', title: 'Mã nhân viên' },
+    { key: 'tenKhachHang', title: 'Khách hàng' },
+    { key: 'tenNguoiNhan', title: 'Tên người nhận' },
+    { key: 'diaChiNguoiNhan', title: 'Địa chỉ người nhận' },
+    { key: 'soDienThoai', title: 'Số điện thoại' },
+    { key: 'loaiHD', title: 'Loại hóa đơn' },
+    { key: 'tongTien', title: 'Tổng tiền' },
+    { key: 'tienGiam', title: 'Tiền giảm' },
+    { key: 'tienShip', title: 'Tiền ship' },
+    { key: 'ghiChu', title: 'Ghi chú' },
+    { key: 'ngayTao', title: 'Ngày tạo' },
+    { key: 'trangThai', title: 'Trạng thái' },
+  ];
+
+  // Chuyển đổi dữ liệu và tên cột
+  const formattedData = data.map((item: any) => {
+    const newItem: any = {};
+    columnsMapping.forEach((col) => {
+      if (col.key === 'ngayTao') {
+        newItem[col.title] = convertDateFormatTime(item[col.key]);
+      } else if (col.key === 'tongTien') {
+        newItem[col.title] = formatCurrencyVND(item[col.key]);
+      } else {
+        newItem[col.title] = item[col.key];
+      }
+    });
+    return newItem;
+  });
+
+  // Tạo worksheet và workbook
+  const ws = XLSX.utils.json_to_sheet(formattedData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Danh sách hóa đơn");
+
+  // Xuất file Excel
+  XLSX.writeFile(wb, "danh_sach_hoa_don.xlsx");
+};
 
 const handleRedirectBillDetail = (idHoaDon: string) => {
   const detailBillPath = {

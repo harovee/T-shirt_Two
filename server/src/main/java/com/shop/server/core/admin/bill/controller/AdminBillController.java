@@ -4,6 +4,7 @@ import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminSaveBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminUpdateBillRequest;
 import com.shop.server.core.admin.bill.service.AdminBillService;
+import com.shop.server.core.admin.bill.service.impl.AdminBillServiceImpl;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
 import jakarta.validation.Valid;
@@ -17,13 +18,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RequestMapping(MappingConstant.API_ADMIN_BILL)
 @RestController
 public class AdminBillController {
     private final AdminBillService adminBillService;
+    private final AdminBillServiceImpl adminBillServiceImpl;
 
-    public AdminBillController(AdminBillService adminBillService) {
+    public AdminBillController(AdminBillService adminBillService, AdminBillServiceImpl adminBillServiceImpl) {
         this.adminBillService = adminBillService;
+        this.adminBillServiceImpl = adminBillServiceImpl;
     }
 
     @GetMapping()
@@ -52,5 +57,10 @@ public class AdminBillController {
     public ResponseEntity<?> changeBillStatus(@PathVariable String id,
                                               @Valid @RequestBody final AdminUpdateBillRequest request) {
         return Helper.createResponseEntity(adminBillService.changeStatusBill(id, request));
+    }
+
+    @GetMapping("/count-by-status")
+    public Map<String, Integer> getBillCountsByStatus() {
+        return adminBillServiceImpl.getBillCountsByStatus();
     }
 }

@@ -19,7 +19,7 @@
       </div>
       <div class="flex items-center">
         <span class="font-medium">Trạng thái:</span>
-        <a-tag class="ml-2" color="orange">{{copiedBillData?.trangThaiHD}}</a-tag>
+        <a-tag class="ml-2" color="orange">{{copiedBillData?.trangThai}}</a-tag>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Địa chỉ người nhận:</span>

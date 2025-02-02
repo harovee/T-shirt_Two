@@ -8,17 +8,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface AdminBillRepository extends HoaDonRepository {
 
     @Query(value = """
         SELECT
-            ROW_NUMBER() OVER(ORDER BY hd.id) AS catalog,
+            ROW_NUMBER() OVER(ORDER BY hd.ngay_tao ) AS catalog,
             hd.id AS id,
             hd.ma_hoa_don AS ma,
             hd.tong_tien AS tongTien,
             hd.loai_hoa_don AS loaiHD,
             hd.ten_nguoi_nhan AS tenNguoiNhan,
+            hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan,
+            hd.tien_giam AS tienGiam,
+            hd.tien_ship AS tienShip,
+            hd.ngay_ship AS ngayShip,
+            hd.ghi_chu AS ghiChu,
             kh.so_dien_thoai AS soDienThoai,
             hd.trang_thai AS trangThai,
             hd.ngay_tao AS ngayTao,
@@ -38,8 +45,10 @@ public interface AdminBillRepository extends HoaDonRepository {
             (:#{#req.trangThai} IS NULL OR
             hd.trang_thai LIKE CONCAT('%', :#{#req.trangThai},'%'))
          AND
-            (:#{#req.ngayBatDau} IS NULL OR :#{#req.ngayKetThuc} IS NULL OR
-            (hd.ngay_tao BETWEEN :#{#req.ngayBatDau} AND :#{#req.ngayKetThuc}))
+            (
+                (:#{#req.ngayBatDau} IS NULL OR hd.ngay_tao >= :#{#req.ngayBatDau}) AND
+                (:#{#req.ngayKetThuc} IS NULL OR hd.ngay_tao <= :#{#req.ngayKetThuc})
+            )
          AND
             (:#{#req.loaiHD} IS NULL OR
             hd.loai_hoa_don LIKE CONCAT('%', :#{#req.loaiHD},'%'))
@@ -58,8 +67,10 @@ public interface AdminBillRepository extends HoaDonRepository {
             (:#{#req.trangThai} IS NULL OR
             hd.trang_thai LIKE CONCAT('%', :#{#req.trangThai},'%'))
         AND
-            (:#{#req.ngayBatDau} IS NULL OR :#{#req.ngayKetThuc} IS NULL OR
-            (hd.ngay_tao BETWEEN :#{#req.ngayBatDau} AND :#{#req.ngayKetThuc}))
+            (
+                (:#{#req.ngayBatDau} IS NULL OR hd.ngay_tao >= :#{#req.ngayBatDau}) AND
+                (:#{#req.ngayKetThuc} IS NULL OR hd.ngay_tao <= :#{#req.ngayKetThuc})
+            )
          AND
             (:#{#req.loaiHD} IS NULL OR
             hd.loai_hoa_don LIKE CONCAT('%', :#{#req.loaiHD},'%'))
@@ -80,7 +91,7 @@ public interface AdminBillRepository extends HoaDonRepository {
             hd.tien_ship AS tienShip,
             hd.ngay_ship AS ngayShip,
             hd.ghi_chu AS ghiChu,
-            hd.trang_thai AS trangThaiHD,
+            hd.trang_thai AS trangThai,
             nv.ma_nhan_vien AS maNhanVien,
             kh.ho_va_ten AS tenKhachHang,
             pg.ten AS tenPhieuGiamGia
@@ -93,4 +104,11 @@ public interface AdminBillRepository extends HoaDonRepository {
     AdminBillResponse getDetailBillById(String id);
 
     boolean existsHoaDonByMa(String ma);
+
+    @Query(value = """
+        SELECT hd.trang_thai AS trangThai, COUNT(hd.id) AS count
+        FROM hoa_don hd
+        GROUP BY hd.trang_thai
+    """, nativeQuery = true)
+    List<Object[]> countBillsByStatus();
 }

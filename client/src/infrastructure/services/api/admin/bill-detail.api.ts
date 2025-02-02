@@ -29,6 +29,7 @@ export type BillDetailResponse = ResponseList & {
     thanhTien: number | null;
     tienGiamHD: number | null;
     tienShip: number | null;
+    tongTienHD: number | null;
 }
 
 export const getBillDetailsByIdHoaDon = async (params: Ref<FindBillDetailRequest>) => {
