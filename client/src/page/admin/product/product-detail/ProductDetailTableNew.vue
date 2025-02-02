@@ -1,9 +1,9 @@
 <template>
-  <div class="p-4 rounded-xl">
+  <div class="mt-10 shadow-md p-3 rounded-md m-3">
     <div class="flex justify-between items-center mb-5">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">
-          Danh sách sản phẩm chi tiết
+          Danh sách sản phẩm chi tiết {{ changeFill ? "" : " - " + productId }}
         </h3>
       </div>
       <div v-if="selectedRowKeyNews.length > 0">
@@ -29,7 +29,11 @@
           </a-input>
         </div>
         <div v-if="column.key === 'gia'" class="text-center">
-          <a-input type="number" v-model:value="record.gia" min="0"> </a-input>
+          <a-input-number
+            v-model:value="record.gia"
+            min="0"
+            :formatter="formatter"
+          />
         </div>
 
         <div v-if="column.key === 'trangThai'" class="text-center">
@@ -81,10 +85,11 @@ import {
   reactive,
   onMounted,
   createVNode,
-  inject
+  inject,
 } from "vue";
 import { useRouter } from "vue-router";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
+import { formatCurrency } from "@/utils/common.helper";
 import ModalUpdateProductDetail from "@/page/admin/product/product-detail/ModalUpdateProductDetail.vue";
 import {
   useGetProductDetailById,
@@ -98,6 +103,8 @@ const props = defineProps({
   dataSource: Object,
   loading: Boolean,
   paginationParams: Object,
+  productId: String,
+  changeFill: Boolean,
 });
 
 const emit = defineEmits([
@@ -148,20 +155,17 @@ interface Product {
   ten: string;
 }
 
-
-
-
 // Inject thuộc tính
-const listMaterial = inject<Material[]>('listMaterial');
-const listCollar = inject<Collar[]>('listCollar');
-const listSleeve = inject<Sleeve[]>('listSleeve');
-const listTrademark = inject<Trademark[]>('listTrademark');
-const listColor = inject<Color[]>('listColor');
-const listFeature = inject<Feature[]>('listFeature');
-const listPattern = inject<Pattern[]>('listPattern');
-const listSize = inject<Size[]>('listSize');
-const listStyle = inject<Style[]>('listStyle');
-const listProduct = inject<Product[]>('listProduct');
+const listMaterial = inject<Material[]>("listMaterial");
+const listCollar = inject<Collar[]>("listCollar");
+const listSleeve = inject<Sleeve[]>("listSleeve");
+const listTrademark = inject<Trademark[]>("listTrademark");
+const listColor = inject<Color[]>("listColor");
+const listFeature = inject<Feature[]>("listFeature");
+const listPattern = inject<Pattern[]>("listPattern");
+const listSize = inject<Size[]>("listSize");
+const listStyle = inject<Style[]>("listStyle");
+const listProduct = inject<Product[]>("listProduct");
 
 // Tạo 1 dataSource khác để có thể sửa số lượng và giá vì k thể sửa trực tiếp của dataSource truyền từ component cha
 const dataSourceProduct = reactive([]);
@@ -174,7 +178,6 @@ watch(
       // Dùng JSON.parse và JSON.stringify để sao chép sâu
       dataSourceProduct.length = 0; // Xóa dữ liệu cũ
       dataSourceProduct.push(...JSON.parse(JSON.stringify(newData))); // Thêm dữ liệu mới (sao chép sâu)
-      
     }
   },
   { immediate: true }
@@ -222,50 +225,59 @@ watch(isOpenModalUpdateProductDetail, (newVal) => {
 });
 // ------------------------------------------
 
+// convert tiền sang VND
+const formatter = (value: any) => {
+      if (!value) return '';
+      return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
+
+    // Hàm để phân tích dữ liệu khi người dùng nhập vào
+//     const parser = (value: any) => {
+//   return value.replace(/₫\s?|(,*)|đ$/g, '');
+// };
+
 
 // Hàm tìm id theo tên thuộc tính. Tại vì list là 1 [] nên .value sẽ báo đỏ nhưng vẫn chạy được
 const findChatLieu = (ten: string) => {
-  const cl = listMaterial.value.find((cl1:any) => cl1.label === ten);
+  const cl = listMaterial.value.find((cl1: any) => cl1.label === ten);
   return cl ? cl.value : null;
 };
 const findCoAo = (ten: string) => {
-  const ca = listCollar.value.find((ca1:any) => ca1.label === ten);
+  const ca = listCollar.value.find((ca1: any) => ca1.label === ten);
   return ca ? ca.value : null;
 };
 const findTayAo = (ten: string) => {
-  const ta = listSleeve.value.find((ta1:any) => ta1.label === ten);
+  const ta = listSleeve.value.find((ta1: any) => ta1.label === ten);
   return ta ? ta.value : null;
 };
 const findHoaTiet = (ten: string) => {
-  const ht = listPattern.value.find((ht1:any) => ht1.label === ten);
+  const ht = listPattern.value.find((ht1: any) => ht1.label === ten);
   return ht ? ht.value : null;
 };
 const findKieuDang = (ten: string) => {
-  const kd = listStyle.value.find((kd1:any) => kd1.label === ten);
+  const kd = listStyle.value.find((kd1: any) => kd1.label === ten);
   return kd ? kd.value : null;
 };
 const findTinhNang = (ten: string) => {
-  const tn = listFeature.value.find((tn1:any) => tn1.label === ten);
+  const tn = listFeature.value.find((tn1: any) => tn1.label === ten);
   return tn ? tn.value : null;
 };
 const findMauSac = (ten: string) => {
-  const ms = listColor.value.find((ms1:any) => ms1.label === ten);
+  const ms = listColor.value.find((ms1: any) => ms1.label === ten);
   return ms ? ms.value : null;
 };
 const findKichCo = (ten: string) => {
-  const kc = listSize.value.find((kc1:any) => kc1.label === ten);
+  const kc = listSize.value.find((kc1: any) => kc1.label === ten);
   return kc ? kc.value : null;
 };
 const findThuongHieu = (ten: string) => {
-  const th = listTrademark.value.find((th1:any) => th1.label === ten);
+  const th = listTrademark.value.find((th1: any) => th1.label === ten);
   return th ? th.value : null;
 };
 const findSanPham = (ten: string) => {
-  const sp = listProduct.value.find((sp1:any) => sp1.ten === ten);
+  const sp = listProduct.value.find((sp1: any) => sp1.ten === ten);
   return sp ? sp.id : null;
 };
-
-
 
 // Mảng chứa các id được chọn
 const selectedRowKeyNews = ref<(string | number)[]>([]);
@@ -312,7 +324,7 @@ const handleEdit = () => {
               idSanPham: findSanPham(product.sanPham),
               trangThai: 0,
             };
-            
+
             return updateProductDetail({
               id: product.id,
               params: payload,

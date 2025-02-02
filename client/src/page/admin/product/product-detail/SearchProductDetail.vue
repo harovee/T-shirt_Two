@@ -1,12 +1,11 @@
 <template>
   <div class="shadow-md p-3 rounded-md m-3">
     <div class="d-flex justify-content-between align-items-center p-4">
-    <h2 class="d-flex align-items-center text-primary text-3xl font-semibold">
-      <v-icon name="co-filter" scale="2" />
-      <span class="ml-2">Bộ lọc</span>
-    </h2>
-    
-  </div>
+      <h2 class="d-flex align-items-center text-primary text-3xl font-semibold">
+        <v-icon name="co-filter" scale="2" />
+        <span class="ml-2">Bộ lọc</span>
+      </h2>
+    </div>
     <a-form
       layout="vertical"
       class="grid grid-cols-5 gap-4 md:grid-cols-1 lg:grid-cols-5"
@@ -229,11 +228,13 @@
         }}</span>
       </a-form-item>
     </a-form>
-    <div>
-    <a-button @click="resetFilter" type="primary">
-      Làm mới
-    </a-button>
-  </div>
+    <div class="flex justify-end">
+      <a-button @click="resetFilter" type="primary" class="w-32 me-3"> Làm mới </a-button>
+      <a-button @click="fetchAllProductDetail" type="primary" class="w-32 me-3">
+        {{changeProductDetail ? "Đơn lẻ" : "Toàn bộ"}}
+      </a-button>
+      <a-button type="primary" @click="exportToExcel" class="w-32">Xuất Excel</a-button>
+    </div>
   </div>
 </template>
 
@@ -246,17 +247,17 @@ import {
 } from "@/infrastructure/services/api/admin/product_detail.api";
 import { keepPreviousData } from "@tanstack/vue-query";
 
-const listMaterial = inject('listMaterial');
-const listCollar = inject('listCollar');
-const listSleeve = inject('listSleeve');
-const listTrademark = inject('listTrademark');
-const listColor = inject('listColor');
-const listFeature = inject('listFeature');
-const listPattern = inject('listPattern');
-const listSize = inject('listSize');
-const listStyle = inject('listStyle');
+const listMaterial = inject("listMaterial");
+const listCollar = inject("listCollar");
+const listSleeve = inject("listSleeve");
+const listTrademark = inject("listTrademark");
+const listColor = inject("listColor");
+const listFeature = inject("listFeature");
+const listPattern = inject("listPattern");
+const listSize = inject("listSize");
+const listStyle = inject("listStyle");
 
-const emit = defineEmits(["filter"]);
+const emit = defineEmits(["filter", "fetch-all-product-detail", "export-to-excel"]);
 
 const params = ref<PropertyProductDetailParams>({
   page: 1,
@@ -269,8 +270,10 @@ const params = ref<PropertyProductDetailParams>({
   idMauSac: null,
   idTayAo: null,
   idThuongHieu: null,
-  idTinhNang: null
+  idTinhNang: null,
 });
+
+const changeProductDetail = ref(false);
 
 const statusOptions = [
   { label: "Tất cả", value: null },
@@ -293,6 +296,15 @@ function onChangeInput(key: keyof FindProductDetailRequest, e: any) {
   debouncedEmit();
 }
 
+function fetchAllProductDetail() {
+  changeProductDetail.value = !changeProductDetail.value;
+  emit("fetch-all-product-detail", changeProductDetail.value);
+}
+
+function exportToExcel() {
+  emit("export-to-excel");
+}
+
 const formatCurrency = (number) => {
   // Kiểm tra nếu số là một giá trị hợp lệ
   if (isNaN(number) || number == null) {
@@ -304,18 +316,18 @@ const formatCurrency = (number) => {
 };
 
 const resetFilter = () => {
-  params.value.trangThai = null,
-  params.value.idChatLieu = null,
-  params.value.idCoAo = null,
-  params.value.idHoaTiet = null,
-  params.value.idKichCo = null,
-  params.value.idKieuDang = null,
-  params.value.idMauSac = null,
-  params.value.idTayAo = null,
-  params.value.idThuongHieu = null,
-  params.value.idTinhNang = null,
-  params.value.gia = null
-}
+  (params.value.trangThai = null),
+    (params.value.idChatLieu = null),
+    (params.value.idCoAo = null),
+    (params.value.idHoaTiet = null),
+    (params.value.idKichCo = null),
+    (params.value.idKieuDang = null),
+    (params.value.idMauSac = null),
+    (params.value.idTayAo = null),
+    (params.value.idThuongHieu = null),
+    (params.value.idTinhNang = null),
+    (params.value.gia = null);
+};
 
 watch(
   params,

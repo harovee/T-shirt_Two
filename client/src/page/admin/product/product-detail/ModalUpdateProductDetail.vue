@@ -27,6 +27,8 @@
           </a-form-item>
         </template>
       </a-form>
+      <a-qrcode ref="qrcodeCanvasRef" :value="ProductDetail.maSPCT" />
+      <a-button type="primary" class="mt-5" @click="dowloadQr">Tải mã QR</a-button>
     </a-modal>
   </div>
 </template>
@@ -39,7 +41,8 @@ import {
   defineProps,
   reactive,
   watch,
-  inject
+  inject,
+  ref
 } from "vue";
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
@@ -293,12 +296,56 @@ const handleClose = () => {
   emit("handleClose");
   resetFields();
 };
+
+// Dowload qr code
+const qrcodeCanvasRef = ref<any>(null);
+
+const dowloadQr = async () => {
+  // Truy cập phần tử canvas từ QR code component
+  if (qrcodeCanvasRef.value) {
+    const canvas = qrcodeCanvasRef.value.$el.querySelector('canvas');
+    
+    if (canvas) {
+      // Lấy context 2D của canvas
+      const ctx = canvas.getContext('2d');
+      
+      if (ctx) {
+        // Tạo một canvas mới với nền trắng
+        const newCanvas = document.createElement('canvas');
+        const newCtx = newCanvas.getContext('2d');
+        
+        if (newCtx) {
+          // Cài đặt kích thước canvas mới tương đương với canvas hiện tại
+          newCanvas.width = canvas.width;
+          newCanvas.height = canvas.height;
+          
+          // Đặt nền màu trắng
+          newCtx.fillStyle = 'white';
+          newCtx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+
+          // Vẽ QR code từ canvas cũ vào canvas mới
+          newCtx.drawImage(canvas, 0, 0);
+
+          // Tạo URL hình ảnh từ canvas mới (với nền trắng)
+          const url = newCanvas.toDataURL();
+          const a = document.createElement('a');
+          a.download = 'QRCode.png';
+          a.href = url;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      }
+    }
+  }
+  };
+  // -----------------------------------------------
 </script>
 
 <style scoped>
 .custom-modal .ant-modal-header {
   display: flex;
-  justify-content: center; /* Căn giữa nội dung tiêu đề */
-  align-items: center; /* Căn giữa theo chiều dọc */
+  justify-content: center;
+  align-items: center;
 }
 </style>

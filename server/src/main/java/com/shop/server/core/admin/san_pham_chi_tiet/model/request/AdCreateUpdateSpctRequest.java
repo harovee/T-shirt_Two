@@ -1,9 +1,11 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.model.request;
 
+import com.shop.server.core.admin.anh_san_pham.model.request.AdCreateUpdateAnhRequest;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Setter
 @Getter
@@ -34,4 +36,6 @@ public class AdCreateUpdateSpctRequest {
     private String idTinhNang;
 
     private String idSanPham;
+
+    private List<AdCreateUpdateAnhRequest> listAnh;
 }

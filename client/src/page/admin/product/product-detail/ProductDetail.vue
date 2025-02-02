@@ -1,25 +1,41 @@
 <template>
+  <h1 class="flex justify-center items-center text-1000 text-3xl font-semibold">
+    <span class="m-3 text-xxl">Chi tiết sản phẩm</span>
+  </h1>
   <div>
-    <search-product-detail @filter="handleFilter"/>
+    <search-product-detail
+      @filter="computedFilter"
+      @fetch-all-product-detail="handleAllProductDetail"
+      @export-to-excel="handleExportToExcel"
+    />
     <div class="rounded-xl">
       <product-detail-table-new
-          :data-source="dataSource"
-          :loading="isLoading || isFetching"
-          :pagination-params="params"
-          @update:pagination-params="handlePaginationChange"
+        :data-source="computedDataSource"
+        :loading="computedLoading"
+        :pagination-params="computedPaginationParams"
+        @update:pagination-params="computedPaginationHandler"
+        :product-id="productId"
+        :change-fill="changeProductDetail"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import SearchProductDetail from "@/page/admin/product/product-detail/SearchProductDetail.vue";
-  import ProductDetailTableNew from "@/page/admin/product/product-detail/ProductDetailTableNew.vue";
-  import {computed, ref, watch, provide} from "vue";
-  import {useRoute} from "vue-router";
-import {FindProductDetailRequest} from "@/infrastructure/services/api/admin/product_detail.api";
-import {useGetProductDetail} from "@/infrastructure/services/service/admin/productdetail.action";
-import {keepPreviousData} from "@tanstack/vue-query";
+import SearchProductDetail from "@/page/admin/product/product-detail/SearchProductDetail.vue";
+import ProductDetailTableNew from "@/page/admin/product/product-detail/ProductDetailTableNew.vue";
+import { computed, ref, watch, provide } from "vue";
+import * as XLSX from "xlsx";
+import { useRoute } from "vue-router";
+import {
+  FindProductDetailRequest,
+  FindAllProductDetailRequest,
+} from "@/infrastructure/services/api/admin/product_detail.api";
+import {
+  useGetProductDetail,
+  useGetAllProductDetail,
+} from "@/infrastructure/services/service/admin/productdetail.action";
+import { keepPreviousData } from "@tanstack/vue-query";
 import {
   useGetListMaterial,
   useCreateMaterial,
@@ -59,29 +75,60 @@ import {
 import { useGetListProduct } from "@/infrastructure/services/service/admin/product.action";
 
 const route = useRoute();
-
+// Lấy id product trên path
 const productId = ref<string>(String(route.params.id));
 
-  const params = ref<FindProductDetailRequest>({
+// Loading dữ liệu danh sách sản phẩm chi tiết có mã sản phẩm
+const params = ref<FindProductDetailRequest>({
   page: 1,
   size: 10,
-  idSanPham: productId.value
+  idSanPham: productId.value,
 });
 
-const {data, isLoading, isFetching} = useGetProductDetail(params, {
+const {
+  data,
+  isLoading: productDetailsLoading,
+  isFetching: productDetailsFetching,
+} = useGetProductDetail(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
 
 const handleFilter = (newParams: FindProductDetailRequest) => {
-  params.value = {...params.value, ...newParams};
+  params.value = { ...params.value, ...newParams };
 };
 
 const dataSource = computed(() => data?.value?.data || []);
 
 const handlePaginationChange = (newParams: FindProductDetailRequest) => {
-  params.value = {...params.value, ...newParams};
+  params.value = { ...params.value, ...newParams };
 };
+
+// Loading dữ liệu danh sách toàn bộ sản phẩm chi tiết của cửa hàng
+const paramsAll = ref<FindAllProductDetailRequest>({
+  page: 1,
+  size: 10,
+});
+
+const {
+  data: allProductDetail,
+  isLoading: allProductDetailsLoading,
+  isFetching: allProductDetailsFetching,
+} = useGetAllProductDetail(paramsAll, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const handleFilterAll = (newParams: FindAllProductDetailRequest) => {
+  paramsAll.value = { ...paramsAll.value, ...newParams };
+};
+
+const dataSourceAll = computed(() => allProductDetail?.value?.data || []);
+
+const handlePaginationChangeAll = (newParams: FindAllProductDetailRequest) => {
+  paramsAll.value = { ...paramsAll.value, ...newParams };
+};
+// --------------------------------------------------------------------
 
 const colorItem = ref([]);
 
@@ -155,7 +202,7 @@ const { data: features } = useGetListFeature({
 
 const listFeature = computed(() => {
   return (
-    features?.value?.data.map((feature:any) => ({
+    features?.value?.data.map((feature: any) => ({
       value: feature.id,
       label: feature.ten,
     })) || []
@@ -237,24 +284,100 @@ const listTrademark = computed(() => {
   );
 });
 
-provide('listProduct', dataProduct);
-provide('listMaterial', listMaterial);
-provide('listCollar', listCollar);
-provide('listSleeve', listSleeve);
-provide('listPattern', listPattern);
-provide('listStyle', listStyle);
-provide('listFeature', listFeature);
-provide('listColor', listColor);
-provide('listSize', listSize);
-provide('listTrademark', listTrademark);
+const changeProductDetail = ref(false);
+
+const handleAllProductDetail = (changeProductDetails) => {
+  changeProductDetail.value = changeProductDetails;
+  // console.log(changeProductDetail.value);
+};
+
+const computedFilter = computed(() => {
+  return changeProductDetail.value ? handleFilterAll : handleFilter;
+});
+
+const computedDataSource = computed(() => {
+  return changeProductDetail.value ? dataSourceAll.value : dataSource.value;
+});
+
+const computedLoading = computed(() => {
+  return changeProductDetail.value
+    ? allProductDetailsLoading.value || allProductDetailsFetching.value
+    : productDetailsLoading.value || productDetailsFetching.value;
+});
+
+const computedPaginationParams = computed(() => {
+  return changeProductDetail.value ? paramsAll.value : params.value;
+});
+
+const computedPaginationHandler = computed(() => {
+  return changeProductDetail.value
+    ? handlePaginationChangeAll
+    : handlePaginationChange;
+});
+
+const handleExportToExcel = () => {
+  let allData: any[] = []; // Mảng chứa tất cả dữ liệu từ các trang
+  const dataSourceAll1 = computed(() => data?.value?.data || []);
+  const dataSourceAll2 = computed(() => allProductDetail?.value?.data || []);
+
+
+  // Lặp qua tất cả các trang và thu thập dữ liệu
+  const pageSize = changeProductDetail.value ? dataSourceAll2?.value?.totalPages : dataSourceAll1?.value?.totalPages
+  console.log(pageSize);
+  
+  for (let page = 1; page <= pageSize; page++) {
+    // Lấy dữ liệu từ trang hiện tại
+    allData = allData.concat(changeProductDetail.value ? dataSourceAll2?.value?.data : dataSourceAll1?.value?.data); // Kết hợp dữ liệu vào mảng allData
+  }
+
+  const dataExcel = computedDataSource.value?.data;
+  const filteredData = dataExcel?.map((item: any) => {
+    return {
+      STT: item.catalog,
+      "Mã sản phẩm": item.maSanPhamChiTiet,
+      "Tên Sản Phẩm": item.sanPham,
+      "Chất liệu": item.chatLieu,
+      "Thương hiệu": item.thuongHieu,
+      "Cổ áo": item.coAo,
+      "Tay áo": item.tayAo,
+      "Kiểu dáng": item.kieuDang,
+      "Họa tiết": item.hoaTiet,
+      "Tính năng": item.tinhNang,
+      Giá: formatter(item.gia) || 0,
+      "Số lượng": item.soLuong || 0,
+      "Trạng thái": item.trangThai ? "Đang áp dụng" : "Ngừng áp dụng",
+    };
+  });
+  // const ws = XLSX.utils.json_to_sheet(filteredData);
+  // const wb = XLSX.utils.book_new();
+  // XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  // XLSX.writeFile(wb, 'danh_sach.xlsx');
+  console.log(allData);
+};
+
+const formatter = (value: any) => {
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+// provide để truyền dữ liệu sang component con
+provide("listProduct", dataProduct);
+provide("listMaterial", listMaterial);
+provide("listCollar", listCollar);
+provide("listSleeve", listSleeve);
+provide("listPattern", listPattern);
+provide("listStyle", listStyle);
+provide("listFeature", listFeature);
+provide("listColor", listColor);
+provide("listSize", listSize);
+provide("listTrademark", listTrademark);
 
 watch(
-    () => data.value,
-    (newData) => {
-      if (newData) {
-
-      }
-    },
-    {immediate: true}
+  () => data.value,
+  (newData) => {
+    if (newData) {
+    }
+  },
+  { immediate: true }
 );
 </script>

@@ -7,5 +7,7 @@ import lombok.Setter;
 @Getter
 public class AdCreateUpdateMauSacRequest {
 
+    private String maMauSac;
+
     private String ten;
 }
