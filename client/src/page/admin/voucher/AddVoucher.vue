@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center bg-white rounded-md shadow p-4">
       <div class="flex items-center gap-4">
-        <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48" />
+        <v-icon name="io-pricetag-outline" size="x-large" width="48" height="48" />
         <h3 class="text-2xl font-semibold m-0">Thêm phiếu giảm giá</h3>
       </div>
       <div 

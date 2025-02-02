@@ -1,13 +1,15 @@
 <template>
-  <div>
-    <div>
-      <h3
-        class="flex justify-center items-center text-1000 text-3xl font-semibold"
-      >
-        Thêm sản phẩm
-      </h3>
+  <div class="p-6 grid grid-cols-1 gap-6">
+      <div class="flex items-center gap-2">
+        <v-icon
+          name="md-widgets-outlined"
+          size="x-large"
+          width="48"
+          height="48"
+        />
+        <h3 class="text-2xl m-0">Thêm sản phẩm</h3>
     </div>
-    <div>
+    <div class="p-4 rounded-xl border-2 flex flex-col gap-6">
       <a-form
         layout="vertical"
         class="p-10 grid grid-cols-4 gap-4 md:grid-cols-1 lg:grid-cols-3"
@@ -286,7 +288,7 @@
         @onCancel="isOpenModalCreateProduct = false"
       />
     </div>
-    <div class="p-10">
+    <div class="rounded-xl p-8 rounded-xl border-2">
       <div v-if="productDetails.length > 0" class="mb-5 label-bold">
         <h1>Bảng sản phẩm chi tiết</h1>
       </div>

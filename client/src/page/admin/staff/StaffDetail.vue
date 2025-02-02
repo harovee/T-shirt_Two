@@ -2,7 +2,7 @@
   <div class="p-6 grid grid-cols-1 gap-6">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48"/>
+        <v-icon name="la-user-alt-solid" size="x-large" width="48" height="48"/>
         <h3 class="text-2xl m-0">Thông tin nhân viên</h3>
       </div>
       <div class="flex items-center gap-2 scale-75 transition-all cursor-pointer

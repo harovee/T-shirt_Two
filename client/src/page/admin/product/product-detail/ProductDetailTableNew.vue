@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-10 shadow-md p-3 rounded-md m-3">
+  <div>
     <div class="flex justify-between items-center mb-5">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">

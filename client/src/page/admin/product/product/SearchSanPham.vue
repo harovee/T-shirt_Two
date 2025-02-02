@@ -1,10 +1,5 @@
 <template>
-  <div class="shadow-md p-3 rounded-md m-3">
-    <h2 class="p-4 d-flex align-items-center text-primary text-3xl font-semibold">
-      <v-icon name="co-filter" scale="2"/>
-      <span class="ml-2">Bộ lọc</span>
-    </h2>
-    <a-form
+  <a-form
       layout="vertical"
       class="grid grid-cols-4 gap-4 md:grid-cols-1 lg:grid-cols-3"
   >
@@ -40,7 +35,6 @@
       </a-select>
     </a-form-item>
   </a-form>
-  </div>
 </template>
 
 <script setup lang="ts">

@@ -118,11 +118,11 @@ const statusCounts = ref<{ [key: string]: number }>({});
 const fetchStatusCounts = async () => {
   try {
     const response = await getBillStatusCount();
-    // console.log("✅ Dữ liệu trả về từ API:", response);
+    console.log("✅ Dữ liệu trả về từ API:", response);
 
     statusCounts.value = response.data || {};
   } catch (error) {
-    // console.error("❌ Lỗi khi lấy số lượng trạng thái:", error);
+    console.error("❌ Lỗi khi lấy số lượng trạng thái:", error);
   }
 };
 

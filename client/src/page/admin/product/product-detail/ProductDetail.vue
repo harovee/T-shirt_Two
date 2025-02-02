@@ -1,14 +1,29 @@
 <template>
-  <h1 class="flex justify-center items-center text-1000 text-3xl font-semibold">
-    <span class="m-3 text-xxl">Chi tiết sản phẩm</span>
-  </h1>
+<div class="p-6 grid grid-cols-1 gap-6">
+  <div class="flex items-center gap-2">
+        <v-icon
+          name="md-widgets-outlined"
+          size="x-large"
+          width="48"
+          height="48"
+        />
+        <h3 class="text-2xl m-0">Sản phẩm chi tiết</h3>
+      </div>
   <div>
-    <search-product-detail
+    <div class="p-4 rounded-xl border-2 flex flex-col gap-6">
+      
+      <div class="flex items-center gap-2">
+        <v-icon name="si-iconfinder" size="x-large" width="24" height="24" />
+        <h4 class="text-xl m-0">Bộ lọc</h4>
+      </div>
+      <search-product-detail
       @filter="computedFilter"
       @fetch-all-product-detail="handleAllProductDetail"
       @export-to-excel="handleExportToExcel"
     />
-    <div class="rounded-xl">
+    </div>
+    
+    <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
       <product-detail-table-new
         :data-source="computedDataSource"
         :loading="computedLoading"
@@ -19,6 +34,7 @@
       />
     </div>
   </div>
+</div>
 </template>
 
 <script lang="ts" setup>

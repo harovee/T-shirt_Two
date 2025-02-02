@@ -57,7 +57,7 @@
         </div>
       </a-layout-content>
       <a-layout-footer class="text-center">
-        T-Shirts Two ©2024 Created by Haove
+        T-Shirts Two ©2024 Created by Team 2
       </a-layout-footer>
     </a-layout>
   </a-layout>
@@ -69,8 +69,9 @@ import {computed, h, reactive, ref, VueElement} from 'vue';
 import {useRouter} from 'vue-router';
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import {useAuthStore} from "@/infrastructure/stores/auth.ts";
-import {AppstoreOutlined, MailOutlined, MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons-vue';
+import {AppstoreOutlined, MailOutlined, MenuFoldOutlined, MenuUnfoldOutlined, BarChartOutlined,FileTextOutlined, PercentageOutlined, TagOutlined, TeamOutlined, UserOutlined} from '@ant-design/icons-vue';
 import {ItemType, MenuProps} from "ant-design-vue";
+
 
 const selectedKeys = ref([ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name]);
 const openKeys = ref(['sub1']);
@@ -186,9 +187,9 @@ const menuItems = ref([
 ]);
 
 const items: ItemType[] = reactive([
-  getItem('Thống kê', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () => h(MailOutlined)),
+  getItem('Thống kê', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () => h(BarChartOutlined)),
 
-  getItem('Hóa đơn', ROUTES_CONSTANTS.ADMIN.children.BILL.name, () => h(MailOutlined), [
+  getItem('Hóa đơn', ROUTES_CONSTANTS.ADMIN.children.BILL.name, () => h(FileTextOutlined), [
     // getItem('Bán hàng', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
     getItem('Quản lý hóa đơn', ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name, null),
   ]),
@@ -208,13 +209,13 @@ const items: ItemType[] = reactive([
     getItem('Họa tiết', ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PATTERN.name)
   ]),
 
-  getItem('Đợt giảm giá', ROUTES_CONSTANTS.ADMIN.children.SALE.name, () => h(MailOutlined)),
+  getItem('Đợt giảm giá', ROUTES_CONSTANTS.ADMIN.children.SALE.name, () => h(PercentageOutlined)),
 
-  getItem('Phiếu giảm giá', ROUTES_CONSTANTS.ADMIN.children.VOUCHER.name, () => h(MailOutlined)),
+  getItem('Phiếu giảm giá', ROUTES_CONSTANTS.ADMIN.children.VOUCHER.name, () => h(TagOutlined)),
 
-  getItem('Nhân viên', ROUTES_CONSTANTS.ADMIN.children.STAFF.name, () => h(MailOutlined)),
+  getItem('Nhân viên', ROUTES_CONSTANTS.ADMIN.children.STAFF.name, () => h(UserOutlined)),
 
-  getItem('Khách hàng', ROUTES_CONSTANTS.ADMIN.children.CLIENT.name, () => h(MailOutlined)),
+  getItem('Khách hàng', ROUTES_CONSTANTS.ADMIN.children.CLIENT.name, () => h(TeamOutlined)),
 ]);
 
 const handleClick: MenuProps['onClick'] = e => {

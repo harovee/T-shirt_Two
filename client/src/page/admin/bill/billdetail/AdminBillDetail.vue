@@ -4,7 +4,7 @@
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
         <v-icon
-          name="md-switchaccount-round"
+          name="la-file-invoice-solid"
           size="x-large"
           width="48"
           height="48"

@@ -1,12 +1,18 @@
 <template>
-  <div>
-    <h1
-      class="flex justify-center items-center text-1000 text-3xl font-semibold"
-    >
-      <span class="m-3 text-xxl">Quản lý họa tiết</span>
-    </h1>
-    <search-pattern @filter="handleFilter"/>
-    <div class="rounded-xl">
+  <div class="p-6 grid grid-cols-1 gap-6">
+    <div class="flex items-center gap-2">
+        <h3 class="text-2xl m-0">Quản lý danh mục</h3>
+      </div>
+    <div class="p-4 rounded-xl border-2 flex flex-col gap-6">
+      
+      <div class="flex items-center gap-2">
+        <v-icon name="si-iconfinder" size="x-large" width="24" height="24" />
+        <h4 class="text-xl m-0">Bộ lọc</h4>
+      </div>
+      <search-pattern @filter="handleFilter"/>
+    </div>
+    
+    <div class="rounded-xl p-4 rounded-xl border-2">
       <pattern-table
           :data-source="dataSource"
           :loading="isLoading || isFetching"

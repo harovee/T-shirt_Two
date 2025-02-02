@@ -77,7 +77,7 @@
         </div>
       </a-layout-content>
       <a-layout-footer class="text-center">
-         T-Shirts Two ©2024 Created by Haove
+         T-Shirts Two ©2024 Created by Team 2
       </a-layout-footer>
     </a-layout>
   </a-layout>

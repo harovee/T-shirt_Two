@@ -32,7 +32,7 @@ public class AdminBillController {
     }
 
     @GetMapping()
-    public ResponseEntity<?> getBills(@Valid final AdminFindBillRequest request) {
+    public ResponseEntity<?> getBills(final AdminFindBillRequest request) {
         return Helper.createResponseEntity(adminBillService.getBills(request));
     }
 
