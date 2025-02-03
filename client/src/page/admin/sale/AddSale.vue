@@ -27,7 +27,7 @@
                             </a-radio-group>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
-                        <a-input-number v-model:value="formState.giaTri" min="0" style="width: 100%"></a-input-number>
+                        <a-input-number v-model:value="formState.giaTri" min="1" style="width: 100%"></a-input-number>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
                         <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10" style="width: 100%">
@@ -42,8 +42,8 @@
                             :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']" :presets="rangePresets" />
                     </a-form-item>
 
-                    <a-form-item class="m-0 mt-2" label="" name="trangThai">
-                        <a-checkbox v-model:checked="formState.trangThai">Hoạt động</a-checkbox>
+                    <a-form-item class="m-0 mt-2 hidden" label="" name="trangThai">
+                        <a-checkbox checked="true">Hoạt động</a-checkbox>
                     </a-form-item>
 
 
@@ -72,7 +72,7 @@
     <div class="p-2 grid grid-cols-1 gap-6">
       <div class="flex justify-between items-center">
           <div class="flex items-center gap-2">
-              <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48" />
+              <AppstoreAddOutlined style="font-size: 35px;" />
               <h3 class="text-xl m-0">Các sản phẩm chi tiết cần thêm vào đợt giảm giá</h3>
           </div>
           <div v-if="idSanPhamChiTiets.length > 0" class="flex items-center gap-2 scale-75 cursor-pointer"
@@ -107,7 +107,7 @@ import router from "@/infrastructure/routes/router.ts";
 import { reactive, ref, createVNode, onMounted, watch } from "vue";
 import type { UnwrapRef } from 'vue';
 import {Modal} from "ant-design-vue";
-import {ExclamationCircleOutlined, PlusCircleOutlined} from "@ant-design/icons-vue";
+import {ExclamationCircleOutlined, PlusCircleOutlined, AppstoreAddOutlined} from "@ant-design/icons-vue";
 import type { Rule } from 'ant-design-vue/es/form';
 import { keepPreviousData } from "@tanstack/vue-query";
 import dayjs from 'dayjs';
@@ -135,7 +135,7 @@ let formState: UnwrapRef<FormState> = reactive( {
     ma: '',
     ten: '',
     loai: 'PERCENT',
-    giaTri: 0,
+    giaTri: 1,
     giaTriGiamToiDa: null,
     ngayBatDauVaKetThuc: [],
     nguoiSua: undefined,
@@ -153,11 +153,11 @@ const rules: Record<string, Rule[]> = {
       { required: true, message: 'Vui lòng nhập giá trị giảm', trigger: 'change' },
       {
           validator: (rule, value) => {
-              if (formState.loai === 'PERCENT' && value != null && value <= 0) {
-                  return Promise.reject('Giá trị giảm phải lớn hơn 0');
+              if (formState.loai === 'PERCENT' && value != null && value < 1) {
+                  return Promise.reject('Giá trị giảm phải từ 1');
               }
               if (formState.loai === 'PERCENT' && value > 100) {
-                  return Promise.reject('Giá trị giảm chỉ bé hơn hoặc bằng 100%');
+                  return Promise.reject('Giá trị giảm không lớn hơn 100%');
               }
               return Promise.resolve();
           },

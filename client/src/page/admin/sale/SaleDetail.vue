@@ -124,7 +124,7 @@
     <div class="p-2 grid grid-cols-1 gap-6">
       <div class="flex justify-between items-center">
           <div class="flex items-center gap-2">
-              <v-icon name="md-switchaccount-round" size="x-large" width="48" height="48" />
+              <AppstoreAddOutlined style="font-size: 35px;" />
               <h3 class="text-xl m-0">Các sản phẩm chi tiết cần thêm vào đợt giảm giá</h3>
           </div>
           <div v-if="idSanPhamChiTiets.length > 0" class="flex items-center gap-2 scale-75 cursor-pointer"

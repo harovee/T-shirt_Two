@@ -26,6 +26,7 @@
     <a-form-item label="Tìm trong khoảng thời gian" class="col-span-4 md:col-span-3 lg:col-span-1">
         <a-range-picker size="" style="" show-time format="DD/MM/YYYY HH:mm" :presets="rangePresets"
           :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
+          v-model:value="selectedDateRange"
           @change="onRangeChange" />
     </a-form-item>
 
@@ -57,18 +58,22 @@ const params = ref<PropertySaleParams>({
   ngayKetThuc: null
 })
 
-type RangeValue = [Dayjs, Dayjs];
+type RangeValue = [Dayjs, Dayjs] | null;
 
 const onRangeChange = (dates: RangeValue, dateStrings: string[]) => {
   if (dates) {
+    selectedDateRange.value = dates;
     params.value['ngayBatDau'] = dayjs(convertDateFormat(dateStrings[0])).unix() * 1000;
     params.value['ngayKetThuc'] = dayjs(convertDateFormat(dateStrings[1])).unix() * 1000;
   } else {
+    selectedDateRange.value = null;
     params.value['ngayBatDau'] = null;
     params.value['ngayKetThuc'] = null;
   }
   debouncedEmit();
 };
+const selectedDateRange = ref<RangeValue>(null);
+
 
 const rangePresets = ref([
   {  label: 'Hôm qua', value: [dayjs().startOf('d').add(-1, 'd'), dayjs().endOf('d').add(-1, 'd')] },
@@ -117,6 +122,7 @@ function removeSaleFiler() {
     ngayBatDau: null,
     ngayKetThuc: null
   }
+  selectedDateRange.value = null;
 }
 
 watch(
