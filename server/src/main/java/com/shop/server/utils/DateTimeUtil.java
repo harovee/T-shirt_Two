@@ -62,9 +62,16 @@ public class DateTimeUtil {
         return System.currentTimeMillis();
     }
 
+    public static String convertDateToStringForExcel(Date date) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
+        formatter.setTimeZone(TimeZone.getDefault());
+        return formatter.format(date);
+    }
+
     public static void main(String[] args) {
         System.out.println(DateTimeUtil.convertStringToTimeStampSecond("2024-12-04T06:53:29.493Z"));
         System.out.println(DateTimeUtil.convertTimeStampSecondToString(1736755662935L / 1000L));
+        System.out.println(DateTimeUtil.convertDateToStringForExcel(new Date()));
     }
 
 }
