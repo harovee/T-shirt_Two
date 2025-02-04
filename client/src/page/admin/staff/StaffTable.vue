@@ -26,6 +26,7 @@
           <a-button
               class="bg-purple-300 flex justify-between items-center gap-2"
               size="large"
+              @click="handleExportStaffs"
           >
             <v-icon name="fa-file-export"/>
           </a-button>
@@ -119,7 +120,7 @@
 import TableTShirt from "@/components/ui/Table.vue";
 import {ColumnType} from "ant-design-vue/es/table";
 import {defineEmits, watch} from "vue";
-import {useChangeStatusStaff} from "@/infrastructure/services/service/admin/staff.action.ts";
+import {useChangeStatusStaff, useExportStaffs} from "@/infrastructure/services/service/admin/staff.action.ts";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
 import {convertTextCode} from "@/utils/common.helper.ts";
@@ -138,6 +139,7 @@ const props = defineProps({
 });
 
 const {mutate: changeStatusStaff} = useChangeStatusStaff();
+const {mutate: exportStaffs} = useExportStaffs();
 
 const handleChangeStatusStaff = (id: string) => {
   try {
@@ -157,6 +159,19 @@ const handleChangeStatusStaff = (id: string) => {
         });
       },
     })
+  } catch (error: any) {
+    console.error("🚀 ~ handleChangeStatus ~ error:", error);
+    notification.warning({
+      message: 'Thông báo',
+      description: error?.response?.data?.message,
+      duration: 4,
+    });
+  }
+}
+
+const handleExportStaffs = () => {
+  try {
+    exportStaffs();
   } catch (error: any) {
     console.error("🚀 ~ handleChangeStatus ~ error:", error);
     notification.warning({

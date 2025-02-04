@@ -113,3 +113,11 @@ export const updateAvatarStaff = async (staffId: string, data: StaffRequest) => 
         DefaultResponse<DefaultResponse<null>>
     >;
 }
+
+export const exportStaffs = async () => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_STAFF}/export-excel`,
+        method: "GET",
+        responseType: 'blob',
+    });
+}

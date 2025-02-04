@@ -1,6 +1,7 @@
 import {
     changeStatusStaff,
     createStaff,
+    exportStaffs,
     FindStaffRequest,
     getStaffById,
     getStaffs,
@@ -91,3 +92,22 @@ export const useUpdateStaffAvatar = () => {
         },
     });
 }
+
+export const useExportStaffs = () => {
+    return useMutation({
+        mutationFn: () => exportStaffs(),
+        onSuccess: (res) => {
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const excel = document.createElement("a");
+            excel.href = url;
+            excel.download = `nhan_vien_${Date.now()}.xlsx`;
+            document.body.appendChild(excel);
+            excel.click();
+            excel.remove();
+            window.URL.revokeObjectURL(url);
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.staff.exportStaffs + "🚀 ~ staffUpdateExportStaffs ~ error:", error);
+        },
+    });
+};

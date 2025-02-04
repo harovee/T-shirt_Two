@@ -25,6 +25,9 @@ export const queryKey = {
         staff: {
             staffList: "adStaffListKey",
             staffDetail: "adStaffDetailKey",
+            exportStaffs: "adStaffExportKey",
+            importStaffs: "adStaffImportKey",
+            downloadTemplateStaffs: "adStaffDownloadTemplateKey",
         },
         user: {
             userList: "adUserListKey",
