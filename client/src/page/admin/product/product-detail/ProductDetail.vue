@@ -332,19 +332,6 @@ const computedPaginationHandler = computed(() => {
 });
 
 const handleExportToExcel = () => {
-  let allData: any[] = []; // Mảng chứa tất cả dữ liệu từ các trang
-  const dataSourceAll1 = computed(() => data?.value?.data || []);
-  const dataSourceAll2 = computed(() => allProductDetail?.value?.data || []);
-
-
-  // Lặp qua tất cả các trang và thu thập dữ liệu
-  const pageSize = changeProductDetail.value ? dataSourceAll2?.value?.totalPages : dataSourceAll1?.value?.totalPages
-  console.log(pageSize);
-  
-  for (let page = 1; page <= pageSize; page++) {
-    // Lấy dữ liệu từ trang hiện tại
-    allData = allData.concat(changeProductDetail.value ? dataSourceAll2?.value?.data : dataSourceAll1?.value?.data); // Kết hợp dữ liệu vào mảng allData
-  }
 
   const dataExcel = computedDataSource.value?.data;
   const filteredData = dataExcel?.map((item: any) => {
@@ -364,11 +351,11 @@ const handleExportToExcel = () => {
       "Trạng thái": item.trangThai ? "Đang áp dụng" : "Ngừng áp dụng",
     };
   });
-  // const ws = XLSX.utils.json_to_sheet(filteredData);
-  // const wb = XLSX.utils.book_new();
-  // XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-  // XLSX.writeFile(wb, 'danh_sach.xlsx');
-  console.log(allData);
+  const ws = XLSX.utils.json_to_sheet(filteredData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  XLSX.writeFile(wb, 'danh_sach.xlsx');
+  // console.log(allData);
 };
 
 const formatter = (value: any) => {

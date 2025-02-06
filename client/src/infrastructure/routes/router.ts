@@ -328,7 +328,8 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: ROUTES_CONSTANTS.CLIENT.path,
         name: ROUTES_CONSTANTS.CLIENT.name,
-        redirect: ROUTES_CONSTANTS.CLIENT.children.HOME,
+        component: () => import('@/layout/client/Client.vue'),
+        redirect: ROUTES_CONSTANTS.CLIENT.children.HOME.path,
         meta: {
             requiresAuth: false
         },
@@ -336,7 +337,31 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: ROUTES_CONSTANTS.CLIENT.children.HOME.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.HOME.name,
-                component: () => import('@/layout/client/Client.vue'),
+                component: () => import('@/page/client/Home.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.PRODUCTS.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.PRODUCTS.name,
+                component: () => import('@/page/client/Products.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.ABOUT.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.ABOUT.name,
+                component: () => import('@/page/client/About.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.CONTACT.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.CONTACT.name,
+                component: () => import('@/page/client/Contact.vue'),
                 meta: {
                     requiresAuth: false
                 },

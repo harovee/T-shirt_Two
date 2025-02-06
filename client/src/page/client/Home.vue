@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <h1>Banner Client</h1>
-  </div>
+  <div class="container mx-auto px-4">
+  <h1>Banner Client</h1>
+</div>
 </template>
 
 <script lang="ts">
