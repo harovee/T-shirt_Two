@@ -37,6 +37,10 @@ public class BillPaymentController {
         return Helper.createResponseEntity(adminPaymentServices.getAllVoucherKhachHang(request));
     }
 
+    @GetMapping("/voucher/{id}")
+    public ResponseEntity<?> getVoucherInKhachHangById(@PathVariable String id) {
+        return Helper.createResponseEntity(null);
+    }
     @GetMapping("/payment-method")
     public ResponseEntity<?> getPaymentMethod() {
         return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan());
