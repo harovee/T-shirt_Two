@@ -25,6 +25,10 @@ export const ROUTES_CONSTANTS = {
                 path: "statistic",
                 name: "admin-statistic",
             },
+            POINT_OF_SALE: {
+                path: "point-of-sale",
+                name: "admin-point-of-sale",
+            },
             PRODUCTS: {
                 name: "admin-products",
                 children: {

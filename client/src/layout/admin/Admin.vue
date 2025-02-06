@@ -184,6 +184,10 @@ const menuItems = ref([
     key: ROUTES_CONSTANTS.ADMIN.children.VOUCHER.name,
     path: ROUTES_CONSTANTS.ADMIN.children.VOUCHER.path,
   },
+  {
+    key: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.path
+  },
 ]);
 
 const items: ItemType[] = reactive([
@@ -216,6 +220,9 @@ const items: ItemType[] = reactive([
   getItem('Nhân viên', ROUTES_CONSTANTS.ADMIN.children.STAFF.name, () => h(UserOutlined)),
 
   getItem('Khách hàng', ROUTES_CONSTANTS.ADMIN.children.CLIENT.name, () => h(TeamOutlined)),
+
+  getItem('Bán tại quầy', ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name, () => h(BarChartOutlined)),
+
 ]);
 
 const handleClick: MenuProps['onClick'] = e => {

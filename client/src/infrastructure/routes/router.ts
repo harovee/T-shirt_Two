@@ -72,6 +72,15 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
+                name: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.path,
+                component: () => import('@/page/admin/point.of.sale/PointOfSale.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
                 component: () => import('@/page/admin/bill/bill/AdminBill.vue'),
