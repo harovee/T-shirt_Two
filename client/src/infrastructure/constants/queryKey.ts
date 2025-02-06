@@ -84,6 +84,7 @@ export const queryKey = {
             billList: "adBillListKey",
             billById: "adBillByIdKey",
             billHistory: "adBillHistoryKey",
+            billsWait: "adBillWaitKey"
         },
         billdetail: {
             detailList: "adBillDetail"

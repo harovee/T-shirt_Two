@@ -69,7 +69,7 @@ import {computed, h, reactive, ref, VueElement} from 'vue';
 import {useRouter} from 'vue-router';
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import {useAuthStore} from "@/infrastructure/stores/auth.ts";
-import {AppstoreOutlined, MailOutlined, MenuFoldOutlined, MenuUnfoldOutlined, BarChartOutlined,FileTextOutlined, PercentageOutlined, TagOutlined, TeamOutlined, UserOutlined} from '@ant-design/icons-vue';
+import {AppstoreOutlined, MailOutlined, MenuFoldOutlined, MenuUnfoldOutlined, BarChartOutlined,FileTextOutlined, PercentageOutlined, TagOutlined, TeamOutlined, UserOutlined, ShoppingCartOutlined} from '@ant-design/icons-vue';
 import {ItemType, MenuProps} from "ant-design-vue";
 
 
@@ -193,6 +193,8 @@ const menuItems = ref([
 const items: ItemType[] = reactive([
   getItem('Thống kê', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () => h(BarChartOutlined)),
 
+  getItem('Bán tại quầy', ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name, () => h(ShoppingCartOutlined)),
+
   getItem('Hóa đơn', ROUTES_CONSTANTS.ADMIN.children.BILL.name, () => h(FileTextOutlined), [
     // getItem('Bán hàng', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
     getItem('Quản lý hóa đơn', ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name, null),
@@ -221,7 +223,7 @@ const items: ItemType[] = reactive([
 
   getItem('Khách hàng', ROUTES_CONSTANTS.ADMIN.children.CLIENT.name, () => h(TeamOutlined)),
 
-  getItem('Bán tại quầy', ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name, () => h(BarChartOutlined)),
+  
 
 ]);
 

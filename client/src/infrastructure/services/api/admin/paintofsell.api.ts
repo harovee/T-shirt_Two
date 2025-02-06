@@ -26,13 +26,6 @@ export interface BillRequest {
     ghiChu: String | null;
 }
 
-export interface BillCreateRequest {
-    loaiHD: string | null,
-    idNhanVien: string | null,
-    idKhachHang: string | null,
-    idPhieuGiamGia: string | null
-}
-
 export type BillResponse = ResponseList & {
     catalog: number | null;
     ma: string | null;
@@ -66,17 +59,6 @@ export const getBills = async (params: Ref<FindBillRequest>) => {
     return res.data;
 }
 
-export const getBillsWait = async () => {
-    const res = (await request ({
-        url: `${API_ADMIN_BILL}/bill-wait`,
-        method: 'GET',
-    })) as AxiosResponse<
-        DefaultResponse<Array<BillResponse>>
-    >;
-
-    return res.data;
-}
-
 export const getBillById = async (billId: string | null) => {
     return await request ({
         url: `${API_ADMIN_BILL}/${billId}`,
@@ -85,18 +67,6 @@ export const getBillById = async (billId: string | null) => {
         DefaultResponse<PaginationResponse<Array<BillResponse>>>
     >;
 }
-
-export const createBillsWait = async (data: BillCreateRequest) => {
-    const res = (await request({
-        url: `${API_ADMIN_BILL}/`,
-        method: "POST",
-        data: data
-    })) as AxiosResponse<
-        DefaultResponse<DefaultResponse<null>>
-    >;
-
-    return res.data;
-};
 
 export const updateBill = async (idBill: string, params: BillRequest) => {
     return await request({
