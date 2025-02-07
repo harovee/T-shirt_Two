@@ -78,13 +78,19 @@
             </a-dropdown>
           </div>
       </a-layout-header>
-      <a-layout-content class="mx-4">
+      <a-layout-content>
         <div class="min-h-[calc(100vh-9.5rem)] bg-white">
           <router-view />
         </div>
       </a-layout-content>
-      <a-layout-footer class="text-center">
-        T-Shirts Two ©2024 Created by Team 2
+      <a-layout-footer>
+        <div class="mb-8">
+          <footer-view/>
+        </div>
+        <hr>
+        <div class="text-center mt-6">
+          T-Shirts Two ©2024 Created by Team 2
+        </div>
       </a-layout-footer>
     </a-layout>
   </a-layout>
@@ -95,6 +101,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path.ts";
 import { useAuthStore } from "@/infrastructure/stores/auth.ts";
+import FooterView from "@/page/client/FooterView.vue"
 
 const auth = useAuthStore();
 

@@ -337,7 +337,7 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: ROUTES_CONSTANTS.CLIENT.children.HOME.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.HOME.name,
-                component: () => import('@/page/client/Home.vue'),
+                component: () => import('@/page/client/menu/Home.vue'),
                 meta: {
                     requiresAuth: false
                 },
@@ -345,7 +345,7 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: ROUTES_CONSTANTS.CLIENT.children.PRODUCTS.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.PRODUCTS.name,
-                component: () => import('@/page/client/Products.vue'),
+                component: () => import('@/page/client/menu/Products.vue'),
                 meta: {
                     requiresAuth: false
                 },
@@ -353,7 +353,7 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: ROUTES_CONSTANTS.CLIENT.children.ABOUT.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.ABOUT.name,
-                component: () => import('@/page/client/About.vue'),
+                component: () => import('@/page/client/menu/About.vue'),
                 meta: {
                     requiresAuth: false
                 },
@@ -361,7 +361,7 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: ROUTES_CONSTANTS.CLIENT.children.CONTACT.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.CONTACT.name,
-                component: () => import('@/page/client/Contact.vue'),
+                component: () => import('@/page/client/menu/Contact.vue'),
                 meta: {
                     requiresAuth: false
                 },
