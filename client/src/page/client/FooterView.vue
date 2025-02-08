@@ -79,7 +79,8 @@
         Địa chỉ trụ sở doanh nghiệp: Tầng 26, Tòa nhà L, 285 Trường cao đẳng FPT
         Polytechnic, đường Trịnh Văn Bô, quận Nam Từ Liêm, thành phố Hà Nội
       </p>
-      <p>Điện thoại: 0987654321 Email: tshirttwo2@gmail.com</p>
+      <p>Điện thoại: 0987654321</p>
+      <p>Email: tshirttwo2@gmail.com</p>
     </div>
   </div>
 </template>

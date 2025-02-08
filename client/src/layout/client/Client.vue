@@ -1,7 +1,7 @@
 <template>
   <a-layout>
     <a-layout>
-      <a-layout-header class="left-0 right-0 z-10 bg-white shadow-md header">
+      <a-layout-header class="me-4 left-0 right-0 z-10 bg-white shadow-md fixed top-0 w-full header">
           <router-link to="/home" class="logo-link ms-10">
             <img
               src="@/assets/image/logo/T-ShirtTwo.png"
@@ -78,7 +78,7 @@
             </a-dropdown>
           </div>
       </a-layout-header>
-      <a-layout-content>
+      <a-layout-content class="mt-[80px]">
         <div class="min-h-[calc(100vh-9.5rem)] bg-white">
           <router-view />
         </div>
