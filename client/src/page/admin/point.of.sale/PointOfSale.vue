@@ -18,7 +18,41 @@
         </a-tabs>
       </div>
 
-      <div class="rounded-xl p-7 mt-6 rounded-xl border-2"></div>
+      <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold">Tài khoản</h2>
+          <a-button class="text-blue-500" @click="handleOpenKhachHang"
+            >Chọn tài khoản</a-button
+          >
+          <khach-hang-payment-table
+            :open="open"
+            @handleClose="handleClose"
+            @cancel="open = false"
+            class="w-600"
+            @handleOpenKhachHang="handleOpenKhachHang"
+            @selectCustomer="handleCustomerSelected"
+          />
+        </div>
+        <div class="mb-6 h-100">
+          <p>
+            <strong>Tên khách hàng:</strong>
+            {{ selectedCustomer?.name || "Khách lẻ" }}
+          </p>
+          <template v-if="selectedCustomer">
+            <p><strong>Số điện thoại:</strong> {{ selectedCustomer.phoneNumber }}</p>
+            <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
+          </template>
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold">Khách hàng</h2>
+          <a-button class="text-blue-500">Chọn địa chỉ</a-button>
+        </div>
+        <hr />
+        <div class="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <payment-information/>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -31,27 +65,51 @@ import {
   useCreateBillsWait,
 } from "@/infrastructure/services/service/admin/bill.action";
 import { BillCreateRequest } from "@/infrastructure/services/api/admin/bill.api";
+
+import KhachHangPaymentTable from "./KhachHangPaymentTable.vue";
+import PaymentInformation from "./PaymentInformation.vue";
 import { warningNotiSort, successNotiSort } from "@/utils/notification.config";
 
 const { data, isLoading, isFetching } = useGetBillsWait();
 
 const dataSource = computed(() => data?.value?.data || []);
 
+const open = ref(false);
+
+const handleOpenKhachHang = () => {
+  open.value = true;
+};
 watch(
   () => dataSource.value,
   (newData) => {
     if (newData) {
-        console.log(newData);
+      console.log(newData);
     }
   },
   { immediate: true }
 );
 
+const handleClose = () => {
+  open.value = false;
+};
+const selectedCustomer = ref<{
+  id: string;
+  name: string;
+  phoneNumber: string;
+  email: string;
+} | null>(null);
+
+const handleCustomerSelected = (customer: any) => {
+  selectedCustomer.value = customer;
+  console.log("Khách hàng đã chọn:", customer);
+};
 const panes = ref<{ title: string; content: string; key: string }[]>([
   { title: "Tab 1", content: "Content of Tab 1", key: "1" },
   { title: "Tab 2", content: "Content of Tab 2", key: "2" },
   { title: "Tab 3", content: "Content of Tab 3", key: "3" },
 ]);
+
+const activeKey = ref<string | null>(null);
 
 const newTabIndex = ref(0);
 
@@ -70,7 +128,7 @@ const add = async () => {
     await createBillWail(payload);
     successNotiSort("Tạo hóa đơn thành công");
   } else {
-    warningNotiSort("Không được tạo quá 5 hóa đơn chờ!")
+    warningNotiSort("Không được tạo quá 5 hóa đơn chờ!");
   }
 };
 

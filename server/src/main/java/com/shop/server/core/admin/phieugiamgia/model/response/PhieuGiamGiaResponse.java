@@ -26,7 +26,5 @@ public interface PhieuGiamGiaResponse extends BaseResponse {
 
     Boolean getKieu();
 
-    Boolean getKieu();
-
     String getTrangThai();
 }

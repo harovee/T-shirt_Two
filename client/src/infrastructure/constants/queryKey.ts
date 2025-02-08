@@ -91,12 +91,16 @@ export const queryKey = {
         },
         payment: {
             payHistory: "adPayHistory",
+            customerList: "adCustomerListKey",
+            customerDetail: "adCustomerDetailKey",
+            voucherPayList: "voucherPayListKey",
+            voucherPayDetail: "voucherPayDetailKey"
         },
         voucher: {
             voucherList: "adVoucherListKey",
             voucherDetail: "adVoucherDetailKey",
             khachHangList: "adKhachHangListKey"
-        }
+        },
     },
 
     user: {
