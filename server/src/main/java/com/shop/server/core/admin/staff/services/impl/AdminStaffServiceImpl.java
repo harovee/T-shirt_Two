@@ -2,7 +2,9 @@ package com.shop.server.core.admin.staff.services.impl;
 
 import com.shop.server.core.admin.staff.models.requests.AdminFindStaffRequest;
 import com.shop.server.core.admin.staff.models.requests.AdminStaffRequest;
+import com.shop.server.core.admin.staff.models.responses.AdminStaffExcelResponse;
 import com.shop.server.core.admin.staff.repositories.AdminStaffRepository;
+import com.shop.server.core.admin.staff.services.AdminStaffExcelService;
 import com.shop.server.core.admin.staff.services.AdminStaffMailService;
 import com.shop.server.core.admin.staff.services.AdminStaffService;
 import com.shop.server.core.common.base.PageableObject;
@@ -11,15 +13,16 @@ import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.constants.module.Status;
-import com.shop.server.infrastructure.security.oauth2.session.InfoUserTShirt;
 import com.shop.server.utils.AESPasswordCryptoUtil;
 import com.shop.server.utils.DateTimeUtil;
+import com.shop.server.utils.DefaultImageUtil;
 import com.shop.server.utils.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -30,11 +33,14 @@ public class AdminStaffServiceImpl implements AdminStaffService {
 
     private final AdminStaffMailService emailService;
 
+    private final AdminStaffExcelService staffExcelService;
+
     public AdminStaffServiceImpl(
             AdminStaffRepository adminStaffRepository,
-            AdminStaffMailService emailService) {
+            AdminStaffMailService emailService, AdminStaffExcelService staffExcelService) {
         this.adminStaffRepository = adminStaffRepository;
         this.emailService = emailService;
+        this.staffExcelService = staffExcelService;
     }
 
     @Override
@@ -81,6 +87,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             String pass = AESPasswordCryptoUtil.genPassword(8L);
             staff.setPassword(pass);
             staff.setFullName(request.getName());
+            staff.setSubCode(Helper.getSubCodeFromName(request.getName()));
             staff.setEmail(request.getEmail());
             Long count = adminStaffRepository.countNhanVienByRole(Role.USER) + 1;
             staff.setCode(String.valueOf(count));
@@ -92,8 +99,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setStatus(Status.ACTIVE);
             staff.setDeleted(false);
             if (request.getPicture().isEmpty()) {
-                String defaultImage = "https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp";
-                staff.setProfilePicture(defaultImage);
+                staff.setProfilePicture(DefaultImageUtil.IMAGE);
             } else {
                 staff.setProfilePicture(request.getPicture());
             }
@@ -143,12 +149,13 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             NhanVien staff = staffOptional.get();
             staff.setPassword(request.getPassword());
             staff.setFullName(request.getName());
+            staff.setSubCode(Helper.getSubCodeFromName(request.getName()));
             staff.setEmail(request.getEmail());
             staff.setIdentity(request.getIdentity());
             staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
             staff.setGender(request.getGender());
             staff.setPhoneNumber(request.getPhoneNumber());
-             adminStaffRepository.save(staff);
+            adminStaffRepository.save(staff);
             emailService.sendMailUpdateStaff(staff);
         } catch (Exception e) {
             return ResponseObject.errorForward(
@@ -197,4 +204,10 @@ public class AdminStaffServiceImpl implements AdminStaffService {
                 Message.Success.UPDATE_SUCCESS
         );
     }
+
+    @Override
+    public List<AdminStaffExcelResponse> getStaffsExcel() {
+        return adminStaffRepository.getStaffsExcel();
+    }
+
 }

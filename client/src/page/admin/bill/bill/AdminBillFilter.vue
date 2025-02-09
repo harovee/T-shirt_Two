@@ -107,7 +107,7 @@ const ngayBatDau = ref(dayjs().startOf("day"));
 const params = ref<BillPropsParams>({
   page: 1,
   keyword: null,
-  trangThai: null,
+  trangThai: 'Chờ xác nhận',
   ngayBatDau: ngayBatDau.value.toDate().getTime(),
   ngayKetThuc: null,
   loaiHD: null,
@@ -118,7 +118,7 @@ const statusCounts = ref<{ [key: string]: number }>({});
 const fetchStatusCounts = async () => {
   try {
     const response = await getBillStatusCount();
-    console.log("✅ Dữ liệu trả về từ API:", response);
+    // console.log("✅ Dữ liệu trả về từ API:", response);
 
     statusCounts.value = response.data || {};
   } catch (error) {
@@ -152,6 +152,12 @@ const typeOptions = [
 
 const debouncedEmit = debounce(() => {
   const payload = { ...params.value };
+
+  // ✅ Chuyển "all" thành null khi gửi API
+  if (payload.trangThai === "all") {
+    payload.trangThai = null;
+  }
+
   emit("filter", payload);
 }, 1000);
 
@@ -178,11 +184,14 @@ function onChangeFilter(key: keyof FindBillRequest, value: any) {
     params.value[key] = null;
   }
 
-  if (key === "trangThai" && value === "all") {
-    params.value[key] = null; // Chuyển "all" thành null khi gửi API
+  if (key === "trangThai") {
+    params.value.trangThai = value; // ✅ Giữ "all" trong UI
+  } else if (value && typeof value === "object") {
+    params.value[key] = dayjs.isDayjs(value) ? value.toDate().getTime() : new Date(value).getTime();
   } else {
-    params.value[key] = value;
+    params.value[key] = value || null;
   }
+
   debouncedEmit();
 }
 

@@ -19,9 +19,9 @@ import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.Province;
 import com.shop.server.entities.main.Ward;
 import com.shop.server.infrastructure.constants.module.Message;
-import com.shop.server.infrastructure.security.oauth2.session.InfoUserTShirt;
 import com.shop.server.utils.AESPasswordCryptoUtil;
 import com.shop.server.utils.DateTimeUtil;
+import com.shop.server.utils.DefaultImageUtil;
 import com.shop.server.utils.Helper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -105,7 +105,7 @@ public class AdminClientServiceImpl implements AdminClientService {
         String formattedCode = String.format("%09d", count);
         client.setCode(formattedCode);
         client.setPhoneNumber(request.getPhoneNumber());
-        client.setProfilePicture("https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp");
+        client.setProfilePicture(DefaultImageUtil.IMAGE);
         client.setDeleted(false);
         KhachHang newClient = adminClientRepository.save(client);
         emailService.sendMailCreateClient(newClient);
@@ -161,6 +161,8 @@ public class AdminClientServiceImpl implements AdminClientService {
         client.setPhoneNumber(request.getPhoneNumber());
         client.setProfilePicture(request.getPicture());
         client.setDeleted(false);
+        client.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
+        client.setGender(request.getGender());
         KhachHang newClient = adminClientRepository.save(client);
         emailService.sendMailCreateClient(newClient);
         Address address = new Address();
@@ -211,6 +213,7 @@ public class AdminClientServiceImpl implements AdminClientService {
             client.setGender(request.getGender());
             client.setPhoneNumber(request.getPhoneNumber());
             adminClientRepository.save(client);
+            emailService.sendMailCreateClient(client);
         } catch (Exception e) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,

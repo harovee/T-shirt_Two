@@ -145,8 +145,31 @@ public class Helper {
         return prefix.toUpperCase() + formattedNumber;
     }
 
+    public static String getSubCodeFromName(String name) {
+        if (name == null || name.isBlank()) {
+            return "";
+        }
+        String normalized = removeAccents(name);
+        String[] words = normalized.trim().split("\\s+");
+        if (words.length == 0) {
+            return "";
+        }
+        StringBuilder subCode = new StringBuilder();
+        subCode.append(words[words.length - 1].toLowerCase());
+        for (int i = 0; i < words.length - 1; i++) {
+            subCode.append(Character.toLowerCase(words[i].charAt(0)));
+        }
+        return subCode.toString();
+    }
+
+    public static String removeAccents(String input) {
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(normalized).replaceAll("").replace("đ", "d").replace("Đ", "D");
+    }
+
     public static void main(String[] args) {
-        System.out.println(generateCode("Trịnh Hiếu Nghĩa"));
+        System.out.println(getSubCodeFromName("Trần Thị Ánh Quỳnh"));
     }
 
 }

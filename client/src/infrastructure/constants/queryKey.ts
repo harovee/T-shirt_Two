@@ -25,6 +25,9 @@ export const queryKey = {
         staff: {
             staffList: "adStaffListKey",
             staffDetail: "adStaffDetailKey",
+            exportStaffs: "adStaffExportKey",
+            importStaffs: "adStaffImportKey",
+            downloadTemplateStaffs: "adStaffDownloadTemplateKey",
         },
         user: {
             userList: "adUserListKey",
@@ -87,7 +90,8 @@ export const queryKey = {
             billsWait: "adBillWaitKey"
         },
         billdetail: {
-            detailList: "adBillDetail"
+            detailList: "adBillDetail",
+            billDetailById: "adBillDetailByIdKey",
         },
         payment: {
             payHistory: "adPayHistory",
