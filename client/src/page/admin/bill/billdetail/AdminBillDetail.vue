@@ -34,12 +34,13 @@
     <bill-detail-table
       class="shadow p-4 rounded-lg bg-white"
       :columns="columnsBill"
-      :data-source="detailDataSource?.data?.data"
+      :data-source="detailDataSources"
       :bill-data="billDataById"
       :loading="isLoadingBillData || isFetchingBillData"
       :pagination-params="paginationParams || {}"
-      :total-pages="detailDataSource?.data?.totalPages || 1"
+      :total-pages="totalPage"
       @update:paginationParams="$emit('update:paginationParams', $event)"
+      @update-quantity="handleChangeTotalPrice"
     />
   </div>
 
@@ -49,26 +50,32 @@
         <span class="text-lg">{{ detailData?.data?.data?.[0]. || 'Chưa có mã giảm giá' }}</span>
       </div> -->
     <div class="flex justify-between mb-4">
+      <span class="text-lg">Tiền hàng:</span>
+      <span v-if="detailDataSources" class="text-lg">{{
+        formatCurrencyVND(totalPrice)
+      }}</span>
+    </div>
+    <div class="flex justify-between mb-4">
       <span class="text-lg">Giảm giá:</span>
-      <span v-if="detailData" class="text-lg text-green-500">{{
-        detailData?.data?.data?.[0]
-          ? `- ${formatCurrencyVND(detailData?.data?.data?.[0].tienGiamHD)}`
+      <span v-if="detailDataSources" class="text-lg text-green-500">{{
+        detailDataSources && detailDataSources.length > 0
+          ? `- ${formatCurrencyVND(detailDataSources[0].tienGiamHD)}`
           : "0 VND"
       }}</span>
     </div>
     <div class="flex justify-between mb-4">
       <span class="text-lg">Phí vận chuyển:</span>
-      <span v-if="detailData" class="text-lg">{{
-        detailData?.data?.data?.[0]
-          ? `${formatCurrencyVND(detailData?.data?.data?.[0].tienShip)}`
+      <span v-if="detailDataSources" class="text-lg">{{
+        detailDataSources && detailDataSources.length > 0
+          ? `${formatCurrencyVND(detailDataSources[0].tienShip)}`
           : "0 VND"
       }}</span>
     </div>
     <div class="flex justify-between font-semibold text-xl">
       <span>Tổng tiền:</span>
-      <span v-if="detailData">{{
-        detailData?.data?.data?.[0]
-          ? formatCurrencyVND(detailData?.data?.data?.[0].tongTienHD)
+      <span v-if="detailDataSources">{{
+        detailDataSources && detailDataSources.length > 0
+          ? formatCurrencyVND(detailDataSources[0].tongTienHD)
           : "0 VND"
       }}</span>
     </div>
@@ -78,10 +85,13 @@
 <script lang="ts" setup>
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import router from "@/infrastructure/routes/router";
-import { FindBillDetailRequest } from "@/infrastructure/services/api/admin/bill-detail.api";
+import {
+  FindBillDetailRequest,
+  BillDetailResponse,
+} from "@/infrastructure/services/api/admin/bill-detail.api";
 import { useGetBillDetails } from "@/infrastructure/services/service/admin/bill-detail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch, reactive } from "vue";
 import AdminBillHistory from "./AdminBillHistory.vue";
 import BillDetailTable from "./BillDetailTable.vue";
 import { ColumnType } from "ant-design-vue/es/table";
@@ -168,8 +178,86 @@ watch(billId, (newVal) => {
   }
 });
 
-const detailDataSource = computed(() => detailData.value || []);
-console.log(detailDataSource);
+const detailDataSources = ref<BillDetailResponse[]>([]);
+
+// Theo dõi sự thay đổi từ API và cập nhật lại `detailDataSource` khi dữ liệu thay đổi
+watch(
+  () => detailData.value?.data?.data,
+  (newData) => {
+    // Tạo bản sao dữ liệu mới từ API để tránh readonly
+    detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
+    // console.log(detailDataSources.value);
+  },
+  { immediate: true }
+);
+
+// Tính toán totalPages
+const totalPage = computed(() => detailData.value?.data?.totalPages || 1);
+
+const totalPrice = computed(() => {
+  return detailDataSources.value.reduce((sum, item) => sum + item.thanhTien, 0);
+});
+
+// Hàm cập nhật giá trị thanhTien
+const handleChangeTotalPrice = (record) => {
+  const item = detailDataSources.value.find((item) => item.id === record.id);
+
+  if (item) {
+    // Cập nhật số lượng và thành tiền trước
+    item.soLuong = record.soLuong;
+    item.thanhTien = record.thanhTien;
+    item.dieuKienGiam = record.dieuKienGiam;
+    item.giamToiDa = record.giamToiDa;
+    item.anhSanPhamChiTiet = record.anhSanPhamChiTiet;
+    item.tienGiamHD = record.tienGiamHD;
+    item.tienShip = record.tienShip;
+    console.log(record.tienShip);
+  }
+
+  // Tính tổng tiền sau khi cập nhật giá trị
+  const totalPrice = detailDataSources.value.reduce(
+    (sum, item) => sum + item.thanhTien,
+    0
+  );
+
+  if (totalPrice === 0) {
+    detailDataSources.value.forEach((ds) => {
+      ds.tienGiamHD = 0;
+      ds.tienShip = 0; // Đặt phí vận chuyển bằng 0
+    });
+  } else {
+    if (item) {
+      detailDataSources.value.forEach((ds) => {
+        ds.tienShip = item.tienShip;
+        ds.tienGiamHD = item.tienGiamHD;
+      });
+      if (item?.loaiGiam) {
+        detailDataSources.value.forEach((ds) => {
+          ds.tienGiamHD = record.giaTriGiam;
+        });
+      } else if (
+        totalPrice >= Number(item?.dieuKienGiam) &&
+        item?.loaiGiam == false
+      ) {
+        // item.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
+        detailDataSources.value.forEach((ds) => {
+          ds.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
+        });
+      }
+    }
+  }
+
+  // Cập nhật tổng tiền hóa đơn
+  detailDataSources.value.forEach((ds) => {
+    // ds.tienGiamHD = item?.tienGiamHD ? item?.tienGiamHD : 0;
+    if (ds.tienGiamHD >= Number(item?.giamToiDa) && item?.loaiGiam == false) {
+      ds.tienGiamHD = Number(item?.giamToiDa);
+    }
+    ds.tongTienHD = totalPrice - ds.tienGiamHD + ds.tienShip;
+  });
+
+  // console.log("Updated totalPrice:", totalPrice);
+};
 
 const columnsBill: ColumnType[] = [
   {
@@ -182,8 +270,8 @@ const columnsBill: ColumnType[] = [
   },
   {
     title: "Ảnh",
-    dataIndex: "anhSanPham",
-    key: "anhSanPham",
+    dataIndex: "anhSanPhamChiTiet",
+    key: "anhSanPhamChiTiet",
     ellipsis: true,
     width: 150,
     align: "center",
