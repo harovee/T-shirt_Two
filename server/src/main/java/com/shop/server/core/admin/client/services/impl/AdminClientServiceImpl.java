@@ -211,6 +211,7 @@ public class AdminClientServiceImpl implements AdminClientService {
             client.setGender(request.getGender());
             client.setPhoneNumber(request.getPhoneNumber());
             adminClientRepository.save(client);
+            emailService.sendMailCreateClient(client);
         } catch (Exception e) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,

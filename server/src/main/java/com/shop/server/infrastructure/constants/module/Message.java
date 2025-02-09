@@ -41,6 +41,7 @@ public class Message {
         public static final String NOT_FOUND_ROLE = "Không tìm thấy quyền";
         public static final String STRING_TOO_LONG = "Dữ liệu quá dài";
         public static final String CODE_EXIST = "Mã đã tồn tại";
+        public static final String FORMAT_NOT_VALID = "Dữ liệu không đúng định dạng hệ thống";
         public static final String OVERLAPPING_SEMESTERS = "Thời gian học kỳ đang trùng lặp với học kỳ khác";
     }
 

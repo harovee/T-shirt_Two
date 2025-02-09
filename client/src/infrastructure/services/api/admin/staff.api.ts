@@ -52,6 +52,10 @@ export type DetailStaffResponse = {
     lastModifiedDate: number | null;
 };
 
+export interface ExcelUploadRequest {
+    file: File
+}
+
 export const getStaffs = async (params: Ref<FindStaffRequest>) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_STAFF}`,
@@ -112,4 +116,28 @@ export const updateAvatarStaff = async (staffId: string, data: StaffRequest) => 
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>
     >;
+}
+
+export const exportStaffs = async () => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_STAFF}/export-excel`,
+        method: "GET",
+        responseType: 'blob',
+    });
+}
+
+export const exportTemplateStaffs = async () => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_STAFF}/export-template-excel`,
+        method: "GET",
+        responseType: 'blob',
+    });
+}
+
+export const importStaffs = async (data: FormData) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_STAFF}/import-excel`,
+        method: "POST",
+        data: data
+    });
 }

@@ -26,6 +26,19 @@
           <a-button
               class="bg-purple-300 flex justify-between items-center gap-2"
               size="large"
+              @click="handleExportStaffs"
+          >
+            <v-icon name="fa-file-export"/>
+          </a-button>
+        </a-tooltip>
+        <a-tooltip
+            title="Tải template danh sách nhân viên"
+            trigger="hover"
+        >
+          <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+              @click="handleExportTemplateStaffs"
           >
             <v-icon name="fa-file-export"/>
           </a-button>
@@ -37,6 +50,7 @@
           <a-button
               class="bg-purple-300 flex justify-between items-center gap-2"
               size="large"
+              @click="handleOpenModalImportStaffs"
           >
             <v-icon name="fa-file-import"/>
           </a-button>
@@ -113,17 +127,27 @@
       </template>
     </table-t-shirt>
   </div>
+  <staff-modal-import
+      :open="isOpenModalImportStaffs"
+      @handleClose="handleCloseModalImportStaffs"
+      @onCancel="isOpenModalImportStaffs = false"
+  />
 </template>
 
 <script setup lang="ts">
 import TableTShirt from "@/components/ui/Table.vue";
 import {ColumnType} from "ant-design-vue/es/table";
-import {defineEmits, watch} from "vue";
-import {useChangeStatusStaff} from "@/infrastructure/services/service/admin/staff.action.ts";
+import {defineEmits, ref, watch} from "vue";
+import {
+  useChangeStatusStaff,
+  useExportStaffs,
+  useExportTemplateStaffs
+} from "@/infrastructure/services/service/admin/staff.action.ts";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
 import {convertTextCode} from "@/utils/common.helper.ts";
 import {notification} from "ant-design-vue";
+import StaffModalImport from "@/page/admin/staff/StaffModalImport.vue";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -138,6 +162,8 @@ const props = defineProps({
 });
 
 const {mutate: changeStatusStaff} = useChangeStatusStaff();
+const {mutate: exportStaffs} = useExportStaffs();
+const {mutate: exportTemplateStaffs} = useExportTemplateStaffs();
 
 const handleChangeStatusStaff = (id: string) => {
   try {
@@ -166,6 +192,43 @@ const handleChangeStatusStaff = (id: string) => {
     });
   }
 }
+
+const handleExportStaffs = () => {
+  try {
+    exportStaffs();
+  } catch (error: any) {
+    console.error("🚀 ~ handleChangeStatus ~ error:", error);
+    notification.warning({
+      message: 'Thông báo',
+      description: error?.response?.data?.message,
+      duration: 4,
+    });
+  }
+}
+
+const handleExportTemplateStaffs = () => {
+  try {
+    exportTemplateStaffs();
+  } catch (error: any) {
+    console.error("🚀 ~ handleChangeStatus ~ error:", error);
+    notification.warning({
+      message: 'Thông báo',
+      description: error?.response?.data?.message,
+      duration: 4,
+    });
+  }
+}
+
+/*** import excel ***/
+const isOpenModalImportStaffs = ref(false);
+
+const handleOpenModalImportStaffs = () => {
+  isOpenModalImportStaffs.value = true;
+};
+
+const handleCloseModalImportStaffs = () => {
+  isOpenModalImportStaffs.value = false;
+};
 
 const handleRedirectStaffDetail = (id: string) => {
   const staffDetailPath =
