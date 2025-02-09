@@ -57,7 +57,9 @@
       </a-col>
     </a-row>
   </div>
-  
+  <div class="flex justify-center">
+    <a-button type="text" class="mb-10 h-10 w-48 border-2 border-gray-300 rounded-lg px-4 text-base font-bold">Tất cả sản phẩm</a-button>
+  </div>
 </template>
 
 <script lang="ts" setup>
