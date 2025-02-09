@@ -72,7 +72,7 @@
       </div>
 
       <!-- Khách Hàng Section -->
-       
+
       <div  class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu">
         <h4 class="text-lg font-semibold mb-4">Danh sách khách hàng</h4>
         <div class="h-100 overflow-y-auto">
@@ -267,8 +267,8 @@ const handleAddVoucherAndCustomerVoucher = (dataRequest: VoucherAndCustomerVouch
 }
 
 const onSubmit = (x: number) => {
-  
-  
+
+
   formRef.value
       .validate()
       .then(() => {
@@ -281,14 +281,14 @@ const onSubmit = (x: number) => {
           voucherRequest.value.kieu = formState.kieu;
           voucherRequest.value.ngayBatDau = formState.ngayBatDauVaKetThuc[0]?.valueOf() || null;
           voucherRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
-          x === 1 ?   
-             handleCreateVoucher(voucherRequest.value)             
+          x === 1 ?
+             handleCreateVoucher(voucherRequest.value)
                     :
                 handleAddVoucherAndCustomerVoucher({
                   phieuGiamGiaRequest: voucherRequest.value,
-                  voucherKhachHangRequest : { idKhachHangs: idKhachHangs.value},        
+                  voucherKhachHangRequest : { idKhachHangs: idKhachHangs.value},
               });
-      
+
       });
 };
 const resetForm = () => {

@@ -93,7 +93,7 @@ export const getVoucherById = async (VoucherId: Ref<string | null>) => {
     }) as AxiosResponse<
         DefaultResponse<DetailVoucherResponse>
     >;
-    
+
 };
 
 export const updateVoucher = async (VoucherId: string, data: PhieuGiamGiaRequest) => {

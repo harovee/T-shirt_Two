@@ -1,5 +1,5 @@
 import { Ref } from "vue";
-import { BillRequest, FindBillRequest, getBillById, getBills, updateBill } from "../../api/admin/bill.api";
+import { BillRequest, FindBillRequest, getBillById, getBills, updateBill, getBillsWait, BillCreateRequest, createBillsWait, BillWaitResponse } from "../../api/admin/bill.api";
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey";
 
@@ -13,6 +13,12 @@ export const useGetBills = (
     });
 };
 
+export const useGetBillsWait = (): UseQueryReturnType<Awaited<ReturnType<typeof getBillsWait>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.bill.billsWait],
+        queryFn: () => getBillsWait()
+    });
+};
 
 export const useGetBillById = (
     billId: Ref<string | null>, options?: any
@@ -21,6 +27,21 @@ export const useGetBillById = (
         queryKey: [queryKey.admin.bill.billById, billId,],
         queryFn: () => getBillById(billId.value),
         ...options,
+    });
+};
+
+export const useCreateBillsWait = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: BillCreateRequest) => createBillsWait(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.bill.billsWait],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.bill.billsWait, "🚀 ~ BillWaitCreate ~ error:", error);
+        },
     });
 };
 

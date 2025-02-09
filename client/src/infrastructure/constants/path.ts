@@ -1,3 +1,4 @@
+import { path } from 'path';
 export const ROUTES_CONSTANTS = {
     AUTHENTICATION: {
         path: "/authentication",
@@ -24,6 +25,10 @@ export const ROUTES_CONSTANTS = {
             STATISTIC: {
                 path: "statistic",
                 name: "admin-statistic",
+            },
+            POINT_OF_SALE: {
+                path: "point-of-sale",
+                name: "admin-point-of-sale",
             },
             PRODUCTS: {
                 name: "admin-products",
@@ -119,6 +124,28 @@ export const ROUTES_CONSTANTS = {
                         name: "admin-bill-detail",
                     },
 
+                }
+            },
+            PAYMENT: {
+                path: "/payment",
+                name: "admin-payment",
+                children: {
+                    CUSTOMER: {
+                        path: "khach-hang",
+                        name: "admin-khach-hang",
+                    },
+                    CUSTOMER_DETAIL: {
+                        path: "khach-hang/:id",
+                        name: "admin-khach-hang-detail",
+                    },
+                    VOUCHER_PAY: {
+                        path: "voucher",
+                        name: "admin-voucherpay",
+                    },
+                    VOUCHER_PAY_DETAIL: {
+                        path: "voucher/:id",
+                        name: "admin-voucherpay-detail",
+                    }
                 }
             },
             VOUCHER: {

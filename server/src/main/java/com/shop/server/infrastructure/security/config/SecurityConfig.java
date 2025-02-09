@@ -129,7 +129,8 @@ public class SecurityConfig {
                                 Helper.appendWildcard(MappingConstant.API_EMBED_PREFIX),
                                 Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
                                 Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
-                                Helper.appendWildcard(MappingConstant.API_VERSION_PREFIX)
+                                Helper.appendWildcard(MappingConstant.API_VERSION_PREFIX),
+                                Helper.appendWildcard(MappingConstant.API_ADMIN_PAYMENT)
                         )
                         .permitAll()
         );

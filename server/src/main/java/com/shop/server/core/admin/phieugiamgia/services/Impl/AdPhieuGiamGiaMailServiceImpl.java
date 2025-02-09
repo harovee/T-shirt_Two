@@ -58,7 +58,7 @@ public class AdPhieuGiamGiaMailServiceImpl implements AdPhieuGiamGiaMailService 
                     khachHang.getFullName(),
                     phieuGiamGia.getMa(),
                     phieuGiamGia.getGiaTriGiam(),
-                    DateTimeUtil.convertDateToString(DateTimeUtil.convertTimeStampSecondToString(phieuGiamGia.getNgayKetThuc())),
+                    DateTimeUtil.convertTimeStampSecondToString(phieuGiamGia.getNgayKetThuc()),
                     barCodeUrl
                     // barcodeImgTag  // Chèn barcode vào email
             );
