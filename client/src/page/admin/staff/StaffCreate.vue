@@ -109,14 +109,14 @@ const handleRedirectStaff = () => {
 }
 
 const modelRef = reactive<StaffRequest>({
-  name: null,
-  email: null,
-  password: null ,
-  birthday: null,
+  name: "",
+  email: "",
+  password: "",
+  birthday: "",
   gender: null,
-  phoneNumber: null,
-  identity: null,
-  picture: null,
+  phoneNumber: "",
+  identity: "",
+  picture: "",
 });
 
 const rulesRef = reactive({
