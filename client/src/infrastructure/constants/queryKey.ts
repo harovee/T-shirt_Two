@@ -84,18 +84,23 @@ export const queryKey = {
             billList: "adBillListKey",
             billById: "adBillByIdKey",
             billHistory: "adBillHistoryKey",
+            billsWait: "adBillWaitKey"
         },
         billdetail: {
             detailList: "adBillDetail"
         },
         payment: {
             payHistory: "adPayHistory",
+            customerList: "adCustomerListKey",
+            customerDetail: "adCustomerDetailKey",
+            voucherPayList: "voucherPayListKey",
+            voucherPayDetail: "voucherPayDetailKey"
         },
         voucher: {
             voucherList: "adVoucherListKey",
             voucherDetail: "adVoucherDetailKey",
             khachHangList: "adKhachHangListKey"
-        }
+        },
     },
 
     user: {

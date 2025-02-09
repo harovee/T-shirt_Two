@@ -42,9 +42,8 @@ const current1 = ref(1);
 defineProps<{
   data: Object,
   idKhachHangs: string[] | undefined,
-  
-}>();
 
+}>();
 
 const emit = defineEmits(['update:idKhachHangs']);
 
@@ -99,7 +98,7 @@ const dataSource: DataType[] | any = computed(() => {
 });
 
 
-const handleSearch = (newValue: string) => { 
+const handleSearch = (newValue: string) => {
   params.value.keyword = newValue;
   params.value.page = 1;
 };
