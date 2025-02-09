@@ -14,44 +14,48 @@
         >
           <a-tab-pane v-for="bill in dataSource" :key="bill.id" :tab="bill.ma">
             {{ bill.id }}
+
+            <!-- Tài khoản + khách hàng, form thanh toán -->
+            <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold">Tài khoản</h2>
+                <a-button class="text-blue-500" @click="handleOpenKhachHang"
+                  >Chọn tài khoản</a-button
+                >
+                <khach-hang-payment-table
+                  :open="open"
+                  @handleClose="handleClose"
+                  @cancel="open = false"
+                  class="w-[600px] h-[400px]"
+                  @handleOpenKhachHang="handleOpenKhachHang"
+                  @selectCustomer="(customer, dataCustomer) => handleCustomerSelected(customer, dataCustomer, bill)"
+                />
+              </div>
+              <div class="mb-6 h-100">
+                <p>
+                  <strong>Tên khách hàng:</strong>
+                  {{ bill.idKhachHang ? getNameCustomer(bill.idKhachHang) : "Khách lẻ" }}
+                </p>
+                <template v-if="bill && bill.idKhachHang">
+                  <p>
+                    <strong>Số điện thoại:</strong>
+                    {{ getPhoneNumberCustomer(bill.idKhachHang) }}
+                  </p>
+                  <p><strong>Email:</strong> {{ getEmailCustomer(bill.idKhachHang) }}</p>
+                </template>
+              </div>
+
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold">Khách hàng</h2>
+                <a-button class="text-blue-500">Chọn địa chỉ</a-button>
+              </div>
+              <hr />
+              <div class="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <payment-information />
+              </div>
+            </div>
           </a-tab-pane>
         </a-tabs>
-      </div>
-
-      <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold">Tài khoản</h2>
-          <a-button class="text-blue-500" @click="handleOpenKhachHang"
-            >Chọn tài khoản</a-button
-          >
-          <khach-hang-payment-table
-            :open="open"
-            @handleClose="handleClose"
-            @cancel="open = false"
-            class="w-600"
-            @handleOpenKhachHang="handleOpenKhachHang"
-            @selectCustomer="handleCustomerSelected"
-          />
-        </div>
-        <div class="mb-6 h-100">
-          <p>
-            <strong>Tên khách hàng:</strong>
-            {{ selectedCustomer?.name || "Khách lẻ" }}
-          </p>
-          <template v-if="selectedCustomer">
-            <p><strong>Số điện thoại:</strong> {{ selectedCustomer.phoneNumber }}</p>
-            <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
-          </template>
-        </div>
-
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold">Khách hàng</h2>
-          <a-button class="text-blue-500">Chọn địa chỉ</a-button>
-        </div>
-        <hr />
-        <div class="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <payment-information/>
-        </div>
       </div>
     </div>
   </div>
@@ -74,6 +78,10 @@ const { data, isLoading, isFetching } = useGetBillsWait();
 
 const dataSource = computed(() => data?.value?.data || []);
 
+const dataCustomers = ref(null)
+
+const dataSources = ref(null)
+
 const open = ref(false);
 
 const handleOpenKhachHang = () => {
@@ -83,7 +91,8 @@ watch(
   () => dataSource.value,
   (newData) => {
     if (newData) {
-      console.log(newData);
+      dataSources.value = JSON.parse(JSON.stringify(dataSource.value))
+      console.log(dataSources.value);
     }
   },
   { immediate: true }
@@ -92,6 +101,7 @@ watch(
 const handleClose = () => {
   open.value = false;
 };
+
 const selectedCustomer = ref<{
   id: string;
   name: string;
@@ -99,10 +109,46 @@ const selectedCustomer = ref<{
   email: string;
 } | null>(null);
 
-const handleCustomerSelected = (customer: any) => {
-  selectedCustomer.value = customer;
-  console.log("Khách hàng đã chọn:", customer);
+
+const handleCustomerSelected = (customer: any, dataCustomer: any, bill: any) => {
+  const billWait = dataSources.value.find((data:any) => data.id === bill.id);
+  billWait.idKhachHang = customer.key
+  dataCustomers.value = dataCustomer
 };
+
+const getNameCustomer = (id: string) => {
+  if (id !== null && id !== "") {
+    const customer = dataCustomers.value.find(customer => customer.key === id);
+    if (customer) {
+      return customer.name;
+    } else {
+      return null;
+    }
+  }
+}
+
+const getEmailCustomer = (id: string) => {
+  if (id !== null && id !== "") {
+    const customer = dataCustomers.value.find(customer => customer.key === id);
+    if (customer) {
+      return customer.email;
+    } else {
+      return "";
+    }
+  }
+}
+
+const getPhoneNumberCustomer = (id: string) => {
+  if (id !== null && id !== "") {
+    const customer = dataCustomers.value.find(customer => customer.key === id);
+    if (customer) {
+      return customer.phoneNumber;
+    } else {
+      return "";
+    }
+  }
+}
+
 const panes = ref<{ title: string; content: string; key: string }[]>([
   { title: "Tab 1", content: "Content of Tab 1", key: "1" },
   { title: "Tab 2", content: "Content of Tab 2", key: "2" },

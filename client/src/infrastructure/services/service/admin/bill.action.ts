@@ -1,5 +1,5 @@
 import { Ref } from "vue";
-import { BillRequest, FindBillRequest, getBillById, getBills, updateBill, getBillsWait, BillCreateRequest, createBillsWait } from "../../api/admin/bill.api";
+import { BillRequest, FindBillRequest, getBillById, getBills, updateBill, getBillsWait, BillCreateRequest, createBillsWait, BillWaitResponse } from "../../api/admin/bill.api";
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey";
 

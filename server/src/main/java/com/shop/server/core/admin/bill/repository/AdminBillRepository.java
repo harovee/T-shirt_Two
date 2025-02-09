@@ -2,6 +2,7 @@ package com.shop.server.core.admin.bill.repository;
 
 import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
 import com.shop.server.core.admin.bill.model.response.AdminBillResponse;
+import com.shop.server.core.admin.bill.model.response.AdminBillWaitResponse;
 import com.shop.server.repositories.HoaDonRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -80,42 +81,32 @@ public interface AdminBillRepository extends HoaDonRepository {
     Page<AdminBillResponse> getBillsByRequest(Pageable pageable, AdminFindBillRequest req);
 
     @Query(value = """
-        SELECT
-            ROW_NUMBER() OVER(ORDER BY hd.ngay_tao ) AS catalog,
-            hd.id AS id,
-            hd.ma_hoa_don AS ma,
-            hd.tong_tien AS tongTien,
-            hd.loai_hoa_don AS loaiHD,
-            hd.ten_nguoi_nhan AS tenNguoiNhan,
-            hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan,
-            hd.tien_giam AS tienGiam,
-            hd.tien_ship AS tienShip,
-            hd.ngay_ship AS ngayShip,
-            hd.ghi_chu AS ghiChu,
-            kh.so_dien_thoai AS soDienThoai,
-            hd.trang_thai AS trangThai,
-            hd.ngay_tao AS ngayTao,
-            nv.ma_nhan_vien AS maNhanVien,
-            kh.ho_va_ten AS tenKhachHang
-        FROM hoa_don hd
-        LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
-        LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
-        LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
-        WHERE
-            hd.trang_thai LIKE 'Hóa đơn chờ'
-        AND
-            hd.loai_hoa_don LIKE 'Tại quầy'
-     """, countQuery = """
-        SELECT COUNT(hd.id)
-        FROM hoa_don hd
-        LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
-        LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
-        WHERE
-            hd.trang_thai LIKE 'Hóa đơn chờ'
-        AND
-            hd.loai_hoa_don LIKE 'Tại quầy'
-    """, nativeQuery = true)
-    List<AdminBillResponse> getBillsWait();
+            SELECT
+                hd.id AS id,
+                hd.ma_hoa_don AS ma,
+                hd.tong_tien AS tongTien,
+                hd.tien_giam AS tienGiam,
+                hd.tien_ship AS tienShip,
+                hd.loai_hoa_don AS loaiHD,
+                hd.ten_nguoi_nhan AS tenNguoiNhan,
+                hd.so_dien_thoai AS soDienThoai,
+                hd.ghi_chu AS ghiChu,
+                hd.trang_thai AS trangThai,
+                nv.id AS idNhanVien,
+                kh.id AS idKhachHang,
+                pg.id AS idPhieuGiamGia,
+                hd.ngay_tao AS ngayTao,
+                hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan
+            FROM hoa_don hd
+            LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
+            LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
+            LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
+            WHERE
+                hd.trang_thai = 'Hóa đơn chờ'
+            AND
+                hd.loai_hoa_don = 'Tại quầy'
+            """, nativeQuery = true)
+    List<AdminBillWaitResponse> getBillsWait();
 
     @Query(value = """
         SELECT
