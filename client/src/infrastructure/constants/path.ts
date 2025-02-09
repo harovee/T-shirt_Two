@@ -169,6 +169,18 @@ export const ROUTES_CONSTANTS = {
                 path: "home",
                 name: "client-home",
             },
+            PRODUCTS: {
+                path: "products",
+                name: "client-products"
+            },
+            ABOUT: {
+                path: "about",
+                name: "client-about"
+            },
+            CONTACT: {
+                path: "contact",
+                name: "client-contact"
+            },
         },
     },
     NOT_FOUND: {

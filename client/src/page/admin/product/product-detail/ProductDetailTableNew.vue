@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-5">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">
-          Danh sách sản phẩm chi tiết {{ changeFill ? "" : " - " + productId }}
+          Danh sách sản phẩm chi tiết {{ changeFill ? "" : " - " + findTenSanPham(productId) }}
         </h3>
       </div>
       <div v-if="selectedRowKeyNews.length > 0">
@@ -278,6 +278,11 @@ const findSanPham = (ten: string) => {
   const sp = listProduct.value.find((sp1: any) => sp1.ten === ten);
   return sp ? sp.id : null;
 };
+
+const findTenSanPham = (id: string) => {
+  const sp = listProduct.value.find((sp1: any) => sp1.id === id);
+  return sp ? sp.ten : null;
+}
 
 // Mảng chứa các id được chọn
 const selectedRowKeyNews = ref<(string | number)[]>([]);
