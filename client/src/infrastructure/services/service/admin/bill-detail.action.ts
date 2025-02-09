@@ -1,8 +1,7 @@
 import { Ref } from "vue";
-import { FindBillDetailRequest, getBillDetailsByIdHoaDon } from "../../api/admin/bill-detail.api";
+import { createBillDetail, CreateBillDetailRequest, FindBillDetailRequest, getBillDetailsByIdHoaDon, updateBillDetail, UpdateBillDetailRequest } from "../../api/admin/bill-detail.api";
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey";
-import { BillRequest, updateBill } from "../../api/admin/bill.api";
 
 
 export const useGetBillDetails = (
@@ -15,15 +14,30 @@ export const useGetBillDetails = (
     });
 }
 
-export const useUpdateBillDetails = () => {
+export const useUpdateBillDetail = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({idBill, params}: { idBill: string; params: BillRequest; }) => updateBill(idBill, params),
+        mutationFn: ({idBillDetail, data}: { idBillDetail: string; data: UpdateBillDetailRequest }) => updateBillDetail(idBillDetail, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billById]});
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.billdetail.billDetailById]});
         },
         onError: (error: any) => {
-            console.log(queryKey.admin.bill.billList + "🚀 ~ billUpdate ~ error:", error);
+            console.log(queryKey.admin.billdetail.billDetailById + "🚀 ~ billDetailUpdate ~ error:", error);
+        },
+    });
+};
+
+export const useCreateBillDetail = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: CreateBillDetailRequest) => createBillDetail(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.billdetail.detailList],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.billdetail.detailList, "🚀 ~ billDetailCreat ~ error:", error);
         },
     });
 };
