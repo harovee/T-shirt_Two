@@ -15,6 +15,7 @@ import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.utils.AESPasswordCryptoUtil;
 import com.shop.server.utils.DateTimeUtil;
+import com.shop.server.utils.DefaultImageUtil;
 import com.shop.server.utils.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -98,8 +99,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             staff.setStatus(Status.ACTIVE);
             staff.setDeleted(false);
             if (request.getPicture().isEmpty()) {
-                String defaultImage = "https://res.cloudinary.com/tshirtstwo/image/upload/v1737466633/user-icon-trendy-flat-style-600nw-1697898655_jrflvi.webp";
-                staff.setProfilePicture(defaultImage);
+                staff.setProfilePicture(DefaultImageUtil.IMAGE);
             } else {
                 staff.setProfilePicture(request.getPicture());
             }

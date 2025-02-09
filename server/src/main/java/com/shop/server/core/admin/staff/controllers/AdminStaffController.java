@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -69,23 +71,37 @@ public class AdminStaffController {
     }
 
     @GetMapping("/export-excel")
-    public ResponseEntity<?> exportToExcel() {
+    public ResponseEntity<?> exportExcel() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "template_import_nhan_vien.xlsx");
+        headers.setContentDispositionFormData("attachment", "nhan_vien.xlsx");
         List<AdminStaffExcelResponse> staffs = adminStaffService.getStaffsExcel();
 
         ResponseObject<?> response = adminStaffExcelService.exportExcel(staffs);
 
         if (response.getData() instanceof ByteArrayInputStream) {
-            return new ResponseEntity<>(
-                    ((ByteArrayInputStream) response.getData()).readAllBytes(),
-                    headers,
-                    HttpStatus.OK
-            );
+            return new ResponseEntity<>(((ByteArrayInputStream) response.getData()).readAllBytes(), headers, HttpStatus.OK);
         }
 
         return Helper.createResponseEntity(response);
+    }
+
+    @GetMapping("/export-template-excel")
+    public ResponseEntity<?> exportTemplateExcel() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "template_import_nhan_vien.xlsx");
+        ResponseObject<?> response = adminStaffExcelService.exportTemplateExcel();
+        if (response.getData() instanceof ByteArrayInputStream) {
+            return new ResponseEntity<>(((ByteArrayInputStream) response.getData()).readAllBytes(), headers, HttpStatus.OK);
+        }
+
+        return Helper.createResponseEntity(response);
+    }
+
+    @PostMapping("/import-excel")
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+        return Helper.createResponseEntity(adminStaffExcelService.importExcel(file));
     }
 
 }

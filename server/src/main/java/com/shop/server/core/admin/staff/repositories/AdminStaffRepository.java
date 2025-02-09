@@ -125,7 +125,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
                 nv.ho_va_ten as name,
                 nv.identity as identity,
                 IF(nv.gioi_tinh = 1, 'Nam', 'Nữ') AS gender,
-                TIMESTAMPDIFF(YEAR, FROM_UNIXTIME(nv.ngay_sinh / 1000), CURDATE()) AS age,
+                DATE_FORMAT(FROM_UNIXTIME(nv.ngay_sinh / 1000), '%d-%m-%Y') AS age,
                 nv.email as email,
                 nv.so_dien_thoai as phone,
                 IF(nv.deleted = false, 'Làm việc', 'Nghỉ') as status

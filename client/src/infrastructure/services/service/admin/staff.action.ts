@@ -2,9 +2,11 @@ import {
     changeStatusStaff,
     createStaff,
     exportStaffs,
+    exportTemplateStaffs,
     FindStaffRequest,
     getStaffById,
     getStaffs,
+    importStaffs,
     StaffRequest,
     updateAvatarStaff,
     updateStaff
@@ -108,6 +110,38 @@ export const useExportStaffs = () => {
         },
         onError: (error: any) => {
             console.log(queryKey.admin.staff.exportStaffs + "🚀 ~ staffUpdateExportStaffs ~ error:", error);
+        },
+    });
+};
+
+export const useExportTemplateStaffs = () => {
+    return useMutation({
+        mutationFn: () => exportTemplateStaffs(),
+        onSuccess: (res) => {
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const excel = document.createElement("a");
+            excel.href = url;
+            excel.download = `nhan_vien_template${Date.now()}.xlsx`;
+            document.body.appendChild(excel);
+            excel.click();
+            excel.remove();
+            window.URL.revokeObjectURL(url);
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.staff.downloadTemplateStaffs + "🚀 ~ staffDownloadTemplateStaffs ~ error:", error);
+        },
+    });
+};
+
+export const useImportStaffs = () => {
+    const queryStaff = useQueryClient();
+    return useMutation({
+        mutationFn: (data: FormData) => importStaffs(data),
+        onSuccess: () => {
+            queryStaff.invalidateQueries({queryKey: [queryKey.admin.staff.staffList],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.staff.staffList + "🚀 ~ staffsImport ~ error:", error);
         },
     });
 };
