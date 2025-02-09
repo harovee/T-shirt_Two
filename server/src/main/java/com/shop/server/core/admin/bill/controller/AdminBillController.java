@@ -10,13 +10,7 @@ import com.shop.server.utils.Helper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -36,6 +30,11 @@ public class AdminBillController {
         return Helper.createResponseEntity(adminBillService.getBills(request));
     }
 
+    @GetMapping("/bill-wait")
+    public ResponseEntity<?> getBillsWait() {
+        return Helper.createResponseEntity(adminBillService.getBillsWait());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getBill(@PathVariable String id) {
         return Helper.createResponseEntity(adminBillService.getDetailBillById(id));
@@ -45,6 +44,12 @@ public class AdminBillController {
     public ResponseEntity<?> createBill(@Valid @RequestBody final AdminSaveBillRequest request, BindingResult result) {
         return Helper.createResponseEntity(adminBillService.createBill(request, result));
     }
+
+    @PostMapping("create-bill")
+    public ResponseEntity<?> createBillCart(@RequestBody final AdminSaveBillRequest request) {
+        return Helper.createResponseEntity(adminBillService.createBill(request));
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBillStatus(@PathVariable String id,
@@ -62,5 +67,10 @@ public class AdminBillController {
     @GetMapping("/count-by-status")
     public Map<String, Integer> getBillCountsByStatus() {
         return adminBillServiceImpl.getBillCountsByStatus();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> removeBillsWait(@PathVariable String id) {
+        return Helper.createResponseEntity(adminBillService.removeBillWait(id));
     }
 }

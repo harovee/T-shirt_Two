@@ -13,13 +13,19 @@ public interface AdminBillService {
 
     ResponseObject<?> getBills(AdminFindBillRequest request);
 
+    ResponseObject<?> getBillsWait();
+
     ResponseObject<?> getDetailBillById(String id);
 
     ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult bindingResult);
+
+    ResponseObject<?> createBill(AdminSaveBillRequest request);
 
     ResponseObject<?> updateBill(String id, @Valid AdminUpdateBillRequest request, BindingResult bindingResult);
 
     ResponseObject<?> changeStatusBill(String id, AdminUpdateBillRequest request);
 
     Map<String, Integer> getBillCountsByStatus();
+
+    ResponseObject<?> removeBillWait(String id);
 }

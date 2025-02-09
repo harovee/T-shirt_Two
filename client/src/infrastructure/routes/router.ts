@@ -72,8 +72,8 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
-                path: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
-                name: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.path,
+                path: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
                 component: () => import('@/page/admin/point.of.sale/PointOfSale.vue'),
                 meta: {
                     requiresRole: ROLES.ADMIN,
