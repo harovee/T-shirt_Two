@@ -76,25 +76,37 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         HoaDonChiTiet billDetail;
         if (existingBillDetailOpt.isPresent()) {
             billDetail = existingBillDetailOpt.get();
-            BigDecimal currentPrice = billDetail.getGia();
-            BigDecimal additionalAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
+            billDetail.setGia(sanPhamChiTiet.getGia());
+            // ✅ Luôn đảm bảo giá trị không bị null
+            BigDecimal currentPrice = billDetail.getGia() != null ? billDetail.getGia() : BigDecimal.ZERO;
 
-            billDetail.setSoLuong((short) (billDetail.getSoLuong() + request.getSoLuong()));
-            billDetail.setThanhTien(billDetail.getThanhTien().add(additionalAmount));
+            // ✅ Cập nhật số lượng
+            int oldQuantity = billDetail.getSoLuong();
+            int newQuantity = oldQuantity + request.getSoLuong();
+            billDetail.setSoLuong((short) newQuantity);
+
+            // ✅ Tính lại thành tiền
+            BigDecimal newTotalAmount = currentPrice.multiply(new BigDecimal(newQuantity));
+            billDetail.setThanhTien(newTotalAmount);
+
         } else {
             billDetail = new HoaDonChiTiet();
             billDetail.setHoaDon(hoaDon);
             billDetail.setSanPhamChiTiet(sanPhamChiTiet);
+            billDetail.setGia(sanPhamChiTiet.getGia());
             billDetail.setSoLuong(request.getSoLuong());
 
-            BigDecimal currentPrice = sanPhamChiTiet.getGia();
+            // ✅ Kiểm tra giá trước khi nhân
+            BigDecimal currentPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
             BigDecimal totalAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
+
+            billDetail.setGia(currentPrice); // Gán giá trị để tránh `null`
             billDetail.setThanhTien(totalAmount);
         }
 
         adminBillDetailRepository.save(billDetail);
 
-        // Cập nhật tổng tiền hóa đơn
+        // ✅ Cập nhật tổng tiền hóa đơn
         updateBillTotalAmount(hoaDon);
 
         return ResponseObject.successForward(
@@ -102,9 +114,6 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
                 Message.Success.CREATE_SUCCESS
         );
     }
-
-
-
 
     @Override
     public ResponseObject<?> updateBillDetail(String id, AdminUpdateBillDetailRequest request) {
