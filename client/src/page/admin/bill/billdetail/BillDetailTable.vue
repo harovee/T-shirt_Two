@@ -19,19 +19,23 @@
       </div>
       <div class="flex items-center">
         <span class="font-medium">Trạng thái:</span>
-        <a-tag class="ml-2" color="orange">{{copiedBillData?.trangThai}}</a-tag>
+        <a-tag class="ml-2" color="orange">{{
+          copiedBillData?.trangThai
+        }}</a-tag>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Địa chỉ người nhận:</span>
-        <span class="ml-2" color="blue">{{ copiedBillData?.diaChiNguoiNhan || ""}}</span>
+        <span class="ml-2" color="blue">{{
+          copiedBillData?.diaChiNguoiNhan || ""
+        }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Tên người nhận:</span>
-        <span class="ml-2">{{ copiedBillData?.tenNguoiNhan || ""}}</span>
+        <span class="ml-2">{{ copiedBillData?.tenNguoiNhan || "" }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Ghi chú:</span>
-        <span class="ml-2">{{ copiedBillData?.ghiChu || ""}}</span>
+        <span class="ml-2">{{ copiedBillData?.ghiChu || "" }}</span>
       </div>
     </div>
     <div class="flex justify-end mt-4">
@@ -39,6 +43,14 @@
         type="primary"
         class="bg-orange-500 hover:bg-orange-600 text-white"
         @click="handleOpenModalUpdateBill"
+        :disabled="
+          [
+            'Đang vận chuyển',
+            'Đã giao hàng',
+            'Đã thanh toán',
+            'Thành công',
+          ].includes(billData?.trangThai)
+        "
       >
         Cập nhật
       </a-button>
@@ -54,93 +66,147 @@
 
   <!-- Lịch sử thanh toán -->
   <div class="p-4 bg-white rounded-lg shadow">
-    <h3 class="text-lg font-bold">
-      Lịch sử thanh toán
-    </h3>
-    <admin-pay-history/>
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-bold">Lịch sử thanh toán</h3>
+      <a-button
+        v-if="billData?.trangThai === 'Đã giao hàng'"
+        type="primary"
+        class="bg-orange-500 hover:bg-orange-600 text-white"
+      >
+        Thanh toán
+      </a-button>
+    </div>
+    <admin-pay-history />
   </div>
 
   <!-- danh sách sản phẩm chi tiết -->
   <div class="p-4 bg-white rounded-lg shadow">
     <!-- Nút thêm sản phẩm -->
-    <div class="flex justify-end mt-4">
-    <a-button
-      type="primary"
-      class="bg-orange-500 hover:bg-orange-600 text-white"
-      style="margin-bottom: 10px;"
-    >
-      Thêm sản phẩm
-    </a-button>
-  </div>
-
-  <!-- Bảng sản phẩm -->
-  <table-example class="min-h-[15rem]"
-    v-if="props"
-    :wrapperClassName="props.wrapperClassName"
-    :columns="props.columns"
-    :data-source="props.dataSource"
-    :loading="props.loading"
-    :pagination-params="props.paginationParams"
-    :total-pages="props.totalPages || 1"
-    @update:pagination-params="updatePaginationParams"
-  >
-    <template #bodyCell="{ column, record }">
-      <div v-if="column.key === 'status'" class="text-center">
-        <a-tag v-if="record.status === 'false'" color="success">
-          Hoạt động
-        </a-tag>
-        <a-tag v-else-if="record.status === 'true'" color="warning">
-          Vô hiệu hóa
-        </a-tag>
-        <a-tag v-else color="secondary">Không xác định</a-tag>
-      </div>
-      <div
-        v-else-if="column.key === 'action'"
-        class="flex items-center justify-center space-x-2"
+    <div class="flex justify-end mb-4">
+      <a-button
+        type="primary"
+        class="bg-orange-500 hover:bg-orange-600 text-white"
+        @click="handleOpenModalAddProductToOrder"
+        :disabled="
+          [
+            'Đang vận chuyển',
+            'Đã giao hàng',
+            'Đã thanh toán',
+            'Thành công',
+          ].includes(billData?.trangThai)
+        "
       >
-        <a-tooltip title="Hoàn trả" trigger="hover">
-          <a-button class="bg-purple-100" size="middle" shape="round">
-            <v-icon name="fa-undo-alt" />
-          </a-button>
-        </a-tooltip>
-      </div>
+        Thêm sản phẩm
+      </a-button>
 
-      <div v-else-if="column.key === 'thanhTien'" style="color:red">
-        {{ formatCurrencyVND(record.thanhTien) }}
-      </div>
+      <!-- Modal thêm sản phẩm -->
+      <add-product-detail-modal
+        :open="isOpenModalAddProductToOrder"
+        @handleClose="handleCloseModalAddProductToOrder"
+        @onCancel="isOpenModalAddProductToOrder = false"
+      />
+    </div>
 
-      <div v-else-if="column.key === 'chiTietSanPham'">
-        <p>{{ record.tenSanPhamChiTiet }} -  <a-tag> {{ record.tenKichCo }}</a-tag></p>
-        <p style="color: red">{{ record.gia ? formatCurrencyVND(record.gia) : "Không có dữ liệu" }}</p>
-      </div>
+    <!-- Bảng sản phẩm -->
+    <table-example
+      class="min-h-[15rem]"
+      v-if="props"
+      :wrapperClassName="props.wrapperClassName"
+      :columns="props.columns"
+      :data-source="dataSources"
+      :loading="props.loading"
+      :pagination-params="props.paginationParams"
+      :total-pages="props.totalPages || 1"
+      @update:pagination-params="updatePaginationParams"
+    >
+      <template #bodyCell="{ column, record }">
+        <div v-if="column.key === 'status'" class="text-center">
+          <a-tag v-if="record.status === 'false'" color="success">
+            Hoạt động
+          </a-tag>
+          <a-tag v-else-if="record.status === 'true'" color="warning">
+            Vô hiệu hóa
+          </a-tag>
+          <a-tag v-else color="secondary">Không xác định</a-tag>
+        </div>
+        <div
+          v-else-if="column.key === 'action'"
+          class="flex items-center justify-center space-x-2"
+        >
+          <a-tooltip title="Hoàn trả" trigger="hover">
+            <a-button class="bg-purple-100" size="middle" shape="round">
+              <v-icon name="fa-undo-alt" />
+            </a-button>
+          </a-tooltip>
+        </div>
 
-      <div v-if="column.key === 'soLuong'" class="flex items-center justify-center space-x-2">
-          <input
-            type="number"
-            v-model.number="record.soLuong"
-            @change="validateQuantity(record)"
-            class="w-16 text-center border rounded"
+        <div v-else-if="column.key === 'thanhTien'" style="color: red">
+          <!-- <a-input v-model:value="record.thanhTien"></a-input> -->
+          {{ formatCurrencyVND(record.thanhTien) }}
+        </div>
+
+        <div v-else-if="column.key === 'chiTietSanPham'">
+          <p>
+            {{ record.tenSanPhamChiTiet }} -
+            <a-tag> {{ record.tenKichCo }}</a-tag>
+          </p>
+          <p style="color: red">
+            {{
+              record.gia ? formatCurrencyVND(record.gia) : "Không có dữ liệu"
+            }}
+          </p>
+        </div>
+
+        <div v-else-if="column.key === 'anhSanPhamChiTiet'">
+          <Image
+            :width="60"
+            :src="record?.anhSanPhamChiTiet"
+            alt="Ảnh SP"
+            class="product-image"
           />
         </div>
-      
-    </template>
-  </table-example>
+
+        <div
+          v-if="column.key === 'soLuong'"
+          class="flex items-center justify-center space-x-2"
+        >
+          <input
+            type="number"
+            min="0"
+            v-model="record.soLuong"
+            @change="handleChangeQuantity(record)"
+            class="w-16 text-center border rounded"
+            :disabled="
+              [
+                'Đang vận chuyển',
+                'Đã giao hàng',
+                'Đã thanh toán',
+                'Thành công',
+              ].includes(billData?.trangThai)
+            "
+          />
+        </div>
+      </template>
+    </table-example>
   </div>
 </template>
 
 <script lang="ts" setup>
 import TableExample from "@/components/ui/TableExample.vue";
 import { ColumnType } from "ant-design-vue/es/table";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import AdminPayHistory from "./AdminPayHistory.vue";
 import UpdateBillModal from "../bill/UpdateBillModal.vue";
+import AddProductDetailModal from "./AddProductDetailModal.vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
-import { BillResponse, getBillById } from "@/infrastructure/services/api/admin/bill.api";
+import { BillRequest, BillResponse } from "@/infrastructure/services/api/admin/bill.api";
+import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
+import { Image } from "ant-design-vue";
 
 const props = defineProps({
   wrapperClassName: {
     type: String,
-    required: false,  
+    required: false,
     default: "min-h-/[35rem/]",
   },
   columns: {
@@ -164,8 +230,8 @@ const props = defineProps({
   },
 });
 
-
-const emit = defineEmits(["update:paginationParams"]);
+const emit = defineEmits(["update:paginationParams", 
+"update-quantity"]);
 
 const updatePaginationParams = (params: any) => {
   emit("update:paginationParams", params);
@@ -182,15 +248,20 @@ watch(
 
 const copiedBillData = ref<BillResponse | null>(null);
 
-watch(() => props?.billData, (newBillData) => {
-  copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
-  // console.log(copiedBillData.value); 
-});
+watch(
+  () => props?.billData,
+  (newBillData) => {
+    copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
+    // console.log(copiedBillData.value);
+  }
+);
 
 const updateBillData = (updatedBill) => {
+  console.log("Dữ liệu cập nhật từ API:", updatedBill);
   copiedBillData.value = updatedBill; // Cập nhật dữ liệu mới từ API
 };
 
+//modal update thông tin hóa đơn: người nhận, sđt,. .
 const isOpenModalUpdateBill = ref(false);
 
 const handleOpenModalUpdateBill = () => {
@@ -201,35 +272,66 @@ const handleCloseModalUpdateBill = () => {
   isOpenModalUpdateBill.value = false;
 };
 
-const increaseQuantity = (record: any) => {
-  if (record.soLuong !== undefined) {
-    record.soLuong++; // Tăng số lượng
-    updateTotal(record);
-  }
+const isOpenModalAddProductToOrder = ref(false);
+
+const handleOpenModalAddProductToOrder = () => {
+  isOpenModalAddProductToOrder.value = true;
 };
 
-const decreaseQuantity = (record: any) => {
-  if (record.soLuong !== undefined && record.soLuong > 1) {
-    record.soLuong--; // Giảm số lượng
-    updateTotal(record);
-  }
+const handleCloseModalAddProductToOrder = () => {
+  isOpenModalAddProductToOrder.value = false;
 };
 
-const validateQuantity = (record: any) => {
-  if (record.soLuong < 1 || isNaN(record.soLuong)) {
-    record.soLuong = 1; // Đảm bảo số lượng >= 1
-  }
-  updateTotal(record);
-};
+const dataSources: BillDetailResponse[] | any = computed(() => {
+  return (
+    props.dataSource?.map((e: any) => ({
+      catalog: e.catalog || null,
+      id: e.id || null,
+      maHoaDon: e.maHoaDon || null,
+      tenSanPhamChiTiet: e.tenSanPhamChiTiet || null,
+      anhSanPhamChiTiet: e.anhSanPhamChiTiet || null,
+      tenKichCo: e.tenKichCo || null,
+      soLuong: e.soLuong || 0,
+      gia: e.gia || null,
+      thanhTien: e.thanhTien || null,
+      tienGiamHD: e.tienGiamHD || null,
+      tienShip: e.tienShip || null,
+      tongTienHD: e.tongTienHD || null,
+      loaiGiam: e.loaiGiam,
+      giamToiDa: e.giamToiDa || null,
+      giaTriGiam: e.giaTriGiam || null,
+      dieuKienGiam: e.dieuKienGiam || null,
+      tenPhieuGiam: e.tenPhieuGiam || null,
+    })) || []
+  );
+});
 
-const updateTotal = (record: any) => {
-  // Cập nhật tổng tiền dựa trên số lượng mới
-  if (record.gia) {
-    record.thanhTien = record.gia * record.soLuong;
+watch(
+  () => dataSources.value,
+  (newData) => {
+    if (newData) {
+      // console.log(newData);
+    }
   }
+);
+
+const handleChangeQuantity = async (record: any) => {
+  record.thanhTien = record.soLuong * record.gia;
+  emit("update-quantity", record);
 };
 </script>
 
 <style scoped>
+.product-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+}
 
+.product-image:hover {
+  transform: scale(1.1);
+}
 </style>
