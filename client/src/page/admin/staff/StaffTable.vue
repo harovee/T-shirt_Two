@@ -15,6 +15,7 @@
           <a-button
               class="bg-purple-300 flex justify-between items-center gap-2"
               size="large"
+              @click="handleOpenModalQRScanStaffs"
           >
             <v-icon name="bi-qr-code-scan"/>
           </a-button>
@@ -129,6 +130,11 @@
       @handleClose="handleCloseModalImportStaffs"
       @onCancel="isOpenModalImportStaffs = false"
   />
+  <staff-modal-qr-scan
+      :open="isOpenModalQRScanStaffs"
+      @handleClose="handleCloseModalQRScanStaffs"
+      @onCancel="isOpenModalQRScanStaffs = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -142,9 +148,9 @@ import {
 } from "@/infrastructure/services/service/admin/staff.action.ts";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
-import {convertTextCode} from "@/utils/common.helper.ts";
 import {notification} from "ant-design-vue";
 import StaffModalImport from "@/page/admin/staff/StaffModalImport.vue";
+import StaffModalQrScan from "@/page/admin/staff/StaffModalQrScan.vue";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -227,6 +233,18 @@ const handleCloseModalImportStaffs = () => {
   isOpenModalImportStaffs.value = false;
 };
 
+/*** scan QR ***/
+const isOpenModalQRScanStaffs = ref(false);
+
+const handleOpenModalQRScanStaffs = () => {
+  isOpenModalQRScanStaffs.value = true;
+};
+
+const handleCloseModalQRScanStaffs = () => {
+  isOpenModalQRScanStaffs.value = false;
+};
+
+/*** redirect ***/
 const handleRedirectStaffDetail = (id: string) => {
   const staffDetailPath =
       ROUTES_CONSTANTS.ADMIN.children.STAFF_DETAIL.path.replace(':id', id);
