@@ -117,12 +117,15 @@ const billId = getIdHoaDonFromUrl();
 
 const handleUpdateBill = () => {
   const payload = {
-    idKhachHang: modelRef.idKhachHang,
+    // idKhachHang: modelRef.idKhachHang,
     soDienThoai: modelRef.soDienThoai,
     diaChiNguoiNhan: modelRef.diaChiNguoiNhan,
     tenNguoiNhan: modelRef.tenNguoiNhan,
     ghiChu: modelRef.ghiChu,
   };
+
+  console.log(payload);
+  
 
   Modal.confirm({
     content: "Bạn chắc chắn muốn sửa?",

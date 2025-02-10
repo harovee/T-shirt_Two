@@ -257,7 +257,7 @@ watch(
 );
 
 const updateBillData = (updatedBill) => {
-  console.log("Dữ liệu cập nhật từ API:", updatedBill);
+  // console.log("Dữ liệu cập nhật từ API:", updatedBill);
   copiedBillData.value = updatedBill; // Cập nhật dữ liệu mới từ API
 };
 
