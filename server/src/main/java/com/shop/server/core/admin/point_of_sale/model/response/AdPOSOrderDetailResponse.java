@@ -1,7 +1,8 @@
 package com.shop.server.core.admin.point_of_sale.model.response;
+
 import com.shop.server.core.common.base.BaseResponse;
 
-public interface AdPOSFindProductResponse  extends BaseResponse {
+public interface AdPOSOrderDetailResponse extends BaseResponse {
 
     String getMaSanPhamChiTiet();
 
@@ -28,3 +29,5 @@ public interface AdPOSFindProductResponse  extends BaseResponse {
     String getPhongCach();
 
     String getLinkAnh();
+
+}

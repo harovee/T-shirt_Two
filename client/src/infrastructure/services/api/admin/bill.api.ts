@@ -107,7 +107,7 @@ export const getBillById = async (billId: string | null) => {
 
 export const createBillsWait = async (data: BillCreateRequest) => {
     const res = (await request({
-        url: `${API_ADMIN_BILL}/`,
+        url: `${API_ADMIN_BILL}/create-bill`,
         method: "POST",
         data: data
     })) as AxiosResponse<
@@ -127,9 +127,19 @@ export const updateBill = async (idBill: string, params: BillRequest) => {
     >;
 };
 
+export const removeBillWait = async (idBill: string | null) => {
+    return await request({
+        url: `${API_ADMIN_BILL}/${idBill}`,
+        method: "DELETE"
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};
+
 export const getBillStatusCount  = async () => {
     return await request({
         url: `${API_ADMIN_COUNT_BILL}`,
         method: 'GET'
     }) as AxiosResponse<CountBillByStatusResponse>;
 }
+

@@ -30,6 +30,30 @@ export const useGetBillById = (
     });
 };
 
+// export const useRemoveBillById = (
+//     billId: Ref<string | null>
+// ): UseQueryReturnType<Awaited<ReturnType<typeof removeBillWait>>, Error> => {
+//     return useQuery({
+//         queryKey: [queryKey.admin.bill.billsWait, billId],
+//         queryFn: () => removeBillWait(billId.value)
+//     });
+// };
+
+export const useRemoveBillById = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (billId: string) => removeBillWait(billId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.bill.billsWait],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.bill.billsWait, "🚀 ~ BillWaitRemove ~ error:", error);
+        },
+    });
+};
+
 export const useCreateBillsWait = () => {
     const queryClient = useQueryClient();
     return useMutation({
