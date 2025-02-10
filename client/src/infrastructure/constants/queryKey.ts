@@ -10,6 +10,10 @@ export const queryKey = {
         register: "registerKey"
     },
     admin: {
+        pointOfSale: {
+            products: "adPOSproductsKey",
+            orderDetails: "adPOSOrderDetailKey",
+        },
         client: {
             clientList: "adClientListKey",
             clientDetail: "adClientDetailKey",

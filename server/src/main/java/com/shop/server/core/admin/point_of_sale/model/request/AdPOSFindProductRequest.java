@@ -14,9 +14,21 @@ import lombok.ToString;
 @ToString
 public class AdPOSFindProductRequest extends PageableRequest {
 
-    private String maSanPham;
+    private String keyword; // ma, sp ,ten spct, ten mau
 
-    private String tenSanPham;
+    private Boolean gioiTinh;
 
+    private String idThuongHieu;
+    private String idKichCo;
+    private String idCoAo;
+    private String idTayAo;
+    private String idHoaTiet;
+    private String idChatLieu;
+    private String idKieuDang;
+    private String idTinhNang;
+
+    private Double bienGiaBe = 0D;
+
+    private Double bienGiaLon;
 
 }

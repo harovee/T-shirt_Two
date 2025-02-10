@@ -17,7 +17,7 @@
               size="large"
               @click="handleRedirectSaleAdd"
           >
-            <v-icon name="md-addcircle"/>
+            <v-icon name="md-addcircle"/> 
           </a-button>
         </a-tooltip>
       </div>
@@ -77,7 +77,7 @@
           </a-popconfirm>
 
           <a-tooltip
-              title="Chi tiết đợt giảm giá"
+              title="Sửa đợt giảm giá"
               trigger="hover"
           >
             <a-button
@@ -86,7 +86,7 @@
                 shape="round"
                 @Click="handleRedirectSaleDetail(record.id)"
             >
-              <v-icon name="fa-eye"/>
+              <v-icon name="fa-pen"></v-icon>
             </a-button>
           </a-tooltip>
         </div>
