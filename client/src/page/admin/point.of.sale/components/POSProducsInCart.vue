@@ -35,7 +35,10 @@
                 </a-space>
               </div>
               <div v-if="column.dataIndex === 'soLuong'" class="center">
-                <a-space>{{ record.soLuong }}</a-space>
+                <!-- <a-space>{{ record.soLuong }}</a-space>
+                 -->
+                 <a-input type="number" v-model:value="record.soLuong">
+                 </a-input>
               </div>
               <div v-if="column.dataIndex === 'giaBanHienTai'" class="text-right">
                 <a-typography-text type="danger" strong underline class="cursor-pointer">

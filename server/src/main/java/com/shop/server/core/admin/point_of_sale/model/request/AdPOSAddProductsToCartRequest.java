@@ -22,4 +22,6 @@ public class AdPOSAddProductsToCartRequest {
 
     private String userEmail;
 
+    private Long soLuong;
+
 }

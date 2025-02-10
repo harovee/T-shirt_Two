@@ -119,10 +119,10 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
     @Transactional
     @Query(value = """
                  update hoa_don_chi_tiet hdct
-                     set hdct.so_luong = hdct.so_luong + 1,
+                     set hdct.so_luong = hdct.so_luong + :#{#req.soLuong},
                          hdct.ngay_sua = UNIX_TIMESTAMP()*1000,
                          hdct.nguoi_sua = :#{#req.userEmail},
-                         hdct.thanh_tien = hdct.gia * (hdct.so_luong + 1)
+                         hdct.thanh_tien = hdct.gia * (hdct.so_luong + :#{#req.soLuong})
                      where hdct.id_hoa_don = :#{#req.idHoaDonCho}
                      and hdct.id_san_pham_chi_tiet in :#{#req.idSanPhamChiTiets};
             """, nativeQuery = true)
@@ -135,9 +135,9 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
     @Transactional
     @Query(value = """
                 update san_pham_chi_tiet spct
-                    set spct.so_luong = spct.so_luong - 1
+                    set spct.so_luong = spct.so_luong - :#{#quantity}
                     where spct.id in :#{#idSanPhamChiTiets};
             """, nativeQuery = true)
-    void decreaseStock(List<String> idSanPhamChiTiets);
+    void decreaseStock(List<String> idSanPhamChiTiets, Long quantity);
 
 }

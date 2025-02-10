@@ -49,7 +49,7 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
 
             hoaDonChiTietRepository.saveProductDetailsToCart(request);
             hoaDonChiTietRepository.updateExistingProductInCart(request);
-            hoaDonChiTietRepository.decreaseStock(request.getIdSanPhamChiTiets());
+            hoaDonChiTietRepository.decreaseStock(request.getIdSanPhamChiTiets(), request.getSoLuong());
             return ResponseObject.successForward(
                     getProductsInPendingOrder(request.getIdHoaDonCho()).getData(),
                     "Thêm sản phẩm thành công vào hóa đơn");

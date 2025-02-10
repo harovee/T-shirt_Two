@@ -1,56 +1,73 @@
 <template>
   <div class="p-6 grid grid-cols-1 gap-6">
     <div class="flex items-center gap-2">
-      <v-icon name="bi-cart3" size="x-large" width="48" height="48" style="color: aqua;" />
+      <v-icon
+        name="bi-cart3"
+        size="x-large"
+        width="48"
+        height="48"
+        style="color: aqua"
+      />
       <h3 class="text-2xl m-0">Bán hàng tại quầy</h3>
     </div>
     <div>
       <div class="p-2 rounded-xl border-2">
-        <div class=" flex justify-end gap-3">
-              <a-tooltip title="Thêm sản phẩm vào giỏ" trigger="hover">
-                <a-button
-                  class="bg-purple-300 flex justify-between items-center gap-2"
-                  size="large"
-                  @click="handleOpenProductsModel"
-                >
-                  <v-icon name="md-addcircle" />
-                </a-button>
+        <div class="flex justify-end gap-3">
+          <a-tooltip title="Thêm sản phẩm vào giỏ" trigger="hover">
+            <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+              @click="handleOpenProductsModel"
+            >
+              <v-icon name="md-addcircle" />
+            </a-button>
 
-                <a-modal
-                  v-model:open="openProductsModal"
-                  title="Danh sách sản phẩm có sẵn"
-                  width="80%"
-                  @ok="handleOk"
-                >
-                <template #footer>
-                  <div  class="text-center">
-                    <a-button key="back" @click="handleCancel">Đóng</a-button>
-                    <a-button key="submit" type="primary" :loading="loadingSubmitProductTable" @click="handleOk">Thêm</a-button>
-                  </div>
-                </template>
-                  <div>
-                    <POSProductTable
-                      :attributes="listAttributes.data.value?.data"
-                      :idSanPhamChiTiets="idSanPhamChiTiets"
-                      @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"  
-                      @update:refetch="setRefetch"  
-                    />
-                    
-                  </div>
-                </a-modal>
-
-
-              </a-tooltip>
-              <a-tooltip title="Quét QR" trigger="hover">
-                <a-button
-                  class="bg-purple-300 flex justify-between items-center gap-2"
-                  size="large"
-                  @click="redirectToCreateProduct"
-                >
-                  <v-icon name="bi-qr-code-scan" />
-                </a-button>
-              </a-tooltip>
-            </div>
+            <a-modal
+              v-model:open="openProductsModal"
+              title="Danh sách sản phẩm có sẵn"
+              width="80%"
+              @ok="handleOk"
+            >
+              <template #footer>
+                <div class="text-center">
+                  <a-button key="back" @click="handleCancel">Đóng</a-button>
+                  <a-button
+                    key="submit"
+                    type="primary"
+                    :loading="loadingSubmitProductTable"
+                    @click="handleOk"
+                    >Thêm</a-button
+                  >
+                </div>
+              </template>
+              <div>
+                <POSProductTable
+                  :attributes="listAttributes.data.value?.data"
+                  :idSanPhamChiTiets="idSanPhamChiTiets"
+                  @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"
+                  @update:refetch="setRefetch"
+                />
+              </div>
+            </a-modal>
+            <a-modal
+                  v-model:open="openQuantityModal"
+                  title="Chọn số lượng"
+                  width="500px"
+                  style="height='500px'"
+                  @ok="handleQuantityOk"
+                  class="mt-10"
+                >Nhập số lượng <a-input-number class="ms-5" min="0" v-model:value="quantityProduct"></a-input-number></a-modal>
+          </a-tooltip>
+          <a-tooltip title="Quét QR" trigger="hover">
+            <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+              @click="redirectToCreateProduct"
+            >
+              <v-icon name="bi-qr-code-scan" />
+            </a-button>
+          </a-tooltip>
+        </div>
         <a-tabs
           v-model:activeKey="activeKey"
           type="editable-card"
@@ -58,19 +75,12 @@
           class="m-5"
         >
           <a-tab-pane v-for="bill in dataSource" :key="bill.id" :tab="bill.ma">
-              <div>
-                <POSProducsInCart
+            <div>
+              <POSProducsInCart
                 :idOrder="activeKey?.valueOf() || ''"
-                ></POSProducsInCart>
-              </div>
+              ></POSProducsInCart>
+            </div>
 
-          </a-tab-pane>
-        </a-tabs>
-      </div>
-
-      <div class="rounded-xl p-7 mt-6 rounded-xl border-2"></div>
-
-            <!-- Tài khoản + khách hàng, form thanh toán -->
             <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold">Tài khoản</h2>
@@ -83,20 +93,30 @@
                   @cancel="open = false"
                   class="w-[600px] h-[400px]"
                   @handleOpenKhachHang="handleOpenKhachHang"
-                  @selectCustomer="(customer, dataCustomer) => handleCustomerSelected(customer, dataCustomer, bill)"
+                  @selectCustomer="
+                    (customer, dataCustomer) =>
+                      handleCustomerSelected(customer, dataCustomer, bill)
+                  "
                 />
               </div>
               <div class="mb-6 h-100">
                 <p>
                   <strong>Tên khách hàng:</strong>
-                  {{ bill.idKhachHang ? getNameCustomer(bill.idKhachHang) : "Khách lẻ" }}
+                  {{
+                    bill.idKhachHang
+                      ? getNameCustomer(bill.idKhachHang)
+                      : "Khách lẻ"
+                  }}
                 </p>
                 <template v-if="bill && bill.idKhachHang">
                   <p>
                     <strong>Số điện thoại:</strong>
                     {{ getPhoneNumberCustomer(bill.idKhachHang) }}
                   </p>
-                  <p><strong>Email:</strong> {{ getEmailCustomer(bill.idKhachHang) }}</p>
+                  <p>
+                    <strong>Email:</strong>
+                    {{ getEmailCustomer(bill.idKhachHang) }}
+                  </p>
                 </template>
               </div>
 
@@ -136,18 +156,12 @@ import {
 } from "@/utils/notification.config";
 import { useGetAttributes } from "@/infrastructure/services/service/admin/sale.action";
 import { Modal } from "ant-design-vue";
-import {
-    ExclamationCircleOutlined,
-} from '@ant-design/icons-vue';
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { POSAddProductsToCartRequest } from "@/infrastructure/services/api/admin/point-of-sale.api";
 import { useCreateOrderDetails } from "@/infrastructure/services/service/admin/point-of-sale";
 import { useAuthStore } from "@/infrastructure/stores/auth";
-} from "@/infrastructure/services/service/admin/bill.action";
-import { BillCreateRequest } from "@/infrastructure/services/api/admin/bill.api";
-
 import KhachHangPaymentTable from "./KhachHangPaymentTable.vue";
 import PaymentInformation from "./PaymentInformation.vue";
-import { warningNotiSort, successNotiSort } from "@/utils/notification.config";
 
 const { data, isLoading, isFetching } = useGetBillsWait();
 
@@ -159,47 +173,64 @@ onMounted(() => {
   }
 });
 
-
 /*  THAO - ADD PRODUCT TO CART (PENDING ORDER)   */
 const loadingSubmitProductTable = ref<boolean>(false);
 const idSanPhamChiTiets = ref<string[]>([]);
 const openProductsModal = ref<boolean>(false);
+const openQuantityModal = ref<boolean>(false);
+const quantityProduct = ref<number>(1);
 
 type RefetchFunction = () => void;
 const refetchProducts = ref<RefetchFunction | null>(null);
 
 const listAttributes = useGetAttributes({
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
 });
 
 function handleOpenProductsModel() {
-    openProductsModal.value= true;
-    if (refetchProducts.value) {
-      refetchProducts.value();
-    }
+  openProductsModal.value = true;
+  if (refetchProducts.value) {
+    refetchProducts.value();
+  }
+}
+
+function handleOpenQuantityModel() {
+  openQuantityModal.value = true;
+  // if (refetchProducts.value) {
+  //   refetchProducts.value();
+  // }
 }
 
 const handleUpdateIdSanPhamChiTiets = (newIdSanPhamChiTiets: string[]) => {
-    idSanPhamChiTiets.value = newIdSanPhamChiTiets;
-    console.log(idSanPhamChiTiets.value);
+  idSanPhamChiTiets.value = newIdSanPhamChiTiets;
+  console.log(idSanPhamChiTiets.value);
 };
 const handleCancel = () => {
   openProductsModal.value = false;
 };
 
-
-
 const { mutate: createOrderDetails } = useCreateOrderDetails();
 const handleOk = (e: MouseEvent) => {
-  alert("id hóa đơn: " + activeKey.value + "\n" + " list id sản phẩm chi tiết: " + idSanPhamChiTiets.value)
+  // alert("id hóa đơn: " + activeKey.value + "\n" + " list id sản phẩm chi tiết: " + idSanPhamChiTiets.value)
+  // handleCreateOrderDetails({
+  //   idSanPhamChiTiets: idSanPhamChiTiets.value,
+  //   idHoaDonCho: activeKey.value,
+  //   userEmail: useAuthStore().user?.email || null,
+  // });
+  openQuantityModal.value = true;
+  // openProductsModal.value = false;
+};
+
+const handleQuantityOk = () => {
+  console.log(quantityProduct.value);
   handleCreateOrderDetails({
     idSanPhamChiTiets: idSanPhamChiTiets.value,
     idHoaDonCho: activeKey.value,
-    userEmail: useAuthStore().user?.email || null
+    userEmail: useAuthStore().user?.email || null,
+    soLuong: quantityProduct.value
   });
-  openProductsModal.value = false;
-};
+}
 
 const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
   Modal.confirm({
@@ -209,35 +240,41 @@ const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
     async onOk() {
       try {
         createOrderDetails(data, {
-            onSuccess: (result) => {
-                openNotification(notificationType.success, result?.message, '');
+          onSuccess: (result) => {
+            openNotification(notificationType.success, result?.message, "");
+            openProductsModal.value = false;
+
           },
           onError: (error: any) => {
-                openNotification(notificationType.error, error?.response?.data?.message, '');
+            openNotification(
+              notificationType.error,
+              error?.response?.data?.message,
+              ""
+            );
           },
         });
       } catch (error: any) {
         if (error?.response) {
-          openNotification(notificationType.error, error?.response?.data?.message, '');
+          openNotification(
+            notificationType.error,
+            error?.response?.data?.message,
+            ""
+          );
         } else if (error?.errorFields) {
-          openNotification(notificationType.warning, "", '');
+          openNotification(notificationType.warning, "", "");
         }
       }
     },
     cancelText: "Huỷ",
     onCancel() {
-        Modal.destroyAll();
+      Modal.destroyAll();
     },
   });
-
-}
-
+};
 
 const setRefetch = (refetch) => {
   refetchProducts.value = refetch; // Lưu hàm refetch
 };
-
-
 
 // // Copy dataSource để xóa
 // const dataSources = ref([]);
@@ -274,9 +311,9 @@ const setRefetch = (refetch) => {
 const { mutate: createBillWail } = useCreateBillsWait();
 const { mutate: removeBillWait } = useRemoveBillById();
 
-const dataCustomers = ref(null)
+const dataCustomers = ref(null);
 
-const dataSources = ref(null)
+const dataSources = ref(null);
 
 const open = ref(false);
 
@@ -287,7 +324,7 @@ watch(
   () => dataSource.value,
   (newData) => {
     if (newData) {
-      dataSources.value = JSON.parse(JSON.stringify(dataSource.value))
+      dataSources.value = JSON.parse(JSON.stringify(dataSource.value));
       console.log(dataSources.value);
     }
   },
@@ -305,45 +342,54 @@ const selectedCustomer = ref<{
   email: string;
 } | null>(null);
 
-
-const handleCustomerSelected = (customer: any, dataCustomer: any, bill: any) => {
-  const billWait = dataSources.value.find((data:any) => data.id === bill.id);
-  billWait.idKhachHang = customer.key
-  dataCustomers.value = dataCustomer
+const handleCustomerSelected = (
+  customer: any,
+  dataCustomer: any,
+  bill: any
+) => {
+  const billWait = dataSources.value.find((data: any) => data.id === bill.id);
+  billWait.idKhachHang = customer.key;
+  dataCustomers.value = dataCustomer;
 };
 
 const getNameCustomer = (id: string) => {
   if (id !== null && id !== "") {
-    const customer = dataCustomers.value.find(customer => customer.key === id);
+    const customer = dataCustomers.value.find(
+      (customer) => customer.key === id
+    );
     if (customer) {
       return customer.name;
     } else {
       return null;
     }
   }
-}
+};
 
 const getEmailCustomer = (id: string) => {
   if (id !== null && id !== "") {
-    const customer = dataCustomers.value.find(customer => customer.key === id);
+    const customer = dataCustomers.value.find(
+      (customer) => customer.key === id
+    );
     if (customer) {
       return customer.email;
     } else {
       return "";
     }
   }
-}
+};
 
 const getPhoneNumberCustomer = (id: string) => {
   if (id !== null && id !== "") {
-    const customer = dataCustomers.value.find(customer => customer.key === id);
+    const customer = dataCustomers.value.find(
+      (customer) => customer.key === id
+    );
     if (customer) {
       return customer.phoneNumber;
     } else {
       return "";
     }
   }
-}
+};
 
 const add = async () => {
   const payload = {
@@ -377,23 +423,21 @@ const onEdit = (targetKey: string | MouseEvent, action: string) => {
     remove(targetKey as string);
   }
 };
-
 </script>
 
 <style>
-.full-modal .ant-modal
-  {
-    max-width: 100%;
-    top: 0;
-    padding-bottom: 0;
-    margin: 0;
-  }
-  .full-modal  .ant-modal-content {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh);
-  }
-  .full-modal .ant-modal-body {
-    flex: 1;
-  }
+.full-modal .ant-modal {
+  max-width: 100%;
+  top: 0;
+  padding-bottom: 0;
+  margin: 0;
+}
+.full-modal .ant-modal-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh);
+}
+.full-modal .ant-modal-body {
+  flex: 1;
+}
 </style>

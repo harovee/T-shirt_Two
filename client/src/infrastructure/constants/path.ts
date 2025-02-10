@@ -208,6 +208,10 @@ export const ROUTES_CONSTANTS = {
                 path: "contact",
                 name: "client-contact"
             },
+            CART: {
+                path: "cart",
+                name: "client-cart"
+            },
         },
     },
     NOT_FOUND: {

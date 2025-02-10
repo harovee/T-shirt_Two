@@ -72,6 +72,7 @@ export interface POSAddProductsToCartRequest {
     idSanPhamChiTiets: string[] | null;
     idHoaDonCho: string | null;
     userEmail: string | null;
+    soLuong: number | null
 }
 
 export const createOrderDetails = async (data: POSAddProductsToCartRequest) => {
