@@ -27,6 +27,9 @@ public class NhanVien extends PrimaryEntity implements Serializable {
     @Column(name = "ma_nhan_vien", unique = true)
     private String code;
 
+    @Column(name = "subCode")
+    private String subCode;
+
     @Column(name = "ho_va_ten", length = EntityProperties.LENGTH_NAME)
     private String fullName;
 

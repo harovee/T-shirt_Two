@@ -10,6 +10,10 @@ export const queryKey = {
         register: "registerKey"
     },
     admin: {
+        pointOfSale: {
+            products: "adPOSproductsKey",
+            orderDetails: "adPOSOrderDetailKey",
+        },
         client: {
             clientList: "adClientListKey",
             clientDetail: "adClientDetailKey",
@@ -25,6 +29,9 @@ export const queryKey = {
         staff: {
             staffList: "adStaffListKey",
             staffDetail: "adStaffDetailKey",
+            exportStaffs: "adStaffExportKey",
+            importStaffs: "adStaffImportKey",
+            downloadTemplateStaffs: "adStaffDownloadTemplateKey",
         },
         user: {
             userList: "adUserListKey",

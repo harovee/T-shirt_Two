@@ -2,8 +2,11 @@ package com.shop.server.core.admin.staff.services;
 
 import com.shop.server.core.admin.staff.models.requests.AdminFindStaffRequest;
 import com.shop.server.core.admin.staff.models.requests.AdminStaffRequest;
+import com.shop.server.core.admin.staff.models.responses.AdminStaffExcelResponse;
 import com.shop.server.core.common.base.ResponseObject;
 import jakarta.validation.Valid;
+
+import java.util.List;
 
 public interface AdminStaffService {
 
@@ -18,5 +21,7 @@ public interface AdminStaffService {
     ResponseObject<?> changeStatusStaff(String id);
 
     ResponseObject<?> updateStaffAvatar(String id, AdminStaffRequest request);
+
+    List<AdminStaffExcelResponse> getStaffsExcel();
 
 }

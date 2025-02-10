@@ -2,6 +2,7 @@ package com.shop.server.core.admin.staff.repositories;
 
 import com.shop.server.core.admin.staff.models.requests.AdminFindStaffRequest;
 import com.shop.server.core.admin.staff.models.responses.AdminDetailStaffResponse;
+import com.shop.server.core.admin.staff.models.responses.AdminStaffExcelResponse;
 import com.shop.server.core.admin.staff.models.responses.AdminStaffResponse;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.repositories.NhanVienRepository;
@@ -9,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface AdminStaffRepository extends NhanVienRepository {
@@ -26,7 +29,7 @@ public interface AdminStaffRepository extends NhanVienRepository {
                 	nv.id AS id,
                     nv.ho_va_ten as name,
                     nv.email as email,
-                    nv.ma_nhan_vien as code,
+                    CONCAT(nv.sub_code, nv.ma_nhan_vien) as code,
                     nv.so_dien_thoai as phoneNumber,
                     nv.deleted as status
                 FROM nhan_vien nv
@@ -69,14 +72,8 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.identity as identity,
                     nv.deleted as status,
                     nv.profile_picture as picture,
-                    CASE
-                        WHEN nt.ma_nhan_vien IS NOT NULL THEN CONCAT('AD', nt.ma_nhan_vien)
-                        ELSE CONCAT('KH', nv.email)
-                    END AS createdBy,
-                    CASE
-                        WHEN ns.ma_nhan_vien IS NOT NULL THEN CONCAT('AD', ns.ma_nhan_vien)
-                        ELSE CONCAT('KH', nv.email)
-                    END AS lastModifiedBy,
+                    CONCAT(nt.sub_code, nt.ma_nhan_vien) AS createdBy,
+                    CONCAT(ns.sub_code, ns.ma_nhan_vien) AS lastModifiedBy,
                     nv.ngay_tao as createdDate,
                     nv.ngay_sua as lastModifiedDate
                 FROM nhan_vien nv
@@ -93,11 +90,11 @@ public interface AdminStaffRepository extends NhanVienRepository {
     boolean existsStaffByPhoneNumber(String phoneNumber);
 
     @Query(value = """
-           SELECT EXISTS (
-               SELECT 1
-               FROM nhan_vien nv
-               WHERE nv.email = :email AND id != :id
-           )
+            SELECT EXISTS (
+                SELECT 1
+                FROM nhan_vien nv
+                WHERE nv.email = :email AND id != :id
+            )
             """, nativeQuery = true)
     Long existsStaffByEmailAndIdNotEquals(String email, String id);
 
@@ -120,4 +117,22 @@ public interface AdminStaffRepository extends NhanVienRepository {
     Long existsStaffByPhoneNumberAndIdNotEquals(String phoneNumber, String id);
 
     Long countNhanVienByRole(Role role);
+
+    @Query(value = """
+            SELECT
+                ROW_NUMBER() OVER(ORDER BY nv.ngay_tao DESC) AS catalog,
+                CONCAT(nv.sub_code, nv.ma_nhan_vien) as code,
+                nv.ho_va_ten as name,
+                nv.identity as identity,
+                IF(nv.gioi_tinh = 1, 'Nam', 'Nữ') AS gender,
+                DATE_FORMAT(FROM_UNIXTIME(nv.ngay_sinh / 1000), '%d-%m-%Y') AS age,
+                nv.email as email,
+                nv.so_dien_thoai as phone,
+                IF(nv.deleted = false, 'Làm việc', 'Nghỉ') as status
+            FROM nhan_vien nv
+            WHERE nv.role = 1
+            ORDER BY nv.ngay_tao DESC
+            """, nativeQuery = true)
+    List<AdminStaffExcelResponse> getStaffsExcel();
+
 }

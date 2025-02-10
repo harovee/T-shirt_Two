@@ -42,12 +42,12 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
+    implementation 'org.apache.poi:poi:5.4.0'
+    implementation 'org.apache.poi:poi-ooxml:5.4.0'
 
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     implementation group: 'com.google.zxing', name: 'core', version: '3.5.3'
     implementation group: 'com.google.zxing', name: 'javase', version: '3.5.3'
 }

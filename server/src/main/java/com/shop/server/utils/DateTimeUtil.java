@@ -11,6 +11,10 @@ import java.util.TimeZone;
 
 public class DateTimeUtil {
 
+    public static Long convertStringToTimeStampSecond(String date, String format) {
+        return DateTimeUtil.convertDateToTimeStampSecond(DateTimeUtil.convertStringToDate(date, format));
+    }
+
     public static Long convertStringToTimeStampSecond(String date) {
         return DateTimeUtil.convertDateToTimeStampSecond(DateTimeUtil.convertStringToDate(date));
     }
@@ -18,6 +22,16 @@ public class DateTimeUtil {
     public static String convertTimeStampSecondToStringTimeZone(Long timeStampSecond) {
         return DateTimeUtil.convertDateToString(DateTimeUtil.convertTimeStampSecondToString(timeStampSecond));
     }
+
+    public static Date convertStringToDate(String date, String format) {
+        if (date == null || date.isEmpty()) {
+            return null;
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(date, formatter);
+        return Date.from(zonedDateTime.toInstant());
+    }
+
 
     public static Date convertStringToDate(String date) {
         if (date == null || date.isEmpty()) {
@@ -62,9 +76,16 @@ public class DateTimeUtil {
         return System.currentTimeMillis();
     }
 
+    public static String convertDateToStringForExcel(Date date) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH-mm-ss dd-MM-yyyy");
+        formatter.setTimeZone(TimeZone.getDefault());
+        return formatter.format(date);
+    }
+
     public static void main(String[] args) {
         System.out.println(DateTimeUtil.convertStringToTimeStampSecond("2024-12-04T06:53:29.493Z"));
         System.out.println(DateTimeUtil.convertTimeStampSecondToString(1736755662935L / 1000L));
+        System.out.println(DateTimeUtil.convertDateToStringForExcel(new Date()));
     }
 
 }

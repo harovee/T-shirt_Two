@@ -11,6 +11,8 @@ import "vue3-toastify/dist/index.css";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { createPinia } from "pinia";
 import { notification } from 'ant-design-vue';
+// import Vue3ColorPicker from "vue3-colorpicker";
+// import "vue3-colorpicker/style.css";
 
 const AllIcon = Object.values({...AllIcons});
 addIcons(...AllIcon);
@@ -26,6 +28,7 @@ app.use(VueQueryPlugin);
 app.use(createPinia());
 app.component("v-icon", OhVueIcon);
 app.config.globalProperties.$notify = notification;
+// app.use(Vue3ColorPicker)
 
 app.mount('#app');
 

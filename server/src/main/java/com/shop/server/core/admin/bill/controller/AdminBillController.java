@@ -69,8 +69,8 @@ public class AdminBillController {
         return adminBillServiceImpl.getBillCountsByStatus();
     }
 
-    @DeleteMapping()
-    public ResponseEntity<?> removeBillsWait(@RequestParam String id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> removeBillsWait(@PathVariable String id) {
         return Helper.createResponseEntity(adminBillService.removeBillWait(id));
     }
 }
