@@ -46,7 +46,7 @@ public class MappingConstant {
     public static final String API_ADMIN_PAY_HISTORY = API_ADMIN_PREFIX + "/pay-history";
     public static final String API_ADMIN_VOUCHER = API_ADMIN_PREFIX + "/voucher";
     public static final String API_ADMIN_IMAGE = API_ADMIN_PREFIX + "/image";
-
+    public static final String API_ADMIN_PAYMENT = API_ADMIN_PREFIX + "/payment";
     // employee
     public static final String API_CLIENT_ANOTHER = API_CLIENT_PREFIX + "/another";
 

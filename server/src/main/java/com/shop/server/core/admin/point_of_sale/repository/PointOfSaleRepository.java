@@ -143,5 +143,4 @@ public interface PointOfSaleRepository extends SanPhamChiTietRepository {
                 
             """, nativeQuery = true)
     List<AdPOSOrderDetailResponse> getProductsInOrder(String idOrder);
-
 }

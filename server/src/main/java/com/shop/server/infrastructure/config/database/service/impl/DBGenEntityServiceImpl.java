@@ -41,7 +41,6 @@ public class DBGenEntityServiceImpl implements DBGenEntityService {
 
     @Override
     public void synchronizationProvince() {
-        log.info("provinceRepository.count() {}", provinceRepository.count());
         if (provinceRepository.count() == 0) {
             List<DBGenProvinceResponse> responses = dbGenWebClientService.callApiGetProvince();
             List<Province> provinces = new ArrayList<>();
@@ -54,10 +53,7 @@ public class DBGenEntityServiceImpl implements DBGenEntityService {
                 provinces.add(province);
                 this.synchronizationDistrict(dto.getProvinceID());
             });
-            log.info("Provinces size: {}", provinces.size());
-            log.info("Saved newProvinces");
             provinceRepository.saveAll(provinces);
-            log.info("Saved newProvinces Successfully");
         } else {
             log.info("Dữ liệu province vẫn tồn tại không cần update thêm");
         }
@@ -75,17 +71,13 @@ public class DBGenEntityServiceImpl implements DBGenEntityService {
             districts.add(district);
             this.synchronizationWard(dto.getDistrictID());
         });
-        log.info("District size: {}", districts.size());
-        log.info("Saved newDistricts");
         districtRepository.saveAll(districts);
-        log.info("Saved newDistricts Successfully");
     }
 
     @Override
     public void synchronizationWard(Long id) {
         List<DBGenWardResponse> responses = dbGenWebClientService.callApiGetWard(id);
         if (responses == null) {
-            log.info("Dữ liệu newWards call null");
             return;
         }
         List<Ward> wards = new ArrayList<>();
@@ -97,10 +89,7 @@ public class DBGenEntityServiceImpl implements DBGenEntityService {
             wards.add(ward);
         });
 
-        log.info("Ward size: {}", wards.size());
-        log.info("Saved newWards");
         wardRepository.saveAll(wards);
-        log.info("Saved newWards Successfully");
     }
 
 }

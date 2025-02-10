@@ -223,11 +223,49 @@
       </a-form-item>
     </a-form>
     <div class="flex justify-end">
-      <a-button @click="resetFilter" class="me-3 bg-purple-300 flex justify-between items-center gap-2"> Làm mới </a-button>
+      <a-tooltip title="Làm mới bộ lọc" trigger="hover">
+          <a-button
+            class="me-3 bg-purple-300 flex justify-between items-center gap-2"
+            size="large"
+            @click="resetFilter"
+          >
+            <v-icon name="ri-refresh-fill" style="font-size: 14px"></v-icon>
+          </a-button>
+        </a-tooltip>
+      <a-tooltip :title="changeProductDetail ? 'Sản phẩm đơn lẻ' : 'Toàn bộ sản phẩm'" trigger="hover">
+          <a-button
+            class="me-3 bg-purple-300 flex justify-between items-center gap-2"
+            size="large"
+            @click="fetchAllProductDetail"
+          >
+            <v-icon name="ri-exchange-box-fill" style="font-size: 14px"></v-icon>
+          </a-button>
+        </a-tooltip>
+        <a-tooltip
+            title="Quét QR sản phẩm"
+            trigger="hover"
+        >
+          <a-button
+              class="me-3 bg-purple-300 flex justify-between items-center gap-2"
+              size="large"
+          >
+            <v-icon name="bi-qr-code-scan"/>
+          </a-button>
+        </a-tooltip>
+      <a-tooltip title="Xuất Excel" trigger="hover">
+          <a-button
+            class="bg-purple-300 flex justify-between items-center gap-2"
+            size="large"
+            @click="exportToExcel"
+          >
+            <v-icon name="bi-file-earmark-excel-fill" style="font-size: 14px"></v-icon>
+          </a-button>
+        </a-tooltip>
+      <!-- <a-button @click="resetFilter" class="me-3 bg-purple-300 flex justify-between items-center gap-2"> Làm mới </a-button>
       <a-button @click="fetchAllProductDetail" class="me-3  bg-purple-300 flex justify-between items-center gap-2">
         {{changeProductDetail ? "Đơn lẻ" : "Toàn bộ"}}
       </a-button>
-      <a-button @click="exportToExcel" class="bg-purple-300 flex justify-between items-center gap-2">Xuất Excel</a-button>
+      <a-button @click="exportToExcel" class="bg-purple-300 flex justify-between items-center gap-2">Xuất Excel</a-button> -->
     </div>
   </div>
 </template>
@@ -240,6 +278,7 @@ import {
   PropertyProductDetailParams,
 } from "@/infrastructure/services/api/admin/product_detail.api";
 import { keepPreviousData } from "@tanstack/vue-query";
+import { FilePdfOutlined, FileExcelOutlined } from "@ant-design/icons-vue";
 
 const listMaterial = inject("listMaterial");
 const listCollar = inject("listCollar");

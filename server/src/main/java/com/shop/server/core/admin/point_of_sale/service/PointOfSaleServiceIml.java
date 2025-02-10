@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PointOfSaleServiceIml implements PointOfSaleService {
-
+  
     private final PointOfSaleRepository pointOfSaleRepository;
     private final POSOrderDetailRepository hoaDonChiTietRepository;
     private final HoaDonRepository hoaDonRepository;
@@ -94,6 +94,4 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
             return ResponseObject.errorForward(HttpStatus.INTERNAL_SERVER_ERROR, Message.Response.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 }

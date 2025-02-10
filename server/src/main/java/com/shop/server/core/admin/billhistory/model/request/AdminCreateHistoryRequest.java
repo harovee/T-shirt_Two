@@ -20,4 +20,6 @@ public class AdminCreateHistoryRequest {
     private String trangThai;
 
     private String nguoiTao;
+
+    private Long ngayTao;
 }

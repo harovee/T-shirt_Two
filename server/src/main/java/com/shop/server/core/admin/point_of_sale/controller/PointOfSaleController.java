@@ -1,6 +1,5 @@
 package com.shop.server.core.admin.point_of_sale.controller;
 
-
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSAddProductsToCartRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSFindProductRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
@@ -56,7 +55,4 @@ public class PointOfSaleController {
     public ResponseEntity<?> addProductsToOrder(@PathVariable("idHDCT") String idHDCT) {
         return Helper.createResponseEntity(pointOfSaleService.deleteOrderDetail(idHDCT));
     }
-
-
-
 }

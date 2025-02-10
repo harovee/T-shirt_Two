@@ -15,6 +15,8 @@ public interface AdminBillDetailResponse extends BaseResponse {
 
     String getTenSanPhamChiTiet();
 
+    String getAnhSanPhamChiTiet();
+
     String getTenKichCo();
 
     Short getSoLuong();
@@ -28,4 +30,15 @@ public interface AdminBillDetailResponse extends BaseResponse {
     BigDecimal getTienGiamHD();
 
     BigDecimal getTienShip();
+
+    Boolean getLoaiGiam(); // 1 tiền // 0 %
+
+    String getGiamToiDa();
+
+    Double getGiaTriGiam();
+
+    String getDieuKienGiam();
+
+    String getTenPhieuGiam();
+
 }

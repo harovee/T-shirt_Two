@@ -51,7 +51,6 @@
                 </a-button>
               </a-tooltip>
             </div>
-            
         <a-tabs
           v-model:activeKey="activeKey"
           type="editable-card"
@@ -70,6 +69,49 @@
       </div>
 
       <div class="rounded-xl p-7 mt-6 rounded-xl border-2"></div>
+
+            <!-- Tài khoản + khách hàng, form thanh toán -->
+            <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold">Tài khoản</h2>
+                <a-button class="text-blue-500" @click="handleOpenKhachHang"
+                  >Chọn tài khoản</a-button
+                >
+                <khach-hang-payment-table
+                  :open="open"
+                  @handleClose="handleClose"
+                  @cancel="open = false"
+                  class="w-[600px] h-[400px]"
+                  @handleOpenKhachHang="handleOpenKhachHang"
+                  @selectCustomer="(customer, dataCustomer) => handleCustomerSelected(customer, dataCustomer, bill)"
+                />
+              </div>
+              <div class="mb-6 h-100">
+                <p>
+                  <strong>Tên khách hàng:</strong>
+                  {{ bill.idKhachHang ? getNameCustomer(bill.idKhachHang) : "Khách lẻ" }}
+                </p>
+                <template v-if="bill && bill.idKhachHang">
+                  <p>
+                    <strong>Số điện thoại:</strong>
+                    {{ getPhoneNumberCustomer(bill.idKhachHang) }}
+                  </p>
+                  <p><strong>Email:</strong> {{ getEmailCustomer(bill.idKhachHang) }}</p>
+                </template>
+              </div>
+
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold">Khách hàng</h2>
+                <a-button class="text-blue-500">Chọn địa chỉ</a-button>
+              </div>
+              <hr />
+              <div class="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <payment-information />
+              </div>
+            </div>
+          </a-tab-pane>
+        </a-tabs>
+      </div>
     </div>
   </div>
 </template>
@@ -100,6 +142,12 @@ import {
 import { POSAddProductsToCartRequest } from "@/infrastructure/services/api/admin/point-of-sale.api";
 import { useCreateOrderDetails } from "@/infrastructure/services/service/admin/point-of-sale";
 import { useAuthStore } from "@/infrastructure/stores/auth";
+} from "@/infrastructure/services/service/admin/bill.action";
+import { BillCreateRequest } from "@/infrastructure/services/api/admin/bill.api";
+
+import KhachHangPaymentTable from "./KhachHangPaymentTable.vue";
+import PaymentInformation from "./PaymentInformation.vue";
+import { warningNotiSort, successNotiSort } from "@/utils/notification.config";
 
 const { data, isLoading, isFetching } = useGetBillsWait();
 
@@ -226,6 +274,77 @@ const setRefetch = (refetch) => {
 const { mutate: createBillWail } = useCreateBillsWait();
 const { mutate: removeBillWait } = useRemoveBillById();
 
+const dataCustomers = ref(null)
+
+const dataSources = ref(null)
+
+const open = ref(false);
+
+const handleOpenKhachHang = () => {
+  open.value = true;
+};
+watch(
+  () => dataSource.value,
+  (newData) => {
+    if (newData) {
+      dataSources.value = JSON.parse(JSON.stringify(dataSource.value))
+      console.log(dataSources.value);
+    }
+  },
+  { immediate: true }
+);
+
+const handleClose = () => {
+  open.value = false;
+};
+
+const selectedCustomer = ref<{
+  id: string;
+  name: string;
+  phoneNumber: string;
+  email: string;
+} | null>(null);
+
+
+const handleCustomerSelected = (customer: any, dataCustomer: any, bill: any) => {
+  const billWait = dataSources.value.find((data:any) => data.id === bill.id);
+  billWait.idKhachHang = customer.key
+  dataCustomers.value = dataCustomer
+};
+
+const getNameCustomer = (id: string) => {
+  if (id !== null && id !== "") {
+    const customer = dataCustomers.value.find(customer => customer.key === id);
+    if (customer) {
+      return customer.name;
+    } else {
+      return null;
+    }
+  }
+}
+
+const getEmailCustomer = (id: string) => {
+  if (id !== null && id !== "") {
+    const customer = dataCustomers.value.find(customer => customer.key === id);
+    if (customer) {
+      return customer.email;
+    } else {
+      return "";
+    }
+  }
+}
+
+const getPhoneNumberCustomer = (id: string) => {
+  if (id !== null && id !== "") {
+    const customer = dataCustomers.value.find(customer => customer.key === id);
+    if (customer) {
+      return customer.phoneNumber;
+    } else {
+      return "";
+    }
+  }
+}
+
 const add = async () => {
   const payload = {
     loaiHD: "Tại quầy",
@@ -260,9 +379,6 @@ const onEdit = (targetKey: string | MouseEvent, action: string) => {
 };
 
 </script>
-
-
-
 
 <style>
 .full-modal .ant-modal

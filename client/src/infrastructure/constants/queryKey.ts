@@ -29,6 +29,9 @@ export const queryKey = {
         staff: {
             staffList: "adStaffListKey",
             staffDetail: "adStaffDetailKey",
+            exportStaffs: "adStaffExportKey",
+            importStaffs: "adStaffImportKey",
+            downloadTemplateStaffs: "adStaffDownloadTemplateKey",
         },
         user: {
             userList: "adUserListKey",
@@ -91,16 +94,21 @@ export const queryKey = {
             billsWait: "adBillWaitKey"
         },
         billdetail: {
-            detailList: "adBillDetail"
+            detailList: "adBillDetail",
+            billDetailById: "adBillDetailByIdKey",
         },
         payment: {
             payHistory: "adPayHistory",
+            customerList: "adCustomerListKey",
+            customerDetail: "adCustomerDetailKey",
+            voucherPayList: "voucherPayListKey",
+            voucherPayDetail: "voucherPayDetailKey"
         },
         voucher: {
             voucherList: "adVoucherListKey",
             voucherDetail: "adVoucherDetailKey",
             khachHangList: "adKhachHangListKey"
-        }
+        },
     },
 
     user: {

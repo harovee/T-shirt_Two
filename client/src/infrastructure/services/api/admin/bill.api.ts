@@ -49,6 +49,25 @@ export type BillResponse = ResponseList & {
     ghiChu: string | null;
 }
 
+export type BillWaitResponse = ResponseList & {
+    catalog: number | null;
+    ma: string | null;
+    maNhanVien: string | null;
+    loaiHD: string | null;
+    tongTien: number | null;
+    tienShip: number | null;
+    tienGiam: number | null;
+    trangThai: string | null;
+    tenKhachHang: string | null;
+    soDienThoai: string | null;
+    diaChiNguoiNhan: string | null;
+    tenNguoiNhan: string | null;
+    ghiChu: string | null;
+    idNhanVien: string | null;
+    idKhachHang: string | null;
+    idPhieuGiamGia: string | null
+}
+
 export interface CountBillByStatusResponse {
     [key: string]: number;
   }
@@ -71,7 +90,7 @@ export const getBillsWait = async () => {
         url: `${API_ADMIN_BILL}/bill-wait`,
         method: 'GET',
     })) as AxiosResponse<
-        DefaultResponse<Array<BillResponse>>
+        DefaultResponse<Array<BillWaitResponse>>
     >;
 
     return res.data;

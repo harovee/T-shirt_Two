@@ -50,7 +50,8 @@ export const API_ADMIN_BILL_DETAIL = `${API_URL}/admin/bill-detail` as string;
 export const API_ADMIN_BILL_HISTORY = `${API_URL}/admin/bill-history` as string;
 export const API_ADMIN_PAY_HISTORY = `${API_URL}/admin/pay-history` as string;
 export const PREFIX_API_ADMIN_POINT_OF_SALE = `${API_URL}/admin/point-of-sale` as string;
-
+export const API_ADMIN_POINT_OF_SALE = `${API_URL}/admin/point-of-sale` as string;
+export const API_ADMIN_PAYMENT = `${API_URL}/admin/payment` as string;
 
 
 
