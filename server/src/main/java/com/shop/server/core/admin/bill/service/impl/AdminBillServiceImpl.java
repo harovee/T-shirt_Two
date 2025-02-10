@@ -175,9 +175,10 @@ public class AdminBillServiceImpl implements AdminBillService {
         hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());
         if (request.getSoDienThoai() != null) {
             hoaDon.setSoDienThoai(request.getSoDienThoai());
-        }else {
-            hoaDon.setSoDienThoai(khachHangRepository.findById(request.getIdKhachHang()).get().getPhoneNumber());
         }
+//        else {
+//            hoaDon.setSoDienThoai(khachHangRepository.findById(request.getIdKhachHang()).get().getPhoneNumber());
+//        }
         hoaDon.setGhiChu(request.getGhiChu());
         HoaDon hd1 = adminBillRepository.save(hoaDon);
 
