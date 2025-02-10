@@ -86,18 +86,15 @@ export const createOrderDetails = async (data: POSAddProductsToCartRequest) => {
     return res.data;
 }
 
-
-
-
 export interface POSUpdateCartRequest {
-    idSanPhamChiTiet: string | null;
+    idHoaDonChiTiet: string | null;
     soLuongBanTruoc: number | null;
     soLuongBanSau: number | null;
 }
 
 export const updateQuantityOrderDetails = async (data: POSUpdateCartRequest) => {
     const res = (await request({
-        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}`,
+        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order`,
         method: "PUT",
         data: data
     })) as AxiosResponse<
@@ -106,10 +103,9 @@ export const updateQuantityOrderDetails = async (data: POSUpdateCartRequest) => 
     return res.data;
 }
 
-
 export const deleteCartById = async (idOrderDetail: string) => {
     return await request({
-        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/${idOrderDetail}`,
+        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order/${idOrderDetail}`,
         method: "DELETE",
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>

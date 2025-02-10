@@ -75,13 +75,20 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
     @Modifying
     @Transactional
     @Query(value = """
-            update san_pham_chi_tiet spct
-                set spct.so_luong = spct.so_luong + (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = ?1)
-                where spct.id = (select hdct.id_san_pham_chi_tiet from hoa_don_chi_tiet hdct where hdct.id = ?1);
-            
             delete from hoa_don_chi_tiet where id = ?1;
             """, nativeQuery = true)
     void deleteProductInCart(String idOrderDetail);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+        update san_pham_chi_tiet spct
+        set spct.so_luong = spct.so_luong + (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = ?1)
+        where spct.id = (select hdct.id_san_pham_chi_tiet from hoa_don_chi_tiet hdct where hdct.id = ?1);
+        """, nativeQuery = true)
+    void updateProductQuantityAfterDelete(String idOrderDetail);
+
+
 
 
     @Modifying

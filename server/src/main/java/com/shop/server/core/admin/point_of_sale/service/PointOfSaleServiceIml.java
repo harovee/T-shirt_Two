@@ -87,6 +87,7 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
     @Override
     public ResponseObject<?> deleteOrderDetail(String idHDCT) {
         try {
+            hoaDonChiTietRepository.updateProductQuantityAfterDelete(idHDCT);
             hoaDonChiTietRepository.deleteProductInCart(idHDCT);
             return ResponseObject.successForward("", Message.Success.DELETE_SUCCESS);
         }catch (Exception e) {

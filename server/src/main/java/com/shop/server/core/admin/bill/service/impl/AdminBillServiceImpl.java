@@ -14,6 +14,7 @@ import com.shop.server.repositories.LichSuHoaDonRepository;
 import com.shop.server.repositories.NhanVienRepository;
 import com.shop.server.repositories.PhieuGiamGiaRepository;
 import com.shop.server.utils.Helper;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -233,10 +234,12 @@ public class AdminBillServiceImpl implements AdminBillService {
         return statusCounts;
     }
 
+    @Transactional
     @Override
     public ResponseObject<?> removeBillWait(String id) {
         Optional<HoaDon> bill = adminBillRepository.findById(id);
         if (bill.isPresent()) {
+            adminBillRepository.deleteByIdHoaDon(id);
             adminBillRepository.deleteById(id);
             return new ResponseObject<>(null, HttpStatus.OK, Message.Success.UPDATE_SUCCESS);
         } else {
