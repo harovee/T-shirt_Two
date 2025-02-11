@@ -28,3 +28,4 @@ public interface AdPOSFindProductResponse  extends BaseResponse {
     String getPhongCach();
 
     String getLinkAnh();
+}

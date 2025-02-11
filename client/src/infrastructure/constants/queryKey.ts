@@ -12,7 +12,7 @@ export const queryKey = {
     admin: {
         pointOfSale: {
             products: "adPOSproductsKey",
-            orderDetails: "adPOSOrderDetailKey",
+            orderDetails: "adPOSOrderDetailKey"
         },
         client: {
             clientList: "adClientListKey",

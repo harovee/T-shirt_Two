@@ -375,6 +375,14 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: false
                 },
             },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.CART.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.CART.name,
+                component: () => import('@/page/client/cart/Cart.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
         ],
     },
     {

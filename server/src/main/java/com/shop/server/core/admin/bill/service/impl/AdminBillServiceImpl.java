@@ -3,6 +3,7 @@ package com.shop.server.core.admin.bill.service.impl;
 import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminSaveBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminUpdateBillRequest;
+import com.shop.server.core.admin.bill.model.request.AdminUpdateBillWaitRequest;
 import com.shop.server.core.admin.bill.repository.AdminBillRepository;
 import com.shop.server.core.admin.bill.service.AdminBillService;
 import com.shop.server.core.common.base.PageableObject;
@@ -14,12 +15,14 @@ import com.shop.server.repositories.LichSuHoaDonRepository;
 import com.shop.server.repositories.NhanVienRepository;
 import com.shop.server.repositories.PhieuGiamGiaRepository;
 import com.shop.server.utils.Helper;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -233,14 +236,59 @@ public class AdminBillServiceImpl implements AdminBillService {
         return statusCounts;
     }
 
+    @Transactional
     @Override
     public ResponseObject<?> removeBillWait(String id) {
         Optional<HoaDon> bill = adminBillRepository.findById(id);
         if (bill.isPresent()) {
+            adminBillRepository.deleteByIdHoaDon(id);
             adminBillRepository.deleteById(id);
             return new ResponseObject<>(null, HttpStatus.OK, Message.Success.UPDATE_SUCCESS);
         } else {
             return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "Bill not found");
         }
+    }
+
+    @Override
+    public ResponseObject<?> updateBillWait(String id, AdminUpdateBillWaitRequest request) {
+        HoaDon hoaDon = adminBillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
+
+        if (request.getIdKhachHang() != null) {
+            KhachHang khachHang = khachHangRepository.findById(request.getIdKhachHang())
+                    .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
+            hoaDon.setKhachHang(khachHang);
+        } else {
+            hoaDon.setKhachHang(null);
+        }
+
+        hoaDon.setPhieuGiamGia(request.getIdPhieuGiamGia() != null ? phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia()).orElse(null) : null);
+
+        hoaDon.setDiaChiNguoiNhan(request.getDiaChiNguoiNhan());
+        hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());
+        if (request.getSoDienThoai() != null) {
+            hoaDon.setSoDienThoai(request.getSoDienThoai());
+        }else {
+            hoaDon.setSoDienThoai(null);
+        }
+        hoaDon.setGhiChu(request.getGhiChu());
+        hoaDon.setTienGiam(request.getTienGiam() != null ? request.getTienGiam() : BigDecimal.valueOf(0));
+        hoaDon.setTienShip(request.getTienShip() != null ? request.getTienShip() : BigDecimal.valueOf(0));
+        hoaDon.setTongTien(request.getTongTien() != null ? request.getTongTien() : BigDecimal.valueOf(0));
+        hoaDon.setTrangThai(request.getTrangThai());
+        HoaDon hd1 = adminBillRepository.save(hoaDon);
+
+//        LichSuHoaDon ls = new LichSuHoaDon();
+//        ls.setIdHoaDon(hoaDon);
+//        ls.setHanhDong("Cập nhật hóa đơn");
+//        ls.setNguoiTao(request.getNguoiTao());
+//        ls.setTrangThai(hoaDon.getTrangThai());
+//        lichSuHoaDonRepository.save(ls);
+
+        return new ResponseObject<>(
+                hd1,
+                HttpStatus.OK,
+                Message.Success.UPDATE_SUCCESS
+        );
     }
 }
