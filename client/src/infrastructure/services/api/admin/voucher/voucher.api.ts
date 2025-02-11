@@ -33,8 +33,6 @@ export interface PhieuGiamGiaRequest {
 }
 
 export type VoucherResponse = ResponseList & {
-    // name: string | null;
-    // email: string | null;
     ten : string;
     soLuong: number;
     dieuKienGiam: string;

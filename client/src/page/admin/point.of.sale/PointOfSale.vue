@@ -76,7 +76,9 @@
             </a-button>
           </a-tooltip>
           <scan-qr-code
-            :openModal="isModalOpen" @update:open="isModalOpen = $event" @ok="handleQRScan"
+            :openModal="isModalOpen"
+            @update:open="isModalOpen = $event"
+            @ok="handleQRScan"
           />
         </div>
         <a-tabs
@@ -94,10 +96,27 @@
 
             <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Tài khoản</h2>
-                <a-button class="text-blue-500" @click="handleOpenKhachHang"
-                  >Chọn tài khoản</a-button
-                >
+                <h2 class="text-xl font-semibold">Khách hàng</h2>
+                <div class="flex items-center space-x-3">
+                  <a-tooltip title="Chọn khách hàng" trigger="hover">
+                  <a-button
+                    class="bg-purple-300 flex justify-between items-center gap-2"
+                    @click="handleOpenKhachHang"
+                    size="large"
+                  >
+                    <v-icon name="md-manageaccounts-round" />
+                  </a-button>
+                </a-tooltip>
+                <a-tooltip title="Chọn địa chỉ" trigger="hover">
+                  <a-button
+                    class="bg-purple-300 flex justify-between items-center gap-2"
+                    @click="handleOpenAddress"
+                    size="large"
+                  >
+                    <v-icon name="fa-address-book" />
+                  </a-button>
+                </a-tooltip>
+                </div>
                 <khach-hang-payment-table
                   :open="open"
                   @handleClose="handleClose"
@@ -105,8 +124,7 @@
                   class="w-[600px] h-[400px]"
                   @handleOpenKhachHang="handleOpenKhachHang"
                   @selectCustomer="
-                    (customer, dataCustomer) =>
-                      handleCustomerSelected(customer, dataCustomer, bill)
+                    (customer) => handleCustomerSelected(customer, bill)
                   "
                 />
               </div>
@@ -114,30 +132,29 @@
                 <p>
                   <strong>Tên khách hàng:</strong>
                   {{
-                    bill.idKhachHang
-                      ? getNameCustomer(bill.idKhachHang)
+                    activeTabCustomers[bill.id]?.name
+                      ? activeTabCustomers[bill.id].name
                       : "Khách lẻ"
                   }}
                 </p>
-                <template v-if="bill && bill.idKhachHang">
+                <template v-if="activeTabCustomers[bill.id]">
                   <p>
                     <strong>Số điện thoại:</strong>
-                    {{ getPhoneNumberCustomer(bill.idKhachHang) }}
+                    {{ activeTabCustomers[bill.id]?.phoneNumber }}
                   </p>
                   <p>
                     <strong>Email:</strong>
-                    {{ getEmailCustomer(bill.idKhachHang) }}
+                    {{ activeTabCustomers[bill.id]?.email }}
                   </p>
                 </template>
               </div>
 
-              <div class="flex justify-between items-center mb-6">
+              <!-- <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold">Khách hàng</h2>
-                <a-button class="text-blue-500">Chọn địa chỉ</a-button>
-              </div>
+              </div> -->
               <hr />
-              <div class="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <payment-information />
+              <div>
+                <payment-information :dataSourceInfor="bill"/>
               </div>
             </div>
           </a-tab-pane>
@@ -148,7 +165,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, Ref, onMounted, createVNode } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  Ref,
+  onMounted,
+  createVNode,
+  reactive,
+} from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
   useGetBillsWait,
@@ -228,7 +253,7 @@ const openQRModal = () => {
 };
 
 // Xử lý mã QR khi quét thành công
-const handleQRScan = (qrCode:string) => {
+const handleQRScan = (qrCode: string) => {
   console.log("Mã QR quét được:", qrCode);
 };
 
@@ -243,14 +268,10 @@ function handleOpenProductsModel() {
 
 function handleOpenQuantityModel() {
   openQuantityModal.value = true;
-  // if (refetchProducts.value) {
-  //   refetchProducts.value();
-  // }
 }
 
 const handleUpdateIdSanPhamChiTiets = (newIdSanPhamChiTiets: string[]) => {
   idSanPhamChiTiets.value = newIdSanPhamChiTiets;
-  // console.log(idSanPhamChiTiets.value);
 };
 const handleCancel = () => {
   openProductsModal.value = false;
@@ -313,40 +334,8 @@ const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
 };
 
 const setRefetch = (refetch) => {
-  refetchProducts.value = refetch; // Lưu hàm refetch
+  refetchProducts.value = refetch;
 };
-
-// // Copy dataSource để xóa
-// const dataSources = ref([]);
-
-// // Theo dõi khi props.dataSource?.data thay đổi, đợi cho đến khi có dữ liệu hiển thị được lên bảng ...
-// watch(
-//   () => dataSource.value,
-//   (newData) => {
-//     if (newData) {
-//       dataSources.value = JSON.parse(JSON.stringify(newData));
-//     }
-//   },
-//   { immediate: true }
-// );
-
-// watch(
-//   () => dataSource.value,
-//   (newData) => {
-//     if (newData) {
-//         console.log(newData);
-//     }
-//   },
-//   { immediate: true }
-// );
-
-// const panes = ref<{ title: string; content: string; key: string }[]>([
-//   { title: "Tab 1", content: "Content of Tab 1", key: "1" },
-//   { title: "Tab 2", content: "Content of Tab 2", key: "2" },
-//   { title: "Tab 3", content: "Content of Tab 3", key: "3" },
-// ]);
-
-// const newTabIndex = ref(0);
 
 const { mutate: createBillWail } = useCreateBillsWait();
 const { mutate: removeBillWait } = useRemoveBillById();
@@ -356,6 +345,8 @@ const dataCustomers = ref(null);
 const dataSources = ref(null);
 
 const open = ref(false);
+
+const activeTabCustomers = reactive({});
 
 const handleOpenKhachHang = () => {
   open.value = true;
@@ -382,14 +373,24 @@ const selectedCustomer = ref<{
   email: string;
 } | null>(null);
 
-const handleCustomerSelected = (
-  customer: any,
-  dataCustomer: any,
-  bill: any
-) => {
-  const billWait = dataSources.value.find((data: any) => data.id === bill.id);
-  billWait.idKhachHang = customer.key;
-  dataCustomers.value = dataCustomer;
+// const handleCustomerSelected = (
+//   customer: any,
+//   dataCustomer: any,
+//   bill: any
+// ) => {
+//   const billWait = dataSources.value.find((data: any) => data.id === bill.id);
+//   billWait.idKhachHang = customer.key;
+//   dataCustomers.value = dataCustomer;
+// };
+
+const handleCustomerSelected = (customer: any, bill: any) => {
+  if (!activeTabCustomers[bill.id]) {
+    activeTabCustomers[bill.id] = {};
+  }
+
+  // Thay vì gán trực tiếp, tạo một đối tượng mới để Vue nhận diện sự thay đổi
+  activeTabCustomers[bill.id] = { ...customer };
+  // console.log(activeTabCustomers[bill.id]);
 };
 
 const getNameCustomer = (id: string) => {
@@ -456,7 +457,7 @@ const remove = async (targetKey: string) => {
       try {
         await removeBillWait(targetKey);
         // console.log(targetKey);
-        
+
         successNotiSort("Hủy hóa đơn thành công");
       } catch (error) {
         errorNotiSort("Hủy hóa đơn thất bại");
