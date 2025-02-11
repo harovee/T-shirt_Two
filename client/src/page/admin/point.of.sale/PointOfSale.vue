@@ -154,7 +154,7 @@
               </div> -->
               <hr />
               <div>
-                <payment-information :dataSourceInfor="bill"/>
+                <payment-information :dataSourceInfor="bill" :selectedCustomerInfo="activeTabCustomers[bill.id]"/>
               </div>
             </div>
           </a-tab-pane>
@@ -284,7 +284,7 @@ const handleOk = (e: MouseEvent) => {
 };
 
 const handleQuantityOk = () => {
-  console.log(quantityProduct.value);
+  // console.log(quantityProduct.value);
   handleCreateOrderDetails({
     idSanPhamChiTiets: idSanPhamChiTiets.value,
     idHoaDonCho: activeKey.value,
@@ -387,8 +387,6 @@ const handleCustomerSelected = (customer: any, bill: any) => {
   if (!activeTabCustomers[bill.id]) {
     activeTabCustomers[bill.id] = {};
   }
-
-  // Thay vì gán trực tiếp, tạo một đối tượng mới để Vue nhận diện sự thay đổi
   activeTabCustomers[bill.id] = { ...customer };
   // console.log(activeTabCustomers[bill.id]);
 };

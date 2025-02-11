@@ -6,6 +6,7 @@ import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartReq
 import com.shop.server.repositories.HoaDonChiTietRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
                 :#{#req.userEmail},
                 :#{#req.userEmail},
                 tinh_gia_hien_tai(:#{#req.idSanPhamChiTiet}),
-                :#{#req.soLuong},
+                0,
                 tinh_gia_hien_tai(:#{#req.idSanPhamChiTiet})*:#{#req.soLuong},
                 'PENDING',
                 :#{#req.idHoaDonCho},
@@ -105,9 +106,9 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
                 UNIX_TIMESTAMP()*1000,
                 :#{#req.userEmail},
                 :#{#req.userEmail},
-                tinh_gia_hien_tai(spct.id),
+                spct.gia,
                 0,
-                tinh_gia_hien_tai(spct.id),
+                0,
                 'PENDING',
                 :#{#req.idHoaDonCho},
                 spct.id
@@ -147,4 +148,6 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
             """, nativeQuery = true)
     void decreaseStock(List<String> idSanPhamChiTiets, Long quantity);
 
+    @Query(value = "SELECT SUM(hdct.thanh_tien) FROM hoa_don_chi_tiet hdct WHERE hdct.id_hoa_don = :idHoaDon", nativeQuery = true)
+    Double getTotalAmountByIdHoaDon(@Param("idHoaDon") String idHoaDon);
 }

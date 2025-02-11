@@ -95,4 +95,23 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
             return ResponseObject.errorForward(HttpStatus.INTERNAL_SERVER_ERROR, Message.Response.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Override
+    public ResponseObject<?> getTotalAmount(String idHoaDon) {
+        Double totalAmount = hoaDonChiTietRepository.getTotalAmountByIdHoaDon(idHoaDon);
+        return new ResponseObject<>(
+                totalAmount,
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
+    }
+
+    @Override
+    public ResponseObject<?> getListProducts(String idHoaDon) {
+        return new ResponseObject<>(
+                hoaDonChiTietRepository.findAll(),
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
+    }
 }

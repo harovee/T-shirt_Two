@@ -7,6 +7,7 @@
       :data-source="dataSource"
       :pagination="false"
       :scroll="{ x: 1000, y: 400 }"
+      :locale="{ emptyText: 'Không có sản phẩm' }"
     >
       <template #bodyCell="{ record, column }">
         <a-image-preview-group>

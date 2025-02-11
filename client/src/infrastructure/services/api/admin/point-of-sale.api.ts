@@ -49,6 +49,17 @@ export const getProductDetailsInPOS = async (params: Ref<FindPOSProductDetailReq
     return res.data;
 };
 
+// export const getTotalAmount = async (params: Ref<String>) => {
+//     const res = (await request({
+//         url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/total-amount/`,
+//         method: "GET",
+//         params: params.value,
+//     })) as AxiosResponse<
+//         DefaultResponse<PaginationResponse<Array<POSProductDetailResponse>>>
+//     >;
+//     return res.data;
+// };
+
 export const getPriceRank =  async () => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/sub/price-rank`,
