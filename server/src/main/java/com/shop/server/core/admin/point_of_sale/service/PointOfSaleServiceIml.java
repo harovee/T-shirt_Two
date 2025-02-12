@@ -47,8 +47,9 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
             HoaDon hoaDon = hoaDonRepository.findById(request.getIdHoaDonCho()).orElse(null);
             if (hoaDon == null) return ResponseObject.errorForward(HttpStatus.NOT_FOUND, Message.Response.NOT_FOUND + " : không tìm thấy hóa đơn thỏa mãn");
 
-            hoaDonChiTietRepository.saveProductDetailsToCart(request);
+            request.setSoLuong(1L);
             hoaDonChiTietRepository.updateExistingProductInCart(request);
+            hoaDonChiTietRepository.saveProductDetailsToCart(request);
             hoaDonChiTietRepository.decreaseStock(request.getIdSanPhamChiTiets(), request.getSoLuong());
             return ResponseObject.successForward(
                     getProductsInPendingOrder(request.getIdHoaDonCho()).getData(),

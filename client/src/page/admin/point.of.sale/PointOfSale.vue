@@ -289,7 +289,7 @@ const handleQuantityOk = () => {
     idSanPhamChiTiets: idSanPhamChiTiets.value,
     idHoaDonCho: activeKey.value,
     userEmail: useAuthStore().user?.email || null,
-    soLuong: quantityProduct.value,
+    soLuong: 1,
   });
 };
 

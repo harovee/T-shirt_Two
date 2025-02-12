@@ -106,9 +106,9 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
                 UNIX_TIMESTAMP()*1000,
                 :#{#req.userEmail},
                 :#{#req.userEmail},
-                spct.gia,
-                0,
-                0,
+                if(tinh_gia_hien_tai(spct.id) is  null, spct.gia, tinh_gia_hien_tai(spct.id)),
+                1,
+                if(tinh_gia_hien_tai(spct.id) is  null, spct.gia, tinh_gia_hien_tai(spct.id)),
                 'PENDING',
                 :#{#req.idHoaDonCho},
                 spct.id
@@ -130,7 +130,7 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
                      set hdct.so_luong = hdct.so_luong + :#{#req.soLuong},
                          hdct.ngay_sua = UNIX_TIMESTAMP()*1000,
                          hdct.nguoi_sua = :#{#req.userEmail},
-                         hdct.thanh_tien = hdct.gia * (hdct.so_luong + :#{#req.soLuong})
+                         hdct.thanh_tien = hdct.gia * hdct.so_luong
                      where hdct.id_hoa_don = :#{#req.idHoaDonCho}
                      and hdct.id_san_pham_chi_tiet in :#{#req.idSanPhamChiTiets};
             """, nativeQuery = true)

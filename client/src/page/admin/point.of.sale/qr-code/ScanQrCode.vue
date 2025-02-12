@@ -26,7 +26,7 @@ export default {
   emits: ["update:open", "cancel"],
   setup(props, { emit }) {
     const qrResult = ref("");
-    
+
     const onDecode = (result) => {
       qrResult.value = result;
       console.log("Quét thành công:", result);
