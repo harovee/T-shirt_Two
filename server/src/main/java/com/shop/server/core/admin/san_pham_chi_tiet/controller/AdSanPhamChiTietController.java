@@ -27,6 +27,12 @@ public class AdSanPhamChiTietController {
         return Helper.createResponseEntity(adSanPhamChiTietService.getALlSanPhamChiTiets(request));
     }
 
+    // Lấy danh sách toàn bộ SPCT  không phân trang
+    @GetMapping("/list-product-detail")
+    public ResponseEntity<?> getListSanPhamChiTiet() {
+        return Helper.createResponseEntity(adSanPhamChiTietService.getListSanPhamChitiet());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getDetailSanPhamChiTiet(@PathVariable final String id) {
         return Helper.createResponseEntity(adSanPhamChiTietService.getSanPhamChiTietById(id));

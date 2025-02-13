@@ -1,5 +1,7 @@
 <template>
-  <a-modal :visible="open" @ok="handleClose" key="" :width="'1400px'">
+  <a-modal :open="open" @ok="handleClose" key="" :width="'1400px'" :okText="'Xác nhận'"
+    :cancelText="'Hủy bỏ'">
+    <h1 class="text-xl">Danh sách phiếu giảm giá</h1>
     <div class="w-400px">
       <a-space class="flex justify-start items-center">
         <a-input-search

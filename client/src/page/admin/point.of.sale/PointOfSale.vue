@@ -6,7 +6,6 @@
         size="x-large"
         width="48"
         height="48"
-        style="color: aqua"
       />
       <h3 class="text-2xl m-0">Bán hàng tại quầy</h3>
     </div>
@@ -50,7 +49,7 @@
                 />
               </div>
             </a-modal>
-            <a-modal
+            <!-- <a-modal
               v-model:open="openQuantityModal"
               title="Chọn số lượng"
               width="500px"
@@ -64,7 +63,7 @@
                 min="0"
                 v-model:value="quantityProduct"
               ></a-input-number
-            ></a-modal>
+            ></a-modal> -->
           </a-tooltip>
           <a-tooltip title="Quét QR" trigger="hover">
             <a-button
@@ -78,6 +77,7 @@
           <scan-qr-code
             :openModal="isModalOpen"
             @update:open="isModalOpen = $event"
+            @update:idSanPhamChitiet="handleUpdateIdSanPhamChiTietQr"
             @ok="handleQRScan"
           />
         </div>
@@ -99,23 +99,23 @@
                 <h2 class="text-xl font-semibold">Khách hàng</h2>
                 <div class="flex items-center space-x-3">
                   <a-tooltip title="Chọn khách hàng" trigger="hover">
-                  <a-button
-                    class="bg-purple-300 flex justify-between items-center gap-2"
-                    @click="handleOpenKhachHang"
-                    size="large"
-                  >
-                    <v-icon name="md-manageaccounts-round" />
-                  </a-button>
-                </a-tooltip>
-                <a-tooltip title="Chọn địa chỉ" trigger="hover">
-                  <a-button
-                    class="bg-purple-300 flex justify-between items-center gap-2"
-                    @click="handleOpenAddress"
-                    size="large"
-                  >
-                    <v-icon name="fa-address-book" />
-                  </a-button>
-                </a-tooltip>
+                    <a-button
+                      class="bg-purple-300 flex justify-between items-center gap-2"
+                      @click="handleOpenKhachHang"
+                      size="large"
+                    >
+                      <v-icon name="md-manageaccounts-round" />
+                    </a-button>
+                  </a-tooltip>
+                  <a-tooltip title="Chọn địa chỉ" trigger="hover">
+                    <a-button
+                      class="bg-purple-300 flex justify-between items-center gap-2"
+                      @click="handleOpenAddress"
+                      size="large"
+                    >
+                      <v-icon name="fa-address-book" />
+                    </a-button>
+                  </a-tooltip>
                 </div>
                 <khach-hang-payment-table
                   :open="open"
@@ -149,12 +149,12 @@
                 </template>
               </div>
 
-              <!-- <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Khách hàng</h2>
-              </div> -->
               <hr />
               <div>
-                <payment-information :dataSourceInfor="bill" :selectedCustomerInfo="activeTabCustomers[bill.id]"/>
+                <payment-information
+                  :dataSourceInfor="bill"
+                  :selectedCustomerInfo="activeTabCustomers[bill.id]"
+                />
               </div>
             </div>
           </a-tab-pane>
@@ -199,11 +199,17 @@ import { useCreateOrderDetails } from "@/infrastructure/services/service/admin/p
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import KhachHangPaymentTable from "./KhachHangPaymentTable.vue";
 import PaymentInformation from "./PaymentInformation.vue";
+import { ProductDetailListResponse } from "@/infrastructure/services/api/admin/product_detail.api";
+import { useGetListProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
 
 const { data, isLoading, isFetching } = useGetBillsWait();
 
+const { data: listProductDetail} = useGetListProductDetail();
+
 const dataSource = computed(() => data?.value?.data || []);
 const activeKey = ref<string | null>(null);
+
+const dataListProductDetail = computed(() => listProductDetail?.value?.data || []);
 
 // Hiển thị tab đầu tiên khi load trang
 onMounted(() => {
@@ -273,6 +279,26 @@ function handleOpenQuantityModel() {
 const handleUpdateIdSanPhamChiTiets = (newIdSanPhamChiTiets: string[]) => {
   idSanPhamChiTiets.value = newIdSanPhamChiTiets;
 };
+
+// Hàm tìm id theo mã SPCT
+const findIdByMaSPCT = (maSPCT: string) => {
+  const product = dataListProductDetail.value.find(item => item.maSanPhamChiTiet === maSPCT);
+  return product ? product.id : null;
+};
+
+const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
+  idSanPhamChiTiets.value = [];
+  const idSPCT = findIdByMaSPCT(newId);
+  
+  idSanPhamChiTiets.value.push(idSPCT);
+  handleCreateQrOrderDetails({
+    idSanPhamChiTiets: idSanPhamChiTiets.value,
+    idHoaDonCho: activeKey.value,
+    userEmail: useAuthStore().user?.email || null,
+    soLuong: 1,
+  });
+}
+
 const handleCancel = () => {
   openProductsModal.value = false;
   quantityProduct.value = 1;
@@ -280,11 +306,7 @@ const handleCancel = () => {
 
 const { mutate: createOrderDetails } = useCreateOrderDetails();
 const handleOk = (e: MouseEvent) => {
-  openQuantityModal.value = true;
-};
-
-const handleQuantityOk = () => {
-  // console.log(quantityProduct.value);
+  // openQuantityModal.value = true;
   handleCreateOrderDetails({
     idSanPhamChiTiets: idSanPhamChiTiets.value,
     idHoaDonCho: activeKey.value,
@@ -293,14 +315,58 @@ const handleQuantityOk = () => {
   });
 };
 
+// modal thêm số lượgn
+const handleQuantityOk = () => {
+  // console.log(quantityProduct.value);
+  // handleCreateOrderDetails({
+  //   idSanPhamChiTiets: idSanPhamChiTiets.value,
+  //   idHoaDonCho: activeKey.value,
+  //   userEmail: useAuthStore().user?.email || null,
+  //   soLuong: 1,
+  // });
+};
+
+
+const handleCreateQrOrderDetails = (data: POSAddProductsToCartRequest) => {
+  try {
+        createOrderDetails(data, {
+          onSuccess: (result) => {
+            openNotification(notificationType.success, result?.message, "");
+          },
+          onError: (error: any) => {
+            openNotification(
+              notificationType.error,
+              error?.response?.data?.message,
+              ""
+            );
+          },
+        });
+      } catch (error: any) {
+        if (error?.response) {
+          openNotification(
+            notificationType.error,
+            error?.response?.data?.message,
+            ""
+          );
+        } else if (error?.errorFields) {
+          openNotification(notificationType.warning, "", "");
+        }
+      }
+};
+
 const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
   Modal.confirm({
     title: "Bạn chắc chắn muốn thêm các sản phẩm dã chọn vào giỏ hàng?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
     async onOk() {
+      if (data.idSanPhamChiTiets.length === 0) {
+        warningNotiSort("Vui lòng chọn sản phẩm!");
+        return;
+      }
       try {
         createOrderDetails(data, {
+          
           onSuccess: (result) => {
             openNotification(notificationType.success, result?.message, "");
             openQuantityModal.value = false;

@@ -94,6 +94,39 @@ export interface RenProductDetailResponse {
     idSanPham: string | null
 }
 
+export interface ProductDetailListResponse {
+
+    id: string | null,
+
+    maSanPhamChiTiet: string | null,
+
+    trangThai: number | null,
+
+    gia: number | null,
+
+    soLuong:number | null
+
+    chatLieu: string | null
+
+    coAo: string | null
+
+    hoaTiet: string | null
+
+    mauSac: string | null
+
+    kichCo: string | null
+
+    kieuDang: string | null
+
+    tayAo: string | null
+
+    thuongHieu: string | null
+
+    tinhNang: string | null
+
+    sanPham: string | null
+}
+
 
 
 export interface ProductDetailUpdateRequest {
@@ -147,7 +180,29 @@ export const getProductDetails = async (params: Ref<FindProductDetailRequest>) =
     return res.data;
 };
 
+export const getListProductDetail = async () => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/list-product-detail`,
+        method: "GET"
+    })) as AxiosResponse<
+        DefaultResponse<Array<ProductDetailListResponse>>
+    >;
+    return res.data;
+};
+
 export const getAllProductDetails = async (paramsAll: Ref<FindAllProductDetailRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-product-detail`,
+        method: "GET",
+        params: paramsAll.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ProductDetailResponse>>>
+    >;
+
+    return res.data;
+};
+
+export const getListProductDetails = async (paramsAll: Ref<FindAllProductDetailRequest>) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-product-detail`,
         method: "GET",

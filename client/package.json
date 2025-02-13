@@ -24,6 +24,7 @@
     "lodash": "^4.17.21",
     "oh-vue-icons": "^1.0.0-rc3",
     "pinia": "^2.2.6",
+    "qrcode-generator": "^1.4.4",
     "tailwind-merge": "^2.5.2",
     "vue": "^3.5.13",
     "vue-qrcode-reader": "^5.7.0",

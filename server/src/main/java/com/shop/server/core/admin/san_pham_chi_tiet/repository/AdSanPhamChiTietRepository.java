@@ -265,5 +265,38 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
     """, nativeQuery = true)
     List<AdSanPhamChiTietResponse> getListAllSanPhamChiTietsByIdSanPham (AdFindSpctRequest req);
 
+    @Query(value = """
+                SELECT
+        			ROW_NUMBER() OVER(ORDER BY spct.ngay_tao DESC) AS catalog,
+                    spct.id as id,
+                    spct.ma_san_pham_chi_tiet as maSanPhamChitiet,
+                    cl.id AS chatLieu,
+                    ca.id AS coAo,
+                    ht.id AS hoaTiet,
+                    kc.id AS kichCo,
+                    kd.id AS kieuDang,
+                    ms.id AS mauSac,
+                    ta.id AS tayAo,
+                    th.id AS thuongHieu,
+                    tn.id AS tinhNang,
+                    sp.id AS sanPham,
+                    spct.gia AS gia,
+                    spct.so_luong AS soLuong,
+                    spct.trang_thai AS trangThai
+                FROM san_pham_chi_tiet spct
+                    LEFT JOIN chat_lieu cl ON spct.id_chat_lieu = cl.id
+                    LEFT JOIN co_ao ca ON spct.id_co_ao = ca.id
+                    LEFT JOIN hoa_tiet ht ON spct.id_hoa_tiet = ht.id
+                    LEFT JOIN kich_co kc ON spct.id_kich_co = kc.id
+                    LEFT JOIN kieu_dang kd ON spct.id_kieu_dang = kd.id
+                    LEFT JOIN mau_sac ms ON spct.id_mau_sac = ms.id
+                    LEFT JOIN tay_ao ta ON spct.id_tay_ao = ta.id
+                    LEFT JOIN thuong_hieu th ON spct.id_thuong_hieu = th.id
+                    LEFT JOIN tinh_nang tn ON spct.id_tinh_nang = tn.id
+                    JOIN san_pham sp ON spct.id_san_pham = sp.id
+        		WHERE spct.deleted = 0
+    """, nativeQuery = true)
+    List<AdSanPhamChiTietResponse> getListSanPhamChiTiets ();
+
     Boolean existsSanPhamChiTietByMaSPCT(String maSPCT);
 }
