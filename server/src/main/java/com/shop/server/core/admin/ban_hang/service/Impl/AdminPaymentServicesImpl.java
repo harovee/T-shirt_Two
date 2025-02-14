@@ -2,14 +2,17 @@ package com.shop.server.core.admin.ban_hang.service.Impl;
 
 import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
+import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
 import com.shop.server.core.admin.ban_hang.repository.AdminKhachHangPayRepository;
 import com.shop.server.core.admin.ban_hang.repository.AdminPhieuGiamGiaRepository;
 import com.shop.server.core.admin.ban_hang.repository.AdminPhuongThucThanhToanRepository;
 import com.shop.server.core.admin.ban_hang.service.AdminPaymentServices;
+import com.shop.server.core.admin.phieugiamgia.model.request.PhieuGiamGiaSearchRequest;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,14 +42,27 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
         );
     }
 
+
+    //    @Override
+//    public ResponseObject<?> getAllVoucherKhachHang(AdminHoaDonKhachHangRequest request) {
+//        Pageable pageable = Helper.createPageable(request);
+//        return new ResponseObject<>(adminPhieuGiamGiaRepository.getPhieuGiamGia(request,pageable),
+//                HttpStatus.OK,
+//                "Lấy Phiếu giảm giá thành công"
+//        );
+//
+//    }
+//    public ResponseObject<?> getAllVoucherKhachHang(AdminHoaDonKhachHangRequest request, String idKhachHang) {
+//        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+//            return new ResponseObject<>(PageableObject.of(adminPhieuGiamGiaRepository.getPhieuGiamGia(request,idKhachHang, pageable)), HttpStatus.OK, "Lấy danh sách phiếu giảm giá thành công");
+//    }
+
     @Override
-    public ResponseObject<?> getAllVoucherKhachHang(AdminHoaDonKhachHangRequest request) {
-        Pageable pageable = Helper.createPageable(request);
-        return new ResponseObject<>(adminPhieuGiamGiaRepository.getPhieuGiamGia(request,pageable),
-                HttpStatus.OK,
-                "Lấy Phiếu giảm giá thành công"
-        );
+    public ResponseObject<?> getAllVoucherKhachHangNoId(AdminHoaDonKhachHangRequest request) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+        return new ResponseObject<>(PageableObject.of(adminPhieuGiamGiaRepository.getPhieuGiamGia(request, pageable)), HttpStatus.OK, "Lấy danh sách phiếu giảm giá thành công");
     }
+
 
     @Override
     public ResponseObject<?> getVoucherKhachHangById(AdminHoaDonKhachHangRequest request) {

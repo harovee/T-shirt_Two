@@ -5,11 +5,11 @@ import {API_ADMIN_PAYMENT} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
-    keyword?: string | null;
-    startDate?: number | null;
-    endDate?: number | null;
-    loaiGiam? : boolean | null;
-    trangThai? : string | null;
+    keyword: string | null;
+
+    idKhachHang: string | null;
+
+    tongTien: number | null;
     
     [key: string]: any;
 }
@@ -27,7 +27,9 @@ export type VoucherResponse = ResponseList & {
     loaiGiam: boolean;
     kieu: boolean;
     giaTriGiam: string;
-    
+    ngayBatDau: number;
+    ngayKetThuc: number;
+    trangThai : string;
 };
 
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {

@@ -1,6 +1,12 @@
 <template>
-  <a-modal :open="open" @ok="handleClose" key="" :width="'1400px'" :okText="'Xác nhận'"
-    :cancelText="'Hủy bỏ'">
+  <a-modal
+    :open="open"
+    @ok="handleClose"
+    key=""
+    :width="'1400px'"
+    :okText="'Xác nhận'"
+    :cancelText="'Hủy bỏ'"
+  >
     <h1 class="text-xl">Danh sách phiếu giảm giá</h1>
     <div class="w-400px">
       <a-space class="flex justify-start items-center">
@@ -21,23 +27,25 @@
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'giaTriGiam'" class="text-left">
-            <span v-if="record.loaiGiam === true || record.loaiGiam === 'true'">
-                {{ formatCurrencyVND(record.giaTriGiam) }}
-            </span>
-            <span v-else-if="record.loaiGiam === false || record.loaiGiam === 'false'">
-                {{ record.giaTriGiam }} %
-          </span>
-            <span v-else>
-                Không xác định
+          <span>
+            {{ formatCurrencyVND(record.giaTriGiam) }}
           </span>
         </div>
         <div v-if="column.key === 'dieuKienGiam'" class="text-left">
-                {{ formatCurrencyVND(record.dieuKienGiam) }}
+          {{ formatCurrencyVND(record.dieuKienGiam) }}
         </div>
-        <div v-else-if="column.key === 'kieu'" >
-            <a-tag v-if="record.kieu === true || record.kieu === 'true'" color="blue">Cá nhân</a-tag>
-            <a-tag v-else-if="record.kieu === false || record.kieu === 'false'" color="green">Công khai</a-tag>
-            <span v-else color="secondary">Không xác định</span>
+        <div v-else-if="column.key === 'kieu'">
+          <a-tag
+            v-if="record.kieu === true || record.kieu === 'true'"
+            color="blue"
+            >Cá nhân</a-tag
+          >
+          <a-tag
+            v-else-if="record.kieu === false || record.kieu === 'false'"
+            color="green"
+            >Công khai</a-tag
+          >
+          <span v-else color="secondary">Không xác định</span>
         </div>
         <template v-if="column.key === 'actions'">
           <a-button color="primary" @click="handleSelectVoucher(record)"
@@ -56,18 +64,40 @@
 </template>
 <script lang="ts" setup>
 import type { TableProps, TableColumnType } from "ant-design-vue";
-import { formatCurrencyVND, getDateFormat, getDateTimeMinutesFormat } from "@/utils/common.helper";
+import {
+  formatCurrencyVND,
+  getDateFormat,
+  getDateTimeMinutesFormat,
+} from "@/utils/common.helper";
 import { defineProps, computed, defineEmits, ref, watch, onMounted } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { VoucherResponse, FindVoucherRequest } from "@/infrastructure/services/api/admin/voucher/voucher.api";
-import { useGetListVoucher } from "@/infrastructure/services/service/admin/voucher/voucher.action";
+// import { VoucherResponse, FindVoucherRequest } from "@/infrastructure/services/api/admin/voucher/voucher.api";
+// import { useGetListVoucher } from "@/infrastructure/services/service/admin/voucher/voucher.action";
+import {
+  VoucherResponse,
+  FindVoucherRequest,
+} from "@/infrastructure/services/api/admin/payment.api";
+import { useGetListVoucher } from "@/infrastructure/services/service/admin/payment.action";
 import { convertDateFormatTime } from "@/utils/common.helper";
 import { useRoute } from "vue-router";
 
 const pageSize = ref(5);
 const current1 = ref(1);
 
-const props = defineProps<{ open: boolean }>();
+const props = defineProps({
+  open: {
+    type: Boolean,
+    required: true,
+  },
+  dataCustomer: {
+    type: Object,
+    required: true,
+  },
+  totalAmount: {
+    type: Number,
+    required: true,
+  }
+});
 
 const emit = defineEmits(["handleClose", "selectVoucher"]);
 
@@ -87,13 +117,20 @@ const handleClose = () => emit("handleClose");
 //     trangThai : string;
 // }
 
-
-
 const params = ref<FindVoucherRequest>({
   page: 1,
   size: 5,
   keyword: "",
+  idKhachHang: props.dataCustomer ? props.dataCustomer.id : null,
+  tongTien: 0
 });
+watch(
+  () => props.totalAmount,
+  (newData) => {
+    params.value.tongTien = newData
+  },
+  { immediate: true }
+);
 
 const { data } = useGetListVoucher(params, {
   refetchOnWindowFocus: false,
@@ -113,6 +150,12 @@ const { data } = useGetListVoucher(params, {
 // });
 
 const dataVoucher = computed(() => data?.value?.data?.data || []);
+
+watch(dataVoucher, (newData) => {
+  console.log(newData);
+  
+});
+
 
 const handleSearch = (newValue: string) => {
   params.value.keyword = newValue;
@@ -140,7 +183,7 @@ const columns: TableColumnType<VoucherResponse>[] = [
     key: "catalog",
     ellipsis: true,
     width: 50,
-    align: "center"
+    align: "center",
   },
   {
     title: "Mã",

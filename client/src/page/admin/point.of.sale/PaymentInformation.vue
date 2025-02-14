@@ -44,6 +44,8 @@
           </div>
           <voucher-payment-table
             :open="open"
+            :dataCustomer="selectedCustomerInfo"
+            :totalAmount="totalAmount"
             @handleClose="handleClose"
             @cancel="open = false"
             class="w-[600px] h-[400px]"
