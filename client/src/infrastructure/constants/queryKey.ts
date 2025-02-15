@@ -99,6 +99,8 @@ export const queryKey = {
         },
         payment: {
             payHistory: "adPayHistory",
+            paymentMethod: "adPaymentMethodKey",
+            deliveryPayment: "adDeliveryPaymentKey",
             customerList: "adCustomerListKey",
             customerDetail: "adCustomerDetailKey",
             voucherPayList: "voucherPayListKey",

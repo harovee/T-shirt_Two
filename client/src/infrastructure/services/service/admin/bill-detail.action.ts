@@ -20,6 +20,7 @@ export const useUpdateBillDetail = () => {
         mutationFn: ({idBillDetail, data}: { idBillDetail: string; data: UpdateBillDetailRequest }) => updateBillDetail(idBillDetail, data),
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: [queryKey.admin.billdetail.billDetailById]});
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.billdetail.detailList]});
         },
         onError: (error: any) => {
             console.log(queryKey.admin.billdetail.billDetailById + "🚀 ~ billDetailUpdate ~ error:", error);

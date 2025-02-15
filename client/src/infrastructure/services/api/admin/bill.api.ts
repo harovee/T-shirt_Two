@@ -147,3 +147,13 @@ export const getBillStatusCount  = async () => {
     }) as AxiosResponse<CountBillByStatusResponse>;
 }
 
+export const changeBillStatus = async (idBill: string, params: ChangeStatusBillRequest) => {
+    return await request({
+        url: `${API_ADMIN_BILL}/status-bill/${idBill}`,
+        method: "PUT",
+        data: params
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};
+

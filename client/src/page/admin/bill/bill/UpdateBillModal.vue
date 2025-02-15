@@ -53,7 +53,7 @@ const { mutate: update } = useUpdateBill();
 const modelRef = reactive<BillRequest>({
   soDienThoai: null,
   diaChiNguoiNhan: null,
-  idKhachHang: null,
+  // idKhachHang: null,
   tenNguoiNhan: null,
   ghiChu: null,
 });
@@ -66,7 +66,7 @@ watch(
     if (newBillData) {
       modelRef.soDienThoai = newBillData.soDienThoai || null;
       modelRef.diaChiNguoiNhan = newBillData.diaChiNguoiNhan || null;
-      modelRef.idKhachHang = newBillData.idKhachHang || null;
+      // modelRef.idKhachHang = newBillData.idKhachHang || null;
       modelRef.tenNguoiNhan = newBillData.tenNguoiNhan || null;
       modelRef.ghiChu = newBillData.ghiChu || null;
     }
