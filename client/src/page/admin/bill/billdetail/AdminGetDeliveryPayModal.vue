@@ -137,24 +137,25 @@ const rulesRef = reactive({
       message: "Vui lòng nhập tiền khách đưa",
       trigger: "blur",
     },
-    
-    // {
-    //   validator: (_, value) => {
-    //     if (props.ProductDetail && props.ProductDetail.ten.toLowerCase() === value.toLowerCase()) {
-    //         return Promise.resolve();
-    //     }
-    //     const isNameExists = props.allProductData?.some(
-    //       (pro) => pro.ten.toLowerCase() === value.toLowerCase()
-    //     );
-    //     if (isNameExists) {
-    //       return Promise.reject("Tên sản phẩm đã tồn tại");
-    //     }
-    //     return Promise.resolve();
-    //     },
-    //     trigger: "blur",
-    //   },
+    {
+      validator: (_, value) => {
+        if (modelRef.tongTien && value < modelRef.tongTien) {
+          return Promise.reject("Tiền khách đưa phải lớn hơn hoặc bằng tổng tiền");
+        }
+        return Promise.resolve();
+      },
+      trigger: "blur",
+    },
+  ],
+  ghiChu: [
+    {
+      max: 255,
+      message: "Ghi chú không được vượt quá 255 ký tự",
+      trigger: "blur",
+    },
   ],
 });
+
 
 const { resetFields, validate, validateInfos } = Form.useForm(
   modelRef,
