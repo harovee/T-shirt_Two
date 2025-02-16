@@ -10,7 +10,10 @@
       destroyOnClose
       centered
     >
-      <a-form layout="vertical" class="mt-10 grid grid-cols-3 gap-4 md:grid-cols-1 lg:grid-cols-3">
+      <a-form
+        layout="vertical"
+        class="mt-10 grid grid-cols-3 gap-4 md:grid-cols-1 lg:grid-cols-3"
+      >
         <template v-for="field in formFields">
           <a-form-item
             class="col-span-1 md:col-span-1 lg:col-span-1"
@@ -27,8 +30,17 @@
           </a-form-item>
         </template>
       </a-form>
-      <a-qrcode ref="qrcodeCanvasRef" :value="ProductDetail.maSPCT" />
-      <a-button type="primary" class="mt-5" @click="dowloadQr">Tải mã QR</a-button>
+      <!-- Canvas hiển thị mã QR -->
+      <canvas
+        ref="qrcodeCanvasRef"
+        style="width: 200px; height: 200px"
+      ></canvas>
+      <a-button
+        type="primary"
+        class="mt-5"
+        @click="downloadQr(ProductDetail.maSPCT)"
+        >Tải mã QR</a-button
+      >
     </a-modal>
   </div>
 </template>
@@ -36,13 +48,14 @@
 <script setup lang="ts">
 import {
   computed,
+  onMounted,
   createVNode,
   defineEmits,
   defineProps,
   reactive,
   watch,
   inject,
-  ref
+  ref, nextTick
 } from "vue";
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
@@ -52,6 +65,7 @@ import { useUpdateProductDetail } from "@/infrastructure/services/service/admin/
 import { ProductDetailUpdateRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useGetListCategory } from "@/infrastructure/services/service/admin/category.action";
 import { keepPreviousData } from "@tanstack/vue-query";
+import QRCode from "qrcode-generator";
 
 const props = defineProps({
   open: Boolean,
@@ -297,48 +311,88 @@ const handleClose = () => {
   resetFields();
 };
 
-// Dowload qr code
-const qrcodeCanvasRef = ref<any>(null);
+const qrcodeCanvasRef = ref(null);
 
-const dowloadQr = async () => {
-  // Truy cập phần tử canvas từ QR code component
-  if (qrcodeCanvasRef.value) {
-    const canvas = qrcodeCanvasRef.value.$el.querySelector('canvas');
-    
-    if (canvas) {
-      // Lấy context 2D của canvas
-      const ctx = canvas.getContext('2d');
-      
-      if (ctx) {
-        // Tạo một canvas mới với nền trắng
-        const newCanvas = document.createElement('canvas');
-        const newCtx = newCanvas.getContext('2d');
-        
-        if (newCtx) {
-          // Cài đặt kích thước canvas mới tương đương với canvas hiện tại
-          newCanvas.width = canvas.width;
-          newCanvas.height = canvas.height;
-          
-          // Đặt nền màu trắng
-          newCtx.fillStyle = 'white';
-          newCtx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+// Tạo Qr hiển thị lên
+const generateQr = (maSPCT) => {
+  if (!qrcodeCanvasRef.value) return;
 
-          // Vẽ QR code từ canvas cũ vào canvas mới
-          newCtx.drawImage(canvas, 0, 0);
+  const qr = QRCode(0, "H");
+  qr.addData(maSPCT);
+  qr.make();
 
-          // Tạo URL hình ảnh từ canvas mới (với nền trắng)
-          const url = newCanvas.toDataURL();
-          const a = document.createElement('a');
-          a.download = 'QRCode.png';
-          a.href = url;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        }
-      }
+  const canvas = qrcodeCanvasRef.value;
+  const ctx = canvas.getContext("2d");
+
+  const size = 200;
+  canvas.width = size;
+  canvas.height = size;
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, size, size);
+
+  const cellSize = size / qr.getModuleCount();
+  for (let r = 0; r < qr.getModuleCount(); r++) {
+    for (let c = 0; c < qr.getModuleCount(); c++) {
+      ctx.fillStyle = qr.isDark(r, c) ? "#000" : "#fff";
+      ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
     }
   }
-  };
+};
+
+const downloadQr = (maSPCT) => {
+  if (!maSPCT) {
+    console.error("Mã sản phẩm trống!");
+    return;
+  }
+
+  const qr = QRCode(0, "H");
+  qr.addData(maSPCT);
+  qr.make();
+
+  const size = 1024;
+  const padding = 50;
+  const qrSize = size - 2 * padding;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = size;
+  canvas.height = size;
+
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, size, size);
+
+  const cellSize = qrSize / qr.getModuleCount();
+  for (let r = 0; r < qr.getModuleCount(); r++) {
+    for (let c = 0; c < qr.getModuleCount(); c++) {
+      ctx.fillStyle = qr.isDark(r, c) ? "#000" : "#fff";
+      ctx.fillRect(padding + c * cellSize, padding + r * cellSize, cellSize, cellSize);
+    }
+  }
+
+  // Tạo link tải ảnh PNG
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/png");
+  link.download = `${maSPCT}.png`;
+  link.click();
+};
+
+onMounted(() => {
+  if (props.ProductDetail) {
+    generateQr(props.ProductDetail.maSPCT)
+  }
+})
+watch(
+  () => props.ProductDetail, 
+  (newVal) => {
+    if (newVal) {
+      generateQr(newVal.maSPCT);
+    }
+  }
+);
+
   // -----------------------------------------------
 </script>
 

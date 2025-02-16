@@ -26,6 +26,25 @@ export interface BillRequest {
     ghiChu: String | null;
 }
 
+export interface BillWaitRequest {
+    trangThai: String | null;
+    idKhachHang: String | null;
+    idPhieuGiamGia: String | null;
+    idNhanVien: String | null;
+    diaChiNguoiNhan: String | null;
+    tenNguoiNhan: String | null;
+    soDienThoai: String | null;
+    ngayShip: number | null;
+    ghiChu: String | null;
+     tienGiam: number | null;
+     tienShip: number | null;
+     tongTien: number | null;
+}
+
+export interface ChangeStatusBillRequest {
+    trangThai: String | null;
+}
+
 export interface ChangeStatusBillRequest {
     trangThai: String | null;
 }
@@ -124,6 +143,16 @@ export const createBillsWait = async (data: BillCreateRequest) => {
 export const updateBill = async (idBill: string, params: BillRequest) => {
     return await request({
         url: `${API_ADMIN_BILL}/${idBill}`,
+        method: "PUT",
+        data: params
+    }) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+};
+
+export const updateBillWait = async (idBill: string, params: BillWaitRequest) => {
+    return await request({
+        url: `${API_ADMIN_BILL}/bill-wait/${idBill}`,
         method: "PUT",
         data: params
     }) as AxiosResponse<

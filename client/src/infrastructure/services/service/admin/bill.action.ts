@@ -82,6 +82,7 @@ export const useUpdateBill = () => {
     });
 };
 
+
 export const useChangeBillStatus= () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -92,6 +93,16 @@ export const useChangeBillStatus= () => {
         },
         onError: (error: any) => {
             console.log(queryKey.admin.bill.billList + "🚀 ~ billUpdate ~ error:", error);
+
+export const useUpdateBillWait = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({idBill, params}: { idBill: string; params: BillWaitRequest; }) => updateBillWait(idBill, params),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billsWait],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.bill.billsWait + "🚀 ~ billUpdate ~ error:", error);
         },
     });
 };

@@ -6,7 +6,9 @@ import com.shop.server.core.admin.bill.model.response.AdminBillWaitResponse;
 import com.shop.server.repositories.HoaDonRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -142,4 +144,8 @@ public interface AdminBillRepository extends HoaDonRepository {
         GROUP BY hd.trang_thai
     """, nativeQuery = true)
     List<Object[]> countBillsByStatus();
+
+    @Modifying
+    @Query(value = "DELETE FROM hoa_don_chi_tiet h WHERE h.id_hoa_don = :idHoaDon", nativeQuery = true)
+    void deleteByIdHoaDon(@Param("idHoaDon") String idHoaDon);
 }

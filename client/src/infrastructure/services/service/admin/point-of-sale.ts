@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey.ts";
 import { Ref } from "vue";
-import { createOrderDetails, deleteCartById, FindPOSProductDetailRequest, getOrderDetails, getProductDetailsInPOS, POSAddProductsToCartRequest, POSUpdateCartRequest, updateQuantityOrderDetails } from "../../api/admin/point-of-sale.api";
+import { createOrderDetails, deleteCartById, FindPOSProductDetailRequest,get, getOrderDetails, getProductDetailsInPOS, POSAddProductsToCartRequest, POSUpdateCartRequest, updateQuantityOrderDetails } from "../../api/admin/point-of-sale.api";
 
 
 export const useGetProductDetailsInPOS= (
@@ -21,6 +21,16 @@ export const useGetOrderDetails= (
     return useQuery({
         queryKey: [queryKey.admin.pointOfSale.orderDetails, idOrder,],
         queryFn: () => getOrderDetails(idOrder),
+        ...options,
+    });
+};
+
+export const useGetAllOrderDetails= (
+    idOrder: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getOrderDetails>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.pointOfSale.orderDetails, idOrder,],
+        queryFn: () => getOrderDetails(idOrder.value),
         ...options,
     });
 };

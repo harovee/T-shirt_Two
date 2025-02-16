@@ -49,6 +49,17 @@ export const getProductDetailsInPOS = async (params: Ref<FindPOSProductDetailReq
     return res.data;
 };
 
+// export const getTotalAmount = async (params: Ref<String>) => {
+//     const res = (await request({
+//         url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/total-amount/`,
+//         method: "GET",
+//         params: params.value,
+//     })) as AxiosResponse<
+//         DefaultResponse<PaginationResponse<Array<POSProductDetailResponse>>>
+//     >;
+//     return res.data;
+// };
+
 export const getPriceRank =  async () => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/sub/price-rank`,
@@ -57,7 +68,17 @@ export const getPriceRank =  async () => {
     return res.data;
 };
 
-export const getOrderDetails =  async (idOrder: string) => {
+export const getOrderDetails =  async (idOrder: string | null) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order/${idOrder}`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<POSProductDetailResponse>>
+    >;
+    return res.data;
+};
+
+export const getOrderDetailsAll =  async (idOrder: Ref<string>) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order/${idOrder}`,
         method: "GET",
@@ -86,18 +107,15 @@ export const createOrderDetails = async (data: POSAddProductsToCartRequest) => {
     return res.data;
 }
 
-
-
-
 export interface POSUpdateCartRequest {
-    idSanPhamChiTiet: string | null;
+    idHoaDonChiTiet: string | null;
     soLuongBanTruoc: number | null;
     soLuongBanSau: number | null;
 }
 
 export const updateQuantityOrderDetails = async (data: POSUpdateCartRequest) => {
     const res = (await request({
-        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}`,
+        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order`,
         method: "PUT",
         data: data
     })) as AxiosResponse<
@@ -106,10 +124,9 @@ export const updateQuantityOrderDetails = async (data: POSUpdateCartRequest) => 
     return res.data;
 }
 
-
 export const deleteCartById = async (idOrderDetail: string) => {
     return await request({
-        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/${idOrderDetail}`,
+        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order/${idOrderDetail}`,
         method: "DELETE",
     }) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>

@@ -13,6 +13,8 @@ public interface AdSanPhamChiTietService {
 
     ResponseObject<?> getALlSanPhamChiTiets(AdFindSpctRequest request);
 
+    ResponseObject<?> getListSanPhamChitiet();
+
     ResponseObject<?> getSanPhamChiTietById(String id);
 
     ResponseObject<?> createSanPhamChiTiet(@Valid AdCreateUpdateSpctRequest request);

@@ -12,7 +12,7 @@ export const queryKey = {
     admin: {
         pointOfSale: {
             products: "adPOSproductsKey",
-            orderDetails: "adPOSOrderDetailKey",
+            orderDetails: "adPOSOrderDetailKey"
         },
         client: {
             clientList: "adClientListKey",
@@ -55,7 +55,8 @@ export const queryKey = {
         },
         productDetail: {
             productDetailList: "adProdcutDetailListKey",
-            allProductDetails: "adAllProdcutDetailListKey"
+            allProductDetails: "adAllProdcutDetailListKey",
+            productDetailListNoPage: "adProdcutDetailListNoPageKey",
         },
         category: {
             categoryList: "adCategoryListKey",
@@ -104,7 +105,8 @@ export const queryKey = {
             customerList: "adCustomerListKey",
             customerDetail: "adCustomerDetailKey",
             voucherPayList: "voucherPayListKey",
-            voucherPayDetail: "voucherPayDetailKey"
+            voucherPayDetail: "voucherPayDetailKey",
+            customerAddress: "adCustomerAddress"
         },
         voucher: {
             voucherList: "adVoucherListKey",
