@@ -1,33 +1,34 @@
 <template>
   <h3 class="text-lg font-semibold mb-4">📍 Nhập địa chỉ người nhận</h3>
 
-  <a-form layout="vertical" class="grid grid-cols-2 gap-4">
-    <template v-for="field in formFields" class="col-span-1 md:col-span-1 lg:col-span-1">
+  <a-form layout="vertical" class="grid grid-cols-2 gap-4" :key="refreshKey">
+    <template
+      v-for="field in formFields"
+      class="col-span-1 md:col-span-1 lg:col-span-1"
+    >
       <a-form-item
-          :label="field.label"
-          :name="field.name"
-          v-bind="validateInfos[field.name]"
-          class="m-0"
+        :label="field.label"
+        :name="field.name"
+        v-bind="validateInfos[field.name]"
+        class="m-0"
       >
-
         <a-input
-            v-if="field.component === 'a-input'"
-            v-model:value="modelRef[field.name]"
-            :placeholder="field.placeholder"
-            :type="field.type"
+          v-if="field.component === 'a-input'"
+          v-model:value="modelRef[field.name]"
+          :placeholder="field.placeholder"
+          :type="field.type"
         ></a-input>
 
         <a-select
-            v-else-if="field.component === 'a-select'"
-            v-model:value="modelRef[field.name]"
-            :placeholder="field.placeholder"
-            :options="field.options"
-            show-search
-            :filter-option="filterOption"
-            @change="handleChangeOptions(field.name, $event)"
+          v-else-if="field.component === 'a-select'"
+          v-model:value="modelRef[field.name]"
+          :placeholder="field.placeholder"
+          :options="field.options"
+          show-search
+          :filter-option="filterOption"
+          @change="handleChangeOptions(field.name, $event)"
         >
         </a-select>
-
       </a-form-item>
     </template>
   </a-form>
@@ -41,8 +42,8 @@
 </template>
 
 <script setup lang="ts">
-import {computed, createVNode, defineEmits, reactive, ref, watch} from "vue";
-import {Form, Modal, notification} from "ant-design-vue";
+import { computed, createVNode, defineEmits, reactive, ref, watch } from "vue";
+import { Form, Modal, notification } from "ant-design-vue";
 import {
   ClientAddressCommonOptionsResponse,
   ClientAddressRequest,
@@ -54,82 +55,92 @@ import {
   useGetProvinces,
   useGetWardsByDistrictId,
   useGetWardsByDistrictIdQuery,
-  useUpdateClientAddress
+  useUpdateClientAddress,
 } from "@/infrastructure/services/service/admin/client.action.ts";
-import {keepPreviousData} from "@tanstack/vue-query";
-import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
+import { keepPreviousData } from "@tanstack/vue-query";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { log } from "console";
 
 /*** process data ***/
 
 const props = defineProps({
   dataSource: Object,
-  isRefresh: Boolean
+  isRefresh: Boolean,
+  selectedCustomerAddress: {
+    type: Object,
+    required: true,
+  },
 });
 
 const emit = defineEmits(["handleResetActiveKey"]);
 
 const isRefetch = ref<boolean>(false);
 
-const {data: provinces, refetch: refetchProvinces} = useGetProvinces({
+const province = ref<string>("");
+const district = ref<string>("");
+const ward = ref<string>("");
+
+const { data: provinces, refetch: refetchProvinces } = useGetProvinces({
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
-  enabled: props.isRefresh
 });
 
-const {data: districts, refetch: refetchDistricts} = useGetDistrictsByProvinceIdQuery(props?.dataSource?.province, {
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-  enabled: props.isRefresh
-});
+const { data: districts, refetch: refetchDistricts } =
+  useGetDistrictsByProvinceIdQuery(props?.selectedCustomerAddress?.province, {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled: false,
+  });
 
-const {data: wards, refetch: refetchWards} = useGetWardsByDistrictIdQuery(props?.dataSource?.district, {
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-  enabled: props.isRefresh
-});
+const { data: wards, refetch: refetchWards } = useGetWardsByDistrictIdQuery(
+  props?.selectedCustomerAddress?.district,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled: false,
+  }
+);
 
 const provincesOptions = ref<{ label: string; value: string }[]>([]);
 const districtsOptions = ref<{ label: string; value: string }[]>([]);
 const wardsOptions = ref<{ label: string; value: string }[]>([]);
 
 refetchProvinces();
-refetchDistricts();
-refetchWards();
 
-const {mutate: getDistrictsByProvinceId} = useGetDistrictsByProvinceId();
-const {mutate: getWardsByDistrictId} = useGetWardsByDistrictId();
-const {mutate: changeClientAddressDefault} = useChangeClientAddressDefault();
-const {mutate: updateClientAddress} = useUpdateClientAddress();
+const { mutate: getDistrictsByProvinceId } = useGetDistrictsByProvinceId();
+const { mutate: getWardsByDistrictId } = useGetWardsByDistrictId();
+const { mutate: changeClientAddressDefault } = useChangeClientAddressDefault();
+const { mutate: updateClientAddress } = useUpdateClientAddress();
 
 watch(provinces, (newProvinces) => {
   const options =
-      newProvinces?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
-        label: address.name,
-        value: address.id,
-      })) || [];
-  const defaultOption = {label: '-- Chọn tỉnh --', value: ''};
+    newProvinces?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
+      label: address.name,
+      value: address.id,
+    })) || [];
+  const defaultOption = { label: "-- Chọn tỉnh --", value: "" };
 
   provincesOptions.value = [defaultOption, ...options];
 });
 
 watch(districts, (newDistricts) => {
   const options =
-      newDistricts?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
-        label: address.name,
-        value: address.id,
-      })) || [];
-  const defaultOption = {label: '-- Chọn thành phố/quận/huyện --', value: ''};
+    newDistricts?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
+      label: address.name,
+      value: address.id,
+    })) || [];
+  const defaultOption = { label: "-- Chọn thành phố/quận/huyện --", value: "" };
 
   districtsOptions.value = [defaultOption, ...options];
 });
 
 watch(wards, (newWards) => {
   const options =
-      newWards?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
-        label: address.name,
-        value: address.id,
-      })) || [];
-  const defaultOption = {label: '-- Chọn phường/xã --', value: ''};
+    newWards?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
+      label: address.name,
+      value: address.id,
+    })) || [];
+  const defaultOption = { label: "-- Chọn phường/xã --", value: "" };
 
   wardsOptions.value = [defaultOption, ...options];
 });
@@ -139,77 +150,85 @@ const filterOption = (input: string, option: any) => {
 };
 
 const modelRef = reactive<ClientAddressRequest>({
-  name: props?.dataSource?.name,
-  phoneNumber: props?.dataSource?.phoneNumber,
-  line: props?.dataSource?.line,
-  ward: props?.dataSource?.ward.toString(),
-  district: props?.dataSource?.district.toString(),
-  province: props?.dataSource?.province.toString(),
-  isDefault: props?.dataSource?.isDefault,
-  clientId: props?.dataSource?.clientId,
+  name: props?.selectedCustomerAddress?.name,
+  phoneNumber: props?.selectedCustomerAddress?.phoneNumber,
+  line: props?.selectedCustomerAddress?.line,
+  ward: props?.selectedCustomerAddress?.ward.toString(),
+  district: props?.selectedCustomerAddress?.district.toString(),
+  province: props?.selectedCustomerAddress?.province.toString(),
+  isDefault: props?.selectedCustomerAddress?.isDefault,
+  clientId: props?.selectedCustomerAddress?.clientId,
 });
+const refreshKey = ref(0);
 
 const rulesRef = reactive({
   name: [
     {
       required: true,
-      validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Tên không được để trống"),
-      trigger: "blur"
+      validator: (_, value) =>
+        value !== null && value.trim() !== ""
+          ? Promise.resolve()
+          : Promise.reject("Tên không được để trống"),
+      trigger: "blur",
     },
-    {max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur"},
+    { max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur" },
   ],
   phoneNumber: [
-    {required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur"},
+    { required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur" },
     {
       pattern: /^0[1-9]\d{8,9}$/,
       message: "Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số.",
-      trigger: "blur"
+      trigger: "blur",
     },
   ],
   province: [
-    {required: true, message: "Vui lòng chọn tỉnh", trigger: "blur"},
+    { required: true, message: "Vui lòng chọn tỉnh", trigger: "blur" },
   ],
   district: [
-    {required: true, message: "Vui lòng chon thành phố/quận/huyện", trigger: "blur"},
+    {
+      required: true,
+      message: "Vui lòng chon thành phố/quận/huyện",
+      trigger: "blur",
+    },
   ],
   ward: [
-    {required: true, message: "Vui lòng chọn phường xã", trigger: "blur"},
+    { required: true, message: "Vui lòng chọn phường xã", trigger: "blur" },
   ],
   line: [
     {
       required: true,
-      validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Vui lòng điền số nhà/ngõ/đường"),
-      trigger: "blur"
+      validator: (_, value) =>
+        value !== null && value.trim() !== ""
+          ? Promise.resolve()
+          : Promise.reject("Vui lòng điền số nhà/ngõ/đường"),
+      trigger: "blur",
     },
-  ]
+  ],
 });
 
-const {validate, validateInfos} = Form.useForm(
-    modelRef,
-    rulesRef
-);
+const { validate, validateInfos } = Form.useForm(modelRef, rulesRef);
 
 const formFields = computed(() => [
   {
-    label: "Tên khách hàng",
+    label: "Tên người nhận",
     name: "name",
     component: "a-input",
     placeholder: "Nhâp tên khách hàng",
-    type: 'string'
+    type: "string",
   },
   {
-    label: "Số điện thoại",
+    label: "Số điện thoại người nhận",
     name: "phoneNumber",
     component: "a-input",
     placeholder: "Nhâp số điện thoại",
-    type: 'number'
+    type: "number",
   },
   {
     label: "Tỉnh",
     name: "province",
     component: "a-select",
     placeholder: "-- Chọn tỉnh --",
-    options: provincesOptions.value
+    options: provincesOptions.value,
   },
   {
     label: "Thành phố/Quận/Huyện",
@@ -231,7 +250,7 @@ const formFields = computed(() => [
     component: "a-input",
     placeholder: "Nhập số nhà/ngõ/đường",
     type: "string",
-  }
+  },
 ]);
 
 /*** Handle ***/
@@ -240,26 +259,27 @@ const handleChangeOptions = (key: string, value: any) => {
   isRefetch.value = false;
 
   const defaultDistrictOption = {
-    label: '-- Chọn thành phố/quận/huyện --',
-    value: '',
+    label: "-- Chọn thành phố/quận/huyện --",
+    value: "",
   };
   const defaultWardOption = {
-    label: '-- Chọn phường/xã --',
-    value: '',
+    label: "-- Chọn phường/xã --",
+    value: "",
   };
 
   switch (key) {
-    case 'province':
+    case "province":
       districtsOptions.value = [defaultDistrictOption];
       wardsOptions.value = [defaultWardOption];
-      modelRef.district = '';
-      modelRef.ward = '';
+      modelRef.district = "";
+      modelRef.ward = "";
       getDistrictsByProvinceId(value, {
         onSuccess: (data) => {
-          const options = data?.data?.map((district: ClientAddressCommonOptionsResponse) => ({
-            label: district.name,
-            value: district.id,
-          })) || [];
+          const options =
+            data?.data?.map((district: ClientAddressCommonOptionsResponse) => ({
+              label: district.name,
+              value: district.id,
+            })) || [];
           districtsOptions.value = [defaultDistrictOption, ...options];
         },
         onError: (error) => {
@@ -267,15 +287,16 @@ const handleChangeOptions = (key: string, value: any) => {
         },
       });
       break;
-    case 'district':
+    case "district":
       wardsOptions.value = [defaultWardOption];
-      modelRef.ward = '';
+      modelRef.ward = "";
       getWardsByDistrictId(value, {
         onSuccess: (data) => {
-          const options = data?.data?.map((ward: ClientAddressCommonOptionsResponse) => ({
-            label: ward.name,
-            value: ward.id,
-          })) || [];
+          const options =
+            data?.data?.map((ward: ClientAddressCommonOptionsResponse) => ({
+              label: ward.name,
+              value: ward.id,
+            })) || [];
           wardsOptions.value = [defaultWardOption, ...options];
         },
         onError: (error) => {
@@ -286,7 +307,7 @@ const handleChangeOptions = (key: string, value: any) => {
     default:
       return;
   }
-}
+};
 
 const handleChangeDefault = (id: string) => {
   Modal.confirm({
@@ -299,7 +320,7 @@ const handleChangeDefault = (id: string) => {
         changeClientAddressDefault(id, {
           onSuccess: (res: any) => {
             notification.success({
-              message: 'Thông báo',
+              message: "Thông báo",
               description: res.message,
               duration: 4,
             });
@@ -307,23 +328,23 @@ const handleChangeDefault = (id: string) => {
           },
           onError: (error: any) => {
             notification.error({
-              message: 'Thông báo',
+              message: "Thông báo",
               description: error?.response?.data?.message,
               duration: 4,
             });
           },
-        })
+        });
       } catch (error: any) {
         console.error("🚀 ~ handleUpdate ~ error:", error);
         if (error?.response) {
           notification.error({
-            message: 'Thông báo',
+            message: "Thông báo",
             description: error?.response?.data?.message,
             duration: 4,
           });
         } else if (error?.errorFields) {
           notification.warning({
-            message: 'Thông báo',
+            message: "Thông báo",
             description: "Vui lòng nhập đúng đủ các trường dữ liệu",
             duration: 4,
           });
@@ -335,18 +356,41 @@ const handleChangeDefault = (id: string) => {
       Modal.destroyAll();
     },
   });
-}
+};
 
 const handleReset = () => {
-  modelRef.name = props?.dataSource?.name;
-  modelRef.phoneNumber = props?.dataSource?.phoneNumber;
-  modelRef.line = props?.dataSource?.line;
-  modelRef.province = props?.dataSource?.province.toString();
-  modelRef.district = props?.dataSource?.district.toString();
-  modelRef.ward = props?.dataSource?.ward;
+  modelRef.name = props?.selectedCustomerAddress?.name;
+  modelRef.phoneNumber = props?.selectedCustomerAddress?.phoneNumber;
+  modelRef.line = props?.selectedCustomerAddress?.line;
+  modelRef.province = props?.selectedCustomerAddress?.province.toString();
+  modelRef.district = props?.selectedCustomerAddress?.district.toString();
+  modelRef.ward = props?.selectedCustomerAddress?.ward;
   refetchProvinces();
   refetchDistricts();
   refetchWards();
-}
+};
+
+watch(
+  () => props.selectedCustomerAddress,
+  (newDataSource) => {
+    if (newDataSource) {
+      if (newDataSource?.province && newDataSource?.district) {
+        handleChangeOptions("province", newDataSource?.province);
+        handleChangeOptions("district", newDataSource?.district);
+      }
+      Object.assign(modelRef, {
+        name: newDataSource.name || "",
+        phoneNumber: newDataSource.phoneNumber || "",
+        line: newDataSource.line || "",
+        ward: newDataSource.ward || "",
+        district: newDataSource.district?.toString() || "",
+        province: newDataSource.province?.toString() || "",
+        isDefault: newDataSource.isDefault ?? false,
+        clientId: newDataSource.clientId || "",
+      });
+    }
+  },
+  { immediate: true, deep: true }
+);
 
 </script>

@@ -6,8 +6,14 @@
         : 'mt-5'
     "
   >
-    <div class="bg-white me-5" v-if="paymentInfo.shippingOption === 'true'">
-      <pay-ment-address />
+    <div
+      class="bg-white me-5"
+      v-if="paymentInfo.shippingOption === 'true'"
+    >
+      <pay-ment-address
+        :selectedCustomerAddress="selectedCustomerAddress"
+        :isRefresh="isRefresh"
+      />
     </div>
 
     <!-- Thông tin thanh toán -->
@@ -21,8 +27,12 @@
               option-type="button"
               button-style="solid"
             >
-              <a-radio value="false">Tại cửa hàng</a-radio>
-              <a-radio value="true">Giao hàng</a-radio>
+              <a-radio value="false" @click="changeShippingOption('false')"
+                >Tại cửa hàng</a-radio
+              >
+              <a-radio value="true" @click="changeShippingOption('true')"
+                >Giao hàng</a-radio
+              >
             </a-radio-group>
           </a-form-item>
         </div>
@@ -71,6 +81,28 @@
             <a-select-option value="cash">Tiền mặt</a-select-option>
             <a-select-option value="bank">Chuyển khoản</a-select-option>
           </a-select>
+        </a-form-item>
+        <a-form-item label="Phương thức thanh toán" class="text-xl">
+          <div class="flex items-center space-x-2">
+            <a-tooltip title="Chọn phương thức thanh toán" trigger="hover">
+              <a-button
+                class="bg-purple-300 flex justify-between items-center gap-2"
+                @click="openPaymentMethodModal"
+              >
+                <v-icon name="ri-coupon-2-line" />
+              </a-button>
+            </a-tooltip>
+          </div>
+          <!-- <payment-method-table
+            :open="open"
+            :dataCustomer="selectedCustomerInfo"
+            :totalAmount="totalAmount"
+            @handleClose="handleClose"
+            @cancel="open = false"
+            class="w-[600px] h-[400px]"
+            @handleOpenKhachHang="openVoucherModal"
+            @selectVoucher="handleVoucherSelected"
+          /> -->
         </a-form-item>
 
         <a-form-item
@@ -157,7 +189,14 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  selectedCustomerAddress: {
+    type: Object,
+    required: true,
+  },
+  isRefresh: Boolean,
 });
+
+const emit = defineEmits(["handlePaymentInfo"]);
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -172,8 +211,6 @@ const {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
-
-// console.log(props.selectedCustomerInfo);
 
 const dataSourcePro: DataType[] | any = computed(() => {
   return (
@@ -201,13 +238,13 @@ const dataSourcePro: DataType[] | any = computed(() => {
   );
 });
 
-watch(
-  () => dataSourcePro.value,
-  (newData) => {
-    console.log(newData);
-  },
-  { immediate: true }
-);
+// watch(
+//   () => dataSourcePro.value,
+//   (newData) => {
+//     console.log(newData);
+//   },
+//   { immediate: true }
+// );
 
 const totalAmount = computed(() => {
   const total =
@@ -268,7 +305,7 @@ const handleVoucherSelected = (voucher) => {
   paymentInfo.value.voucherCode = voucher.ma;
   paymentInfo.value.voucherId = voucher.id;
   if (!voucher.loaiGiam) {
-    paymentInfo.value.discount = (voucher.giaTriGiam * totalAmount.value) / 100;
+    paymentInfo.value.discount = voucher.giaTriGiam;
     paymentInfo.value.totalProductPrice =
       totalAmount.value - paymentInfo.value.discount;
   } else {
@@ -276,7 +313,11 @@ const handleVoucherSelected = (voucher) => {
     paymentInfo.value.totalProductPrice =
       totalAmount.value - paymentInfo.value.discount;
   }
-  console.log(paymentInfo.value.discount);
+};
+
+const changeShippingOption = (option: string) => {
+  paymentInfo.value.shippingOption = option;
+  emit("handlePaymentInfo", paymentInfo.value);
 };
 
 const { mutate: updateBillWait } = useUpdateBillWait();
@@ -304,7 +345,7 @@ const handleUpdateBill = () => {
     centered: true,
 
     async onOk() {
-      console.log(props.dataSourceInfor);
+      // console.log(props.dataSourceInfor);
 
       try {
         await updateBillWait({
@@ -334,5 +375,6 @@ watch(
   [() => paymentInfo.value.shippingFee, () => paymentInfo.value.discount],
   updateTotal
 );
+
 </script>
   

@@ -1,12 +1,7 @@
 <template>
   <div class="p-6 grid grid-cols-1 gap-6">
     <div class="flex items-center gap-2">
-      <v-icon
-        name="bi-cart3"
-        size="x-large"
-        width="48"
-        height="48"
-      />
+      <v-icon name="bi-cart3" size="x-large" width="48" height="48" />
       <h3 class="text-2xl m-0">Bán hàng tại quầy</h3>
     </div>
     <div>
@@ -87,7 +82,11 @@
           @edit="onEdit"
           class="m-5"
         >
-          <a-tab-pane v-for="bill in dataSource" :key="bill.id" :tab="bill.ma">
+          <a-tab-pane
+            v-for="bill in dataSource"
+            :key="bill.id"
+            :tab="`${bill.ma} (${dataSourcePro ? dataSourcePro.length : 0})`"
+          >
             <div>
               <POSProducsInCart
                 :idOrder="activeKey?.valueOf() || ''"
@@ -107,10 +106,14 @@
                       <v-icon name="md-manageaccounts-round" />
                     </a-button>
                   </a-tooltip>
-                  <a-tooltip title="Chọn địa chỉ" trigger="hover">
+                  <a-tooltip
+                    v-if="activeTabCustomers[bill.id] && activeTabPaymentInfo[bill.id].shippingOption === 'true'"
+                    title="Chọn địa chỉ"
+                    trigger="hover"
+                  >
                     <a-button
                       class="bg-purple-300 flex justify-between items-center gap-2"
-                      @click="handleOpenAddress"
+                      @click="handleOpenKhachHangAddress"
                       size="large"
                     >
                       <v-icon name="fa-address-book" />
@@ -126,6 +129,21 @@
                   @selectCustomer="
                     (customer) => handleCustomerSelected(customer, bill)
                   "
+                />
+                <KhachHangAddressPaymentTable
+                  :open="openCustomerAddress"
+                  @handleClose="handleCloseCustomerAddress"
+                  @cancel="openCustomerAddress = false"
+                  :dataCustomerWithId="activeTabCustomers[bill.id]"
+                  @selectCustomerAddress="
+                    (customerAddress, dataCustomerAddress) =>
+                      handleCustomerAddressSelected(
+                        customerAddress,
+                        dataCustomerAddress,
+                        bill
+                      )
+                  "
+                  class="w-[600px] h-[400px]"
                 />
               </div>
               <div class="mb-6 h-100">
@@ -154,6 +172,11 @@
                 <payment-information
                   :dataSourceInfor="bill"
                   :selectedCustomerInfo="activeTabCustomers[bill.id]"
+                  :selectedCustomerAddress="activeTabCustomerAddress[bill.id]"
+                  
+                  @handlePaymentInfo="
+                    (paymentInfo) => handleChangePaymentInfo(paymentInfo, bill)
+                  "
                 />
               </div>
             </div>
@@ -173,6 +196,7 @@ import {
   onMounted,
   createVNode,
   reactive,
+  watchEffect,
 } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
@@ -194,22 +218,36 @@ import {
 import { useGetAttributes } from "@/infrastructure/services/service/admin/sale.action";
 import { Modal } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { POSAddProductsToCartRequest } from "@/infrastructure/services/api/admin/point-of-sale.api";
-import { useCreateOrderDetails } from "@/infrastructure/services/service/admin/point-of-sale";
+import {
+  POSAddProductsToCartRequest,
+  POSProductDetailResponse,
+} from "@/infrastructure/services/api/admin/point-of-sale.api";
+import {
+  useCreateOrderDetails,
+  useGetOrderDetails,
+} from "@/infrastructure/services/service/admin/point-of-sale";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import KhachHangPaymentTable from "./KhachHangPaymentTable.vue";
+import KhachHangAddressPaymentTable from "./KhachHangAddressPaymentTable.vue";
 import PaymentInformation from "./PaymentInformation.vue";
 import { ProductDetailListResponse } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useGetListProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
+import {
+  formatCurrencyVND,
+  getDateFormat,
+  getDateTimeMinutesFormat,
+} from "@/utils/common.helper";
 
 const { data, isLoading, isFetching } = useGetBillsWait();
 
-const { data: listProductDetail} = useGetListProductDetail();
+const { data: listProductDetail } = useGetListProductDetail();
 
 const dataSource = computed(() => data?.value?.data || []);
 const activeKey = ref<string | null>(null);
 
-const dataListProductDetail = computed(() => listProductDetail?.value?.data || []);
+const dataListProductDetail = computed(
+  () => listProductDetail?.value?.data || []
+);
 
 // Hiển thị tab đầu tiên khi load trang
 onMounted(() => {
@@ -229,11 +267,37 @@ watch(
   { immediate: true }
 );
 
-watch(activeKey, (newActiveKey) => {
-  if (newActiveKey) {
-    localStorage.setItem("activeKey", newActiveKey);
-  }
+// hiển thị số lượng sản phẩm đang lỗi
+let idHoaDon: any;
+
+watch(
+  activeKey,
+  (newActiveKey) => {
+    if (newActiveKey) {
+      localStorage.setItem("activeKey", newActiveKey);
+      idHoaDon = newActiveKey;
+      // refetchPro();
+    }
+  },
+  { immediate: true }
+);
+
+interface DataType extends POSProductDetailResponse {
+  key: string;
+  thanhTien: number;
+}
+
+const {
+  data: dataPro,
+  error,
+  isFetching: proFetching,
+  refetch: refetchPro,
+} = useGetOrderDetails(idHoaDon, {
+  refetchOnWindowFocus: false,
+  placeholderData: [],
+  enabled: false,
 });
+
 // -------------------------------------------
 
 /*  THAO - ADD PRODUCT TO CART (PENDING ORDER)   */
@@ -245,6 +309,34 @@ const quantityProduct = ref<number>(1);
 
 type RefetchFunction = () => void;
 const refetchProducts = ref<RefetchFunction | null>(null);
+
+// console.log(props.selectedCustomerInfo);
+
+const dataSourcePro: DataType[] | any = computed(() => {
+  return (
+    dataPro?.value?.data?.map((e: any) => ({
+      key: e.id || "",
+      maSanPhamChiTiet: e.maSanPhamChiTiet || "",
+      ten: e.ten || "",
+      soLuong: e.soLuong || "",
+      gia: e.gia || 0,
+      giaHienTai: e.giaHienTai || 0,
+      tenSanPham: e.tenSanPham || "",
+      tenThuongHieu: e.tenThuongHieu || "",
+      gioiTinh: e.gioiTinh
+        ? "Nam"
+        : e.gioiTinh == false
+        ? "Nữ"
+        : "Không xác định",
+      kichCo: e.kichCo || "",
+      phongCach: e.phongCach || "",
+      maMauSac: e.maMauSac || "",
+      tenMauSac: e.tenMauSac || "",
+      linkAnh: e.linkAnh || "",
+      thanhTien: e.soLuong * e.gia,
+    })) || []
+  );
+});
 
 const listAttributes = useGetAttributes({
   refetchOnWindowFocus: false,
@@ -280,16 +372,27 @@ const handleUpdateIdSanPhamChiTiets = (newIdSanPhamChiTiets: string[]) => {
   idSanPhamChiTiets.value = newIdSanPhamChiTiets;
 };
 
+const getProductCountByBillId = (billId: string) => {
+  return computed(() => {
+    return dataSourcePro.value
+      ? dataSourcePro.value.filter((item: any) => item.idHoaDon === billId)
+          .length
+      : 0;
+  });
+};
+
 // Hàm tìm id theo mã SPCT
 const findIdByMaSPCT = (maSPCT: string) => {
-  const product = dataListProductDetail.value.find(item => item.maSanPhamChiTiet === maSPCT);
+  const product = dataListProductDetail.value.find(
+    (item) => item.maSanPhamChiTiet === maSPCT
+  );
   return product ? product.id : null;
 };
 
 const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
   idSanPhamChiTiets.value = [];
   const idSPCT = findIdByMaSPCT(newId);
-  
+
   idSanPhamChiTiets.value.push(idSPCT);
   handleCreateQrOrderDetails({
     idSanPhamChiTiets: idSanPhamChiTiets.value,
@@ -297,7 +400,7 @@ const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
     userEmail: useAuthStore().user?.email || null,
     soLuong: 1,
   });
-}
+};
 
 const handleCancel = () => {
   openProductsModal.value = false;
@@ -326,32 +429,31 @@ const handleQuantityOk = () => {
   // });
 };
 
-
 const handleCreateQrOrderDetails = (data: POSAddProductsToCartRequest) => {
   try {
-        createOrderDetails(data, {
-          onSuccess: (result) => {
-            openNotification(notificationType.success, result?.message, "");
-          },
-          onError: (error: any) => {
-            openNotification(
-              notificationType.error,
-              error?.response?.data?.message,
-              ""
-            );
-          },
-        });
-      } catch (error: any) {
-        if (error?.response) {
-          openNotification(
-            notificationType.error,
-            error?.response?.data?.message,
-            ""
-          );
-        } else if (error?.errorFields) {
-          openNotification(notificationType.warning, "", "");
-        }
-      }
+    createOrderDetails(data, {
+      onSuccess: (result) => {
+        openNotification(notificationType.success, result?.message, "");
+      },
+      onError: (error: any) => {
+        openNotification(
+          notificationType.error,
+          error?.response?.data?.message,
+          ""
+        );
+      },
+    });
+  } catch (error: any) {
+    if (error?.response) {
+      openNotification(
+        notificationType.error,
+        error?.response?.data?.message,
+        ""
+      );
+    } else if (error?.errorFields) {
+      openNotification(notificationType.warning, "", "");
+    }
+  }
 };
 
 const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
@@ -366,7 +468,6 @@ const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
       }
       try {
         createOrderDetails(data, {
-          
           onSuccess: (result) => {
             openNotification(notificationType.success, result?.message, "");
             openQuantityModal.value = false;
@@ -412,17 +513,49 @@ const dataSources = ref(null);
 
 const open = ref(false);
 
+const openCustomerAddress = ref(false);
+
 const activeTabCustomers = reactive({});
+
+const activeTabPaymentInfo = reactive({});
+
+const activeTabCustomerAddress = reactive({});
+
+const isRefresh = ref(false);
+
+watch(
+  dataSource,
+  (newDataSource) => {
+    newDataSource.forEach((bill) => {
+      activeTabPaymentInfo[bill.id] = {
+        method: "cash",
+        bankAccount: formatCurrencyVND(""),
+        voucherCode: "",
+        voucherId: null,
+        shippingOption: "false",
+        shippingFee: 0,
+        discount: 0,
+        total: 0,
+        totalProductPrice: 0,
+      };
+    });
+  },
+  { immediate: true }
+);
 
 const handleOpenKhachHang = () => {
   open.value = true;
+};
+
+const handleOpenKhachHangAddress = () => {
+  openCustomerAddress.value = true;
 };
 watch(
   () => dataSource.value,
   (newData) => {
     if (newData) {
       dataSources.value = JSON.parse(JSON.stringify(dataSource.value));
-      console.log(dataSources.value);
+      // console.log(dataSources.value);
     }
   },
   { immediate: true }
@@ -430,6 +563,10 @@ watch(
 
 const handleClose = () => {
   open.value = false;
+};
+
+const handleCloseCustomerAddress = () => {
+  openCustomerAddress.value = false;
 };
 
 const selectedCustomer = ref<{
@@ -454,7 +591,20 @@ const handleCustomerSelected = (customer: any, bill: any) => {
     activeTabCustomers[bill.id] = {};
   }
   activeTabCustomers[bill.id] = { ...customer };
-  // console.log(activeTabCustomers[bill.id]);
+};
+
+const handleChangePaymentInfo = (paymentInfo: any, bill: any) => {
+  activeTabPaymentInfo[bill.id] = { ...paymentInfo };
+};
+
+const handleCustomerAddressSelected = (
+  customerAddress: any,
+  dataCustomerAddress: any,
+  bill: any
+) => {
+  activeTabCustomerAddress[bill.id] = { ...customerAddress };
+  isRefresh.value = !isRefresh.value
+  // console.log(activeTabCustomerAddress[bill.id]);
 };
 
 const getNameCustomer = (id: string) => {

@@ -68,7 +68,17 @@ export const getPriceRank =  async () => {
     return res.data;
 };
 
-export const getOrderDetails =  async (idOrder: string) => {
+export const getOrderDetails =  async (idOrder: string | null) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order/${idOrder}`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<POSProductDetailResponse>>
+    >;
+    return res.data;
+};
+
+export const getOrderDetailsAll =  async (idOrder: Ref<string>) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order/${idOrder}`,
         method: "GET",

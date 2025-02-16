@@ -32,7 +32,7 @@ export default {
 
     const onDecode = (result:any) => {
       qrResult.value = result;
-      console.log("Quét thành công:", result);
+      // console.log("Quét thành công:", result);
       handleCancel(result);
     };
 

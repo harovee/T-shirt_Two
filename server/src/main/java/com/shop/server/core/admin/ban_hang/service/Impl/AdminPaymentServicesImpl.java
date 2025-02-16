@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.ban_hang.service.Impl;
 
+import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
@@ -81,5 +82,11 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     @Override
     public ResponseObject<?> savePayBill(AdminHoaDonKhachHangRequest request) {
             return null;
+    }
+
+    @Override
+    public ResponseObject<?> getCustomerAddressByIdCustomer(AdminCustomerAddressSearchRequest request) {
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+        return new ResponseObject<>(PageableObject.of(adminKhachHangRepository.getCustomerAddressById(pageable, request)), HttpStatus.OK, "Lấy danh sách địa chỉ thành công");
     }
 }

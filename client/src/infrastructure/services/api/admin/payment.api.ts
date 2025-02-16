@@ -18,6 +18,33 @@ export interface FindVoucherRequest extends PropertyVoucherParams, PaginationPar
 
 }
 
+export interface FindCustomerAddressRequest extends PaginationParams {
+    keyword: string | null;
+    idKhachHang: string | null;
+}
+
+
+export type CustomerAddressResponse = ResponseList & {
+
+    id: string;
+
+    name: string;
+
+    phoneNumber: string;
+
+    line: string;
+
+    ward: string;
+
+    district: string;
+
+    province: string;
+
+    clientId: string;
+
+    isDefault: boolean;
+
+}
 
 export type VoucherResponse = ResponseList & {
     ten : string;
@@ -44,6 +71,17 @@ export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     return res.data;
 };
 
+export const getListCustomerAddress = async (params: Ref<FindCustomerAddressRequest>) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/customer-address`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<VoucherResponse>>>
+    >;
+
+    return res.data;
+};
 
 export const getVoucherById = async (VoucherId: Ref<string | null>) => {
     return await request({

@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.ban_hang.controller;
 
+import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
@@ -47,5 +48,10 @@ public class BillPaymentController {
     @GetMapping("/payment-method")
     public ResponseEntity<?> getPaymentMethod() {
         return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan());
+    }
+
+    @GetMapping("/customer-address")
+    public ResponseEntity<?> getCustomerAddressById(final AdminCustomerAddressSearchRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.getCustomerAddressByIdCustomer(request));
     }
 }

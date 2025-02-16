@@ -124,10 +124,21 @@ const params = ref<FindVoucherRequest>({
   idKhachHang: props.dataCustomer ? props.dataCustomer.id : null,
   tongTien: 0
 });
+
 watch(
   () => props.totalAmount,
   (newData) => {
     params.value.tongTien = newData
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.dataCustomer,
+  (newData) => {
+    params.value.idKhachHang = newData ? newData.key : null
+    // console.log(params.value.idKhachHang);
+    
   },
   { immediate: true }
 );
@@ -151,10 +162,10 @@ const { data } = useGetListVoucher(params, {
 
 const dataVoucher = computed(() => data?.value?.data?.data || []);
 
-watch(dataVoucher, (newData) => {
-  console.log(newData);
+// watch(dataVoucher, (newData) => {
+//   console.log(newData);
   
-});
+// });
 
 
 const handleSearch = (newValue: string) => {
@@ -166,25 +177,13 @@ watch(current1, () => {
   params.value.page = current1.value === 0 ? 1 : current1.value;
 });
 
-watch(current1, () => {
-  params.value.page = current1.value === 0 ? 1 : current1.value;
-});
-
 const handleSelectVoucher = (voucher: VoucherResponse) => {
   emit("selectVoucher", voucher, dataVoucher.value);
   handleClose();
-  console.log(voucher);
+  // console.log(voucher);
 };
 
 const columns: TableColumnType<VoucherResponse>[] = [
-  {
-    title: "#",
-    dataIndex: "catalog",
-    key: "catalog",
-    ellipsis: true,
-    width: 50,
-    align: "center",
-  },
   {
     title: "Mã",
     dataIndex: "ma",

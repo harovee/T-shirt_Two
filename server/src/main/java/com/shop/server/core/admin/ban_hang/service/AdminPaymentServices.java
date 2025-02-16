@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.ban_hang.service;
 
+import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
@@ -22,5 +23,5 @@ public interface AdminPaymentServices {
 
     ResponseObject<?> savePayBill(AdminHoaDonKhachHangRequest request);
 
-
+    ResponseObject<?> getCustomerAddressByIdCustomer(AdminCustomerAddressSearchRequest request);
 }
