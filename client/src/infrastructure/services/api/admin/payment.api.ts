@@ -5,11 +5,11 @@ import {API_ADMIN_PAYMENT} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
-    keyword?: string | null;
-    startDate?: number | null;
-    endDate?: number | null;
-    loaiGiam? : boolean | null;
-    trangThai? : string | null;
+    keyword: string | null;
+
+    idKhachHang: string | null;
+
+    tongTien: number | null;
     
     [key: string]: any;
 }
@@ -18,6 +18,33 @@ export interface FindVoucherRequest extends PropertyVoucherParams, PaginationPar
 
 }
 
+export interface FindCustomerAddressRequest extends PaginationParams {
+    keyword: string | null;
+    idKhachHang: string | null;
+}
+
+
+export type CustomerAddressResponse = ResponseList & {
+
+    id: string;
+
+    name: string;
+
+    phoneNumber: string;
+
+    line: string;
+
+    ward: string;
+
+    district: string;
+
+    province: string;
+
+    clientId: string;
+
+    isDefault: boolean;
+
+}
 
 export type VoucherResponse = ResponseList & {
     ten : string;
@@ -27,7 +54,9 @@ export type VoucherResponse = ResponseList & {
     loaiGiam: boolean;
     kieu: boolean;
     giaTriGiam: string;
-    
+    ngayBatDau: number;
+    ngayKetThuc: number;
+    trangThai : string;
 };
 
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
@@ -42,6 +71,17 @@ export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     return res.data;
 };
 
+export const getListCustomerAddress = async (params: Ref<FindCustomerAddressRequest>) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/customer-address`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<VoucherResponse>>>
+    >;
+
+    return res.data;
+};
 
 export const getVoucherById = async (VoucherId: Ref<string | null>) => {
     return await request({

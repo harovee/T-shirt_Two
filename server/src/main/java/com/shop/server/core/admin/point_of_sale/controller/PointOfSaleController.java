@@ -55,4 +55,14 @@ public class PointOfSaleController {
     public ResponseEntity<?> addProductsToOrder(@PathVariable("idHDCT") String idHDCT) {
         return Helper.createResponseEntity(pointOfSaleService.deleteOrderDetail(idHDCT));
     }
+
+    @GetMapping("/total-amount/{idHoaDon}")
+    public ResponseEntity<?> getTotalAmount(@PathVariable("idHoaDon") String idHoaDon) {
+        return Helper.createResponseEntity(pointOfSaleService.getTotalAmount(idHoaDon));
+    }
+
+    @GetMapping("/get-all/{idHoaDon}")
+    public ResponseEntity<?> getAllProductsByIdHoaDon(@PathVariable("idHoaDon") String idHoaDon) {
+        return Helper.createResponseEntity(pointOfSaleService.getListProducts(idHoaDon));
+    }
 }

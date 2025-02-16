@@ -18,4 +18,9 @@ public interface PointOfSaleService {
     ResponseObject<?> updateQuantityProductInCart(AdPOSUpdateCartRequest request);
 
     ResponseObject<?> deleteOrderDetail(String idHDCT);
+
+    ResponseObject<?> getTotalAmount(String idHoaDon);
+
+    ResponseObject<?> getListProducts(String idHoaDon);
+
 }

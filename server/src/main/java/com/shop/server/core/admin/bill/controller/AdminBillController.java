@@ -3,6 +3,7 @@ package com.shop.server.core.admin.bill.controller;
 import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminSaveBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminUpdateBillRequest;
+import com.shop.server.core.admin.bill.model.request.AdminUpdateBillWaitRequest;
 import com.shop.server.core.admin.bill.service.AdminBillService;
 import com.shop.server.core.admin.bill.service.impl.AdminBillServiceImpl;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
@@ -72,5 +73,11 @@ public class AdminBillController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> removeBillsWait(@PathVariable String id) {
         return Helper.createResponseEntity(adminBillService.removeBillWait(id));
+    }
+
+    @PutMapping("/bill-wait/{id}")
+    public ResponseEntity<?> updateBillWait(@PathVariable String id,
+                                              @RequestBody final AdminUpdateBillWaitRequest request) {
+        return Helper.createResponseEntity(adminBillService.updateBillWait(id, request));
     }
 }

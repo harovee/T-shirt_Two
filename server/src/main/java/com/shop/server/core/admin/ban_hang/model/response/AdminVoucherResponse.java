@@ -8,16 +8,22 @@ public interface AdminVoucherResponse extends BaseResponse {
 
     String getTen();
 
-    Double getGiaTriGiam();
-
-    Integer getSoLuong();
+    Short getSoLuong();
 
     Double getDieuKienGiam();
 
+    Double getGiamToiDa();
+
     Boolean getLoaiGiam();
 
-//    Long getNgayBatDau();
-//
-//    Long getNgayKetThuc();
+    Double getGiaTriGiam();
+
+    Long getNgayBatDau();
+
+    Long getNgayKetThuc();
+
+    Boolean getKieu();
+
+    String getTrangThai();
 
 }

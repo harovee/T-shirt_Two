@@ -81,6 +81,15 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
     }
 
     @Override
+    public ResponseObject<?> getListSanPhamChitiet() {
+        return new ResponseObject<>(
+                adSanPhamChiTietRepository.getListSanPhamChiTiets(),
+                HttpStatus.OK,
+                "Lấy dữ liệu thành công."
+        );
+    }
+
+    @Override
     public ResponseObject<?> getSanPhamChiTietById(String id) {
         return adSanPhamChiTietRepository.findById(id)
                 .map(ok -> new ResponseObject<>(ok, HttpStatus.OK, "Lấy thông tin sản phẩm chi tiết thành công."))

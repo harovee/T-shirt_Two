@@ -1,17 +1,16 @@
 package com.shop.server.core.admin.ban_hang.controller;
 
+import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
 import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
+import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
 import com.shop.server.core.admin.ban_hang.service.AdminPaymentServices;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,9 +31,14 @@ public class BillPaymentController {
                     adminPaymentServices.getKhachHangById(id));
     }
 
+//    @GetMapping("/voucher/all/{id}")
+//    public ResponseEntity<?> getVoucherInKhachHang(@Valid final AdminHoaDonKhachHangRequest request, @PathVariable ("id") String id) {
+//        return Helper.createResponseEntity(adminPaymentServices.getAllVoucherKhachHang(request, id));
+//    }
+
     @GetMapping("/voucher")
-    public ResponseEntity<?> getVoucherInKhachHang(@Valid final AdminHoaDonKhachHangRequest request) {
-        return Helper.createResponseEntity(adminPaymentServices.getAllVoucherKhachHang(request));
+    public ResponseEntity<?> getVoucherInKhachHangAll(@Valid final AdminHoaDonKhachHangRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.getAllVoucherKhachHangNoId(request));
     }
 
     @GetMapping("/voucher/{id}")
@@ -44,5 +48,10 @@ public class BillPaymentController {
     @GetMapping("/payment-method")
     public ResponseEntity<?> getPaymentMethod() {
         return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan());
+    }
+
+    @GetMapping("/customer-address")
+    public ResponseEntity<?> getCustomerAddressById(final AdminCustomerAddressSearchRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.getCustomerAddressByIdCustomer(request));
     }
 }

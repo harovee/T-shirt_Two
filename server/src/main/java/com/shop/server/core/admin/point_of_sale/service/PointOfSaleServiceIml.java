@@ -47,8 +47,9 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
             HoaDon hoaDon = hoaDonRepository.findById(request.getIdHoaDonCho()).orElse(null);
             if (hoaDon == null) return ResponseObject.errorForward(HttpStatus.NOT_FOUND, Message.Response.NOT_FOUND + " : không tìm thấy hóa đơn thỏa mãn");
 
-            hoaDonChiTietRepository.saveProductDetailsToCart(request);
+            request.setSoLuong(1L);
             hoaDonChiTietRepository.updateExistingProductInCart(request);
+            hoaDonChiTietRepository.saveProductDetailsToCart(request);
             hoaDonChiTietRepository.decreaseStock(request.getIdSanPhamChiTiets(), request.getSoLuong());
             return ResponseObject.successForward(
                     getProductsInPendingOrder(request.getIdHoaDonCho()).getData(),
@@ -87,11 +88,31 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
     @Override
     public ResponseObject<?> deleteOrderDetail(String idHDCT) {
         try {
+            hoaDonChiTietRepository.updateProductQuantityAfterDelete(idHDCT);
             hoaDonChiTietRepository.deleteProductInCart(idHDCT);
             return ResponseObject.successForward("", Message.Success.DELETE_SUCCESS);
         }catch (Exception e) {
             e.printStackTrace(System.err);
             return ResponseObject.errorForward(HttpStatus.INTERNAL_SERVER_ERROR, Message.Response.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public ResponseObject<?> getTotalAmount(String idHoaDon) {
+        Double totalAmount = hoaDonChiTietRepository.getTotalAmountByIdHoaDon(idHoaDon);
+        return new ResponseObject<>(
+                totalAmount,
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
+    }
+
+    @Override
+    public ResponseObject<?> getListProducts(String idHoaDon) {
+        return new ResponseObject<>(
+                hoaDonChiTietRepository.findAll(),
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
     }
 }
