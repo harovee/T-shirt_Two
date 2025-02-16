@@ -18,9 +18,9 @@
         <template v-else-if="column.key === 'anhSanPhamChiTiet'">
           <Image
             :src="record.anhSanPhamChiTiet"
-            width="60"
-            height="60"
-            alt="Ảnh sản phẩm"
+            width="40"
+            height="40"
+            alt="img"
           />
         </template>
 
@@ -37,6 +37,7 @@
 import TableExample from '@/components/ui/TableExample.vue';
 import { formatCurrencyVND } from '@/utils/common.helper';
 import { ColumnType } from 'ant-design-vue/es/table';
+import { Image } from 'ant-design-vue';
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -79,6 +80,14 @@ const columns: ColumnType[] = [
     key: "sanPham",
     ellipsis: true,
     width: 150,
+    align: "center",
+  },
+  {
+    title: "Số lượng",
+    dataIndex: "soLuong",
+    key: "soLuong",
+    ellipsis: true,
+    width: 80,
     align: "center",
   },
   {

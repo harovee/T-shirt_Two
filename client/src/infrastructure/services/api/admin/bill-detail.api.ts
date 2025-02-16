@@ -72,8 +72,11 @@ export const updateBillDetail = async (idBillDetail: string, data: UpdateBillDet
     return await request({
         url: `${API_ADMIN_BILL_DETAIL}/${idBillDetail}`,
         method: "PUT",
-        data: data
+        headers: {
+            "Content-Type": "application/json", // ✅ Đảm bảo API nhận diện JSON
+        },
+        data: JSON.stringify(data)
     }) as AxiosResponse<
-        DefaultResponse<DefaultResponse<null>>
+        DefaultResponse<null>
     >;
 };

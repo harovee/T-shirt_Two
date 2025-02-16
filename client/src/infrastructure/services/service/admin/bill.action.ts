@@ -1,5 +1,5 @@
 import { Ref } from "vue";
-import { BillRequest, FindBillRequest, getBillById, getBills, updateBill,BillWaitRequest, updateBillWait, getBillsWait, BillCreateRequest, createBillsWait, BillWaitResponse,removeBillWait } from "../../api/admin/bill.api";
+import { BillRequest, FindBillRequest, getBillById, getBills, updateBill, getBillsWait, BillCreateRequest, createBillsWait, BillWaitResponse,removeBillWait, ChangeStatusBillRequest, changeBillStatus } from "../../api/admin/bill.api";
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey";
 
@@ -81,6 +81,18 @@ export const useUpdateBill = () => {
         },
     });
 };
+
+
+export const useChangeBillStatus= () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({idBill, params}: { idBill: string; params: ChangeStatusBillRequest }) => changeBillStatus(idBill, params),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billHistory],});
+            queryClient.invalidateQueries({queryKey: [queryKey.admin.bill.billById],});
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.bill.billList + "🚀 ~ billUpdate ~ error:", error);
 
 export const useUpdateBillWait = () => {
     const queryClient = useQueryClient();

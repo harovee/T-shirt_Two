@@ -40,8 +40,7 @@
     </div>
     <div class="flex justify-end mt-4">
       <a-button
-        type="primary"
-        class="bg-orange-500 hover:bg-orange-600 text-white"
+        class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
         @click="handleOpenModalUpdateBill"
         :disabled="
           [
@@ -70,11 +69,17 @@
       <h3 class="text-lg font-bold">Lịch sử thanh toán</h3>
       <a-button
         v-if="billData?.trangThai === 'Đã giao hàng'"
-        type="primary"
-        class="bg-orange-500 hover:bg-orange-600 text-white"
+        class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
+        @click="handleOpenModalGetPay"
       >
         Thanh toán
       </a-button>
+      <admin-get-delivery-pay-modal
+        :open="isOpenModalGetPay"
+        :totalPrice="totalPrice"
+        @handleClose="handleCloseModalGetPay"
+        @onCancel="isOpenModalGetPay = false"
+      />
     </div>
     <admin-pay-history />
   </div>
@@ -84,8 +89,7 @@
     <!-- Nút thêm sản phẩm -->
     <div class="flex justify-end mb-4">
       <a-button
-        type="primary"
-        class="bg-orange-500 hover:bg-orange-600 text-white"
+        class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
         @click="handleOpenModalAddProductToOrder"
         :disabled="
           [
@@ -117,7 +121,7 @@
       :loading="props.loading"
       :pagination-params="props.paginationParams"
       :total-pages="props.totalPages || 1"
-      @update:pagination-params="updatePaginationParams"
+      @update:pagination-params="$emit('update:paginationParams', $event)"
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'status'" class="text-center">
@@ -198,8 +202,9 @@ import { ref, watch, computed } from "vue";
 import AdminPayHistory from "./AdminPayHistory.vue";
 import UpdateBillModal from "../bill/UpdateBillModal.vue";
 import AddProductDetailModal from "./AddProductDetailModal.vue";
+import AdminGetDeliveryPayModal from "./AdminGetDeliveryPayModal.vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
-import { BillRequest, BillResponse } from "@/infrastructure/services/api/admin/bill.api";
+import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image } from "ant-design-vue";
 
@@ -230,12 +235,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:paginationParams", 
-"update-quantity"]);
-
-const updatePaginationParams = (params: any) => {
-  emit("update:paginationParams", params);
-};
+const emit = defineEmits(["update:paginationParams", "update-quantity"]);
 
 watch(
   () => props?.billData,
@@ -272,6 +272,7 @@ const handleCloseModalUpdateBill = () => {
   isOpenModalUpdateBill.value = false;
 };
 
+//modal thêm sản phẩm vào đơn
 const isOpenModalAddProductToOrder = ref(false);
 
 const handleOpenModalAddProductToOrder = () => {
@@ -280,6 +281,17 @@ const handleOpenModalAddProductToOrder = () => {
 
 const handleCloseModalAddProductToOrder = () => {
   isOpenModalAddProductToOrder.value = false;
+};
+
+//modal thanh toán sau giao hàng
+const isOpenModalGetPay = ref(false);
+
+const handleOpenModalGetPay = () => {
+  isOpenModalGetPay.value = true;
+};
+
+const handleCloseModalGetPay = () => {
+  isOpenModalGetPay.value = false;
 };
 
 const dataSources: BillDetailResponse[] | any = computed(() => {
@@ -314,6 +326,9 @@ watch(
     }
   }
 );
+
+const totalPrice = computed(() => props.billData?.tongTien);
+// console.log(totalPrice.value);
 
 const handleChangeQuantity = async (record: any) => {
   record.thanhTien = record.soLuong * record.gia;

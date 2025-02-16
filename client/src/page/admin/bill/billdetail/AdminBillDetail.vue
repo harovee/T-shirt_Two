@@ -25,10 +25,7 @@
       </div>
     </div>
 
-    <admin-bill-history
-      :data-source="historyData"
-      :loading="isHistoryLoading"
-    />
+    <admin-bill-history />
 
     <!-- Bill Detail Table -->
     <bill-detail-table
@@ -37,47 +34,49 @@
       :data-source="detailDataSources"
       :bill-data="billDataById"
       :loading="isLoadingBillData || isFetchingBillData"
-      :pagination-params="paginationParams || {}"
+      :pagination-params="params"
       :total-pages="totalPage"
-      @update:paginationParams="$emit('update:paginationParams', $event)"
+      @update:paginationParams="handlePaginationChange"
       @update-quantity="handleChangeTotalPrice"
     />
   </div>
 
   <div class="shadow p-4 rounded-lg bg-white mt-6">
-    <!-- <div class="flex justify-between mb-4">
+    <div class="mt-4 max-w-lg ml-auto">
+      <!-- <div class="flex justify-between mb-4">
         <span class="text-lg">Mã giảm giá:</span>
         <span class="text-lg">{{ detailData?.data?.data?.[0]. || 'Chưa có mã giảm giá' }}</span>
       </div> -->
-    <div class="flex justify-between mb-4">
-      <span class="text-lg">Tiền hàng:</span>
-      <span v-if="detailDataSources" class="text-lg">{{
-        formatCurrencyVND(totalPrice)
-      }}</span>
-    </div>
-    <div class="flex justify-between mb-4">
-      <span class="text-lg">Giảm giá:</span>
-      <span v-if="detailDataSources" class="text-lg text-green-500">{{
-        detailDataSources && detailDataSources.length > 0
-          ? `- ${formatCurrencyVND(detailDataSources[0].tienGiamHD)}`
-          : "0 VND"
-      }}</span>
-    </div>
-    <div class="flex justify-between mb-4">
-      <span class="text-lg">Phí vận chuyển:</span>
-      <span v-if="detailDataSources" class="text-lg">{{
-        detailDataSources && detailDataSources.length > 0
-          ? `${formatCurrencyVND(detailDataSources[0].tienShip)}`
-          : "0 VND"
-      }}</span>
-    </div>
-    <div class="flex justify-between font-semibold text-xl">
-      <span>Tổng tiền:</span>
-      <span v-if="detailDataSources">{{
-        detailDataSources && detailDataSources.length > 0
-          ? formatCurrencyVND(detailDataSources[0].tongTienHD)
-          : "0 VND"
-      }}</span>
+      <div class="flex flex justify-between block mb-4">
+        <span class="text-lg">Tiền hàng:</span>
+        <span v-if="detailDataSources" class="text-lg">{{
+          formatCurrencyVND(totalPrice)
+        }}</span>
+      </div>
+      <div class="flex flex justify-between block mb-4">
+        <span class="text-lg">Giảm giá:</span>
+        <span v-if="detailDataSources" class="text-lg text-green-500">{{
+          detailDataSources && detailDataSources.length > 0
+            ? `- ${formatCurrencyVND(detailDataSources[0].tienGiamHD)}`
+            : "0 VND"
+        }}</span>
+      </div>
+      <div class="flex flex justify-between block mb-4">
+        <span class="text-lg">Phí vận chuyển:</span>
+        <span v-if="detailDataSources" class="text-lg">{{
+          detailDataSources && detailDataSources.length > 0
+            ? `${formatCurrencyVND(detailDataSources[0].tienShip)}`
+            : "0 VND"
+        }}</span>
+      </div>
+      <div class="flex flex justify-between block font-semibold text-xl">
+        <span>Tổng tiền:</span>
+        <span v-if="detailDataSources">{{
+          detailDataSources && detailDataSources.length > 0
+            ? formatCurrencyVND(detailDataSources[0].tongTienHD)
+            : "0 VND"
+        }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -89,14 +88,12 @@ import {
   FindBillDetailRequest,
   BillDetailResponse,
 } from "@/infrastructure/services/api/admin/bill-detail.api";
-import { useGetBillDetails } from "@/infrastructure/services/service/admin/bill-detail.action";
+import { useGetBillDetails, useUpdateBillDetail } from "@/infrastructure/services/service/admin/bill-detail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { computed, onMounted, ref, watch, reactive } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import AdminBillHistory from "./AdminBillHistory.vue";
 import BillDetailTable from "./BillDetailTable.vue";
 import { ColumnType } from "ant-design-vue/es/table";
-import { useGetBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
-import { FindBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
 import { useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
 import { formatCurrencyVND } from "@/utils/common.helper";
 
@@ -112,19 +109,9 @@ const params = ref<FindBillDetailRequest>({
   idHoaDon: "",
 });
 
-const paramsHistory = ref<FindBillHistoryRequest>({
-  page: 1,
-  size: 10,
-  idHoaDon: "",
-});
-
 const billId = ref<string | null>(null); // Tạo một ref cho billId
 
 const emit = defineEmits(["update:paginationParams"]);
-
-const props = defineProps({
-  paginationParams: Object,
-});
 
 const getIdHoaDonFromUrl = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -133,7 +120,6 @@ const getIdHoaDonFromUrl = () => {
 
 onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
-  paramsHistory.value.idHoaDon = getIdHoaDonFromUrl();
   billId.value = getIdHoaDonFromUrl();
   // console.log(billId.value);
 });
@@ -146,15 +132,7 @@ const {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
-
-const {
-  data: historyData,
-  isLoading: isHistoryLoading,
-  isFetching: isHistoryFetching,
-} = useGetBillHistory(paramsHistory, {
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-});
+// console.log(detailData);
 
 const {
   data: billData,
@@ -167,10 +145,6 @@ const {
 });
 
 const billDataById = computed(() => billData?.value?.data?.data);
-
-// watch(historyData, (newData) => {
-//   console.log("History data updated:", newData);
-// });
 
 watch(billId, (newVal) => {
   if (newVal && newVal !== null) {
@@ -192,69 +166,98 @@ watch(
 );
 
 // Tính toán totalPages
-const totalPage = computed(() => detailData.value?.data?.totalPages || 1);
+const totalPage = computed(() => detailData?.value?.data?.totalPages || 1);
+// console.log(detailData);
 
 const totalPrice = computed(() => {
   return detailDataSources.value.reduce((sum, item) => sum + item.thanhTien, 0);
 });
 
+const handlePaginationChange = (newParams: FindBillDetailRequest) => {
+  params.value = { ...params.value, ...newParams };
+};
+
+const {mutate: updateQuantity} = useUpdateBillDetail();
+
 // Hàm cập nhật giá trị thanhTien
 const handleChangeTotalPrice = (record) => {
   const item = detailDataSources.value.find((item) => item.id === record.id);
-
   if (item) {
-    // Cập nhật số lượng và thành tiền trước
+    // Cập nhật số lượng và thành tiền trước khi gửi request
     item.soLuong = record.soLuong;
-    item.thanhTien = record.thanhTien;
-    item.dieuKienGiam = record.dieuKienGiam;
-    item.giamToiDa = record.giamToiDa;
-    item.anhSanPhamChiTiet = record.anhSanPhamChiTiet;
-    item.tienGiamHD = record.tienGiamHD;
-    item.tienShip = record.tienShip;
-    console.log(record.tienShip);
+    
+    // Gửi request cập nhật dữ liệu lên server
+    updateQuantity(
+      {
+        idBillDetail: record.id,
+        data: { soLuong: record.soLuong }
+      },
+      {
+        onSuccess: () => {
+          // console.log("Cập nhật thành công!");
+          
+          refetch(); // Refresh dữ liệu sau khi cập nhật thành công
+        },
+        onError: (error) => {
+          console.error("Lỗi khi cập nhật:", error);
+        },
+      }
+    );
   }
+
+  // if (item) {
+  //   // Cập nhật số lượng và thành tiền trước
+  //   item.soLuong = record.soLuong;
+  //   item.thanhTien = record.thanhTien;
+  //   item.dieuKienGiam = record.dieuKienGiam;
+  //   item.giamToiDa = record.giamToiDa;
+  //   item.anhSanPhamChiTiet = record.anhSanPhamChiTiet;
+  //   item.tienGiamHD = record.tienGiamHD;
+  //   item.tienShip = record.tienShip;
+  //   console.log(record.tienShip);
+  // }
 
   // Tính tổng tiền sau khi cập nhật giá trị
-  const totalPrice = detailDataSources.value.reduce(
-    (sum, item) => sum + item.thanhTien,
-    0
-  );
+  // const totalPrice = detailDataSources.value.reduce(
+  //   (sum, item) => sum + item.thanhTien,
+  //   0
+  // );
 
-  if (totalPrice === 0) {
-    detailDataSources.value.forEach((ds) => {
-      ds.tienGiamHD = 0;
-      ds.tienShip = 0; // Đặt phí vận chuyển bằng 0
-    });
-  } else {
-    if (item) {
-      detailDataSources.value.forEach((ds) => {
-        ds.tienShip = item.tienShip;
-        ds.tienGiamHD = item.tienGiamHD;
-      });
-      if (item?.loaiGiam) {
-        detailDataSources.value.forEach((ds) => {
-          ds.tienGiamHD = record.giaTriGiam;
-        });
-      } else if (
-        totalPrice >= Number(item?.dieuKienGiam) &&
-        item?.loaiGiam == false
-      ) {
-        // item.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
-        detailDataSources.value.forEach((ds) => {
-          ds.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
-        });
-      }
-    }
-  }
+  // if (totalPrice === 0) {
+  //   detailDataSources.value.forEach((ds) => {
+  //     ds.tienGiamHD = 0;
+  //     ds.tienShip = 0; // Đặt phí vận chuyển bằng 0
+  //   });
+  // } else {
+  //   if (item) {
+  //     detailDataSources.value.forEach((ds) => {
+  //       ds.tienShip = item.tienShip;
+  //       ds.tienGiamHD = item.tienGiamHD;
+  //     });
+  //     if (item?.loaiGiam) {
+  //       detailDataSources.value.forEach((ds) => {
+  //         ds.tienGiamHD = record.giaTriGiam;
+  //       });
+  //     } else if (
+  //       totalPrice >= Number(item?.dieuKienGiam) &&
+  //       item?.loaiGiam == false
+  //     ) {
+  //       // item.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
+  //       detailDataSources.value.forEach((ds) => {
+  //         ds.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
+  //       });
+  //     }
+  //   }
+  // }
 
-  // Cập nhật tổng tiền hóa đơn
-  detailDataSources.value.forEach((ds) => {
-    // ds.tienGiamHD = item?.tienGiamHD ? item?.tienGiamHD : 0;
-    if (ds.tienGiamHD >= Number(item?.giamToiDa) && item?.loaiGiam == false) {
-      ds.tienGiamHD = Number(item?.giamToiDa);
-    }
-    ds.tongTienHD = totalPrice - ds.tienGiamHD + ds.tienShip;
-  });
+  // // Cập nhật tổng tiền hóa đơn
+  // detailDataSources.value.forEach((ds) => {
+  //   // ds.tienGiamHD = item?.tienGiamHD ? item?.tienGiamHD : 0;
+  //   if (ds.tienGiamHD >= Number(item?.giamToiDa) && item?.loaiGiam == false) {
+  //     ds.tienGiamHD = Number(item?.giamToiDa);
+  //   }
+  //   ds.tongTienHD = totalPrice - ds.tienGiamHD + ds.tienShip;
+  // });
 
   // console.log("Updated totalPrice:", totalPrice);
 };

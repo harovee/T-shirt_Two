@@ -10,6 +10,8 @@ import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.*;
 import com.shop.server.infrastructure.constants.module.Message;
+import com.shop.server.infrastructure.security.oauth2.session.InfoUserTShirt;
+import com.shop.server.repositories.AddressRepository;
 import com.shop.server.repositories.KhachHangRepository;
 import com.shop.server.repositories.LichSuHoaDonRepository;
 import com.shop.server.repositories.NhanVienRepository;
@@ -31,12 +33,21 @@ public class AdminBillServiceImpl implements AdminBillService {
     private final KhachHangRepository khachHangRepository;
     private final NhanVienRepository nhanVienRepository;
     private final PhieuGiamGiaRepository phieuGiamGiaRepository;
+    private final LichSuHoaDonRepository lichSuHoaDonRepository;
+    private final AddressRepository addressRepository;
 
-    public AdminBillServiceImpl(AdminBillRepository adminBillRepository, KhachHangRepository khachHangRepository, NhanVienRepository nhanVienRepository, PhieuGiamGiaRepository phieuGiamGiaRepository, LichSuHoaDonRepository lichSuHoaDonRepository) {
+    public AdminBillServiceImpl(AdminBillRepository adminBillRepository,
+                                KhachHangRepository khachHangRepository,
+                                NhanVienRepository nhanVienRepository,
+                                PhieuGiamGiaRepository phieuGiamGiaRepository,
+                                LichSuHoaDonRepository lichSuHoaDonRepository,
+                                InfoUserTShirt infoUserTShirt, AddressRepository addressRepository) {
         this.adminBillRepository = adminBillRepository;
         this.khachHangRepository = khachHangRepository;
         this.nhanVienRepository = nhanVienRepository;
         this.phieuGiamGiaRepository = phieuGiamGiaRepository;
+        this.lichSuHoaDonRepository = lichSuHoaDonRepository;
+        this.addressRepository = addressRepository;
     }
 
     @Override
@@ -149,6 +160,14 @@ public class AdminBillServiceImpl implements AdminBillService {
 
         adminBillRepository.save(hoaDon);
 
+        LichSuHoaDon ls = new LichSuHoaDon();
+        ls.setIdHoaDon(hoaDon);
+        ls.setHanhDong("Tạo hóa đơn");
+        ls.setMoTa(request.getMoTa());
+        ls.setNguoiTao(request.getNguoiTao());
+        ls.setTrangThai(hoaDon.getTrangThai());
+        LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
+
         return new ResponseObject<>(
                 null,
                 HttpStatus.OK,
@@ -185,14 +204,13 @@ public class AdminBillServiceImpl implements AdminBillService {
         hoaDon.setGhiChu(request.getGhiChu());
         HoaDon hd1 = adminBillRepository.save(hoaDon);
 
-
-
 //        LichSuHoaDon ls = new LichSuHoaDon();
 //        ls.setIdHoaDon(hoaDon);
-//        ls.setHanhDong("Cập nhật hóa đơn");
+//        ls.setHanhDong("Cập nhật thông tin hóa đơn");
+//        ls.setMoTa(request.getMoTa());
 //        ls.setNguoiTao(request.getNguoiTao());
 //        ls.setTrangThai(hoaDon.getTrangThai());
-//        lichSuHoaDonRepository.save(ls);
+//        LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
 
         return new ResponseObject<>(
                 hd1,
@@ -208,16 +226,15 @@ public class AdminBillServiceImpl implements AdminBillService {
         hoaDon.setTrangThai(request.getTrangThai());
         HoaDon hd1 = adminBillRepository.save(hoaDon);
 
-//        LichSuHoaDon ls = new LichSuHoaDon();
-//        ls.setIdHoaDon(hoaDon);
-//        ls.setHanhDong("Chuyển trạng thái");
-//        ls.setMoTa(request.getMoTaLichSu());
-//        ls.setNguoiTao(request.getNguoiTao());
-//        ls.setTrangThai(hoaDon.getTrangThai());
-//        lichSuHoaDonRepository.save(ls);
+        LichSuHoaDon ls = new LichSuHoaDon();
+        ls.setIdHoaDon(hoaDon);
+        ls.setHanhDong("Chuyển trạng thái hóa đơn -> '" + request.getTrangThai() + "'");
+        ls.setMoTa(request.getMoTa());
+        ls.setTrangThai(hoaDon.getTrangThai());
+        LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
 
         return new ResponseObject<>(
-                hd1,
+                ls1,
                 HttpStatus.OK,
                 Message.Success.UPDATE_SUCCESS
         );

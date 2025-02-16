@@ -25,4 +25,13 @@ public class AdminUpdateBillRequest {
 
     private String ghiChu;
 
+    //lich su hoa don
+    private String idHoaDon;
+
+    private String hanhDong;
+
+    private String moTa;
+
+    private Long ngayTao;
+
 }

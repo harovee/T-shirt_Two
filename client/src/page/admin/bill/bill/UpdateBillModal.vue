@@ -34,7 +34,6 @@ import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.acti
 import { Form, Modal } from "ant-design-vue";
 import { computed, createVNode, defineEmits, reactive, watch } from "vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { toast } from "vue3-toastify";
 import { errorNotiSort, successNotiSort, warningNotiSort } from "@/utils/notification.config";
 
 const props = defineProps({
@@ -53,12 +52,22 @@ const { mutate: update } = useUpdateBill();
 const modelRef = reactive<BillRequest>({
   soDienThoai: null,
   diaChiNguoiNhan: null,
-  idKhachHang: null,
+  // idKhachHang: null,
   tenNguoiNhan: null,
   ghiChu: null,
 });
 
-const { validate, validateInfos } = Form.useForm(modelRef);
+const rulesRef = reactive({
+  ghiChu: [
+    {
+      max: 255,
+      message: "Ghi chú không được vượt quá 255 ký tự",
+      trigger: "blur",
+    },
+  ],
+});
+
+const {resetFields, validate, validateInfos } = Form.useForm(modelRef, rulesRef);
 
 watch(
   () => props.billData,
@@ -66,7 +75,7 @@ watch(
     if (newBillData) {
       modelRef.soDienThoai = newBillData.soDienThoai || null;
       modelRef.diaChiNguoiNhan = newBillData.diaChiNguoiNhan || null;
-      modelRef.idKhachHang = newBillData.idKhachHang || null;
+      // modelRef.idKhachHang = newBillData.idKhachHang || null;
       modelRef.tenNguoiNhan = newBillData.tenNguoiNhan || null;
       modelRef.ghiChu = newBillData.ghiChu || null;
     }
@@ -75,12 +84,6 @@ watch(
 );
 
 const formFields = computed(() => [
-  // {
-  //   label: "Tên khách hàng",
-  //   name: "name",
-  //   component: "a-input",
-  //   placeholder: "Nhâp tên khách hàng",
-  // },
   {
     label: "Số điện thoại",
     name: "soDienThoai",
@@ -162,5 +165,6 @@ const handleUpdateBill = () => {
 
 const handleClose = () => {
   emit("handleClose");
+  resetFields();
 };
 </script>
