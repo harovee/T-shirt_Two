@@ -89,7 +89,7 @@
                 class="bg-purple-300 flex justify-between items-center gap-2"
                 @click="openPaymentMethodModal"
               >
-                <v-icon name="ri-coupon-2-line" />
+                <v-icon name="ri-bank-card-fill" />
               </a-button>
             </a-tooltip>
           </div>

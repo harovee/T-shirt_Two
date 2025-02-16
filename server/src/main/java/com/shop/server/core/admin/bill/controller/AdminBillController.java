@@ -41,10 +41,10 @@ public class AdminBillController {
         return Helper.createResponseEntity(adminBillService.getDetailBillById(id));
     }
 
-    @PostMapping()
-    public ResponseEntity<?> createBill(@Valid @RequestBody final AdminSaveBillRequest request, BindingResult result) {
-        return Helper.createResponseEntity(adminBillService.createBill(request, result));
-    }
+//    @PostMapping()
+//    public ResponseEntity<?> createBill(@Valid @RequestBody final AdminSaveBillRequest request, BindingResult result) {
+//        return Helper.createResponseEntity(adminBillService.createBill(request, result));
+//    }
 
     @PostMapping("create-bill")
     public ResponseEntity<?> createBillCart(@RequestBody final AdminSaveBillRequest request) {

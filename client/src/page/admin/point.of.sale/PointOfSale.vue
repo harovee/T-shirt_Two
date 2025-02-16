@@ -392,14 +392,23 @@ const findIdByMaSPCT = (maSPCT: string) => {
 const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
   idSanPhamChiTiets.value = [];
   const idSPCT = findIdByMaSPCT(newId);
-
   idSanPhamChiTiets.value.push(idSPCT);
-  handleCreateQrOrderDetails({
+  console.log(newId);
+  
+  if (newId) {
+    handleCreateQrOrderDetails({
     idSanPhamChiTiets: idSanPhamChiTiets.value,
     idHoaDonCho: activeKey.value,
     userEmail: useAuthStore().user?.email || null,
     soLuong: 1,
   });
+  }
+  // handleCreateQrOrderDetails({
+  //   idSanPhamChiTiets: idSanPhamChiTiets.value,
+  //   idHoaDonCho: activeKey.value,
+  //   userEmail: useAuthStore().user?.email || null,
+  //   soLuong: 1,
+  // });
 };
 
 const handleCancel = () => {

@@ -78,55 +78,55 @@ public class AdminBillServiceImpl implements AdminBillService {
         );
     }
 
-    @Override
-    public ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult result) {
-        if (result.hasErrors()) {
-            return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, Message.Error.CREATE_ERROR);
-        }
-        String maHD;
-        Random random = new Random();
-        do {
-            int number = random.nextInt(10000);
-            maHD = String.format("HD%04d", number);
-        } while (adminBillRepository.existsHoaDonByMa(maHD));
-
-        HoaDon hoaDon = new HoaDon();
-        hoaDon.setMa(maHD);
-        hoaDon.setLoaiHD(request.getLoaiHD());
-        if (hoaDon.getLoaiHD().equalsIgnoreCase("Online")) {
-            hoaDon.setTrangThai("Chờ xác nhận");
-        }else {
-            hoaDon.setTrangThai("Chờ thanh toán");
-        }
-
-
-        KhachHang kh = khachHangRepository.findById(request.getIdKhachHang())
-                .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
-        hoaDon.setKhachHang(kh);
-        hoaDon.setSoDienThoai(kh.getPhoneNumber());
-        hoaDon.setTenNguoiNhan(kh.getFullName());
-        NhanVien nv = nhanVienRepository.findById(request.getIdNhanVien())
-                .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại"));
-        hoaDon.setNhanVien(nv);
-
-        PhieuGiamGia pgg = phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia())
-                .orElseThrow(() -> new RuntimeException("Phiếu giảm giá không tồn tại"));
-        hoaDon.setPhieuGiamGia(pgg);
-
-        adminBillRepository.save(hoaDon);
-
-//        LichSuHoaDon ls = new LichSuHoaDon();
-//        ls.setIdHoaDon(hoaDon);
-//        ls.setHanhDong("Tạo đơn hàng");
-//        ls.setNguoiTao(request.getNguoiTao());
-//        ls.setTrangThai(hoaDon.getTrangThai());
-//        lichSuHoaDonRepository.save(ls);
-        return new ResponseObject<>(
-            null,
-            HttpStatus.OK,
-            Message.Success.CREATE_SUCCESS
-        );
-    }
+//    @Override
+//    public ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult result) {
+//        if (result.hasErrors()) {
+//            return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, Message.Error.CREATE_ERROR);
+//        }
+//        String maHD;
+//        Random random = new Random();
+//        do {
+//            int number = random.nextInt(10000);
+//            maHD = String.format("HD%04d", number);
+//        } while (adminBillRepository.existsHoaDonByMa(maHD));
+//
+//        HoaDon hoaDon = new HoaDon();
+//        hoaDon.setMa(maHD);
+//        hoaDon.setLoaiHD(request.getLoaiHD());
+//        if (hoaDon.getLoaiHD().equalsIgnoreCase("Online")) {
+//            hoaDon.setTrangThai("Chờ xác nhận");
+//        }else {
+//            hoaDon.setTrangThai("Chờ thanh toán");
+//        }
+//
+//
+//        KhachHang kh = khachHangRepository.findById(request.getIdKhachHang())
+//                .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
+//        hoaDon.setKhachHang(kh);
+//        hoaDon.setSoDienThoai(kh.getPhoneNumber());
+//        hoaDon.setTenNguoiNhan(kh.getFullName());
+//        NhanVien nv = nhanVienRepository.findById(request.getIdNhanVien())
+//                .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại"));
+//        hoaDon.setNhanVien(nv);
+//
+//        PhieuGiamGia pgg = phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia())
+//                .orElseThrow(() -> new RuntimeException("Phiếu giảm giá không tồn tại"));
+//        hoaDon.setPhieuGiamGia(pgg);
+//
+//        adminBillRepository.save(hoaDon);
+//
+////        LichSuHoaDon ls = new LichSuHoaDon();
+////        ls.setIdHoaDon(hoaDon);
+////        ls.setHanhDong("Tạo đơn hàng");
+////        ls.setNguoiTao(request.getNguoiTao());
+////        ls.setTrangThai(hoaDon.getTrangThai());
+////        lichSuHoaDonRepository.save(ls);
+//        return new ResponseObject<>(
+//            null,
+//            HttpStatus.OK,
+//            Message.Success.CREATE_SUCCESS
+//        );
+//    }
 
     @Override
     public ResponseObject<?> createBill(AdminSaveBillRequest request) {
@@ -260,6 +260,7 @@ public class AdminBillServiceImpl implements AdminBillService {
         Optional<HoaDon> bill = adminBillRepository.findById(id);
         if (bill.isPresent()) {
             adminBillRepository.deleteByIdHoaDon(id);
+            adminBillRepository.deleteLichSuByIdHoaDon(id);
             adminBillRepository.deleteById(id);
             return new ResponseObject<>(null, HttpStatus.OK, Message.Success.UPDATE_SUCCESS);
         } else {
@@ -296,12 +297,11 @@ public class AdminBillServiceImpl implements AdminBillService {
         hoaDon.setTrangThai(request.getTrangThai());
         HoaDon hd1 = adminBillRepository.save(hoaDon);
 
-//        LichSuHoaDon ls = new LichSuHoaDon();
-//        ls.setIdHoaDon(hoaDon);
-//        ls.setHanhDong("Cập nhật hóa đơn");
-//        ls.setNguoiTao(request.getNguoiTao());
-//        ls.setTrangThai(hoaDon.getTrangThai());
-//        lichSuHoaDonRepository.save(ls);
+        LichSuHoaDon ls = new LichSuHoaDon();
+        ls.setIdHoaDon(hoaDon);
+        ls.setHanhDong("Cập nhật hóa đơn");
+        ls.setTrangThai(hoaDon.getTrangThai());
+        lichSuHoaDonRepository.save(ls);
 
         return new ResponseObject<>(
                 hd1,

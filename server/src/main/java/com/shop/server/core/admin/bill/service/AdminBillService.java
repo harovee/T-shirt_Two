@@ -18,7 +18,7 @@ public interface AdminBillService {
 
     ResponseObject<?> getDetailBillById(String id);
 
-    ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult bindingResult);
+//    ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult bindingResult);
 
     ResponseObject<?> createBill(AdminSaveBillRequest request);
 

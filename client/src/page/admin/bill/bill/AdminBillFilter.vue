@@ -107,7 +107,7 @@ const ngayBatDau = ref(dayjs().startOf("day"));
 const params = ref<BillPropsParams>({
   page: 1,
   keyword: null,
-  trangThai: 'Chờ xác nhận',
+  trangThai: 'all',
   ngayBatDau: ngayBatDau.value.toDate().getTime(),
   ngayKetThuc: null,
   loaiHD: null,
