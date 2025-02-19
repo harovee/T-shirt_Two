@@ -12,11 +12,11 @@ import java.math.BigDecimal;
 @Setter
 public class AdminHoaDonKhachHangRequest  extends PageableRequest {
 
+    private String keyword;
+
     private String idKhachHang;
 
     private BigDecimal tongTien;
-
-    private String idHoaDon;
 
     private String idPhieuGiamGia;
 }

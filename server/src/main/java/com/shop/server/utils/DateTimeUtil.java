@@ -3,6 +3,8 @@ package com.shop.server.utils;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -50,7 +52,14 @@ public class DateTimeUtil {
         }
         return null;
     }
-
+    public static String convertDateToStringDate(Date date) {
+        if (date != null) {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+            formatter.setTimeZone(TimeZone.getDefault());
+            return formatter.format(date);
+        }
+        return null;
+    }
     public static Date addMinutes(Date date, int minutes) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -64,7 +73,7 @@ public class DateTimeUtil {
 
     public static void main(String[] args) {
         System.out.println(DateTimeUtil.convertStringToTimeStampSecond("2024-12-04T06:53:29.493Z"));
-        System.out.println(DateTimeUtil.convertTimeStampSecondToString(1736755662935L / 1000L));
+        System.out.println(DateTimeUtil.convertDateToStringDate(DateTimeUtil.convertTimeStampSecondToString(1736755662935L / 1000L)));
     }
 
 }

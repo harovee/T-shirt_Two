@@ -1,5 +1,5 @@
 <template>
-  <a-modal :visible="open" @ok="handleClose" key="":width="'800px'">
+  <a-modal :visible="open" @ok="handleClose" key="" :width="'800px'">
     <div class="w-400px">
       <a-space class="flex justify-start items-center">
         <a-input-search
@@ -27,7 +27,7 @@
           <a-avatar
             shape="circle"
             :src="record.profilePicture"
-            class="w-full h-full text-center scale-95 hover:scale-100 transition-all cursor-pointer"
+            class="w-200 h-200 text-center scale-95 hover:scale-100 transition-all cursor-pointer"
           >
           </a-avatar>
         </template>
@@ -71,6 +71,7 @@ const columns: TableColumnType<DataType>[] = [
   {
     title: "Ảnh",
     dataIndex: "profilePicture",
+    width: 100
   },
   {
     title: "Tên",

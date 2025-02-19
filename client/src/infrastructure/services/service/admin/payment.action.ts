@@ -4,12 +4,13 @@ import {
     getListVoucher,
     getVoucherById,
     FindCustomerRequest,
-    FindVoucherRequest
+    FindVoucherRequest,
+    calculateShippingFee,
+    ShippingFeeRequest
 } from "@/infrastructure/services/api/admin/payment.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
-import { log } from "console";
 
 
 export const useGetListVoucher = (
@@ -53,3 +54,14 @@ export const useGetCustomerById = (
         ...options,
     });
 };
+
+export const useGetShippingFee = (
+    params: Ref<ShippingFeeRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof calculateShippingFee>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.shippingFee, params],
+        queryFn: () => calculateShippingFee(params),
+        ...options,
+    });
+};
+

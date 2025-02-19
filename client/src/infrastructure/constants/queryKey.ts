@@ -94,7 +94,8 @@ export const queryKey = {
             customerList: "adCustomerListKey",
             customerDetail: "adCustomerDetailKey",
             voucherPayList: "voucherPayListKey",
-            voucherPayDetail: "voucherPayDetailKey"
+            voucherPayDetail: "voucherPayDetailKey",
+            shippingFee: "shippingFeeKey"
         },
         voucher: {
             voucherList: "adVoucherListKey",

@@ -10,14 +10,16 @@ public interface AdminVoucherResponse extends BaseResponse {
 
     Double getGiaTriGiam();
 
+    Boolean getKieu();
+
     Integer getSoLuong();
 
     Double getDieuKienGiam();
 
     Boolean getLoaiGiam();
 
-//    Long getNgayBatDau();
-//
-//    Long getNgayKetThuc();
+    Long getNgayBatDau();
+
+    Long getNgayKetThuc();
 
 }

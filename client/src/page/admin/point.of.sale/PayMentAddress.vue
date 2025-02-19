@@ -58,6 +58,8 @@ import {
 } from "@/infrastructure/services/service/admin/client.action.ts";
 import {keepPreviousData} from "@tanstack/vue-query";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
+import { ShippingFeeRequest } from "@/infrastructure/services/api/admin/payment.api";
+import { useGetShippingFee } from "@/infrastructure/services/service/admin/payment.action";
 
 /*** process data ***/
 
@@ -66,7 +68,13 @@ const props = defineProps({
   isRefresh: Boolean
 });
 
-const emit = defineEmits(["handleResetActiveKey"]);
+const emit = defineEmits(["handleResetActiveKey","updateShippingFee"]);
+
+const shippingFee = ref(0);
+
+watch(shippingFee, (newFee) => {
+  emit("updateShippingFee", newFee);
+});
 
 const isRefetch = ref<boolean>(false);
 
@@ -87,7 +95,54 @@ const {data: wards, refetch: refetchWards} = useGetWardsByDistrictIdQuery(props?
   placeholderData: keepPreviousData,
   enabled: props.isRefresh
 });
+const shippingFeeParams = ref<ShippingFeeRequest>({
+  fromDistrictId: 1482, // Set your shop's district ID here
+  serviceId: 53320, // Default service ID
+  toDistrictId: 0,
+  toWardCode: 0,
+  weight: 500, // Set default weight in grams
+  length: 20, // Set default package dimensions
+  width: 20,
+  height: 10
+});
 
+const { data: shippingFeeData, refetch: refetchShippingFee } = useGetShippingFee(
+  shippingFeeParams,
+  {
+    enabled: false,
+    refetchOnWindowFocus: false
+  }
+);
+
+watch(
+  [
+    () => modelRef.district,
+    () => modelRef.ward
+  ],
+  ([newDistrict, newWard]) => {
+    if (newDistrict && newWard) {
+      // Update shipping fee parameters
+      shippingFeeParams.value = {
+        ...shippingFeeParams.value,
+        toDistrictId: parseInt(newDistrict),
+        toWardCode: parseInt(newWard)
+      };
+    
+      
+      // Calculate new shipping fee
+      refetchShippingFee();
+    }
+  }
+);
+watch(
+  () => shippingFeeData.value,
+  (newFeeData) => {
+    if (newFeeData?.data) {
+      shippingFee.value = newFeeData.data.total || 0;
+      console.log(shippingFee);
+    }
+  }
+);
 const provincesOptions = ref<{ label: string; value: string }[]>([]);
 const districtsOptions = ref<{ label: string; value: string }[]>([]);
 const wardsOptions = ref<{ label: string; value: string }[]>([]);
@@ -286,67 +341,6 @@ const handleChangeOptions = (key: string, value: any) => {
     default:
       return;
   }
-}
-
-const handleChangeDefault = (id: string) => {
-  Modal.confirm({
-    content: "Bạn chắc chắn muốn đặt địa chỉ này làm địa chỉ mặc định?",
-    icon: createVNode(ExclamationCircleOutlined),
-    centered: true,
-    async onOk() {
-      try {
-        await validate();
-        changeClientAddressDefault(id, {
-          onSuccess: (res: any) => {
-            notification.success({
-              message: 'Thông báo',
-              description: res.message,
-              duration: 4,
-            });
-            emit("handleResetActiveKey");
-          },
-          onError: (error: any) => {
-            notification.error({
-              message: 'Thông báo',
-              description: error?.response?.data?.message,
-              duration: 4,
-            });
-          },
-        })
-      } catch (error: any) {
-        console.error("🚀 ~ handleUpdate ~ error:", error);
-        if (error?.response) {
-          notification.error({
-            message: 'Thông báo',
-            description: error?.response?.data?.message,
-            duration: 4,
-          });
-        } else if (error?.errorFields) {
-          notification.warning({
-            message: 'Thông báo',
-            description: "Vui lòng nhập đúng đủ các trường dữ liệu",
-            duration: 4,
-          });
-        }
-      }
-    },
-    cancelText: "Huỷ",
-    onCancel() {
-      Modal.destroyAll();
-    },
-  });
-}
-
-const handleReset = () => {
-  modelRef.name = props?.dataSource?.name;
-  modelRef.phoneNumber = props?.dataSource?.phoneNumber;
-  modelRef.line = props?.dataSource?.line;
-  modelRef.province = props?.dataSource?.province.toString();
-  modelRef.district = props?.dataSource?.district.toString();
-  modelRef.ward = props?.dataSource?.ward;
-  refetchProvinces();
-  refetchDistricts();
-  refetchWards();
 }
 
 </script>

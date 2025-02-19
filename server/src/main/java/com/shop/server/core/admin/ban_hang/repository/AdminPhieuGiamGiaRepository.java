@@ -14,40 +14,52 @@ import java.util.List;
 @Repository
 public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
     @Query(value = """
-    SELECT  
-            pgg.id AS id,
-            pgg.ma_phieu_giam_gia AS ma,
-            pgg.ten AS ten,
-            pgg.so_luong AS soLuong,
-            pgg.gia_tri_giam AS giaTriGiam,
-            pgg.loai_giam AS loaiGiam,
-            pgg.dieu_kien_giam AS dieuKienGiam,
-            CASE
-             -- Nếu không có tổng đơn hàng, giữ nguyên giá trị gốc
-                    WHEN :#{#request.tongTien} IS NULL THEN
-                        CASE
-                        WHEN pgg.loai_giam = TRUE THEN pgg.gia_tri_giam  -- Giảm tiền mặt
-                                ELSE pgg.gia_tri_giam  -- Giảm phần trăm
-                        END
-                -- Nếu tổng đơn hàng đạt điều kiện, tính toán giảm giá
-                    WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
-                    CASE
-                            WHEN pgg.loai_giam = FALSE THEN  -- Giảm theo phần trăm
-                                LEAST((pgg.gia_tri_giam / 100) * :#{#request.tongTien}, pgg.giam_toi_da)
-                            ELSE  -- Giảm tiền mặt
-                                LEAST(pgg.gia_tri_giam, pgg.giam_toi_da)
-                    END
-                   ELSE 0
-             END AS giaTriGiam
-             FROM phieu_giam_gia pgg
-                    LEFT JOIN khach_hang_phieu_giam_gia khpgg ON pgg.id = khpgg.id_phieu_giam_gia
-             WHERE pgg.ngay_bat_dau <= UNIX_TIMESTAMP()*1000
-                AND pgg.ngay_ket_thuc >= UNIX_TIMESTAMP()*1000
-                AND pgg.trang_thai = 'ACTIVE'
-                AND (:#{#request.idKhachHang} IS NULL
-                OR khpgg.id_khach_hang = :#{#request.idKhachHang})
-                AND pgg.so_luong > 0
-             ORDER BY giaTriGiam DESC;
+    SELECT DISTINCT
+                    pgg.id,
+                    pgg.ma_phieu_giam_gia AS ma,
+                    pgg.ten,
+                    pgg.so_luong AS soLuong,
+                    pgg.dieu_kien_giam AS dieuKienGiam,
+                    pgg.giam_toi_da AS giamToiDa,
+                    pgg.loai_giam AS loaiGiam,
+                    pgg.ngay_bat_dau AS ngayBatDau,
+                    pgg.ngay_ket_thuc AS ngayKetThuc,
+                    pgg.loai_phieu as kieu,
+                    CASE\s
+                        WHEN :#{#request.tongTien} IS NULL THEN\s
+                            CASE pgg.loai_giam\s
+                                WHEN TRUE THEN pgg.gia_tri_giam -- Tiền mặt
+                                ELSE 0 -- Phần trăm cần có tổng tiền để tính
+                            END
+                        WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
+                            CASE pgg.loai_giam\s
+                                WHEN TRUE THEN LEAST(pgg.gia_tri_giam, pgg.giam_toi_da) -- Tiền mặt
+                                WHEN FALSE THEN LEAST((pgg.gia_tri_giam / 100) * :#{#request.tongTien}, pgg.giam_toi_da) -- Phần trăm
+                                END
+                            ELSE 0
+                    END AS giaTriGiam   
+            FROM phieu_giam_gia pgg
+            WHERE 1=1
+                    AND (:#{#request.keyword} IS NULL OR\s
+                    (pgg.ma_phieu_giam_gia LIKE CONCAT('%', :#{#request.keyword}, '%') OR\s
+                    pgg.ten LIKE CONCAT('%', :#{#request.keyword}, '%'))
+                    )
+                    AND pgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                    AND pgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
+                    AND pgg.trang_thai = 'ACTIVE'
+                    AND pgg.so_luong > 0
+                    AND (:#{#request.tongTien} IS NULL OR :#{#request.tongTien} >= pgg.dieu_kien_giam)
+                    AND (
+                    (:#{#request.idKhachHang} IS NULL AND pgg.loai_phieu = false)
+                    OR EXISTS (
+                    SELECT 1\s
+                    FROM khach_hang_phieu_giam_gia khpgg_check\s
+                    WHERE khpgg_check.id_khach_hang = :#{#request.idKhachHang}\s
+                    AND khpgg_check.id_phieu_giam_gia = pgg.id
+                    )
+                    OR pgg.loai_phieu = false
+                    )
+                    ORDER BY giaTriGiam DESC
 """,nativeQuery = true)
     Page<AdminVoucherResponse> getPhieuGiamGia(AdminHoaDonKhachHangRequest request, Pageable pageable);
 
