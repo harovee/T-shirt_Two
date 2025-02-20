@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(MappingConstant.API_ADMIN_PAYMENT)
@@ -41,17 +43,25 @@ public class BillPaymentController {
         return Helper.createResponseEntity(adminPaymentServices.getAllVoucherKhachHangNoId(request));
     }
 
-    @GetMapping("/voucher/{id}")
-    public ResponseEntity<?> getVoucherInKhachHangById(@PathVariable String id) {
-        return Helper.createResponseEntity(null);
+    @GetMapping("/voucher/next-voucher")
+    public ResponseEntity<?> getNextVoucherByTotalPrice(@Valid final AdminHoaDonKhachHangRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.getNextTotalPriceToVoucher(request));
     }
+
+//    @GetMapping("/voucher/{id}")
+//    public ResponseEntity<?> getVoucherInKhachHangById(@PathVariable String id) {
+//        return Helper.createResponseEntity(null);
+//    }
+
     @GetMapping("/payment-method")
-    public ResponseEntity<?> getPaymentMethod() {
-        return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan());
+    public ResponseEntity<?> getPaymentMethod(@RequestParam("idHoaDon") String idHoaDon) {
+        return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan(idHoaDon));
     }
 
     @GetMapping("/customer-address")
     public ResponseEntity<?> getCustomerAddressById(final AdminCustomerAddressSearchRequest request) {
         return Helper.createResponseEntity(adminPaymentServices.getCustomerAddressByIdCustomer(request));
     }
+
+
 }

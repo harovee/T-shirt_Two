@@ -6,7 +6,9 @@ import {
     FindCustomerRequest,
     FindVoucherRequest,
     getListCustomerAddress,
-    FindCustomerAddressRequest
+    FindCustomerAddressRequest,
+    getPriceNextVoucher,
+    nextVoucherRequest
 } from "@/infrastructure/services/api/admin/payment.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -20,6 +22,16 @@ export const useGetListVoucher = (
     return useQuery({
         queryKey: [queryKey.admin.payment.voucherPayList, params],
         queryFn: () => getListVoucher(params),
+        ...options,
+    });
+};
+
+export const useGetPriceNextVoucher = (
+    params: Ref<nextVoucherRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getPriceNextVoucher>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.nextPriceVoucher, params],
+        queryFn: () => getPriceNextVoucher(params),
         ...options,
     });
 };

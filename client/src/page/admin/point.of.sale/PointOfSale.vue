@@ -87,7 +87,7 @@
             :key="bill.id"
             :tab="`${bill.ma} (${dataSourcePro ? dataSourcePro.length : 0})`"
           >
-            <div>
+            <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <POSProducsInCart
                 :idOrder="activeKey?.valueOf() || ''"
               ></POSProducsInCart>
@@ -95,7 +95,7 @@
 
             <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Khách hàng</h2>
+                <h2 class="text-xl font-semibold">Thông tin khách hàng</h2>
                 <div class="flex items-center space-x-3">
                   <a-tooltip title="Chọn khách hàng" trigger="hover">
                     <a-button

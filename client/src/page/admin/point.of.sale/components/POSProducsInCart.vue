@@ -62,6 +62,7 @@
               type="number"
               v-model:value="record.soLuong"
               @change="handleQuantityChange(record)"
+              min="1"
             >
             </a-input>
           </div>

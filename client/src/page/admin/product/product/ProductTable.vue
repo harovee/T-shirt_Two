@@ -28,10 +28,10 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'trangThai'" class="text-center">
           <a-tag v-if="record.trangThai === 0" color="success"
-            >Đang áp dụng</a-tag
+            >Đang bán</a-tag
           >
           <a-tag v-else-if="record.trangThai === 1" color="warning"
-            >Không áp dụng</a-tag
+            >Ngừng kinh doanh</a-tag
           >
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>

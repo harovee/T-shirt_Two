@@ -310,8 +310,8 @@ const changeProductDetail = ref(false);
 
 const statusOptions = [
   { label: "Tất cả", value: null },
-  { label: "Đang áp dụng", value: 0 },
-  { label: "Ngưng áp dụng", value: 1 },
+  { label: "Đang bán", value: 0 },
+  { label: "Ngừng kinh doanh", value: 1 },
 ];
 
 const debouncedEmit = debounce(() => {

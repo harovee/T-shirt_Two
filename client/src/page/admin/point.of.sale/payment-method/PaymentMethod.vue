@@ -3,22 +3,30 @@
     :open="open"
     @ok="handleClose"
     key=""
-    :width="'1400px'"
+    :width="'800px'"
     :okText="'Xác nhận'"
     :cancelText="'Hủy bỏ'"
   >
-    <h1 class="text-xl">Danh sách phiếu giảm giá</h1>
-    <div class="w-400px">
-      <a-space class="flex justify-start items-center">
-        <a-input-search
-          class="m-2"
-          v-model:value="params.keyword"
-          placeholder="Tìm kiếm phiếu giảm giá"
-          style="width: 200px"
-          @change:value="handleSearch"
-        />
-      </a-space>
-    </div>
+    <h1 class="text-xl">Thanh toán</h1>
+    <a-form layout="vertical">
+      <div class="flex gap-4">
+        <a-form-item label="Hình thức thanh toán">
+          <a-select
+            ref="select"
+            v-model:value="paymentMethod"
+            style="width: 750px"
+            @focus="focus"
+            @change="handleChange"
+          >
+            <a-select-option value="tienmat">Tiền mặt</a-select-option>
+            <a-select-option value="chuyenkhoan">Chuyển khoản</a-select-option>
+            <a-select-option value="cahai"
+              >Cả hai</a-select-option
+            >
+          </a-select>
+        </a-form-item>
+      </div>
+    </a-form>
     <a-table
       :columns="columns"
       :data-source="dataVoucher"
@@ -100,7 +108,7 @@ const props = defineProps({
   dataVoucher: {
     type: Object,
     required: true,
-  }
+  },
 });
 
 const emit = defineEmits(["handleClose", "selectVoucher"]);
@@ -121,18 +129,20 @@ const handleClose = () => emit("handleClose");
 //     trangThai : string;
 // }
 
+const paymentMethod = ref('tienmat');
+
 const params = ref<FindVoucherRequest>({
   page: 1,
   size: 5,
   keyword: "",
   idKhachHang: props.dataCustomer ? props.dataCustomer.id : null,
-  tongTien: 0
+  tongTien: 0,
 });
 
 watch(
   () => props.totalAmount,
   (newData) => {
-    params.value.tongTien = newData
+    params.value.tongTien = newData;
   },
   { immediate: true }
 );
@@ -140,9 +150,8 @@ watch(
 watch(
   () => props.dataCustomer,
   (newData) => {
-    params.value.idKhachHang = newData ? newData.key : null
+    params.value.idKhachHang = newData ? newData.key : null;
     // console.log(params.value.idKhachHang);
-    
   },
   { immediate: true }
 );
@@ -168,9 +177,8 @@ const { data } = useGetListVoucher(params, {
 
 // watch(dataVoucher, (newData) => {
 //   console.log(newData);
-  
-// });
 
+// });
 
 const handleSearch = (newValue: string) => {
   params.value.keyword = newValue;

@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @RequiredArgsConstructor
 @Service
 public class AdminPaymentServicesImpl implements AdminPaymentServices {
@@ -73,8 +75,8 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     }
 
     @Override
-    public ResponseObject<?> getPhuongThucThanhToan() {
-        return ResponseObject.successForward(adminPhuongThucThanhToanRepository.getAllPhuongThucThanhToan(),
+    public ResponseObject<?> getPhuongThucThanhToan(String idHoaDon) {
+        return ResponseObject.successForward(adminPhuongThucThanhToanRepository.getAllPhuongThucThanhToan(idHoaDon),
                 "Lấy phương thức thanh toán thành công"
         );
     }
@@ -88,5 +90,10 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     public ResponseObject<?> getCustomerAddressByIdCustomer(AdminCustomerAddressSearchRequest request) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
         return new ResponseObject<>(PageableObject.of(adminKhachHangRepository.getCustomerAddressById(pageable, request)), HttpStatus.OK, "Lấy danh sách địa chỉ thành công");
+    }
+
+    @Override
+    public ResponseObject<?> getNextTotalPriceToVoucher(AdminHoaDonKhachHangRequest request) {
+        return new ResponseObject<>(adminPhieuGiamGiaRepository.findNextEligibleTongTien(request).orElse(BigDecimal.ZERO), HttpStatus.OK, "Lấy số tiền để áp dụng voucher tiếp theo thành công");
     }
 }
