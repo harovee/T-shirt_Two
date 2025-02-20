@@ -77,3 +77,14 @@ export const useGetCustomerById = (
         ...options,
     });
 };
+
+export const useGetShippingFee = (
+    params: Ref<ShippingFeeRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof calculateShippingFee>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.shippingFee, params],
+        queryFn: () => calculateShippingFee(params),
+        ...options,
+    });
+};
+

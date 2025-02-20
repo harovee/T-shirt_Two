@@ -173,7 +173,7 @@
                   :dataSourceInfor="bill"
                   :selectedCustomerInfo="activeTabCustomers[bill.id]"
                   :selectedCustomerAddress="activeTabCustomerAddress[bill.id]"
-                  
+
                   @handlePaymentInfo="
                     (paymentInfo) => handleChangePaymentInfo(paymentInfo, bill)
                   "
@@ -394,7 +394,7 @@ const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
   const idSPCT = findIdByMaSPCT(newId);
   idSanPhamChiTiets.value.push(idSPCT);
   console.log(newId);
-  
+
   if (newId) {
     handleCreateQrOrderDetails({
     idSanPhamChiTiets: idSanPhamChiTiets.value,

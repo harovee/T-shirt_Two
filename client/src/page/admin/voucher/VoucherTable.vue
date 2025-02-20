@@ -68,13 +68,14 @@
         </div>
         <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
           <a-tooltip
+          title="Chi tiết phiếu giảm giá"
             trigger="hover"
              
           >
             <a-button  class="bg-blue-100"  size="middle" shape="round"
               @click="handleRedirectVoucherDetail(record.id)"
             >
-              <v-icon name="fa-edit" />
+              <v-icon name="fa-eye" />
             </a-button>
           </a-tooltip>
           <a-popconfirm

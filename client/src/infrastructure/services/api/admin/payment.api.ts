@@ -2,6 +2,7 @@ import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} fro
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
 import {API_ADMIN_PAYMENT} from "@/infrastructure/constants/url.ts";
+import {API_ADMIN_PAYMENT, GHN_API_URL, GHN_TOKEN} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
@@ -10,11 +11,23 @@ export interface PropertyVoucherParams {
     idKhachHang: string | null;
 
     tongTien: number | null;
-    
+
     [key: string]: any;
 }
 
 export interface FindVoucherRequest extends PropertyVoucherParams, PaginationParams {
+
+}
+
+export type ShippingFeeRequest = {
+    fromDistrictId: number;
+    serviceId: number | 53320;
+    toDistrictId: number;
+    toWardCode: number;
+    weight: number;
+    length: number;
+    width: number;
+    height: number;
 
 }
 
@@ -28,6 +41,7 @@ export interface nextVoucherRequest {
 
     tongTien: number | null;
 }
+
 
 
 export type CustomerAddressResponse = ResponseList & {
@@ -66,6 +80,9 @@ export type VoucherResponse = ResponseList & {
     trangThai : string;
 };
 
+export interface ShippingFeeResponse {
+      total: number; // Tổng phí vận chuyển (VNĐ)
+  }
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
         url: `${API_ADMIN_PAYMENT}/voucher`,
@@ -147,6 +164,34 @@ export const getCustomerById = async (id: Ref<string | null>) => {
     >;
 
 };
+
+
+export const calculateShippingFee = async (params: Ref<ShippingFeeRequest>) => {
+    const res = (await request({
+        url: `${GHN_API_URL}/v2/shipping/fee`,
+        method: "GET",
+        params: {
+            from_district_id: params.value.fromDistrictId,
+            service_id: params.value.serviceId,
+            to_district_id: params.value.toDistrictId,
+            to_ward_code: params.value.toWardCode,
+            weight: params.value.weight,
+            length: params.value.length,
+            width: params.value.width,
+            height: params.value.height,
+            insurance_value: 0,
+            coupon: null
+          },
+        headers: {
+            Token: GHN_TOKEN,
+            ShopId: "S22560282" // Thêm Token xác thực GHN
+        },
+    })) as AxiosResponse<DefaultResponse<ShippingFeeResponse>>;
+
+    return res.data;
+};
+
+
 
 
 

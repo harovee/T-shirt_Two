@@ -349,7 +349,7 @@ watch(() => dataListVoucher.value, (newData) => {
 
 watch(() => dataNextPriceVouchers.value, (newData) => {
   console.log(newData);
-  
+
 });
 
 const totalAmount = computed(() => {

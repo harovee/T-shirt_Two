@@ -5,41 +5,35 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
+import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 
+@Component
 public class GenBarcode {
 
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/barcodes/";  // Thư mục tĩnh
+    private final CloudinaryService cloudinaryService;
 
-    public static String generateBarcodeImage(String barcodeText) throws WriterException, IOException {
-        File directory = new File(UPLOAD_DIR);
-        if (!directory.exists()) {
-            directory.mkdirs(); // Tạo thư mục nếu chưa có
-        }
+    public GenBarcode(CloudinaryService cloudinaryService) {
+        this.cloudinaryService = cloudinaryService;
+    }
 
-        String fileName = barcodeText + ".png"; // Tên file ảnh dựa vào mã voucher
-        String filePath = UPLOAD_DIR + fileName;
-
+    public String generateBarcodeImage(String barcodeText) throws WriterException, IOException {
+        // Tạo barcode
         Code128Writer barcodeWriter = new Code128Writer();
         BitMatrix bitMatrix = barcodeWriter.encode(barcodeText, BarcodeFormat.CODE_128, 300, 100);
+        BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
-        BufferedImage image = MatrixToImageWriter.toBufferedImage(bitMatrix);
-        ImageIO.write(image, "png", new File(filePath));
+        // Chuyển đổi sang byte array
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(barcodeImage, "png", baos);
+        byte[] imageBytes = baos.toByteArray();
 
-        return "/uploads/barcodes/" + fileName; // Trả về đường dẫn tương đối
-    }
-    public static void main(String[] args) {
-//        try {
-//            byte[] barcode = generateBarcode("PGG12345");
-//            System.out.println("Barcode generated successfully!");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        // Upload lên Cloudinary và trả về đường dẫn
+        return cloudinaryService.uploadImage(imageBytes, "barcode_" + barcodeText);
     }
 }
+

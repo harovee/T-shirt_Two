@@ -42,10 +42,17 @@ const current1 = ref(1);
 const props = defineProps<{
   data: Object,
   idKhachHangs: string[] | undefined,
-  disable: boolean | false,
 }>();
 
 const emit = defineEmits(['update:idKhachHangs']);
+
+const params = ref<FindKhachHangRequest>({
+  page: 1,
+  size: 5,
+  keyword: ""
+});
+
+const selectedRowKeys = ref<Key[]>(props.idKhachHangs || []);
 
 interface DataType {
   key: string;
@@ -74,12 +81,6 @@ const columns: TableColumnType<DataType>[] = [
   }
 ];
 
-const params = ref<FindKhachHangRequest>({
-  page: 1,
-  size: 5,
-  keyword: ""
-});
-
 const { data } = useGetListKhachHang(params, {
   refetchOnWindowFocus: false,
   placeholderData:keepPreviousData
@@ -106,18 +107,18 @@ watch(current1, () => {
   params.value.page = current1.value === 0 ? 1 : current1.value;
 });
 
-const selectedRowKeys = ref<Key[]>(props.idKhachHangs || []);
-
-const rowSelection: TableProps["rowSelection"] = {
-  selectedRowKeys: selectedRowKeys.value, // Gán danh sách đã chọn
-  onChange: (selectedKeys: Key[]) => {
-    selectedRowKeys.value = selectedKeys;
-    emit("update:idKhachHangs", selectedKeys.map(String));
+const rowSelection = computed<TableProps['rowSelection']>(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (newSelectedKeys: Key[], selectedRows: DataType[]) => {
+    selectedRowKeys.value = newSelectedKeys;
+    emit('update:idKhachHangs', newSelectedKeys);
   },
-};
+  getCheckboxProps: (record: DataType) => ({
+    disabled: false,
+  }),
+}));
 
-watch(() => props.idKhachHangs, (newVal) => {
-  selectedRowKeys.value = newVal || [];
-}, { deep: true });
-
+  watch(() => props.idKhachHangs, (newVal) => {
+    selectedRowKeys.value = [...(newVal || [])];
+  }, { deep: true, immediate: true });
 </script>

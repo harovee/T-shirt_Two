@@ -35,7 +35,7 @@
             </a-input>
           </a-form-item>
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
-            <a-input-number v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" />
+            <a-input-number v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu"/>
           </a-form-item>
 
           <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
@@ -48,6 +48,8 @@
             <a-range-picker
               size="large"
               show-time
+              :disabled-date="disabledDate"
+              :disabled-date-time="disabledDateTime"
               format="DD/MM/YYYY HH:mm"
               v-model:value="formState.ngayBatDauVaKetThuc"
               :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
@@ -103,12 +105,14 @@ import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 import type { Rule } from 'ant-design-vue/es/form';
 import { toast } from "vue3-toastify";
 import { keepPreviousData } from "@tanstack/vue-query";
+import dayjs from 'dayjs';
 
 import {  FindKhachHangRequest, VoucherAndCustomerVoucherRequest, PhieuGiamGiaRequest } from "@/infrastructure/services/api/admin/voucher/voucher.api";
 import { useCreateCustomerVoucher, useCreateVoucher, useGetListKhachHang} from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import KhachHangTable from "./KhachHangTable.vue";
 import { defaultVoucherDatePickerRules, defaultVoucherRequest, FormState } from "./base/DefaultConfig";
 import {  notificationType, openNotification,  warningNotiSort } from "@/utils/notification.config";
+import { disabledDate, disabledDateTime } from "../sale/base/DefaultConfig";
 
 const params = ref<FindKhachHangRequest>({
   page: 1,
@@ -145,9 +149,15 @@ const rangePresets = ref(defaultVoucherDatePickerRules);
 
 const rules: Record<string, Rule[]> = {
   ten: [
-      { required: true, message: 'Vui lòng nhập tên đợt giảm giá', trigger: 'change' },
+      { required: true, message: 'Vui lòng nhập tên phiếu giảm giá', trigger: 'change' },
       { min: 3, max: 50, message: 'Tên phải từ 3 dến 50 ký tự', trigger: 'blur' },
   ],
+
+  loaiGiam:
+      [{ required: true, message: 'Vui lòng chọn loại giảm giá',
+      trigger: 'change'
+     }],
+
   giaTriGiam: [
       { required: true, message: 'Vui lòng nhập giá trị giảm', trigger: 'change' },
       {
@@ -155,7 +165,7 @@ const rules: Record<string, Rule[]> = {
               if (formState.loaiGiam === true && value != null && value <= 0) {
                   return Promise.reject('Giá trị giảm phải lớn hơn 0');
               }
-              if (formState.loaiGiam === false && value > 100) {
+              if (formState.loaiGiam === false && value > 100 || formState.loaiGiam === false && value <= 0) {
                   return Promise.reject('Giá trị giảm chỉ bé hơn hoặc bằng 100%');
               }
               return Promise.resolve();
@@ -164,30 +174,61 @@ const rules: Record<string, Rule[]> = {
       },
   ],
   dieuKienGiam: [
-    { 
-      required: true, 
-      message: "Vui lòng nhập đơn tối thiểu", 
-      trigger: "blur" 
+  {
+    required: true,
+    message: 'Vui lòng nhập đơn tối thiểu',
+    trigger: 'change',
+    validator: (rule, value) => {
+      if (formState.loaiGiam === true && value != null && value <= 0) {
+        return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
+      }
+      if (formState.loaiGiam === true && value <= formState.giaTriGiam) {
+        return Promise.reject('Đơn tối thiểu phải lớn hơn giá trị giảm');
+      }
+      if (formState.loaiGiam === false && value <= 0) {
+        return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
+      }
+      return Promise.resolve();
     }
+  }
   ],
   soLuong: [
-      { required: true, message: 'Vui lòng nhập số lượng', 
-      trigger: 'change' },
-      { 
-        validator: (_, value) => 
-          value > 0 
-            ? Promise.resolve() 
-            : Promise.reject("Số lượng phải lớn hơn 0"),
-        trigger: "blur"
+  {
+    required: true,
+    message: 'Vui lòng nhập số lượng',
+    trigger: 'change',
+    validator: (_, value) => {
+      if (formState.kieu) {
+        return Promise.resolve(); // Bỏ qua kiểm tra nếu là "Cá nhân"
       }
-  ],
+      return value > 0
+        ? Promise.resolve()
+        : Promise.reject("Số lượng phải lớn hơn 0");
+    }
+  }
+],
   ngayBatDauVaKetThuc: [{ 
-      required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', 
-      trigger: 'change', type: 'array' }],
+      required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho phiếu giảm giá',
+      trigger: 'change', type: 'array'
+    },
+    {
+          validator: (rule, value) => {
+          const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
+          dayjs(date).valueOf()
+          );
+          const now = dayjs().valueOf();
+          if (ngayBatDau < now) {
+            return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+          }
+          if (ngayKetThuc < ngayBatDau) {
+            return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
+          }
+          return Promise.resolve();
+          },
+          trigger: 'change',
+    }
+  ],
 
-  loaiGiam: 
-      [{ required: true, message: 'Vui lòng chọn loại đợt giảm giá', 
-      trigger: 'change' }],
 };
 
 const { mutate: createVoucher } = useCreateVoucher();
@@ -267,18 +308,20 @@ const handleAddVoucherAndCustomerVoucher = (dataRequest: VoucherAndCustomerVouch
 }
 
 const onSubmit = (x: number) => {
-
-
   formRef.value
       .validate()
       .then(() => {
+          if (formState.kieu && idKhachHangs.value.length === 0) {
+              toast.warning("Vui lòng chọn ít nhất một khách hàng!");
+              return; // Dừng quá trình submit
+          }
           voucherRequest.value.ten = formState.ten;
           voucherRequest.value.loaiGiam = formState.loaiGiam;
           voucherRequest.value.giaTriGiam = formState.giaTriGiam;
           voucherRequest.value.giamToiDa = formState.giamToiDa;
           voucherRequest.value.dieuKienGiam = formState.dieuKienGiam;
-          voucherRequest.value.soLuong = formState.soLuong;
           voucherRequest.value.kieu = formState.kieu;
+          voucherRequest.value.soLuong = formState.kieu ? idKhachHangs.value.length : formState.soLuong;
           voucherRequest.value.ngayBatDau = formState.ngayBatDauVaKetThuc[0]?.valueOf() || null;
           voucherRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
           x === 1 ?

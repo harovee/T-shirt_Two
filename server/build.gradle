@@ -50,6 +50,9 @@ dependencies {
 
     implementation group: 'com.google.zxing', name: 'core', version: '3.5.3'
     implementation group: 'com.google.zxing', name: 'javase', version: '3.5.3'
+    implementation 'com.cloudinary:cloudinary-core:1.33.0'
+    implementation 'com.cloudinary:cloudinary-http44:1.33.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 }
 
 tasks.named('test') {
