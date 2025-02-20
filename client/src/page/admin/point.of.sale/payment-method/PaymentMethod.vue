@@ -62,12 +62,6 @@
         </template>
       </template>
     </a-table>
-    <a-pagination
-      class="m-2"
-      v-model:current="params.page"
-      v-model:pageSize="params.size"
-      :total="data?.data.totalElements"
-    />
   </a-modal>
 </template>
 <script lang="ts" setup>
@@ -84,8 +78,11 @@ import { keepPreviousData } from "@tanstack/vue-query";
 import {
   VoucherResponse,
   FindVoucherRequest,
+  PaymentMethodDetailResponse,
+  nextVoucherRequest,
+  getPaymentMethodRequest
 } from "@/infrastructure/services/api/admin/payment.api";
-import { useGetListVoucher } from "@/infrastructure/services/service/admin/payment.action";
+import { useGetListPaymentMethodDetail } from "@/infrastructure/services/service/admin/payment.action";
 import { convertDateFormatTime } from "@/utils/common.helper";
 import { useRoute } from "vue-router";
 
@@ -109,6 +106,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  dataSourceInfo: {
+    type: Object,
+    required: true,
+  }
 });
 
 const emit = defineEmits(["handleClose", "selectVoucher"]);
@@ -129,37 +130,47 @@ const handleClose = () => emit("handleClose");
 //     trangThai : string;
 // }
 
-const paymentMethod = ref('tienmat');
-
-const params = ref<FindVoucherRequest>({
-  page: 1,
-  size: 5,
-  keyword: "",
-  idKhachHang: props.dataCustomer ? props.dataCustomer.id : null,
-  tongTien: 0,
+const params = ref<getPaymentMethodRequest>({
+  idHoaDon: props.dataSourceInfo ? props.dataSourceInfo.id : null
 });
 
+
+// watch(
+//   () => props.totalAmount,
+//   (newData) => {
+//     params.value.tongTien = newData;
+//   },
+//   { immediate: true }
+// );
+
+// watch(
+//   () => props.dataCustomer,
+//   (newData) => {
+//     if(newData) {
+//       params.value = newData ? newData.key : null;
+//     console.log(params.value);
+//     }
+//   },
+//   { immediate: true }
+// );
+
+const { data: dataPaymentMethodDetail } = props.dataCustomer 
+  ? useGetListPaymentMethodDetail(params, {
+      refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData,
+    }) 
+  : { data: [] };
+
+
+const dataPaymentMethodDetails = computed(() => dataPaymentMethodDetail || []);
+
 watch(
-  () => props.totalAmount,
+  () => dataPaymentMethodDetails.value,
   (newData) => {
-    params.value.tongTien = newData;
+    console.log(newData);
   },
   { immediate: true }
 );
-
-watch(
-  () => props.dataCustomer,
-  (newData) => {
-    params.value.idKhachHang = newData ? newData.key : null;
-    // console.log(params.value.idKhachHang);
-  },
-  { immediate: true }
-);
-
-const { data } = useGetListVoucher(params, {
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-});
 
 // const dataVoucher: VoucherResponse[] | any = computed(() => {
 //   return (
@@ -180,15 +191,6 @@ const { data } = useGetListVoucher(params, {
 
 // });
 
-const handleSearch = (newValue: string) => {
-  params.value.keyword = newValue;
-  params.value.page = 1;
-};
-
-watch(current1, () => {
-  params.value.page = current1.value === 0 ? 1 : current1.value;
-});
-
 const handleSelectVoucher = (voucher: VoucherResponse) => {
   emit("selectVoucher", voucher);
   handleClose();
@@ -197,60 +199,37 @@ const handleSelectVoucher = (voucher: VoucherResponse) => {
 
 const columns: TableColumnType<VoucherResponse>[] = [
   {
-    title: "Mã",
-    dataIndex: "ma",
-    key: "ma",
+    title: "STT",
+    dataIndex: "stt",
+    key: "catalog",
     ellipsis: true,
     width: 70,
     resizable: true,
   },
   {
-    title: "Tên voucher",
-    dataIndex: "ten",
-    key: "ten",
+    title: "Tên phương thức",
+    dataIndex: "tenPhuongThuc",
+    key: "tenPhuongThuc",
     ellipsis: true,
     width: 100,
     resizable: true,
   },
   {
-    title: "Số lượng",
-    dataIndex: "soLuong",
-    key: "soLuong",
+    title: "Mã giao dịch",
+    dataIndex: "maGiaoDich",
+    key: "maGiaoDich",
     ellipsis: true,
     width: 55,
     resizable: true,
   },
   {
-    title: "Loại giảm",
-    dataIndex: "kieu",
-    key: "kieu",
+    title: "Số tiền",
+    dataIndex: "soTien",
+    key: "soTien",
     ellipsis: true,
     width: 100,
     resizable: true,
-  },
-  {
-    title: "Giá trị giảm",
-    dataIndex: "giaTriGiam",
-    key: "giaTriGiam",
-    ellipsis: true,
-    width: 100,
-    resizable: true,
-  },
-  {
-    title: "Đơn tối thiểu",
-    dataIndex: "dieuKienGiam",
-    key: "dieuKienGiam",
-    ellipsis: true,
-    width: 100,
-    resizable: true,
-  },
-  {
-    title: "Hành động",
-    key: "actions",
-    align: "center",
-    width: 150,
-    fixed: "right",
-  },
+  }
 ];
 </script>
   

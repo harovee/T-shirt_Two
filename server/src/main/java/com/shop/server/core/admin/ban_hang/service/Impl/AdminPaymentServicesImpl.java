@@ -1,16 +1,13 @@
 package com.shop.server.core.admin.ban_hang.service.Impl;
 
-import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
-import com.shop.server.core.admin.ban_hang.repository.AdminKhachHangPayRepository;
-import com.shop.server.core.admin.ban_hang.repository.AdminPhieuGiamGiaRepository;
-import com.shop.server.core.admin.ban_hang.repository.AdminPhuongThucThanhToanRepository;
+import com.shop.server.core.admin.ban_hang.model.request.*;
+import com.shop.server.core.admin.ban_hang.repository.*;
 import com.shop.server.core.admin.ban_hang.service.AdminPaymentServices;
-import com.shop.server.core.admin.phieugiamgia.model.request.PhieuGiamGiaSearchRequest;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
+import com.shop.server.entities.main.ChiTietPhuongThucThanhToan;
+import com.shop.server.entities.main.HoaDon;
+import com.shop.server.entities.main.PhuongThucThanhToan;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +24,11 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
 
     private final AdminPhieuGiamGiaRepository adminPhieuGiamGiaRepository;
 
-    private final AdminPhuongThucThanhToanRepository adminPhuongThucThanhToanRepository;
+    private final AdminChiTietPhuongThucThanhToanRepository adminChiTietPhuongThucThanhToanRepository;
+
+    private final AdPhuongThucThanhToanRepository adPhuongThucThanhToanRepository;
+
+    private final AdminHoaDonRepository adminHoaDonRepository;
 
     @Override
     public ResponseObject<?> getAllKhachHang(AdminKhachHangSearchRequest request) {
@@ -76,7 +77,7 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
 
     @Override
     public ResponseObject<?> getPhuongThucThanhToan(String idHoaDon) {
-        return ResponseObject.successForward(adminPhuongThucThanhToanRepository.getAllPhuongThucThanhToan(idHoaDon),
+        return ResponseObject.successForward(adminChiTietPhuongThucThanhToanRepository.getAllPhuongThucThanhToan(idHoaDon),
                 "Lấy phương thức thanh toán thành công"
         );
     }
@@ -95,5 +96,20 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     @Override
     public ResponseObject<?> getNextTotalPriceToVoucher(AdminHoaDonKhachHangRequest request) {
         return new ResponseObject<>(adminPhieuGiamGiaRepository.findNextEligibleTongTien(request).orElse(BigDecimal.ZERO), HttpStatus.OK, "Lấy số tiền để áp dụng voucher tiếp theo thành công");
+    }
+
+    @Override
+    public ResponseObject<?> addPaymentMethodDetail(AdminPaymentMethodDetailRequest request) {
+        HoaDon hoaDon = request.getIdHoaDon() != null ? adminHoaDonRepository.findById(request.getIdHoaDon()).orElse(null) : null;
+        PhuongThucThanhToan pttt = request.getIdPhuongThucThanhToan() != null ? adPhuongThucThanhToanRepository.findById(request.getIdPhuongThucThanhToan()).orElse(null) : null;
+        ChiTietPhuongThucThanhToan ctpttt = new ChiTietPhuongThucThanhToan();
+        ctpttt.setHoaDon(hoaDon);
+        ctpttt.setPhuongThucThanhToan(pttt);
+        ctpttt.setTienKhachDua(request.getTienKhachDua());
+        ctpttt.setSoTienDu(request.getSoTienDu());
+        ctpttt.setMaGiaoDich(request.getMaGiaoDich());
+        ctpttt.setDeleted(false);
+        ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt);
+        return new ResponseObject<>(ct, HttpStatus.CREATED, "Thêm chi tiết pttt thành công");
     }
 }

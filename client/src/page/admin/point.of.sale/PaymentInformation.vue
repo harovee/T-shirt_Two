@@ -121,6 +121,7 @@
             :dataCustomer="selectedCustomerInfo"
             :totalAmount="totalAmount"
             :dataVoucher="dataListVoucher"
+            :dataSourceInfo="dataSourceInfor"
             @handleClosePaymentMethod="handleClosePaymentMethod"
             @cancel="openPaymentMethod = false"
             class="w-[600px] h-[400px]"

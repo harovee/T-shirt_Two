@@ -1,9 +1,6 @@
 package com.shop.server.core.admin.ban_hang.controller;
 
-import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
+import com.shop.server.core.admin.ban_hang.model.request.*;
 import com.shop.server.core.admin.ban_hang.service.AdminPaymentServices;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -53,9 +50,14 @@ public class BillPaymentController {
 //        return Helper.createResponseEntity(null);
 //    }
 
-    @GetMapping("/payment-method")
+    @GetMapping("/payment-method-detail")
     public ResponseEntity<?> getPaymentMethod(@RequestParam("idHoaDon") String idHoaDon) {
         return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan(idHoaDon));
+    }
+
+    @PostMapping("/payment-method-detail")
+    public ResponseEntity<?> addPaymentMethodDetail(@RequestBody AdminPaymentMethodDetailRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.addPaymentMethodDetail(request));
     }
 
     @GetMapping("/customer-address")

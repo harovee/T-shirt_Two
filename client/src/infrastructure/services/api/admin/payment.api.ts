@@ -42,6 +42,21 @@ export interface nextVoucherRequest {
     tongTien: number | null;
 }
 
+export interface getPaymentMethodRequest {
+    idHoaDon: string
+}
+
+export interface paymentMethodDetailRequest {
+    idHoaDon: string | null;
+
+    idPhuongThucThanhToan: string | null;
+
+    tienKhachDua: number | null;
+
+    soTienDu: number | null;
+
+    maGiaoDich: string | null;
+}
 
 
 export type CustomerAddressResponse = ResponseList & {
@@ -80,9 +95,50 @@ export type VoucherResponse = ResponseList & {
     trangThai : string;
 };
 
+export type CustomerResponse = ResponseList & {
+    profilePicture: string;
+    name: string;
+    phoneNumber: string;
+    email: string;
+    tinh: string;
+    huyen: string;
+    xa: string;
+    soNha: string;
+}
+
+export type PaymentMethodDetailResponse = ResponseList & {
+    tenPhuongThuc: string;
+    maGiaoDich : string;
+    soTien: number;
+};
+
 export interface ShippingFeeResponse {
       total: number; // Tổng phí vận chuyển (VNĐ)
-  }
+}
+
+export const getListPaymentMethodDetail = async (params: Ref<getPaymentMethodRequest>) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/payment-method-detail`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<Array<PaymentMethodDetailResponse>>
+    >;
+    return res.data;
+};
+
+export const createPaymentMethodDetail = async (data: paymentMethodDetailRequest) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/payment-method-detail`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+
+    return res.data;
+};
+
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
         url: `${API_ADMIN_PAYMENT}/voucher`,
@@ -103,7 +159,6 @@ export const getPriceNextVoucher = async (params: Ref<nextVoucherRequest>) => {
     })) as AxiosResponse<
         DefaultResponse<Object>
     >;
-
     return res.data;
 };
 
@@ -127,17 +182,6 @@ export const getVoucherById = async (VoucherId: Ref<string | null>) => {
         DefaultResponse<VoucherResponse>
     >;
 };
-
-export type CustomerResponse = ResponseList & {
-    profilePicture: string;
-    name: string;
-    phoneNumber: string;
-    email: string;
-    tinh: string;
-    huyen: string;
-    xa: string;
-    soNha: string;
-}
 
 export interface FindCustomerRequest extends PaginationParams{
     keyword : string | null;
