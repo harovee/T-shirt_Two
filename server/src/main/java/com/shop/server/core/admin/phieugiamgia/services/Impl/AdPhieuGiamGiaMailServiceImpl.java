@@ -40,7 +40,7 @@ public class AdPhieuGiamGiaMailServiceImpl implements AdPhieuGiamGiaMailService 
                             
                                         <table style="width: 100%%; border-collapse: collapse; margin-top: 10px;">
                                             <tr><td style="padding: 8px; border: 1px solid #ddd;">Mã Voucher:</td><td style="padding: 8px; border: 1px solid #ddd;"><strong>%s</strong></td></tr>
-                                            <tr><td style="padding: 8px; border: 1px solid #ddd;">Giá trị giảm:</td><td style="padding: 8px; border: 1px solid #ddd;"><strong>%s%</strong></td></tr>
+                                            <tr><td style="padding: 8px; border: 1px solid #ddd;">Giá trị giảm:</td><td style="padding: 8px; border: 1px solid #ddd;"><strong>%s</strong></td></tr>
                                             <tr><td style="padding: 8px; border: 1px solid #ddd;">Ngày hết hạn:</td><td style="padding: 8px; border: 1px solid #ddd;"><strong>%s</strong></td></tr>
                                         </table>
                             

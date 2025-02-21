@@ -177,20 +177,21 @@ const rules: Record<string, Rule[]> = {
   {
     required: true,
     message: 'Vui lòng nhập đơn tối thiểu',
-    trigger: 'change',
-    validator: (rule, value) => {
-      if (formState.loaiGiam === true && value != null && value <= 0) {
-        return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
-      }
-      if (formState.loaiGiam === true && value <= formState.giaTriGiam) {
-        return Promise.reject('Đơn tối thiểu phải lớn hơn giá trị giảm');
-      }
-      if (formState.loaiGiam === false && value <= 0) {
-        return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
-      }
-      return Promise.resolve();
-    }
-  }
+    trigger: 'change'},
+  //   {
+  //   validator: (rule, value) => {
+  //     if (formState.loaiGiam === true && value != null && value <= 0) {
+  //       return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
+  //     }
+  //     if (formState.loaiGiam === true && value <= formState.giaTriGiam) {
+  //       return Promise.reject('Đơn tối thiểu phải lớn hơn giá trị giảm');
+  //     }
+  //     if (formState.loaiGiam === false && value <= 0) {
+  //       return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
+  //     }
+  //     return Promise.resolve();
+  //   }
+  // }
   ],
   soLuong: [
   {

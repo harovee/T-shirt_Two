@@ -78,7 +78,7 @@
           </a-form-item>
         </a-form>
         <span v-if="isExpired" class="text-red-500 italic mt-2">
-          Voucher đã kết thúc vào ngày {{ dayjs(formState.ngayBatDauVaKetThuc[1]).format('DD/MM/YYYY HH:mm') }}
+          Phiếu giảm giá đã kết thúc vào ngày {{ dayjs(formState.ngayBatDauVaKetThuc[1]).format('DD/MM/YYYY HH:mm') }}
         </span>
       </div>
 

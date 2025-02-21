@@ -16,7 +16,6 @@ import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.KhachHangPhieuGiamGia;
 import com.shop.server.entities.main.PhieuGiamGia;
-import com.shop.server.repositories.KhachHangRepository;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -154,6 +153,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             phieuGiamGia.setNgayKetThuc(request.getNgayKetThuc());
             phieuGiamGia.setSoLuong(request.getSoLuong());
             phieuGiamGia.setTen(request.getTen());
+            phieuGiamGia.setKieu(request.getKieu());
             phieuGiamGia.setTrangThai(request.getTrangThai());
             if (!phieuGiamGia.getKieu()) {
                 for (KhachHang khachHang : adminKhachHangRepository.findAll()) {
@@ -240,6 +240,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             // Lấy danh sách khách hàng hiện có trong bảng trung gian
             List<KhachHangPhieuGiamGia> existingKhachHangs = adKhachHangPhieuGiamGiaRepository.findByIdPhieuGiamGia(id);
             Set<String> existingIds = existingKhachHangs.stream()
+                    .filter(khpg -> !khpg.getDeleted()) // Chỉ lấy khách hàng đang active
                     .map(khpg -> khpg.getKhachHang().getId())
                     .collect(Collectors.toSet());
 
@@ -253,6 +254,8 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
                     adPhieuGiamGiaMailService.sendMailCancelKhachHangVoucher(khpg.getKhachHang(),phieuGiamGia);
                     }
                     adKhachHangPhieuGiamGiaRepository.save(khpg);
+                } else if(phieuGiamGia.getKieu() && !existingIds.contains(khpg.getKhachHang().getId())){
+                    adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khpg.getKhachHang(), phieuGiamGia);
                 } else if(phieuGiamGia.getKieu()){
                     adPhieuGiamGiaMailService.sendMailUpdateKhachHangVoucher(khpg.getKhachHang(),phieuGiamGia);
                 }
