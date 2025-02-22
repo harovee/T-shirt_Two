@@ -21,14 +21,14 @@ export interface FindVoucherRequest extends PropertyVoucherParams, PaginationPar
 
 export type ShippingFeeRequest = {
     fromDistrictId: number;
+    fromWardCode: string;
     serviceId: number | 53320;
     toDistrictId: number;
-    toWardCode: number;
+    toWardCode: string;
     weight: number;
     length: number;
     width: number;
     height: number;
-
 }
 
 export interface FindCustomerAddressRequest extends PaginationParams {
@@ -81,7 +81,9 @@ export type VoucherResponse = ResponseList & {
 };
 
 export interface ShippingFeeResponse {
-      total: number; // Tổng phí vận chuyển (VNĐ)
+    total: number;         // Tổng phí vận chuyển
+    service_fee: number;   // Phí ship
+    insurance_fee: number; // Tổng phí vận chuyển (VNĐ)
   }
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
@@ -167,28 +169,33 @@ export const getCustomerById = async (id: Ref<string | null>) => {
 
 
 export const calculateShippingFee = async (params: Ref<ShippingFeeRequest>) => {
-    const res = (await request({
-        url: `${GHN_API_URL}/v2/shipping/fee`,
-        method: "GET",
-        params: {
-            from_district_id: params.value.fromDistrictId,
-            service_id: params.value.serviceId,
-            to_district_id: params.value.toDistrictId,
-            to_ward_code: params.value.toWardCode,
-            weight: params.value.weight,
-            length: params.value.length,
-            width: params.value.width,
-            height: params.value.height,
-            insurance_value: 0,
-            coupon: null
-          },
-        headers: {
-            Token: GHN_TOKEN,
-            ShopId: "S22560282" // Thêm Token xác thực GHN
-        },
-    })) as AxiosResponse<DefaultResponse<ShippingFeeResponse>>;
+    try {
+        const res = (await request({
+            url: `${GHN_API_URL}`,
+            method: "GET",
+            params: {
+                from_district_id: params.value.fromDistrictId,
+                from_ward_code: params.value.fromWardCode,
+                service_id: params.value.serviceId,
+                to_district_id: params.value.toDistrictId,
+                to_ward_code: params.value.toWardCode,
+                weight: params.value.weight,
+                length: params.value.length,
+                width: params.value.width,
+                height: params.value.height
+            },
+            headers: {
+                token: GHN_TOKEN,
+                ShopId: "S22560282"
+            },
+        })) as AxiosResponse<DefaultResponse<ShippingFeeResponse>>;
 
-    return res.data;
+        console.log("Response API GHN:", res.data); // Kiểm tra response
+
+        return res.data;
+    } catch (error) {
+        console.error("Lỗi khi gọi API GHN:", error);
+    }
 };
 
 

@@ -240,7 +240,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             // Lấy danh sách khách hàng hiện có trong bảng trung gian
             List<KhachHangPhieuGiamGia> existingKhachHangs = adKhachHangPhieuGiamGiaRepository.findByIdPhieuGiamGia(id);
             Set<String> existingIds = existingKhachHangs.stream()
-                    .filter(khpg -> !khpg.getDeleted()) // Chỉ lấy khách hàng đang active
+                    .filter(khpg -> !khpg.getDeleted())
                     .map(khpg -> khpg.getKhachHang().getId())
                     .collect(Collectors.toSet());
 

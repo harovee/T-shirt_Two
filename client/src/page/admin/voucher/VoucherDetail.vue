@@ -206,20 +206,33 @@ const rules: Record<string, Rule[]> = {
   {
     required: true,
     message: 'Vui lòng nhập đơn tối thiểu',
-    trigger: 'change',
-    validator: (rule, value) => {
-      if (formState.loaiGiam === true && value != null && value <= 0) {
-        return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
-      }
-      if (formState.loaiGiam === true && value <= formState.giaTriGiam) {
-        return Promise.reject('Đơn tối thiểu phải lớn hơn giá trị giảm');
-      }
-      if (formState.loaiGiam === false && value <= 0) {
-        return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
-      }
-      return Promise.resolve();
+    trigger: 'change'},
+    {
+      validator: (rule, value) => {
+        // Chuyển đổi value thành số để so sánh
+        const minOrderValue = parseFloat(value);
+        const discountValue = parseFloat(formState.giaTriGiam);
+
+        // Kiểm tra nếu giá trị không phải số hợp lệ
+        if (isNaN(minOrderValue)) {
+          return Promise.reject('Đơn tối thiểu phải là số');
+        }
+
+        // Kiểm tra giá trị âm
+        if (minOrderValue <= 0) {
+          return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
+        }
+
+        // Nếu là giảm theo tiền (loaiGiam = true)
+        if (formState.loaiGiam === true) {
+          if (minOrderValue <= discountValue) {
+            return Promise.reject('Đơn tối thiểu phải lớn hơn giá trị giảm');
+          }
+        }
+        return Promise.resolve();
+      },
+      trigger: 'change'
     }
-  }
   ],
   soLuong: [
       { required: true, message: 'Vui lòng nhập số lượng', 

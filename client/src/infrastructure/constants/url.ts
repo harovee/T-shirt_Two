@@ -54,8 +54,9 @@ export const API_ADMIN_POINT_OF_SALE = `${API_URL}/admin/point-of-sale` as strin
 export const API_ADMIN_PAYMENT = `${API_URL}/admin/payment` as string;
 export const API_ADMIN_PAYMENT_METHOD = `${API_URL}/admin/payment-method` as string;
 export const API_ADMIN_DELIVERY_PAYMENT = `${API_URL}/admin/delivery-payment` as string;
-export const GHN_API_URL = "https://dev-online-gateway.ghn.vn/shiip/public-api";
-export const GHN_TOKEN = "0c1a0015-d88e-11ef-98e4-42c0f54d535b";
+export const GHN_API_URL = `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`;
+
+export const GHN_TOKEN = `0c1a0015-d88e-11ef-98e4-42c0f54d535b`;
 
 export const PREFIX_API_ADMIN_STAFF = `${API_URL}/admin/staff` as string;
 

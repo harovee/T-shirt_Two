@@ -96,4 +96,9 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     public ResponseObject<?> getNextTotalPriceToVoucher(AdminHoaDonKhachHangRequest request) {
         return new ResponseObject<>(adminPhieuGiamGiaRepository.findNextEligibleTongTien(request).orElse(BigDecimal.ZERO), HttpStatus.OK, "Lấy số tiền để áp dụng voucher tiếp theo thành công");
     }
+
+    @Override
+    public ResponseObject<?> addPaymentMethodDetail(AdminHoaDonKhachHangRequest request) {
+        return null;
+    }
 }

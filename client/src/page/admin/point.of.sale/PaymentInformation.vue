@@ -12,6 +12,7 @@
     >
       <pay-ment-address
         :selectedCustomerAddress="selectedCustomerAddress"
+         @update:selectedCustomerAddress="handleAddressUpdate"
         :isRefresh="isRefresh"
       />
     </div>
@@ -140,7 +141,7 @@
         </a-form-item> -->
 
         <!-- Phí vận chuyển -->
-        <a-form-item label="Phí vận chuyển" v-if="paymentInfo.isShipping">
+        <a-form-item label="Phí vận chuyển" v-if="paymentInfo.shippingFee">
           <a-input-number
             v-model:value="paymentInfo.shippingFee"
             placeholder="Nhập phí vận chuyển"
@@ -182,7 +183,8 @@ import { useRouter } from "vue-router";
 import {
   useGetListVoucher,
   useGetVoucherById,
-  useGetPriceNextVoucher
+  useGetPriceNextVoucher,
+  useGetShippingFee
 } from "@/infrastructure/services/service/admin/payment.action";
 import { useUpdateBillWait } from "@/infrastructure/services/service/admin/bill.action";
 import VoucherPaymentTable from "./voucher/VoucherPaymentTable.vue";
@@ -204,7 +206,8 @@ import {
 import {
   VoucherResponse,
   FindVoucherRequest,
-  nextVoucherRequest
+  nextVoucherRequest,
+  ShippingFeeRequest
 } from "@/infrastructure/services/api/admin/payment.api";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
@@ -230,7 +233,24 @@ const emit = defineEmits(["handlePaymentInfo"]);
 const pageSize = ref(5);
 const current1 = ref(1);
 
+const selectedAddress = ref({});
 
+
+
+const calculateProductDimensions = () => {
+  const totalWeight = dataSourcePro.value.reduce((sum, product) => {
+    return sum + (product.soLuong * 200) // Assuming 500g per item, adjust as needed
+  }, 0);
+  const totalHeight = dataSourcePro.value.reduce((sum, product) => {
+    return sum + (product.soLuong * 5) // Assuming 500g per item, adjust as needed
+  }, 0);
+  return {
+    weight: totalWeight,
+    length: 20, // Default dimensions in cm
+    width: 20,  // Adjust these values based on your products
+    height: totalHeight
+  };
+};
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -245,6 +265,24 @@ const {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
+
+const shippingParams = computed<ShippingFeeRequest>(() => ({
+  fromDistrictId: 3440,
+  fromWardCode: "13007",
+  toDistrictId:  0,
+  toWardCode:"",   
+  serviceId: 53320,
+  ...calculateProductDimensions()
+}));
+
+const handleAddressUpdate = (newAddress) => {
+  selectedAddress.value = newAddress;
+ // console.log("Địa chỉ mới:", newAddress);
+  shippingParams.value.toDistrictId = newAddress.district,
+  shippingParams.value.toWardCode = newAddress.ward
+};
+
+//console.log(shippingParams);
 
 const dataSourcePro: DataType[] | any = computed(() => {
   return (
@@ -305,6 +343,41 @@ const paymentInfo = ref({
   totalProductPrice: 0,
 });
 
+//console.log(shippingParams);
+
+
+const { data: shipping, refetch: refetchShipping} = useGetShippingFee(
+  shippingParams,{
+    refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+  enabled: paymentInfo.value.shippingOption === 'true' && 
+             !shippingParams.value.toDistrictId &&
+             !shippingParams.value.toWardCode 
+  });
+
+  watch(() => selectedAddress.value, (newValues) => {
+  console.log("Dữ liệu thay đổi:", shipping?.value?.data?.service_fee);
+    refetchShipping();
+}, { deep: true });
+
+  watch(
+  () => props.selectedCustomerAddress,
+  (newAddress) => {
+    if (newAddress?.districtId && newAddress?.wardCode) {
+      refetchShipping();
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  () => paymentInfo.value.shippingOption,
+  (newOption) => {
+    if (newOption === 'true' && props.selectedCustomerAddress?.districtId && props.selectedCustomerAddress?.wardCode) {
+      refetchShipping();
+    }
+  }
+);
 watch(() => props.selectedCustomerInfo, (newData) => {
   if (props.selectedCustomerInfo) {
     paramsVoucher.value.idKhachHang = newData.key
@@ -348,7 +421,7 @@ watch(() => dataListVoucher.value, (newData) => {
 });
 
 watch(() => dataNextPriceVouchers.value, (newData) => {
-  console.log(newData);
+ // console.log(newData);
 
 });
 
@@ -484,6 +557,12 @@ watch(totalAmount, (newTotal) => {
   }
 });
 
+// watch(() => shippingFee.value?.total, (newFee) => {
+//   if (newFee && paymentInfo.value.shippingOption === 'true') {
+//     paymentInfo.value.shippingFee = newFee;
+//     updateTotal();
+//   }
+// });
 // Theo dõi thay đổi và cập nhật tổng tiền
 watch(
   [() => paymentInfo.value.shippingFee, () => paymentInfo.value.discount],

@@ -6,26 +6,16 @@
       v-for="field in formFields"
       class="col-span-1 md:col-span-1 lg:col-span-1"
     >
-      <a-form-item
-        :label="field.label"
-        :name="field.name"
-        v-bind="validateInfos[field.name]"
-        class="m-0"
+      <a-form-item :label="field.label" :name="field.name" v-bind="validateInfos[field.name]" class="m-0"
       >
         <a-input
-          v-if="field.component === 'a-input'"
-          v-model:value="modelRef[field.name]"
-          :placeholder="field.placeholder"
+          v-if="field.component === 'a-input'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder"
           :type="field.type"
         ></a-input>
 
         <a-select
-          v-else-if="field.component === 'a-select'"
-          v-model:value="modelRef[field.name]"
-          :placeholder="field.placeholder"
-          :options="field.options"
-          show-search
-          :filter-option="filterOption"
+          v-else-if="field.component === 'a-select'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder" :options="field.options"
+          show-search :filter-option="filterOption"
           @change="handleChangeOptions(field.name, $event)"
         >
         </a-select>
@@ -72,8 +62,13 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["handleResetActiveKey"]);
+const emit = defineEmits(["update:selectedCustomerAddress"]);
 
+const emitUpdatedAddress = () => {
+  if(modelRef.district && modelRef.ward){
+  emit("update:selectedCustomerAddress", { ...modelRef });
+}
+};
 const isRefetch = ref<boolean>(false);
 
 const province = ref<string>("");
@@ -141,7 +136,7 @@ watch(wards, (newWards) => {
       value: address.id,
     })) || [];
   const defaultOption = { label: "-- Chọn phường/xã --", value: "" };
-
+5
   wardsOptions.value = [defaultOption, ...options];
 });
 
@@ -304,70 +299,14 @@ const handleChangeOptions = (key: string, value: any) => {
         },
       });
       break;
+
+      case "ward":
+      modelRef.ward = value;
+      break;
     default:
       return;
   }
-};
-
-const handleChangeDefault = (id: string) => {
-  Modal.confirm({
-    content: "Bạn chắc chắn muốn đặt địa chỉ này làm địa chỉ mặc định?",
-    icon: createVNode(ExclamationCircleOutlined),
-    centered: true,
-    async onOk() {
-      try {
-        await validate();
-        changeClientAddressDefault(id, {
-          onSuccess: (res: any) => {
-            notification.success({
-              message: "Thông báo",
-              description: res.message,
-              duration: 4,
-            });
-            emit("handleResetActiveKey");
-          },
-          onError: (error: any) => {
-            notification.error({
-              message: "Thông báo",
-              description: error?.response?.data?.message,
-              duration: 4,
-            });
-          },
-        });
-      } catch (error: any) {
-        console.error("🚀 ~ handleUpdate ~ error:", error);
-        if (error?.response) {
-          notification.error({
-            message: "Thông báo",
-            description: error?.response?.data?.message,
-            duration: 4,
-          });
-        } else if (error?.errorFields) {
-          notification.warning({
-            message: "Thông báo",
-            description: "Vui lòng nhập đúng đủ các trường dữ liệu",
-            duration: 4,
-          });
-        }
-      }
-    },
-    cancelText: "Huỷ",
-    onCancel() {
-      Modal.destroyAll();
-    },
-  });
-};
-
-const handleReset = () => {
-  modelRef.name = props?.selectedCustomerAddress?.name;
-  modelRef.phoneNumber = props?.selectedCustomerAddress?.phoneNumber;
-  modelRef.line = props?.selectedCustomerAddress?.line;
-  modelRef.province = props?.selectedCustomerAddress?.province.toString();
-  modelRef.district = props?.selectedCustomerAddress?.district.toString();
-  modelRef.ward = props?.selectedCustomerAddress?.ward;
-  refetchProvinces();
-  refetchDistricts();
-  refetchWards();
+  emitUpdatedAddress();
 };
 
 watch(
@@ -389,6 +328,8 @@ watch(
         clientId: newDataSource.clientId || "",
       });
     }
+   // console.log(newDataSource);
+    
   },
   { immediate: true, deep: true }
 );

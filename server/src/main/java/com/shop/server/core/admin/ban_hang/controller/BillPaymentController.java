@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(MappingConstant.API_ADMIN_PAYMENT)
+@CrossOrigin("*")
 public class BillPaymentController {
 
     private final AdminPaymentServices adminPaymentServices;
