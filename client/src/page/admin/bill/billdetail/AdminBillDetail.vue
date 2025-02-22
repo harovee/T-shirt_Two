@@ -205,61 +205,6 @@ const handleChangeTotalPrice = (record) => {
     );
   }
 
-  // if (item) {
-  //   // Cập nhật số lượng và thành tiền trước
-  //   item.soLuong = record.soLuong;
-  //   item.thanhTien = record.thanhTien;
-  //   item.dieuKienGiam = record.dieuKienGiam;
-  //   item.giamToiDa = record.giamToiDa;
-  //   item.anhSanPhamChiTiet = record.anhSanPhamChiTiet;
-  //   item.tienGiamHD = record.tienGiamHD;
-  //   item.tienShip = record.tienShip;
-  //   console.log(record.tienShip);
-  // }
-
-  // Tính tổng tiền sau khi cập nhật giá trị
-  // const totalPrice = detailDataSources.value.reduce(
-  //   (sum, item) => sum + item.thanhTien,
-  //   0
-  // );
-
-  // if (totalPrice === 0) {
-  //   detailDataSources.value.forEach((ds) => {
-  //     ds.tienGiamHD = 0;
-  //     ds.tienShip = 0; // Đặt phí vận chuyển bằng 0
-  //   });
-  // } else {
-  //   if (item) {
-  //     detailDataSources.value.forEach((ds) => {
-  //       ds.tienShip = item.tienShip;
-  //       ds.tienGiamHD = item.tienGiamHD;
-  //     });
-  //     if (item?.loaiGiam) {
-  //       detailDataSources.value.forEach((ds) => {
-  //         ds.tienGiamHD = record.giaTriGiam;
-  //       });
-  //     } else if (
-  //       totalPrice >= Number(item?.dieuKienGiam) &&
-  //       item?.loaiGiam == false
-  //     ) {
-  //       // item.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
-  //       detailDataSources.value.forEach((ds) => {
-  //         ds.tienGiamHD = (record.giaTriGiam / 100) * totalPrice;
-  //       });
-  //     }
-  //   }
-  // }
-
-  // // Cập nhật tổng tiền hóa đơn
-  // detailDataSources.value.forEach((ds) => {
-  //   // ds.tienGiamHD = item?.tienGiamHD ? item?.tienGiamHD : 0;
-  //   if (ds.tienGiamHD >= Number(item?.giamToiDa) && item?.loaiGiam == false) {
-  //     ds.tienGiamHD = Number(item?.giamToiDa);
-  //   }
-  //   ds.tongTienHD = totalPrice - ds.tienGiamHD + ds.tienShip;
-  // });
-
-  // console.log("Updated totalPrice:", totalPrice);
 };
 
 const columnsBill: ColumnType[] = [

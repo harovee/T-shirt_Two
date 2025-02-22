@@ -15,9 +15,13 @@ public interface AdminBillDetailResponse extends BaseResponse {
 
     String getTenSanPhamChiTiet();
 
+    String getTenSanPham();
+
     String getAnhSanPhamChiTiet();
 
     String getTenKichCo();
+
+    String getTenMau();
 
     Short getSoLuong();
 

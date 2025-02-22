@@ -23,6 +23,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             ct.id_hoa_don AS idHoaDon,
             hd.ma_hoa_don AS maHoaDon,
             ct.id_san_pham_chi_tiet AS idSanPhamChiTiet,
+            sp.ten AS tenSanPham,
             spct.ten AS tenSanPhamChiTiet,
             anh.url AS anhSanPhamChiTiet,
             ct.so_luong AS soLuong,
@@ -32,6 +33,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             hd.tien_giam AS tienGiamHD,
             hd.tien_ship AS tienShip,
             kc.ten AS tenKichCo,
+            ms.ten AS tenMau,
             pgg.loai_giam AS loaiGiam,
             pgg.giam_toi_da AS giamToiDa,
             pgg.gia_tri_giam AS giaTriGiam,
@@ -43,6 +45,8 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
         JOIN kich_co kc ON spct.id_kich_co = kc.id
         LEFT JOIN phieu_giam_gia pgg ON pgg.id = hd.id_phieu_giam_gia
         LEFT JOIN anh ON spct.id = anh.id_san_pham_chi_tiet
+        LEFT JOIN san_pham sp ON spct.id_san_pham = sp.id
+        LEFT JOIN mau_sac ms ON spct.id_mau_sac = ms.id
         WHERE
             (:#{#req.keyword} IS NULL OR
              spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))

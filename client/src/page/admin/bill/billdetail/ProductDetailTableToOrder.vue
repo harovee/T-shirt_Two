@@ -1,7 +1,7 @@
 <template>
     <!-- Bảng danh sách sản phẩm -->
     <table-example
-       wrapperClassName="min-h-[370px]"
+       wrapperClassName="min-h-[35rem]"
       :columns="columns"
       :data-source="props.dataSource?.data"
       :loading="props.loading"
@@ -83,6 +83,22 @@ const columns: ColumnType[] = [
     align: "center",
   },
   {
+    title: "Màu sắc",
+    dataIndex: "mauSac",
+    key: "mauSac",
+    ellipsis: true,
+    width: 100,
+    align: "center",
+  },
+  {
+    title: "Kích cỡ",
+    dataIndex: "kichCo",
+    key: "kichCo",
+    ellipsis: true,
+    width: 100,
+    align: "center",
+  },
+  {
     title: "Số lượng",
     dataIndex: "soLuong",
     key: "soLuong",
@@ -142,22 +158,6 @@ const columns: ColumnType[] = [
     title: "Tính năng",
     dataIndex: "tinhNang",
     key: "tinhNang",
-    ellipsis: true,
-    width: 100,
-    align: "center",
-  },
-  {
-    title: "Màu sắc",
-    dataIndex: "mauSac",
-    key: "mauSac",
-    ellipsis: true,
-    width: 100,
-    align: "center",
-  },
-  {
-    title: "Kích cỡ",
-    dataIndex: "kichCo",
-    key: "kichCo",
     ellipsis: true,
     width: 100,
     align: "center",
