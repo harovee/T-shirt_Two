@@ -151,7 +151,7 @@
 
         <div v-else-if="column.key === 'chiTietSanPham'">
           <p>
-            {{ record.tenSanPhamChiTiet }} -
+            {{ record.tenSanPham }} - {{ record.tenMau }} - 
             <a-tag> {{ record.tenKichCo }}</a-tag>
           </p>
           <p style="color: red">
@@ -206,7 +206,7 @@ import AdminGetDeliveryPayModal from "./AdminGetDeliveryPayModal.vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
-import { Image } from "ant-design-vue";
+import { Image, Modal } from "ant-design-vue";
 
 const props = defineProps({
   wrapperClassName: {
@@ -301,8 +301,10 @@ const dataSources: BillDetailResponse[] | any = computed(() => {
       id: e.id || null,
       maHoaDon: e.maHoaDon || null,
       tenSanPhamChiTiet: e.tenSanPhamChiTiet || null,
+      tenSanPham: e.tenSanPham || null,
       anhSanPhamChiTiet: e.anhSanPhamChiTiet || null,
       tenKichCo: e.tenKichCo || null,
+      tenMau: e.tenMau || null,
       soLuong: e.soLuong || 0,
       gia: e.gia || null,
       thanhTien: e.thanhTien || null,
@@ -331,9 +333,35 @@ const totalPrice = computed(() => props.billData?.tongTien);
 // console.log(totalPrice.value);
 
 const handleChangeQuantity = async (record: any) => {
-  record.thanhTien = record.soLuong * record.gia;
-  emit("update-quantity", record);
+  if (!record.previousQuantity && record.soLuong !== 0) {
+    record.previousQuantity = record.soLuong; // Lưu giá trị cũ nếu chưa có
+  }
+
+  if (record.soLuong === 0) {
+    Modal.confirm({
+      title: "Xác nhận",
+      content: "Bạn có chắc chắn muốn xóa sản phẩm này khỏi đơn hàng?",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk() {
+        record.thanhTien = 0;
+        emit("update-quantity", record);
+      },
+      onCancel() {
+        record.soLuong = record.previousQuantity || 1; // Trả về giá trị cũ
+        setTimeout(() => {
+          emit("update-quantity", record);
+        }, 0);
+      },
+    });
+  } else {
+    record.thanhTien = record.soLuong * record.gia;
+    emit("update-quantity", record);
+    record.previousQuantity = record.soLuong; // Cập nhật lại giá trị trước đó
+  }
 };
+
 </script>
 
 <style scoped>
