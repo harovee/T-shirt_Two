@@ -108,7 +108,8 @@ export const queryKey = {
             voucherPayDetail: "voucherPayDetailKey",
             customerAddress: "adCustomerAddress",
             nextPriceVoucher: "adNextPriceVoucher",
-            shippingFee: "shippingFeeKey"
+            shippingFee: "shippingFeeKey",
+            paymentMethodDetail: "adPaymentMethodDetail"
         },
         voucher: {
             voucherList: "adVoucherListKey",

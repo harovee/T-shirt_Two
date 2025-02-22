@@ -1,9 +1,6 @@
 package com.shop.server.core.admin.ban_hang.controller;
 
-import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
+import com.shop.server.core.admin.ban_hang.model.request.*;
 import com.shop.server.core.admin.ban_hang.service.AdminPaymentServices;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -53,9 +50,14 @@ public class BillPaymentController {
 //        return Helper.createResponseEntity(null);
 //    }
 
-    @GetMapping("/payment-method")
-    public ResponseEntity<?> getPaymentMethod(@RequestParam("idHoaDon") String idHoaDon) {
-        return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan(idHoaDon));
+    @GetMapping("/payment-method-detail")
+    public ResponseEntity<?> getPaymentMethod(@Valid final AdminPaymentMethodDetailRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan(request));
+    }
+
+    @PostMapping("/payment-method-detail")
+    public ResponseEntity<?> addPaymentMethodDetail(@RequestBody AdminPaymentMethodDetailRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.addPaymentMethodDetail(request));
     }
 
     @GetMapping("/customer-address")
@@ -63,5 +65,23 @@ public class BillPaymentController {
         return Helper.createResponseEntity(adminPaymentServices.getCustomerAddressByIdCustomer(request));
     }
 
+    @GetMapping("/customer/{phoneNumber}")
+    public ResponseEntity<?> getCustomerByPhoneNumber(@PathVariable ("phoneNumber") String phoneNumber) {
+        return Helper.createResponseEntity(adminPaymentServices.getCustomerByPhoneNumber(phoneNumber));
+    }
 
+    @GetMapping("/ward/{code}")
+    public ResponseEntity<?> getWardByCode(@PathVariable ("code") String code) {
+        return Helper.createResponseEntity(adminPaymentServices.getWardByCode(code));
+    }
+
+    @GetMapping("/district/{id}")
+    public ResponseEntity<?> getDistrictByCode(@PathVariable ("id") String id) {
+        return Helper.createResponseEntity(adminPaymentServices.getDistrictById(id));
+    }
+
+    @GetMapping("/province/{id}")
+    public ResponseEntity<?> getProvinceByCode(@PathVariable ("id") String id) {
+        return Helper.createResponseEntity(adminPaymentServices.getProvinceById(id));
+    }
 }

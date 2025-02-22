@@ -1,16 +1,16 @@
 package com.shop.server.core.admin.ban_hang.service.Impl;
 
-import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
-import com.shop.server.core.admin.ban_hang.repository.AdminKhachHangPayRepository;
-import com.shop.server.core.admin.ban_hang.repository.AdminPhieuGiamGiaRepository;
-import com.shop.server.core.admin.ban_hang.repository.AdminPhuongThucThanhToanRepository;
+import com.shop.server.core.admin.ban_hang.model.request.*;
+import com.shop.server.core.admin.ban_hang.repository.*;
 import com.shop.server.core.admin.ban_hang.service.AdminPaymentServices;
-import com.shop.server.core.admin.phieugiamgia.model.request.PhieuGiamGiaSearchRequest;
+import com.shop.server.core.admin.client.repositories.AdminClientDistrictRepository;
+import com.shop.server.core.admin.client.repositories.AdminClientProvinceRepository;
+import com.shop.server.core.admin.client.repositories.AdminClientWardRepository;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
+import com.shop.server.entities.main.ChiTietPhuongThucThanhToan;
+import com.shop.server.entities.main.HoaDon;
+import com.shop.server.entities.main.PhuongThucThanhToan;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +27,17 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
 
     private final AdminPhieuGiamGiaRepository adminPhieuGiamGiaRepository;
 
-    private final AdminPhuongThucThanhToanRepository adminPhuongThucThanhToanRepository;
+    private final AdminChiTietPhuongThucThanhToanRepository adminChiTietPhuongThucThanhToanRepository;
+
+    private final AdPhuongThucThanhToanRepository adPhuongThucThanhToanRepository;
+
+    private final AdminHoaDonRepository adminHoaDonRepository;
+
+    private final AdminClientProvinceRepository adminClientProvinceRepository;
+
+    private final AdminClientWardRepository adminClientWardRepository;
+
+    private final AdminClientDistrictRepository adminClientDistrictRepository;
 
     @Override
     public ResponseObject<?> getAllKhachHang(AdminKhachHangSearchRequest request) {
@@ -75,8 +85,8 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     }
 
     @Override
-    public ResponseObject<?> getPhuongThucThanhToan(String idHoaDon) {
-        return ResponseObject.successForward(adminPhuongThucThanhToanRepository.getAllPhuongThucThanhToan(idHoaDon),
+    public ResponseObject<?> getPhuongThucThanhToan(AdminPaymentMethodDetailRequest request) {
+        return ResponseObject.successForward(adminChiTietPhuongThucThanhToanRepository.getAllPhuongThucThanhToan(request),
                 "Lấy phương thức thanh toán thành công"
         );
     }
@@ -95,5 +105,59 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     @Override
     public ResponseObject<?> getNextTotalPriceToVoucher(AdminHoaDonKhachHangRequest request) {
         return new ResponseObject<>(adminPhieuGiamGiaRepository.findNextEligibleTongTien(request).orElse(BigDecimal.ZERO), HttpStatus.OK, "Lấy số tiền để áp dụng voucher tiếp theo thành công");
+    }
+
+    @Override
+    public ResponseObject<?> addPaymentMethodDetail(AdminPaymentMethodDetailRequest request) {
+        HoaDon hoaDon = request.getIdHoaDon() != null ? adminHoaDonRepository.findById(request.getIdHoaDon()).orElse(null) : null;
+        if (request.getIdPhuongThucThanhToan().equals("cahai")) {
+            PhuongThucThanhToan pttt1 = adPhuongThucThanhToanRepository.findById("tienmat").orElse(null);
+            PhuongThucThanhToan pttt2 = adPhuongThucThanhToanRepository.findById("chuyenkhoan").orElse(null);
+            ChiTietPhuongThucThanhToan ctpttt1 = new ChiTietPhuongThucThanhToan();
+            ctpttt1.setHoaDon(hoaDon);
+            ctpttt1.setPhuongThucThanhToan(pttt1);
+            ctpttt1.setTienKhachDua(request.getTienKhachDua());
+            ctpttt1.setDeleted(false);
+            ChiTietPhuongThucThanhToan ctpttt2 = new ChiTietPhuongThucThanhToan();
+            ctpttt2.setHoaDon(hoaDon);
+            ctpttt2.setPhuongThucThanhToan(pttt2);
+            ctpttt2.setTienKhachDua(request.getTienChuyenKhoan());
+            ctpttt2.setMaGiaoDich(request.getMaGiaoDich());
+            ctpttt2.setDeleted(false);
+            ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt1);
+            ChiTietPhuongThucThanhToan ct2 = adminChiTietPhuongThucThanhToanRepository.save(ctpttt2);
+            return new ResponseObject<>("ok", HttpStatus.CREATED, "Thêm chi tiết pttt thành công");
+        }
+
+        PhuongThucThanhToan pttt = request.getIdPhuongThucThanhToan() != null ? adPhuongThucThanhToanRepository.findById(request.getIdPhuongThucThanhToan()).orElse(null) : null;
+        ChiTietPhuongThucThanhToan ctpttt = new ChiTietPhuongThucThanhToan();
+        ctpttt.setHoaDon(hoaDon);
+        ctpttt.setPhuongThucThanhToan(pttt);
+        ctpttt.setTienKhachDua(request.getTienKhachDua());
+        ctpttt.setSoTienDu(request.getSoTienDu());
+        ctpttt.setMaGiaoDich(request.getMaGiaoDich());
+        ctpttt.setDeleted(false);
+        ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt);
+        return new ResponseObject<>(ct, HttpStatus.CREATED, "Thêm chi tiết pttt thành công");
+    }
+
+    @Override
+    public ResponseObject<?> getCustomerByPhoneNumber(String phoneNumber) {
+        return new ResponseObject<>(adminKhachHangRepository.getKhachHangByPhoneNumber(phoneNumber), HttpStatus.OK, "Lấy khách hàng theo sdt thành công");
+    }
+
+    @Override
+    public ResponseObject<?> getWardByCode(String code) {
+        return new ResponseObject<>(adminClientWardRepository.getWardNameByCode(code), HttpStatus.OK, "Lấy xã theo code thành công");
+    }
+
+    @Override
+    public ResponseObject<?> getDistrictById(String id) {
+        return new ResponseObject<>(adminClientDistrictRepository.getDistrictsById(id), HttpStatus.OK, "Lấy huyện theo code thành công");
+    }
+
+    @Override
+    public ResponseObject<?> getProvinceById(String id) {
+        return new ResponseObject<>(adminClientProvinceRepository.getProvinceById(id), HttpStatus.OK, "Lấy tỉnh theo code thành công");
     }
 }

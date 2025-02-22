@@ -31,4 +31,6 @@ public interface AdminBillService {
     ResponseObject<?> removeBillWait(String id);
 
     ResponseObject<?> updateBillWait(String id, AdminUpdateBillWaitRequest request);
+
+
 }

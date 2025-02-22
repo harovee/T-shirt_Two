@@ -150,6 +150,10 @@ public interface AdminBillRepository extends HoaDonRepository {
     void deleteByIdHoaDon(@Param("idHoaDon") String idHoaDon);
 
     @Modifying
+    @Query(value = "DELETE FROM chi_tiet_phuong_thuc_thanh_toan ctpttt WHERE ctpttt.id_hoa_don = :idHoaDon", nativeQuery = true)
+    void deletePMDByIdHoaDon(@Param("idHoaDon") String idHoaDon);
+
+    @Modifying
     @Query(value = "DELETE FROM lich_su_hoa_don lshd WHERE lshd.id_hoa_don = :idHoaDon", nativeQuery = true)
     void deleteLichSuByIdHoaDon(@Param("idHoaDon") String idHoaDon);
 }
