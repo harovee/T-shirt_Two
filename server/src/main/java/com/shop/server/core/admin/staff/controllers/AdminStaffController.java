@@ -1,6 +1,7 @@
 package com.shop.server.core.admin.staff.controllers;
 
 import com.shop.server.core.admin.staff.models.requests.AdminFindStaffRequest;
+import com.shop.server.core.admin.staff.models.requests.AdminStaffQRRequest;
 import com.shop.server.core.admin.staff.models.requests.AdminStaffRequest;
 import com.shop.server.core.admin.staff.models.responses.AdminStaffExcelResponse;
 import com.shop.server.core.admin.staff.services.AdminStaffExcelService;
@@ -48,6 +49,11 @@ public class AdminStaffController {
     @PostMapping()
     public ResponseEntity<?> createStaff(@Valid @RequestBody final AdminStaffRequest request) {
         return Helper.createResponseEntity(adminStaffService.createStaff(request));
+    }
+
+    @PostMapping("/qrcode")
+    public ResponseEntity<?> createStaffQR(@Valid @RequestBody final AdminStaffQRRequest request) {
+        return Helper.createResponseEntity(adminStaffService.createStaffByQRCode(request));
     }
 
     @GetMapping("/{id}")

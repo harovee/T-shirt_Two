@@ -40,8 +40,6 @@ public class RefreshTokenService {
 
     public RefreshToken createRefreshToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-
-        Optional<NhanVien> user = userRepository.findByEmail(userPrincipal.getEmail());
         Optional<RefreshToken> optionalRefreshToken = refreshRepository.findByUserId(userPrincipal.getId());
 
         if (optionalRefreshToken.isPresent()) {

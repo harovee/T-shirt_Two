@@ -42,7 +42,7 @@ public class NhanVien extends PrimaryEntity implements Serializable {
     @Column(name = "so_dien_thoai", unique = true)
     private String phoneNumber;
 
-    @Column(nullable = false, length = EntityProperties.LENGTH_CODE)
+    @Column(length = EntityProperties.LENGTH_CODE)
     private String email;
 
     @Column(name = "password", length = EntityProperties.LENGTH_PASSWORD)

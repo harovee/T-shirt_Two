@@ -1,10 +1,10 @@
 package com.shop.server.core.admin.staff.services.impl;
 
 import com.shop.server.core.admin.staff.models.requests.AdminFindStaffRequest;
+import com.shop.server.core.admin.staff.models.requests.AdminStaffQRRequest;
 import com.shop.server.core.admin.staff.models.requests.AdminStaffRequest;
 import com.shop.server.core.admin.staff.models.responses.AdminStaffExcelResponse;
 import com.shop.server.core.admin.staff.repositories.AdminStaffRepository;
-import com.shop.server.core.admin.staff.services.AdminStaffExcelService;
 import com.shop.server.core.admin.staff.services.AdminStaffMailService;
 import com.shop.server.core.admin.staff.services.AdminStaffService;
 import com.shop.server.core.common.base.PageableObject;
@@ -33,14 +33,11 @@ public class AdminStaffServiceImpl implements AdminStaffService {
 
     private final AdminStaffMailService emailService;
 
-    private final AdminStaffExcelService staffExcelService;
-
     public AdminStaffServiceImpl(
             AdminStaffRepository adminStaffRepository,
-            AdminStaffMailService emailService, AdminStaffExcelService staffExcelService) {
+            AdminStaffMailService emailService) {
         this.adminStaffRepository = adminStaffRepository;
         this.emailService = emailService;
-        this.staffExcelService = staffExcelService;
     }
 
     @Override
@@ -119,6 +116,41 @@ public class AdminStaffServiceImpl implements AdminStaffService {
     }
 
     @Override
+    public ResponseObject<?> createStaffByQRCode(AdminStaffQRRequest request) {
+        Optional<NhanVien> staffOptional = adminStaffRepository.findByIdentity(request.getIdentity());
+        if (staffOptional.isEmpty()) {
+            NhanVien staff = new NhanVien();
+            String pass = AESPasswordCryptoUtil.genPassword(8L);
+            staff.setPassword(pass);
+            staff.setFullName(request.getName());
+            staff.setSubCode(Helper.getSubCodeFromName(request.getName()));
+            Long count = adminStaffRepository.countNhanVienByRole(Role.USER) + 1;
+            staff.setCode(String.valueOf(count));
+            staff.setIdentity(request.getIdentity());
+            staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
+            staff.setGender(request.getGender().equalsIgnoreCase("Nam"));
+            staff.setRole(Role.USER);
+            staff.setStatus(Status.INACTIVE);
+            staff.setDeleted(false);
+            staff.setProfilePicture(DefaultImageUtil.IMAGE);
+
+            NhanVien newStaff = adminStaffRepository.save(staff);
+
+            return new ResponseObject<>(
+                    newStaff.getId(),
+                    HttpStatus.CREATED,
+                    Message.Success.CREATE_SUCCESS
+            );
+        }
+
+        return new ResponseObject<>(
+                null,
+                HttpStatus.OK,
+                Message.Response.DUPLICATE + ", Mã định danh cá nhân đã tồn tại trong hệ thống: " + request.getIdentity()
+        );
+    }
+
+    @Override
     public ResponseObject<?> updateStaff(String id, AdminStaffRequest request) {
         Optional<NhanVien> staffOptional = adminStaffRepository.findById(id);
         if (staffOptional.isEmpty()) {
@@ -179,6 +211,12 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             );
         }
         NhanVien nhanVien = nhanVienOptional.get();
+        if ((nhanVien.getPhoneNumber() == null || nhanVien.getEmail() == null) && nhanVien.getDeleted().equals(false)) {
+            return ResponseObject.errorForward(
+                    HttpStatus.BAD_REQUEST,
+                    Message.Response.INVALID_REQUEST + ", nhân viên chuyển trạng thái chưa có thông tin email hoặc phone"
+            );
+        }
         nhanVien.setDeleted(!nhanVien.getDeleted());
         adminStaffRepository.save(nhanVien);
         return ResponseObject.successForward(

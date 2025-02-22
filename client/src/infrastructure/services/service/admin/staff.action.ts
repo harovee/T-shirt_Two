@@ -1,12 +1,14 @@
 import {
     changeStatusStaff,
     createStaff,
+    createStaffByQRCode,
     exportStaffs,
     exportTemplateStaffs,
     FindStaffRequest,
     getStaffById,
     getStaffs,
     importStaffs,
+    StaffQRRequest,
     StaffRequest,
     updateAvatarStaff,
     updateStaff
@@ -41,6 +43,20 @@ export const useCreateStaff = () => {
     });
 };
 
+export const useCreateStaffByQRCode = () => {
+    const queryStaff = useQueryClient();
+    return useMutation({
+        mutationFn: (data: StaffQRRequest) => createStaffByQRCode(data),
+        onSuccess: () => {
+            queryStaff.invalidateQueries({
+                queryKey: [queryKey.admin.staff.staffList],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.staff.staffList, "🚀 ~ staffCreate ~ error:", error);
+        },
+    });
+};
 
 export const useGetStaffById = (
     staffId: string, options?: any
