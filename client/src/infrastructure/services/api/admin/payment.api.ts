@@ -2,6 +2,7 @@ import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} fro
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
 import {API_ADMIN_PAYMENT} from "@/infrastructure/constants/url.ts";
+import {API_ADMIN_PAYMENT, GHN_API_URL, GHN_TOKEN} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
@@ -10,7 +11,7 @@ export interface PropertyVoucherParams {
     idKhachHang: string | null;
 
     tongTien: number | null;
-    
+
     [key: string]: any;
 }
 
@@ -18,9 +19,41 @@ export interface FindVoucherRequest extends PropertyVoucherParams, PaginationPar
 
 }
 
+export type ShippingFeeRequest = {
+    fromDistrictId: number;
+    serviceId: number | 53320;
+    toDistrictId: number;
+    toWardCode: number;
+    weight: number;
+    length: number;
+    width: number;
+    height: number;
+
+}
+
 export interface FindCustomerAddressRequest extends PaginationParams {
     keyword: string | null;
     idKhachHang: string | null;
+}
+
+export interface nextVoucherRequest {
+    idKhachHang: string | null;
+
+    tongTien: number | null;
+}
+
+export interface paymentMethodDetailRequest {
+    idHoaDon: string | null;
+
+    idPhuongThucThanhToan: string | null;
+
+    tienKhachDua: number | null;
+
+    soTienDu: number | null;
+
+    maGiaoDich: string | null;
+
+    tienChuyenKhoan: number | null
 }
 
 
@@ -47,6 +80,7 @@ export type CustomerAddressResponse = ResponseList & {
 }
 
 export type VoucherResponse = ResponseList & {
+    ma: string;
     ten : string;
     soLuong: number;
     dieuKienGiam: string;
@@ -59,6 +93,50 @@ export type VoucherResponse = ResponseList & {
     trangThai : string;
 };
 
+export type CustomerResponse = ResponseList & {
+    profilePicture: string;
+    name: string;
+    phoneNumber: string;
+    email: string;
+    tinh: string;
+    huyen: string;
+    xa: string;
+    soNha: string;
+}
+
+export type PaymentMethodDetailResponse = ResponseList & {
+    tenPhuongThuc: string;
+    maGiaoDich : string;
+    soTien: number;
+};
+
+export interface ShippingFeeResponse {
+      total: number; // Tổng phí vận chuyển (VNĐ)
+}
+
+export const getListPaymentMethodDetail = async (params: Ref<paymentMethodDetailRequest>) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/payment-method-detail`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<Array<PaymentMethodDetailResponse>>
+    >;
+    return res.data;
+};
+
+export const createPaymentMethodDetail = async (data: paymentMethodDetailRequest) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/payment-method-detail`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+
+    return res.data;
+};
+
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
         url: `${API_ADMIN_PAYMENT}/voucher`,
@@ -68,6 +146,17 @@ export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
         DefaultResponse<PaginationResponse<Array<VoucherResponse>>>
     >;
 
+    return res.data;
+};
+
+export const getPriceNextVoucher = async (params: Ref<nextVoucherRequest>) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/voucher/next-voucher`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<Object>
+    >;
     return res.data;
 };
 
@@ -92,16 +181,42 @@ export const getVoucherById = async (VoucherId: Ref<string | null>) => {
     >;
 };
 
-export type CustomerResponse = ResponseList & {
-    profilePicture: string;
-    name: string;
-    phoneNumber: string;
-    email: string;
-    tinh: string;
-    huyen: string;
-    xa: string;
-    soNha: string;
-}
+export const getWardByCode = async (code: string) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/ward/${code}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<String>
+    >;
+};
+
+export const getDistrictById = async (id: string) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/district/${id}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<String>
+    >;
+};
+
+
+export const getProvinceById = async (id: string) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/province/${id}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<String>
+    >;
+};
+
+export const getCustomerByPhoneNumber = async (phoneNumber: Ref<string | null>) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/customer/${phoneNumber.value}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<CustomerResponse>
+    >;
+};
 
 export interface FindCustomerRequest extends PaginationParams{
     keyword : string | null;
@@ -128,6 +243,34 @@ export const getCustomerById = async (id: Ref<string | null>) => {
     >;
 
 };
+
+
+export const calculateShippingFee = async (params: Ref<ShippingFeeRequest>) => {
+    const res = (await request({
+        url: `${GHN_API_URL}/v2/shipping/fee`,
+        method: "GET",
+        params: {
+            from_district_id: params.value.fromDistrictId,
+            service_id: params.value.serviceId,
+            to_district_id: params.value.toDistrictId,
+            to_ward_code: params.value.toWardCode,
+            weight: params.value.weight,
+            length: params.value.length,
+            width: params.value.width,
+            height: params.value.height,
+            insurance_value: 0,
+            coupon: null
+          },
+        headers: {
+            Token: GHN_TOKEN,
+            ShopId: "S22560282" // Thêm Token xác thực GHN
+        },
+    })) as AxiosResponse<DefaultResponse<ShippingFeeResponse>>;
+
+    return res.data;
+};
+
+
 
 
 

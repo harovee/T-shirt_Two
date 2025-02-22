@@ -1,11 +1,10 @@
 package com.shop.server.core.admin.ban_hang.service;
 
-import com.shop.server.core.admin.ban_hang.model.request.AdminCustomerAddressSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminKhachHangSearchRequest;
-import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
+import com.shop.server.core.admin.ban_hang.model.request.*;
 import com.shop.server.core.common.base.ResponseObject;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 public interface AdminPaymentServices {
@@ -19,9 +18,21 @@ public interface AdminPaymentServices {
 
     ResponseObject<?> getVoucherKhachHangById(AdminHoaDonKhachHangRequest request);
 
-    ResponseObject<?> getPhuongThucThanhToan();
+    ResponseObject<?> getPhuongThucThanhToan(AdminPaymentMethodDetailRequest request);
 
     ResponseObject<?> savePayBill(AdminHoaDonKhachHangRequest request);
 
     ResponseObject<?> getCustomerAddressByIdCustomer(AdminCustomerAddressSearchRequest request);
+
+    ResponseObject<?> getNextTotalPriceToVoucher (AdminHoaDonKhachHangRequest request);
+
+    ResponseObject<?> addPaymentMethodDetail (AdminPaymentMethodDetailRequest request);
+
+    ResponseObject<?> getCustomerByPhoneNumber (String phoneNumber);
+
+    ResponseObject<?> getWardByCode(String code);
+
+    ResponseObject<?> getDistrictById(String id);
+
+    ResponseObject<?> getProvinceById(String id);
 }

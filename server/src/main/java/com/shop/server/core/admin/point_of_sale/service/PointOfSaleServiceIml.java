@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PointOfSaleServiceIml implements PointOfSaleService {
-  
+
     private final PointOfSaleRepository pointOfSaleRepository;
     private final POSOrderDetailRepository hoaDonChiTietRepository;
     private final HoaDonRepository hoaDonRepository;

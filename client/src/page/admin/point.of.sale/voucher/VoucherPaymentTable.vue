@@ -71,8 +71,6 @@ import {
 } from "@/utils/common.helper";
 import { defineProps, computed, defineEmits, ref, watch, onMounted } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
-// import { VoucherResponse, FindVoucherRequest } from "@/infrastructure/services/api/admin/voucher/voucher.api";
-// import { useGetListVoucher } from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import {
   VoucherResponse,
   FindVoucherRequest,
@@ -96,26 +94,16 @@ const props = defineProps({
   totalAmount: {
     type: Number,
     required: true,
+  },
+  dataVoucher: {
+    type: Object,
+    required: true,
   }
 });
 
 const emit = defineEmits(["handleClose", "selectVoucher"]);
 
 const handleClose = () => emit("handleClose");
-
-// interface DataType {
-//     id: string;
-//     ten : string;
-//     soLuong: number;
-//     dieuKienGiam: string;
-//     giamToiDa: string;
-//     loaiGiam: boolean;
-//     kieu: boolean;
-//     giaTriGiam: string;
-//     ngayBatDau: number;
-//     ngayKetThuc: number;
-//     trangThai : string;
-// }
 
 const params = ref<FindVoucherRequest>({
   page: 1,
@@ -137,8 +125,6 @@ watch(
   () => props.dataCustomer,
   (newData) => {
     params.value.idKhachHang = newData ? newData.key : null
-    // console.log(params.value.idKhachHang);
-    
   },
   { immediate: true }
 );
@@ -147,26 +133,6 @@ const { data } = useGetListVoucher(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
-
-// const dataVoucher: VoucherResponse[] | any = computed(() => {
-//   return (
-//     data?.value?.data?.data.map((e: any) => ({
-//       key: e.id || "",
-//       name: e.name || "",
-//       phoneNumber: e.phoneNumber || "",
-//       email: e.email || "",
-//       profilePicture: e.profilePicture || "",
-//     })) || []
-//   );
-// });
-
-const dataVoucher = computed(() => data?.value?.data?.data || []);
-
-// watch(dataVoucher, (newData) => {
-//   console.log(newData);
-  
-// });
-
 
 const handleSearch = (newValue: string) => {
   params.value.keyword = newValue;
@@ -178,9 +144,8 @@ watch(current1, () => {
 });
 
 const handleSelectVoucher = (voucher: VoucherResponse) => {
-  emit("selectVoucher", voucher, dataVoucher.value);
+  emit("selectVoucher", voucher);
   handleClose();
-  // console.log(voucher);
 };
 
 const columns: TableColumnType<VoucherResponse>[] = [

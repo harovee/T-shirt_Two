@@ -13,6 +13,7 @@ import com.shop.server.core.admin.phieugiamgia.services.AdPhieuGiamGiaMailServic
 import com.shop.server.core.admin.phieugiamgia.services.AdPhieuGiamGiaServices;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
+import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.KhachHangPhieuGiamGia;
 import com.shop.server.entities.main.PhieuGiamGia;
 import com.shop.server.repositories.KhachHangRepository;
@@ -25,11 +26,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -42,7 +47,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
 
     private final AdKhachHangPhieuGiamGiaRepository adKhachHangPhieuGiamGiaRepository;
 
-    private  final AdPhieuGiamGiaMailService adPhieuGiamGiaMailService;
+    private final AdPhieuGiamGiaMailService adPhieuGiamGiaMailService;
 
     @Override
     public ResponseObject<?> getAllPhieuGiamGia(PhieuGiamGiaSearchRequest request) {
@@ -81,7 +86,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             }
         } else {
             try {
-               // request.setGiamToiDa(request.getGiaTriGiam());
+                // request.setGiamToiDa(request.getGiaTriGiam());
                 Long dieuKienGiam = Long.parseLong(request.getDieuKienGiam());
                 Double giaTriGiam = request.getGiaTriGiam();
                 request.setGiamToiDa(String.valueOf(BigDecimal.valueOf(888000)));
@@ -92,9 +97,13 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
                 return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm, giá trị giảm và giảm tối đa sai kiểu dữ liệu");
             }
         }
-
         PhieuGiamGia phieuGiamGia = new PhieuGiamGia();
         BeanUtils.copyProperties(request, phieuGiamGia);
+        if (!phieuGiamGia.getKieu()) {
+            for (KhachHang khachHang : adminKhachHangRepository.findAll()) {
+                adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHang, phieuGiamGia);
+            }
+        }
         return new ResponseObject<>(adPhieuGiamGiaRepository.save(phieuGiamGia), HttpStatus.OK, "Thêm Phiếu giảm giá thành công");
     }
 
@@ -146,6 +155,11 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             phieuGiamGia.setSoLuong(request.getSoLuong());
             phieuGiamGia.setTen(request.getTen());
             phieuGiamGia.setTrangThai(request.getTrangThai());
+            if (!phieuGiamGia.getKieu()) {
+                for (KhachHang khachHang : adminKhachHangRepository.findAll()) {
+                    adPhieuGiamGiaMailService.sendMailUpdateKhachHangVoucher(khachHang, phieuGiamGia);
+                }
+            }
             return new ResponseObject<>(adPhieuGiamGiaRepository.save(phieuGiamGia), HttpStatus.OK, "Cập nhật phiếu giảm giá thành công");
         }
         return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "PhieuGiamGia không tìm thấy");
@@ -177,19 +191,22 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
     @Transactional
     public ResponseObject<?> createVoucherKhachHang(PhieuGiamGiaRequest voucherRequest, VoucherKhachHangRequest khachHangVoucher) {
         try {
+            if (khachHangVoucher.getIdKhachHangs() == null) {
+                return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Không có Khách hàng");
+            }
+            voucherRequest.setSoLuong((short) khachHangVoucher.getIdKhachHangs().size());
             ResponseObject<PhieuGiamGia> voucher = createPhieuGiamGia(voucherRequest);
             if (!voucher.isSuccess()) {
                 return voucher;
-            }
-            if (khachHangVoucher.getIdKhachHangs() == null) {
-                return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Không có Khách hàng");
             }
             khachHangVoucher.setIdPhieuGiamGia(voucher.getData().getId());
             for (String idKhachHang : khachHangVoucher.getIdKhachHangs()) {
                 KhachHangPhieuGiamGia khachHangPhieuGiamGia = new KhachHangPhieuGiamGia();
                 khachHangPhieuGiamGia.setKhachHang(adminKhachHangRepository.findById(idKhachHang).get());
                 khachHangPhieuGiamGia.setPhieuGiamGia(adPhieuGiamGiaRepository.findById(khachHangVoucher.getIdPhieuGiamGia()).get());
-                adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHangPhieuGiamGia.getKhachHang(),khachHangPhieuGiamGia.getPhieuGiamGia());
+                if (voucherRequest.getKieu()) {
+                    adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHangPhieuGiamGia.getKhachHang(), khachHangPhieuGiamGia.getPhieuGiamGia());
+                }
                 adKhachHangPhieuGiamGiaRepository.save(khachHangPhieuGiamGia);
             }
             //adKhachHangPhieuGiamGiaRepository.saveVoucherAndCustomerVoucher(khachHangVoucher);
@@ -208,26 +225,64 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
     @Transactional
     public ResponseObject<?> updateVoucherKhachHang(String id, AdVoucherKhachHangRequest request) {
         try {
+            List<String> idKhachHangs = request.getVoucherKhachHangRequest().getIdKhachHangs();
+            if (idKhachHangs == null || idKhachHangs.isEmpty()) {
+                return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Không có Khách hàng");
+            }
+
+            // Cập nhật số lượng phiếu giảm giá
+            request.getPhieuGiamGiaRequest().setSoLuong((short) idKhachHangs.size());
             ResponseObject<PhieuGiamGia> updatePhieuGiamGia = updatePhieuGiamGiaById(request.getPhieuGiamGiaRequest(), id);
             if (!updatePhieuGiamGia.isSuccess()) {
                 return updatePhieuGiamGia;
             }
             PhieuGiamGia phieuGiamGia = adPhieuGiamGiaRepository.findById(id).orElseThrow();
-            for (String idKhachHang : request.getVoucherKhachHangRequest().getIdKhachHangs()) {
-                Optional<KhachHangPhieuGiamGia> optionalKhachHangPhieuGiamGia = adKhachHangPhieuGiamGiaRepository.findKhachHangIdAndPhieuGiamGiaId(idKhachHang, id);
-                if (optionalKhachHangPhieuGiamGia.isPresent()) {
-                    KhachHangPhieuGiamGia khachHangPhieuGiamGia = optionalKhachHangPhieuGiamGia.get();
-                    adKhachHangPhieuGiamGiaRepository.save(khachHangPhieuGiamGia);
-                } else {
-                    KhachHangPhieuGiamGia khachHangPhieuGiamGia = new KhachHangPhieuGiamGia();
-                    khachHangPhieuGiamGia.setPhieuGiamGia(phieuGiamGia);
-                    khachHangPhieuGiamGia.setKhachHang(adminKhachHangRepository.findById(idKhachHang).get());
-                    khachHangPhieuGiamGia.setDeleted(false);
-                    adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHangPhieuGiamGia.getKhachHang(), phieuGiamGia);
-                    adKhachHangPhieuGiamGiaRepository.save(khachHangPhieuGiamGia);
+            // Lấy danh sách khách hàng hiện có trong bảng trung gian
+            List<KhachHangPhieuGiamGia> existingKhachHangs = adKhachHangPhieuGiamGiaRepository.findByIdPhieuGiamGia(id);
+            Set<String> existingIds = existingKhachHangs.stream()
+                    .map(khpg -> khpg.getKhachHang().getId())
+                    .collect(Collectors.toSet());
+
+            Set<String> requestIds = new HashSet<>(idKhachHangs);
+
+            // Cập nhật deleted = true cho những khách hàng không có trong request
+            for (KhachHangPhieuGiamGia khpg : existingKhachHangs) {
+                if (!requestIds.contains(khpg.getKhachHang().getId())) {
+                    khpg.setDeleted(true);
+                    if (phieuGiamGia.getKieu()){
+                    adPhieuGiamGiaMailService.sendMailCancelKhachHangVoucher(khpg.getKhachHang(),phieuGiamGia);
+                    }
+                    adKhachHangPhieuGiamGiaRepository.save(khpg);
+                } else if(phieuGiamGia.getKieu()){
+                    adPhieuGiamGiaMailService.sendMailUpdateKhachHangVoucher(khpg.getKhachHang(),phieuGiamGia);
                 }
             }
-            return new ResponseObject<>(null, HttpStatus.OK, "Cập nhật phiêu giảm giá khách hàng thành công");
+
+            // Thêm mới khách hàng có trong request nhưng chưa có trong DB hoặc đã bị xóa mềm trước đó
+            for (String idKhachHang : requestIds) {
+                if (!existingIds.contains(idKhachHang)) {
+                    KhachHangPhieuGiamGia khachHangPhieuGiamGia = new KhachHangPhieuGiamGia();
+                    khachHangPhieuGiamGia.setPhieuGiamGia(phieuGiamGia);
+                    khachHangPhieuGiamGia.setKhachHang(adminKhachHangRepository.findById(idKhachHang).orElseThrow());
+                    khachHangPhieuGiamGia.setDeleted(false);
+                    if (phieuGiamGia.getKieu()){
+                    adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHangPhieuGiamGia.getKhachHang(), phieuGiamGia);
+                    }
+                    adKhachHangPhieuGiamGiaRepository.save(khachHangPhieuGiamGia);
+                } else {
+                    // Nếu đã tồn tại nhưng đang bị xóa mềm -> kích hoạt lại
+                    KhachHangPhieuGiamGia khpg = existingKhachHangs.stream()
+                            .filter(k -> k.getKhachHang().getId().equals(idKhachHang) && k.getDeleted())
+                            .findFirst()
+                            .orElse(null);
+                    if (khpg != null) {
+                        khpg.setDeleted(false); // Kích hoạt lại
+                        adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khpg.getKhachHang(),phieuGiamGia);
+                        adKhachHangPhieuGiamGiaRepository.save(khpg);
+                    }
+                }
+            }
+            return new ResponseObject<>(null, HttpStatus.OK, "Cập nhật phiếu giảm giá khách hàng thành công");
         } catch (RuntimeException e) {
             return new ResponseObject<>(null, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

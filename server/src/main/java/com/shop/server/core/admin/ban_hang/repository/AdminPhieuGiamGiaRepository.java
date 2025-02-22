@@ -10,14 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
 
     @Query(value = """
     SELECT DISTINCT
-        
         pgg.id AS id,
         pgg.ma_phieu_giam_gia AS ma,
         pgg.ten AS ten,
@@ -28,21 +29,23 @@ public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
         pgg.ngay_bat_dau AS ngayBatDau,
         pgg.ngay_ket_thuc AS ngayKetThuc,
         pgg.loai_phieu as kieu,
-        CASE
-            WHEN :#{#request.tongTien} IS NULL THEN
-                CASE
-                    WHEN pgg.loai_giam = TRUE THEN pgg.gia_tri_giam
-                    ELSE pgg.gia_tri_giam
-                END
-            WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
-                CASE
-                    WHEN pgg.loai_giam = FALSE THEN
-                        LEAST((pgg.gia_tri_giam / 100) * :#{#request.tongTien}, pgg.giam_toi_da)
-                    ELSE
-                        LEAST(pgg.gia_tri_giam, pgg.giam_toi_da)
-                END
-            ELSE 0
-        END AS giaTriGiam
+        CAST(
+            CASE
+                WHEN :#{#request.tongTien} IS NULL THEN
+                    CASE
+                        WHEN pgg.loai_giam = TRUE THEN pgg.gia_tri_giam
+                        ELSE pgg.gia_tri_giam
+                    END
+                WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
+                    CASE
+                        WHEN pgg.loai_giam = FALSE THEN
+                            LEAST((pgg.gia_tri_giam / 100) * :#{#request.tongTien}, pgg.giam_toi_da)
+                        ELSE
+                            LEAST(pgg.gia_tri_giam, pgg.giam_toi_da)
+                    END
+                ELSE 0
+            END AS DECIMAL(10,2)
+        ) AS giaTriGiam
     FROM phieu_giam_gia pgg
     WHERE
         (:#{#request.keyword} IS NULL
@@ -66,6 +69,23 @@ public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
     ORDER BY giaTriGiam DESC
 """, nativeQuery = true)
     Page<AdminVoucherResponse> getPhieuGiamGia(AdminHoaDonKhachHangRequest request, Pageable pageable);
+
+    @Query(value = """
+    SELECT MIN(pgg.dieu_kien_giam + 0)\s
+    FROM phieu_giam_gia pgg
+    WHERE (pgg.dieu_kien_giam + 0) > :#{#request.tongTien}
+    AND pgg.trang_thai = 'ACTIVE'
+    AND pgg.so_luong > 0
+    AND ((:#{#request.idKhachHang} IS NULL AND pgg.loai_phieu = false)
+                       \s
+                        OR (EXISTS (
+                                           SELECT 1 FROM khach_hang_phieu_giam_gia khpgg_check
+                                           WHERE khpgg_check.id_khach_hang = :#{#request.idKhachHang}
+                                           AND khpgg_check.id_phieu_giam_gia = pgg.id
+                                       ) OR pgg.loai_phieu = false)
+    )
+""", nativeQuery = true)
+    Optional<BigDecimal> findNextEligibleTongTien(AdminHoaDonKhachHangRequest request);
 
     @Query(value = """
     SELECT  

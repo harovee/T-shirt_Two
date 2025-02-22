@@ -3,6 +3,8 @@ package com.shop.server.utils;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -64,7 +66,14 @@ public class DateTimeUtil {
         }
         return null;
     }
-
+    public static String convertDateToStringDate(Date date) {
+        if (date != null) {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+            formatter.setTimeZone(TimeZone.getDefault());
+            return formatter.format(date);
+        }
+        return null;
+    }
     public static Date addMinutes(Date date, int minutes) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

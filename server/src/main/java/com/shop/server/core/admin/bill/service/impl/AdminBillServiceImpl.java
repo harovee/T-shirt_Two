@@ -261,6 +261,7 @@ public class AdminBillServiceImpl implements AdminBillService {
         if (bill.isPresent()) {
             adminBillRepository.deleteByIdHoaDon(id);
             adminBillRepository.deleteLichSuByIdHoaDon(id);
+            adminBillRepository.deletePMDByIdHoaDon(id);
             adminBillRepository.deleteById(id);
             return new ResponseObject<>(null, HttpStatus.OK, Message.Success.UPDATE_SUCCESS);
         } else {

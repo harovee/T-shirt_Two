@@ -107,6 +107,7 @@ public interface AdminBillRepository extends HoaDonRepository {
                 hd.trang_thai = 'Hóa đơn chờ'
             AND
                 hd.loai_hoa_don = 'Tại quầy'
+            ORDER BY hd.ngay_tao ASC
             """, nativeQuery = true)
     List<AdminBillWaitResponse> getBillsWait();
 
@@ -148,6 +149,10 @@ public interface AdminBillRepository extends HoaDonRepository {
     @Modifying
     @Query(value = "DELETE FROM hoa_don_chi_tiet h WHERE h.id_hoa_don = :idHoaDon", nativeQuery = true)
     void deleteByIdHoaDon(@Param("idHoaDon") String idHoaDon);
+
+    @Modifying
+    @Query(value = "DELETE FROM chi_tiet_phuong_thuc_thanh_toan ctpttt WHERE ctpttt.id_hoa_don = :idHoaDon", nativeQuery = true)
+    void deletePMDByIdHoaDon(@Param("idHoaDon") String idHoaDon);
 
     @Modifying
     @Query(value = "DELETE FROM lich_su_hoa_don lshd WHERE lshd.id_hoa_don = :idHoaDon", nativeQuery = true)

@@ -32,17 +32,21 @@ export default {
 
     const onDecode = (result:any) => {
       qrResult.value = result;
-      // console.log("Quét thành công:", result);
-      handleCancel(result);
+      handleCancelHasResult(result);
     };
 
     const onInit = (stream) => {
       // console.log("Stream initialized:", stream);
     };
 
-    const handleCancel = (result: any) => {
+    const handleCancelHasResult = (result: any) => {
       emit("update:open", false);
       emit("update:idSanPhamChitiet", result)
+      qrResult.value = "";
+    };
+
+    const handleCancel = () => {
+      emit("update:open", false);
       qrResult.value = "";
     };
 

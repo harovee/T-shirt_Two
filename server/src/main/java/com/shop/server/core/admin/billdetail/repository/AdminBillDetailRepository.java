@@ -18,13 +18,15 @@ import java.util.Optional;
 public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
     @Query(value = """
         SELECT
+            DISTINCT 
             ROW_NUMBER() OVER(ORDER BY ct.id DESC) AS catalog,
             ct.id AS id,
             ct.id_hoa_don AS idHoaDon,
             hd.ma_hoa_don AS maHoaDon,
             ct.id_san_pham_chi_tiet AS idSanPhamChiTiet,
+            sp.ten AS tenSanPham,
             spct.ten AS tenSanPhamChiTiet,
-            anh.url AS anhSanPhamChiTiet,
+            MIN(anh.url) AS anhSanPhamChiTiet,
             ct.so_luong AS soLuong,
             ct.gia AS gia,
             ct.thanh_tien AS thanhTien,
@@ -32,21 +34,25 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             hd.tien_giam AS tienGiamHD,
             hd.tien_ship AS tienShip,
             kc.ten AS tenKichCo,
+            ms.ten AS tenMau,
             pgg.loai_giam AS loaiGiam,
             pgg.giam_toi_da AS giamToiDa,
             pgg.gia_tri_giam AS giaTriGiam,
             pgg.dieu_kien_giam AS dieuKienGiam,
             pgg.ten AS tenPhieuGiam
-        FROM hoa_don_chi_tiet ct
+        FROM hoa_don_chi_tiet ct 
         LEFT JOIN san_pham_chi_tiet spct ON ct.id_san_pham_chi_tiet = spct.id
+        LEFT JOIN anh ON spct.id = anh.id_san_pham_chi_tiet
         JOIN hoa_don hd ON ct.id_hoa_don = hd.id
         JOIN kich_co kc ON spct.id_kich_co = kc.id
         LEFT JOIN phieu_giam_gia pgg ON pgg.id = hd.id_phieu_giam_gia
-        LEFT JOIN anh ON spct.id = anh.id_san_pham_chi_tiet
+        LEFT JOIN san_pham sp ON spct.id_san_pham = sp.id
+        LEFT JOIN mau_sac ms ON spct.id_mau_sac = ms.id
         WHERE
             (:#{#req.keyword} IS NULL OR
              spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
         AND (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = hd.id)
+        GROUP BY ct.id, hd.id, spct.id, sp.id, kc.id, ms.id, pgg.id;
     """,countQuery = """
             SELECT
             COUNT(ct.id)

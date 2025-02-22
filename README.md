@@ -6,7 +6,7 @@ MYSQL_USER=root
 MYSQL_PASSWORD=12345678
 JPA_SHOW_SQL=true
 JPA_DDL_AUTO=update
-GENERATE_DB=false
+GENERATE_DB=true
 
 #SERVER INFORMATION
 SERVER_VERSION=1.0.0
@@ -26,7 +26,6 @@ SPRING_MAIL_PASSWORD=
 #Database
 API.GHTK=https://online-gateway.ghn.vn/shiip/public-api/master-data
 API.GHTK.TOKEN=0c1a0015-d88e-11ef-98e4-42c0f54d535b
-API.GHTK.X.CLIENT.SOURCE=S22560282
 
 #cloudinary
 CLOUD_NAME =diu9anzwm

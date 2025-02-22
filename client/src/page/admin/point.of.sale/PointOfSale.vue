@@ -6,8 +6,10 @@
     </div>
     <div>
       <div class="p-2 rounded-xl border-2">
-        <div class="flex justify-end gap-3">
-          <a-tooltip title="Thêm sản phẩm vào giỏ" trigger="hover">
+        <div class="flex justify-between gap-3 mt-5 me-5">
+          <h3 class="text-left text-xl ms-5">Danh sách đơn</h3>
+          <div class="flex justify-between gap-3">
+            <a-tooltip title="Thêm sản phẩm vào giỏ" trigger="hover">
             <a-button
               class="bg-purple-300 flex justify-between items-center gap-2"
               size="large"
@@ -75,19 +77,28 @@
             @update:idSanPhamChitiet="handleUpdateIdSanPhamChiTietQr"
             @ok="handleQRScan"
           />
+          </div>
         </div>
         <a-tabs
           v-model:activeKey="activeKey"
           type="editable-card"
           @edit="onEdit"
-          class="m-5"
+          class="ms-5 me-5 mb-5 mt-2"
         >
-          <a-tab-pane
-            v-for="bill in dataSource"
-            :key="bill.id"
-            :tab="`${bill.ma} (${dataSourcePro ? dataSourcePro.length : 0})`"
-          >
-            <div>
+          <!-- :tab="`${bill.ma} (${dataSourcePro ? dataSourcePro.length : 0})`" -->
+          <a-tab-pane v-for="bill in dataSource" :key="bill.id">
+            <template #tab>
+              <span class="relative pr-6">
+                {{ bill.ma }}
+                <span
+                  v-if="lengthMap"
+                  class="absolute top-0 right-2 -translate-y-1/2 translate-x-1/2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full"
+                >
+                  {{ lengthMap[bill.id] }}
+                </span>
+              </span>
+            </template>
+            <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <POSProducsInCart
                 :idOrder="activeKey?.valueOf() || ''"
               ></POSProducsInCart>
@@ -95,7 +106,7 @@
 
             <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Khách hàng</h2>
+                <h2 class="text-xl font-semibold">Thông tin khách hàng</h2>
                 <div class="flex items-center space-x-3">
                   <a-tooltip title="Chọn khách hàng" trigger="hover">
                     <a-button
@@ -107,7 +118,10 @@
                     </a-button>
                   </a-tooltip>
                   <a-tooltip
-                    v-if="activeTabCustomers[bill.id] && activeTabPaymentInfo[bill.id].shippingOption === 'true'"
+                    v-if="
+                      activeTabCustomers[bill.id] &&
+                      activeTabPaymentInfo[bill.id].shippingOption === 'true'
+                    "
                     title="Chọn địa chỉ"
                     trigger="hover"
                   >
@@ -173,7 +187,6 @@
                   :dataSourceInfor="bill"
                   :selectedCustomerInfo="activeTabCustomers[bill.id]"
                   :selectedCustomerAddress="activeTabCustomerAddress[bill.id]"
-                  
                   @handlePaymentInfo="
                     (paymentInfo) => handleChangePaymentInfo(paymentInfo, bill)
                   "
@@ -197,6 +210,7 @@ import {
   createVNode,
   reactive,
   watchEffect,
+  nextTick
 } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
@@ -221,6 +235,8 @@ import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import {
   POSAddProductsToCartRequest,
   POSProductDetailResponse,
+  getOrderDetails,
+  getOrderDetailsAll,
 } from "@/infrastructure/services/api/admin/point-of-sale.api";
 import {
   useCreateOrderDetails,
@@ -244,59 +260,83 @@ const { data: listProductDetail } = useGetListProductDetail();
 
 const dataSource = computed(() => data?.value?.data || []);
 const activeKey = ref<string | null>(null);
+const isAddProduct = ref(0);
+const isChange = ref(0);
 
 const dataListProductDetail = computed(
   () => listProductDetail?.value?.data || []
 );
-
-// Hiển thị tab đầu tiên khi load trang
-onMounted(() => {
-  const storedActiveKey = localStorage.getItem("activeKey");
-  if (storedActiveKey) {
-    activeKey.value = storedActiveKey;
-  }
-});
-
 watch(
-  dataSource,
-  (newDataSource) => {
-    if (newDataSource.length > 0 && !activeKey.value) {
+  [() => dataSource.value, () => isChange.value],
+  async ([newDataSource, newIsChange]) => {
+    if (newDataSource.length > 0) {
       activeKey.value = newDataSource[0].id;
     }
-  },
-  { immediate: true }
-);
 
-// hiển thị số lượng sản phẩm đang lỗi
-let idHoaDon: any;
-
-watch(
-  activeKey,
-  (newActiveKey) => {
-    if (newActiveKey) {
-      localStorage.setItem("activeKey", newActiveKey);
-      idHoaDon = newActiveKey;
-      // refetchPro();
+    if (newIsChange !== 0) {
+      activeKey.value = dataSource.value[dataSource.value.length - 1].id;
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
+
+
+// watch(
+//   activeKey,
+//   (newActiveKey) => {
+//     if (newActiveKey) {
+//       localStorage.setItem("activeKey", newActiveKey);
+//       // refetchPro();
+//     }
+//   },
+//   { immediate: true }
+// );
 
 interface DataType extends POSProductDetailResponse {
   key: string;
   thanhTien: number;
 }
 
-const {
-  data: dataPro,
-  error,
-  isFetching: proFetching,
-  refetch: refetchPro,
-} = useGetOrderDetails(idHoaDon, {
-  refetchOnWindowFocus: false,
-  placeholderData: [],
-  enabled: false,
-});
+const lengthMap = ref({});
+
+watch(
+  () => dataSource.value,
+  async (newDataSource) => {
+    if (newDataSource) {
+      const results = await Promise.all(
+        dataSource.value.map(async (id) => {
+          const response = await getOrderDetailsAll(id.id);
+          const length = response?.data.length || 0;
+          return { id, length };
+        })
+      );
+      lengthMap.value = results.reduce((acc, { id, length }) => {
+        acc[id.id] = length;
+        return acc;
+      }, {});
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+
+watch(
+  () => isAddProduct.value,
+  async (newDataSource) => {
+    const results = await Promise.all(
+        dataSource.value.map(async (id) => {
+          const response = await getOrderDetailsAll(id.id);
+          const length = response?.data.length || 0;
+          return { id, length };
+        })
+      );
+      lengthMap.value = results.reduce((acc, { id, length }) => {
+        acc[id.id] = length;
+        return acc;
+      }, {});
+  },
+  { immediate: true, deep: true }
+);
 
 // -------------------------------------------
 
@@ -309,34 +349,6 @@ const quantityProduct = ref<number>(1);
 
 type RefetchFunction = () => void;
 const refetchProducts = ref<RefetchFunction | null>(null);
-
-// console.log(props.selectedCustomerInfo);
-
-const dataSourcePro: DataType[] | any = computed(() => {
-  return (
-    dataPro?.value?.data?.map((e: any) => ({
-      key: e.id || "",
-      maSanPhamChiTiet: e.maSanPhamChiTiet || "",
-      ten: e.ten || "",
-      soLuong: e.soLuong || "",
-      gia: e.gia || 0,
-      giaHienTai: e.giaHienTai || 0,
-      tenSanPham: e.tenSanPham || "",
-      tenThuongHieu: e.tenThuongHieu || "",
-      gioiTinh: e.gioiTinh
-        ? "Nam"
-        : e.gioiTinh == false
-        ? "Nữ"
-        : "Không xác định",
-      kichCo: e.kichCo || "",
-      phongCach: e.phongCach || "",
-      maMauSac: e.maMauSac || "",
-      tenMauSac: e.tenMauSac || "",
-      linkAnh: e.linkAnh || "",
-      thanhTien: e.soLuong * e.gia,
-    })) || []
-  );
-});
 
 const listAttributes = useGetAttributes({
   refetchOnWindowFocus: false,
@@ -372,15 +384,6 @@ const handleUpdateIdSanPhamChiTiets = (newIdSanPhamChiTiets: string[]) => {
   idSanPhamChiTiets.value = newIdSanPhamChiTiets;
 };
 
-const getProductCountByBillId = (billId: string) => {
-  return computed(() => {
-    return dataSourcePro.value
-      ? dataSourcePro.value.filter((item: any) => item.idHoaDon === billId)
-          .length
-      : 0;
-  });
-};
-
 // Hàm tìm id theo mã SPCT
 const findIdByMaSPCT = (maSPCT: string) => {
   const product = dataListProductDetail.value.find(
@@ -393,15 +396,14 @@ const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
   idSanPhamChiTiets.value = [];
   const idSPCT = findIdByMaSPCT(newId);
   idSanPhamChiTiets.value.push(idSPCT);
-  console.log(newId);
-  
+
   if (newId) {
     handleCreateQrOrderDetails({
-    idSanPhamChiTiets: idSanPhamChiTiets.value,
-    idHoaDonCho: activeKey.value,
-    userEmail: useAuthStore().user?.email || null,
-    soLuong: 1,
-  });
+      idSanPhamChiTiets: idSanPhamChiTiets.value,
+      idHoaDonCho: activeKey.value,
+      userEmail: useAuthStore().user?.email || null,
+      soLuong: 1,
+    });
   }
   // handleCreateQrOrderDetails({
   //   idSanPhamChiTiets: idSanPhamChiTiets.value,
@@ -416,6 +418,8 @@ const handleCancel = () => {
   quantityProduct.value = 1;
 };
 
+
+
 const { mutate: createOrderDetails } = useCreateOrderDetails();
 const handleOk = (e: MouseEvent) => {
   // openQuantityModal.value = true;
@@ -425,6 +429,7 @@ const handleOk = (e: MouseEvent) => {
     userEmail: useAuthStore().user?.email || null,
     soLuong: 1,
   });
+  
 };
 
 // modal thêm số lượgn
@@ -481,6 +486,7 @@ const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
             openNotification(notificationType.success, result?.message, "");
             openQuantityModal.value = false;
             openProductsModal.value = false;
+            isAddProduct.value = isAddProduct.value + 1
           },
           onError: (error: any) => {
             openNotification(
@@ -564,7 +570,6 @@ watch(
   (newData) => {
     if (newData) {
       dataSources.value = JSON.parse(JSON.stringify(dataSource.value));
-      // console.log(dataSources.value);
     }
   },
   { immediate: true }
@@ -612,8 +617,7 @@ const handleCustomerAddressSelected = (
   bill: any
 ) => {
   activeTabCustomerAddress[bill.id] = { ...customerAddress };
-  isRefresh.value = !isRefresh.value
-  // console.log(activeTabCustomerAddress[bill.id]);
+  isRefresh.value = !isRefresh.value;
 };
 
 const getNameCustomer = (id: string) => {
@@ -655,6 +659,8 @@ const getPhoneNumberCustomer = (id: string) => {
   }
 };
 
+
+
 const add = async () => {
   const payload = {
     loaiHD: "Tại quầy",
@@ -666,6 +672,7 @@ const add = async () => {
   if (dataSource.value.length < 5) {
     await createBillWail(payload);
     successNotiSort("Tạo hóa đơn thành công");
+    isChange.value = isChange.value + 1;
   } else {
     warningNotiSort("Không được tạo quá 5 hóa đơn chờ!");
   }
@@ -679,8 +686,6 @@ const remove = async (targetKey: string) => {
     async onOk() {
       try {
         await removeBillWait(targetKey);
-        // console.log(targetKey);
-
         successNotiSort("Hủy hóa đơn thành công");
       } catch (error) {
         errorNotiSort("Hủy hóa đơn thất bại");
