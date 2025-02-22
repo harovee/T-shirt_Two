@@ -18,5 +18,7 @@ public class AdminPaymentMethodDetailRequest {
 
     private BigDecimal soTienDu;
 
+    private BigDecimal tienChuyenKhoan;
+
     private String maGiaoDich;
 }

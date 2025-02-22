@@ -17,6 +17,7 @@
           v-model:value="modelRef[field.name]"
           :placeholder="field.placeholder"
           :type="field.type"
+          @blur="handleGetAddress"
         ></a-input>
 
         <a-select
@@ -27,6 +28,7 @@
           show-search
           :filter-option="filterOption"
           @change="handleChangeOptions(field.name, $event)"
+          @blur="handleGetAddress"
         >
         </a-select>
       </a-form-item>
@@ -70,9 +72,13 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  selectedCustomer: {
+    type: Object,
+    required: true,
+  },
 });
 
-const emit = defineEmits(["handleResetActiveKey"]);
+const emit = defineEmits(["handleResetActiveKey", "handleGetAddress"]);
 
 const isRefetch = ref<boolean>(false);
 
@@ -152,13 +158,31 @@ const filterOption = (input: string, option: any) => {
 const modelRef = reactive<ClientAddressRequest>({
   name: props?.selectedCustomerAddress?.name,
   phoneNumber: props?.selectedCustomerAddress?.phoneNumber,
-  line: props?.selectedCustomerAddress?.line,
-  ward: props?.selectedCustomerAddress?.ward.toString(),
-  district: props?.selectedCustomerAddress?.district.toString(),
-  province: props?.selectedCustomerAddress?.province.toString(),
-  isDefault: props?.selectedCustomerAddress?.isDefault,
+  line: props?.selectedCustomerAddress?.line || null,
+  ward: props?.selectedCustomerAddress?.ward.toString() || null,
+  district: props?.selectedCustomerAddress?.district.toString() || null,
+  province: props?.selectedCustomerAddress?.province.toString() || null,
+  isDefault: props?.selectedCustomerAddress?.isDefault || false,
   clientId: props?.selectedCustomerAddress?.clientId,
 });
+
+watch(
+  () => props.selectedCustomer,
+  (newCustomer) => {
+    if (newCustomer) {
+      Object.assign(modelRef, {
+        name: "",
+        phoneNumber: "",
+        line: "",
+        ward: "",
+        district: "",
+        province: "",
+        isDefault: false,
+        clientId: null,
+      });
+    }
+  }
+);
 const refreshKey = ref(0);
 
 const rulesRef = reactive({
@@ -166,7 +190,7 @@ const rulesRef = reactive({
     {
       required: true,
       validator: (_, value) =>
-        value !== null && value.trim() !== ""
+        value && typeof value === "string" && value.trim() !== ""
           ? Promise.resolve()
           : Promise.reject("Tên không được để trống"),
       trigger: "blur",
@@ -253,6 +277,7 @@ const formFields = computed(() => [
   },
 ]);
 
+const fullAddressRef = ref("");
 /*** Handle ***/
 
 const handleChangeOptions = (key: string, value: any) => {
@@ -273,6 +298,7 @@ const handleChangeOptions = (key: string, value: any) => {
       wardsOptions.value = [defaultWardOption];
       modelRef.district = "";
       modelRef.ward = "";
+      updateFullAddress();
       getDistrictsByProvinceId(value, {
         onSuccess: (data) => {
           const options =
@@ -290,6 +316,7 @@ const handleChangeOptions = (key: string, value: any) => {
     case "district":
       wardsOptions.value = [defaultWardOption];
       modelRef.ward = "";
+      updateFullAddress();
       getWardsByDistrictId(value, {
         onSuccess: (data) => {
           const options =
@@ -304,9 +331,31 @@ const handleChangeOptions = (key: string, value: any) => {
         },
       });
       break;
+    case "ward":
+      updateFullAddress(); // Cập nhật địa chỉ mới
+      break;
     default:
       return;
   }
+};
+
+const updateFullAddress = () => {
+  const wardName =
+    wardsOptions.value.find((w) => w.value === modelRef.ward)?.label || "";
+  const districtName =
+    districtsOptions.value.find((d) => d.value === modelRef.district)?.label ||
+    "";
+  const provinceName =
+    provincesOptions.value.find((p) => p.value === modelRef.province)?.label ||
+    "";
+
+  fullAddressRef.value = `${wardName}, ${districtName}, ${provinceName}`.trim();
+};
+
+const handleGetAddress = (name: string) => {
+  validate();
+  const fullAddress = modelRef.line + ", " + fullAddressRef.value;
+  emit("handleGetAddress", modelRef, fullAddress);
 };
 
 const handleChangeDefault = (id: string) => {
@@ -392,5 +441,4 @@ watch(
   },
   { immediate: true, deep: true }
 );
-
 </script>

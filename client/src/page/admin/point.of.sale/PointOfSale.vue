@@ -82,11 +82,23 @@
           @edit="onEdit"
           class="m-5"
         >
+        <!-- :tab="`${bill.ma} (${dataSourcePro ? dataSourcePro.length : 0})`" -->
           <a-tab-pane
             v-for="bill in dataSource"
             :key="bill.id"
-            :tab="`${bill.ma} (${dataSourcePro ? dataSourcePro.length : 0})`"
+            
           >
+            <template #tab>
+              <span class="relative pr-6">
+                {{ bill.ma }}
+                <span
+                  v-if="dataSourcePro && dataSourcePro.length > 0"
+                  class="absolute top-0 right-2 -translate-y-1/2 translate-x-1/2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full"
+                >
+                  {{ dataSourcePro.length }}
+                </span>
+              </span>
+            </template>
             <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <POSProducsInCart
                 :idOrder="activeKey?.valueOf() || ''"
@@ -107,7 +119,10 @@
                     </a-button>
                   </a-tooltip>
                   <a-tooltip
-                    v-if="activeTabCustomers[bill.id] && activeTabPaymentInfo[bill.id].shippingOption === 'true'"
+                    v-if="
+                      activeTabCustomers[bill.id] &&
+                      activeTabPaymentInfo[bill.id].shippingOption === 'true'
+                    "
                     title="Chọn địa chỉ"
                     trigger="hover"
                   >
@@ -173,7 +188,6 @@
                   :dataSourceInfor="bill"
                   :selectedCustomerInfo="activeTabCustomers[bill.id]"
                   :selectedCustomerAddress="activeTabCustomerAddress[bill.id]"
-
                   @handlePaymentInfo="
                     (paymentInfo) => handleChangePaymentInfo(paymentInfo, bill)
                   "
@@ -397,11 +411,11 @@ const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
 
   if (newId) {
     handleCreateQrOrderDetails({
-    idSanPhamChiTiets: idSanPhamChiTiets.value,
-    idHoaDonCho: activeKey.value,
-    userEmail: useAuthStore().user?.email || null,
-    soLuong: 1,
-  });
+      idSanPhamChiTiets: idSanPhamChiTiets.value,
+      idHoaDonCho: activeKey.value,
+      userEmail: useAuthStore().user?.email || null,
+      soLuong: 1,
+    });
   }
   // handleCreateQrOrderDetails({
   //   idSanPhamChiTiets: idSanPhamChiTiets.value,
@@ -612,7 +626,7 @@ const handleCustomerAddressSelected = (
   bill: any
 ) => {
   activeTabCustomerAddress[bill.id] = { ...customerAddress };
-  isRefresh.value = !isRefresh.value
+  isRefresh.value = !isRefresh.value;
   // console.log(activeTabCustomerAddress[bill.id]);
 };
 

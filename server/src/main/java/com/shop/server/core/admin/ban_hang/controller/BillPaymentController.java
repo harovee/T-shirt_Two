@@ -51,8 +51,8 @@ public class BillPaymentController {
 //    }
 
     @GetMapping("/payment-method-detail")
-    public ResponseEntity<?> getPaymentMethod(@RequestParam("idHoaDon") String idHoaDon) {
-        return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan(idHoaDon));
+    public ResponseEntity<?> getPaymentMethod(@Valid final AdminPaymentMethodDetailRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.getPhuongThucThanhToan(request));
     }
 
     @PostMapping("/payment-method-detail")
@@ -65,5 +65,23 @@ public class BillPaymentController {
         return Helper.createResponseEntity(adminPaymentServices.getCustomerAddressByIdCustomer(request));
     }
 
+    @GetMapping("/customer/{phoneNumber}")
+    public ResponseEntity<?> getCustomerByPhoneNumber(@PathVariable ("phoneNumber") String phoneNumber) {
+        return Helper.createResponseEntity(adminPaymentServices.getCustomerByPhoneNumber(phoneNumber));
+    }
 
+    @GetMapping("/ward/{code}")
+    public ResponseEntity<?> getWardByCode(@PathVariable ("code") String code) {
+        return Helper.createResponseEntity(adminPaymentServices.getWardByCode(code));
+    }
+
+    @GetMapping("/district/{id}")
+    public ResponseEntity<?> getDistrictByCode(@PathVariable ("id") String id) {
+        return Helper.createResponseEntity(adminPaymentServices.getDistrictById(id));
+    }
+
+    @GetMapping("/province/{id}")
+    public ResponseEntity<?> getProvinceByCode(@PathVariable ("id") String id) {
+        return Helper.createResponseEntity(adminPaymentServices.getProvinceById(id));
+    }
 }

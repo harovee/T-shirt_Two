@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.ban_hang.repository;
 
+import com.shop.server.core.admin.ban_hang.model.request.AdminPaymentMethodDetailRequest;
 import com.shop.server.core.admin.ban_hang.model.response.AdminPhuongThucThanhToanResponse;
 import com.shop.server.repositories.ChiTietPhuongThucThanhToanRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,9 +32,9 @@ public interface AdminChiTietPhuongThucThanhToanRepository extends ChiTietPhuong
             ctpttt.tien_khach_dua as soTien
         FROM chi_tiet_phuong_thuc_thanh_toan ctpttt 
         LEFT JOIN phuong_thuc_thanh_toan pttt ON ctpttt.id_phuong_thuc_thanh_toan = pttt.id
-        WHERE (:idHoaDon IS NOT NULL AND :idHoaDon <> '' AND ctpttt.id_hoa_don = :idHoaDon)
+        WHERE (:#{#request.idHoaDon} IS NOT NULL AND :#{#request.idHoaDon} <> '' AND ctpttt.id_hoa_don = :#{#request.idHoaDon})
             AND ctpttt.deleted = false
     """, nativeQuery = true)
-List<AdminPhuongThucThanhToanResponse> getAllPhuongThucThanhToan(@Param("idHoaDon") String idHoaDon);
+List<AdminPhuongThucThanhToanResponse> getAllPhuongThucThanhToan(AdminPaymentMethodDetailRequest request);
 
 }

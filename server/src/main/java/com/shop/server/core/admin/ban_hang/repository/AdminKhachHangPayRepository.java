@@ -6,6 +6,7 @@ import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
 import com.shop.server.core.admin.ban_hang.model.response.AdminCustomerAddressResponse;
 import com.shop.server.core.admin.ban_hang.model.response.AdminKhachHangResponse;
 import com.shop.server.core.admin.client.models.responses.AdminAddressByClientIdResponse;
+import com.shop.server.entities.main.KhachHang;
 import com.shop.server.repositories.KhachHangRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -78,4 +79,17 @@ public interface AdminKhachHangPayRepository extends KhachHangRepository {
             ORDER BY dckh.mac_dinh DESC
             """, nativeQuery = true)
     Page<AdminCustomerAddressResponse> getCustomerAddressById(Pageable pageable, AdminCustomerAddressSearchRequest request);
+
+    @Query(value = """
+            SELECT
+                ROW_NUMBER() OVER(ORDER BY kh.ngay_tao ) AS catalog,
+            kh.profile_picture as profilePicture,
+            kh.id as id,
+            kh.ho_va_ten as name,
+            kh.email as email,
+            kh.so_dien_thoai as phoneNumber
+            FROM khach_hang kh
+            WHERE kh.so_dien_thoai = :phoneNumber
+            """, nativeQuery = true)
+    AdminKhachHangResponse getKhachHangByPhoneNumber(String phoneNumber);
 }

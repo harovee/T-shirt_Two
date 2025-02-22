@@ -18,7 +18,7 @@ public interface AdminPaymentServices {
 
     ResponseObject<?> getVoucherKhachHangById(AdminHoaDonKhachHangRequest request);
 
-    ResponseObject<?> getPhuongThucThanhToan(String idHoaDon);
+    ResponseObject<?> getPhuongThucThanhToan(AdminPaymentMethodDetailRequest request);
 
     ResponseObject<?> savePayBill(AdminHoaDonKhachHangRequest request);
 
@@ -27,4 +27,12 @@ public interface AdminPaymentServices {
     ResponseObject<?> getNextTotalPriceToVoucher (AdminHoaDonKhachHangRequest request);
 
     ResponseObject<?> addPaymentMethodDetail (AdminPaymentMethodDetailRequest request);
+
+    ResponseObject<?> getCustomerByPhoneNumber (String phoneNumber);
+
+    ResponseObject<?> getWardByCode(String code);
+
+    ResponseObject<?> getDistrictById(String id);
+
+    ResponseObject<?> getProvinceById(String id);
 }

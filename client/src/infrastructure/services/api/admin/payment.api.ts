@@ -42,10 +42,6 @@ export interface nextVoucherRequest {
     tongTien: number | null;
 }
 
-export interface getPaymentMethodRequest {
-    idHoaDon: string
-}
-
 export interface paymentMethodDetailRequest {
     idHoaDon: string | null;
 
@@ -56,6 +52,8 @@ export interface paymentMethodDetailRequest {
     soTienDu: number | null;
 
     maGiaoDich: string | null;
+
+    tienChuyenKhoan: number | null
 }
 
 
@@ -116,7 +114,7 @@ export interface ShippingFeeResponse {
       total: number; // Tổng phí vận chuyển (VNĐ)
 }
 
-export const getListPaymentMethodDetail = async (params: Ref<getPaymentMethodRequest>) => {
+export const getListPaymentMethodDetail = async (params: Ref<paymentMethodDetailRequest>) => {
     const res = (await request({
         url: `${API_ADMIN_PAYMENT}/payment-method-detail`,
         method: "GET",
@@ -180,6 +178,43 @@ export const getVoucherById = async (VoucherId: Ref<string | null>) => {
         method: "GET",
     }) as AxiosResponse<
         DefaultResponse<VoucherResponse>
+    >;
+};
+
+export const getWardByCode = async (code: string) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/ward/${code}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<String>
+    >;
+};
+
+export const getDistrictById = async (id: string) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/district/${id}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<String>
+    >;
+};
+
+
+export const getProvinceById = async (id: string) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/province/${id}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<String>
+    >;
+};
+
+export const getCustomerByPhoneNumber = async (phoneNumber: Ref<string | null>) => {
+    return await request({
+        url: `${API_ADMIN_PAYMENT}/customer/${phoneNumber.value}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<CustomerResponse>
     >;
 };
 

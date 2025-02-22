@@ -12,7 +12,7 @@ import {
     getListPaymentMethodDetail,
     paymentMethodDetailRequest,
     createPaymentMethodDetail,
-    getPaymentMethodRequest
+    getCustomerByPhoneNumber
 } from "@/infrastructure/services/api/admin/payment.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -31,7 +31,7 @@ export const useGetListVoucher = (
 };
 
 export const useGetListPaymentMethodDetail = (
-    params: Ref<getPaymentMethodRequest>, options?: any
+    params: Ref<paymentMethodDetailRequest>, options?: any
 ): UseQueryReturnType<Awaited<ReturnType<typeof getListPaymentMethodDetail>>, Error> => {
     return useQuery({
         queryKey: [queryKey.admin.payment.paymentMethodDetail, params],
@@ -97,6 +97,15 @@ export const useGetVoucherById = (
     });
 };
 
+export const useGetCustomerByPhoneNumber = (
+    phoneNumber: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getCustomerByPhoneNumber>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.customerDetail,phoneNumber,],
+        queryFn: () => getCustomerByPhoneNumber(phoneNumber),
+        ...options,
+    });
+};
 
 export const useGetCustomerById = (
     khachHangId: Ref<string | null>, options?: any
