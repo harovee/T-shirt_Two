@@ -82,8 +82,8 @@ public interface AdminClientRepository extends KhachHangRepository {
                 kh.ngay_tao as createdDate,
                 kh.ngay_sua as lastModifiedDate
             FROM khach_hang kh
-            LEFT JOIN nhan_vien nt ON nt.email = kh.nguoi_tao
-            LEFT JOIN nhan_vien ns ON ns.email = kh.nguoi_tao
+            LEFT JOIN nhan_vien nt ON nt.id = kh.nguoi_tao
+            LEFT JOIN nhan_vien ns ON ns.id = kh.nguoi_sua
             WHERE kh.id = :id
             """, nativeQuery = true)
     AdminDetailClientResponse getClientDetail(String id);

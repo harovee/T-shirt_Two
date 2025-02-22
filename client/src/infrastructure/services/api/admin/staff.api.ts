@@ -26,6 +26,17 @@ export interface StaffRequest {
     picture: String | null;
 }
 
+export interface StaffQRRequest {
+    name: string;
+    birthDay: string;
+    gender: string;
+    identity: string;
+    line: string;
+    ward: string;
+    district: string;
+    province: string;
+}
+
 export type StaffResponse = ResponseList & {
     id: string | null;
     name: string | null;
@@ -75,6 +86,18 @@ export const createStaff = async (data: StaffRequest) => {
         data: data
     })) as AxiosResponse<
         DefaultResponse<DefaultResponse<null>>
+    >;
+
+    return res.data;
+};
+
+export const createStaffByQRCode = async (data: StaffQRRequest) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_STAFF}/qrcode`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<null>
     >;
 
     return res.data;

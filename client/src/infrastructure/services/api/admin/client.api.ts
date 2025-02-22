@@ -25,17 +25,6 @@ export interface ClientRequest {
     picture: String | null;
 }
 
-export interface ClientQRRequest {
-    name: string;
-    birthDay: string;
-    gender: string;
-    identity: string;
-    line: string;
-    ward: string;
-    district: string;
-    province: string;
-}
-
 export type ClientResponse = ResponseList & {
     id: string | null;
     name: string | null;
@@ -114,18 +103,6 @@ export const getClients = async (params: Ref<FindClientRequest>) => {
 };
 
 export const createClient = async (data: ClientRequest) => {
-    const res = (await request({
-        url: `${PREFIX_API_ADMIN_CLIENT}`,
-        method: "POST",
-        data: data
-    })) as AxiosResponse<
-        DefaultResponse<DefaultResponse<null>>
-    >;
-
-    return res.data;
-};
-
-export const createClientByQRCode = async (data: ClientQRRequest) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_CLIENT}`,
         method: "POST",

@@ -3,14 +3,12 @@ package com.shop.server.infrastructure.security.oauth2;
 import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.ActorConstants;
 import com.shop.server.infrastructure.constants.module.Role;
-import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.infrastructure.security.exception.OAuth2AuthenticationProcessingException;
 import com.shop.server.infrastructure.security.oauth2.user.OAuth2UserInfo;
 import com.shop.server.infrastructure.security.oauth2.user.OAuth2UserInfoFactory;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
 import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import lombok.RequiredArgsConstructor;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
@@ -55,7 +53,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         if (userAuthOptional.isPresent()) {
             NhanVien nhanVien = userAuthOptional.get();
-            if(nhanVien.getStatus().equals(Status.INACTIVE)){
+            if (nhanVien.getDeleted().equals(true)) {
                 throw new OAuth2AuthenticationProcessingException("The specified user is disabled");
             }
             NhanVien nhanVienExist = (NhanVien) updateExistingUser(nhanVien, oAuth2UserInfo);
@@ -76,7 +74,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         nhanVien.setEmail(oAuth2UserInfo.getEmail());
         nhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
         nhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
-        nhanVien.setStatus(Status.ACTIVE);
+        nhanVien.setDeleted(false);
         nhanVien.setRole(Role.CLIENT);
         nhanVien.setPassword(null);
         return userRepository.save(nhanVien);
@@ -86,7 +84,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         existingNhanVien.setFullName(oAuth2UserInfo.getName());
         existingNhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
         existingNhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
-        if (existingNhanVien.getStatus() == null) existingNhanVien.setStatus(Status.ACTIVE);
+        if (existingNhanVien.getDeleted() == null) existingNhanVien.setDeleted(true);
         return userRepository.save(existingNhanVien);
     }
 
