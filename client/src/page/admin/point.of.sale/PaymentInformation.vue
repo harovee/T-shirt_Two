@@ -404,7 +404,6 @@ watch(
   () => props.selectedCustomerAddress,
   async (newDataSource) => {
     if (newDataSource) {
-      console.log(newDataSource);
       paymentInfo.value.name = newDataSource.name;
       paymentInfo.value.phoneNumber = newDataSource.phoneNumber;
 
@@ -560,8 +559,6 @@ const changeShippingOption = (option: string) => {
 const { mutate: updateBillWait } = useUpdateBillWait();
 
 const handleUpdateBill = () => {
-  console.log(props.selectedCustomerInfo);
-
   const payload = {
     trangThai:
       paymentInfo.value.shippingOption === "true"
@@ -581,7 +578,7 @@ const handleUpdateBill = () => {
     tienShip: paymentInfo.value.shippingOption === "true" ? paymentInfo.value.shippingFee : null,
     tongTien: paymentInfo.value.totalProductPrice || null,
   };
-  if (!paymentInfo.value.shippingOption || !paymentInfo.value.name || !paymentInfo.value.phoneNumber || !paymentInfo.value.fullAddress ) {
+  if (paymentInfo.value.shippingOption === 'true' && (!paymentInfo.value.name || !paymentInfo.value.phoneNumber || !paymentInfo.value.fullAddress )) {
     warningNotiSort("Vui lòng chọn địa chỉ người nhận!");
     return;
   }
@@ -591,8 +588,6 @@ const handleUpdateBill = () => {
     centered: true,
 
     async onOk() {
-      // console.log(payload);
-
       try {
         await updateBillWait({
           idBill: props.dataSourceInfor.id,
@@ -617,8 +612,6 @@ const handleUpdateBill = () => {
 };
 
 const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
-  console.log(modelRef);
-  // console.log(fullAddress);
   paymentInfo.value.name = modelRef.name;
   paymentInfo.value.phoneNumber = modelRef.phoneNumber;
   const wardInfo = ref(null);

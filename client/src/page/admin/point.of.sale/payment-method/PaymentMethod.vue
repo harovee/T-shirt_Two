@@ -122,8 +122,6 @@ import {
   createVNode,
 } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
-// import { VoucherResponse, FindVoucherRequest } from "@/infrastructure/services/api/admin/voucher/voucher.api";
-// import { useGetListVoucher } from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import {
   VoucherResponse,
   FindVoucherRequest,
@@ -172,20 +170,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["handleClose", "selectVoucher"]);
-
-// interface DataType {
-//     id: string;
-//     ten : string;
-//     soLuong: number;
-//     dieuKienGiam: string;
-//     giamToiDa: string;
-//     loaiGiam: boolean;
-//     kieu: boolean;
-//     giaTriGiam: string;
-//     ngayBatDau: number;
-//     ngayKetThuc: number;
-//     trangThai : string;
-// }
 
 const { mutate: createPaymentMethodDetail } = useCreatePaymentMethodDetail();
 
@@ -241,25 +225,6 @@ const handleChange = (value: string) => {
   params.value.idPhuongThucThanhToan = value;
 };
 
-// watch(
-//   () => props.totalAmount,
-//   (newData) => {
-//     params.value.tongTien = newData;
-//   },
-//   { immediate: true }
-// );
-
-// watch(
-//   () => props.dataCustomer,
-//   (newData) => {
-//     if(newData) {
-//       params.value = newData ? newData.key : null;
-//     console.log(params.value);
-//     }
-//   },
-//   { immediate: true }
-// );
-
 const { data: dataPaymentMethodDetail } = useGetListPaymentMethodDetail(
   params,
   {
@@ -299,30 +264,9 @@ watch(
         params.value.tienChuyenKhoan = 0;
       }
     }
-    console.log(params.value);
-    console.log(newData);
   },
   { immediate: true }
 );
-
-// const dataVoucher: VoucherResponse[] | any = computed(() => {
-//   return (
-//     data?.value?.data?.data.map((e: any) => ({
-//       key: e.id || "",
-//       name: e.name || "",
-//       phoneNumber: e.phoneNumber || "",
-//       email: e.email || "",
-//       profilePicture: e.profilePicture || "",
-//     })) || []
-//   );
-// });
-
-// const dataVoucher = computed(() => data?.value?.data?.data || []);
-
-// watch(dataVoucher, (newData) => {
-//   console.log(newData);
-
-// });
 
 const formatter = (value: any) => {
   if (!value) return "";
@@ -330,7 +274,6 @@ const formatter = (value: any) => {
 };
 
 const handlePayment = () => {
-  console.log(params.value);
   Modal.confirm({
     content: "Bạn chắc chắn muốn thanh toán?",
     icon: createVNode(ExclamationCircleOutlined),
@@ -385,7 +328,6 @@ const handleClose = () => {
 const handleSelectVoucher = (voucher: VoucherResponse) => {
   emit("selectVoucher", voucher);
   handleClose();
-  // console.log(voucher);
 };
 
 const columns: TableColumnType<VoucherResponse>[] = [

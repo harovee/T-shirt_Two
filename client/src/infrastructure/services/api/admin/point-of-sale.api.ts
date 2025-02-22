@@ -78,7 +78,7 @@ export const getOrderDetails =  async (idOrder: string | null) => {
     return res.data;
 };
 
-export const getOrderDetailsAll =  async (idOrder: Ref<string>) => {
+export const getOrderDetailsAll =  async (idOrder: string) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_POINT_OF_SALE}/products-in-order/${idOrder}`,
         method: "GET",
@@ -87,6 +87,7 @@ export const getOrderDetailsAll =  async (idOrder: Ref<string>) => {
     >;
     return res.data;
 };
+
 
 
 export interface POSAddProductsToCartRequest {

@@ -66,11 +66,9 @@
             >
             </a-input>
           </div>
-          <div v-if="column.dataIndex === 'giaBanHienTai'" class="text-right">
+          <div v-if="column.dataIndex === 'giaBanHienTai'" class="center">
             <a-typography-text
-              type="danger"
               strong
-              underline
               class="cursor-pointer"
             >
               {{
@@ -82,12 +80,10 @@
               }}
             </a-typography-text>
           </div>
-          <div v-if="column.dataIndex === 'thanhTien'" class="text-right">
+          <div v-if="column.dataIndex === 'thanhTien'" class="center">
             <a-typography-text
-              type="danger"
               strong
-              underline
-              class="cursor-pointer"
+              class="cursor-pointer text-xl"
             >
               {{
                 formatCurrency(
@@ -113,14 +109,6 @@
                   <v-icon name="fa-trash-alt" />
                 </a-button>
               </a-tooltip>
-            <!-- <a-popconfirm
-              :title="'Bạn chắc chắn muốn loại khỏi danh sách bán?'"
-              ok-text="Có"
-              cancel-text="Hủy"
-              @confirm="handleDelete(record.key)"
-            >
-              
-            </a-popconfirm> -->
           </div>
         </a-image-preview-group>
       </template>

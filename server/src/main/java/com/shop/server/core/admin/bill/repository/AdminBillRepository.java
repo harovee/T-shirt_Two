@@ -107,6 +107,7 @@ public interface AdminBillRepository extends HoaDonRepository {
                 hd.trang_thai = 'Hóa đơn chờ'
             AND
                 hd.loai_hoa_don = 'Tại quầy'
+            ORDER BY hd.ngay_tao ASC
             """, nativeQuery = true)
     List<AdminBillWaitResponse> getBillsWait();
 
