@@ -49,7 +49,8 @@ import {computed, createVNode, defineEmits, defineProps, ref} from "vue";
 import {QrcodeStream} from "vue-qrcode-reader";
 import {Modal, notification} from "ant-design-vue";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
-import {ClientQRRequest} from "@/infrastructure/services/api/admin/client.api.ts";
+import {StaffQRRequest} from "@/infrastructure/services/api/admin/staff.api.ts";
+import {useCreateStaffByQRCode} from "@/infrastructure/services/service/admin/staff.action.ts";
 
 const props = defineProps({
   open: Boolean,
@@ -59,7 +60,7 @@ const emit = defineEmits(["handleClose"]);
 
 const result = ref('')
 
-const parseQRData = (qrString: string): ClientQRRequest | null => {
+const parseQRData = (qrString: string): StaffQRRequest | null => {
   try {
     const rawData = qrString.split("|");
     console.log(rawData);
@@ -118,7 +119,7 @@ const formatDate = (dateStr: string): string => {
   return dateStr.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
 };
 
-const personData = ref<ClientQRRequest | null>(null);
+const personData = ref<StaffQRRequest | null>(null);
 
 function onDetect(detectedCodes) {
   console.log("🚀 QR detected:", detectedCodes);
@@ -278,9 +279,11 @@ function onError(err) {
   }
 }
 
+const {mutate: scan} = useCreateStaffByQRCode();
+
 const handleQRScanStaffs = () => {
   Modal.confirm({
-    content: "Bạn chắc chắn muốn kiểm tra thông tin trên? Hệ thống sẽ thêm mới hoặc update thông tin của nhân viên có mã định danh trên!!!",
+    content: "Bạn chắc chắn muốn kiểm tra thông tin trên? Hệ thống sẽ thêm mới thông tin của nhân viên có mã định danh trên với trạng thái ngừng hoạt động!!!",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
     async onOk() {
@@ -291,24 +294,33 @@ const handleQRScanStaffs = () => {
             description: "Bạn chưa quét thành công mã! Vui lòng quét mã QR của hệ thống VNID",
             duration: 4,
           });
+          return;
         }
-        // create(modelRef, {
-        //   onSuccess: (res) => {
-        //     notification.success({
-        //       message: 'Thông báo',
-        //       description: res?.message,
-        //       duration: 4,
-        //     });
-        //     handleClose();
-        //   },
-        //   onError: (error: any) => {
-        //     notification.error({
-        //       message: 'Thông báo',
-        //       description: error?.response?.data?.message,
-        //       duration: 4,
-        //     });
-        //   },
-        // });
+        scan(personData.value, {
+          onSuccess: (res) => {
+            if (res.status === "OK") {
+              notification.warning({
+                message: 'Thông báo',
+                description: res?.message,
+                duration: 4,
+              });
+            } else if (res.status === "CREATED") {
+              notification.success({
+                message: 'Thông báo',
+                description: res?.message,
+                duration: 4,
+              });
+            }
+            handleClose();
+          },
+          onError: (error: any) => {
+            notification.error({
+              message: 'Thông báo',
+              description: error?.response?.data?.message,
+              duration: 4,
+            });
+          },
+        });
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {

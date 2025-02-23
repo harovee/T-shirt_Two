@@ -10,7 +10,11 @@ import {
     getPriceNextVoucher,
     nextVoucherRequest,
     ShippingFeeRequest,
-    calculateShippingFee
+    calculateShippingFee,
+    getListPaymentMethodDetail,
+    paymentMethodDetailRequest,
+    createPaymentMethodDetail,
+    getCustomerByPhoneNumber
 } from "@/infrastructure/services/api/admin/payment.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -28,6 +32,31 @@ export const useGetListVoucher = (
     });
 };
 
+export const useGetListPaymentMethodDetail = (
+    params: Ref<paymentMethodDetailRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getListPaymentMethodDetail>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.paymentMethodDetail, params],
+        queryFn: () => getListPaymentMethodDetail(params),
+        ...options,
+    });
+};
+
+export const useCreatePaymentMethodDetail = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: paymentMethodDetailRequest) => createPaymentMethodDetail(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.payment.paymentMethodDetail],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.admin.payment.paymentMethodDetail, "🚀 ~ paymentMethodDetailCreate ~ error:", error);
+        },
+    });
+};
+
 export const useGetPriceNextVoucher = (
     params: Ref<nextVoucherRequest>, options?: any
 ): UseQueryReturnType<Awaited<ReturnType<typeof getPriceNextVoucher>>, Error> => {
@@ -37,6 +66,7 @@ export const useGetPriceNextVoucher = (
         ...options,
     });
 };
+
 
 export const useGetListCustomerAddress = (
     params: Ref<FindCustomerAddressRequest>, options?: any
@@ -69,6 +99,15 @@ export const useGetVoucherById = (
     });
 };
 
+export const useGetCustomerByPhoneNumber = (
+    phoneNumber: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getCustomerByPhoneNumber>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.customerDetail,phoneNumber,],
+        queryFn: () => getCustomerByPhoneNumber(phoneNumber),
+        ...options,
+    });
+};
 
 export const useGetCustomerById = (
     khachHangId: Ref<string | null>, options?: any
@@ -80,13 +119,13 @@ export const useGetCustomerById = (
     });
 };
 
-export const useGetShippingFee = (
-    params: Ref<ShippingFeeRequest>, options?: any
-): UseQueryReturnType<Awaited<ReturnType<typeof calculateShippingFee>>, Error> => {
-    return useQuery({
-        queryKey: [queryKey.admin.payment.shippingFee, params],
-        queryFn: () => calculateShippingFee(params),
-        ...options,
-    });
-};
+// export const useGetShippingFee = (
+//     params: Ref<ShippingFeeRequest>, options?: any
+// ): UseQueryReturnType<Awaited<ReturnType<typeof calculateShippingFee>>, Error> => {
+//     return useQuery({
+//         queryKey: [queryKey.admin.payment.shippingFee, params],
+//         queryFn: () => calculateShippingFee(params),
+//         ...options,
+//     });
+// };
 

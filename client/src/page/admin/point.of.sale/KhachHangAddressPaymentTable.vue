@@ -118,12 +118,12 @@ const params = ref<FindCustomerAddressRequest>({
   page: 1,
   size: 5,
   keyword: "",
-  idKhachHang: props.dataCustomerWithId ? props.dataCustomerWithId.key : null
+  idKhachHang: props.dataCustomerWithId ? props.dataCustomerWithId.id : null
 });
 
 watch(() => props.dataCustomerWithId, (newVal) => {
   if (newVal) {
-    params.value.idKhachHang = newVal.key
+    params.value.idKhachHang = newVal.id
   }
   
   // params.value.idKhachHang = newVal.key;

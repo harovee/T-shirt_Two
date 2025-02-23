@@ -82,6 +82,12 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'another'" class="text-center">
         </div>
+        <div v-else-if="column.key === 'email'">
+          <div v-if="record.email === null">Chưa thiết lập</div>
+        </div>
+        <div v-else-if="column.key === 'phoneNumber'">
+          <div v-if="record.phoneNumber === null">Chưa thiết lập</div>
+        </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>
           <a-tag v-else-if="record.status === 'true'" color="warning">Vô hiệu hóa</a-tag>

@@ -1,6 +1,5 @@
 package com.shop.server.entities.base;
 
-import com.shop.server.infrastructure.config.database.AuditorAwareConfig;
 import com.shop.server.infrastructure.event.AuditEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -12,19 +11,17 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 @MappedSuperclass
-@EntityListeners({AuditEntityListener.class, AuditorAwareConfig.class})
+@EntityListeners({AuditEntityListener.class})
 public abstract class AuditEntity {
 
     @Column(name = "ngay_tao", updatable = false)
     @CreatedDate
     private Long createdDate;
 
-    @Column (name = "ngay_sua")
+    @Column(name = "ngay_sua")
     @LastModifiedDate
     private Long lastModifiedDate;
 
@@ -36,7 +33,7 @@ public abstract class AuditEntity {
     @LastModifiedBy
     private String nguoiSua;
 
-    @Column(name = "deleted",precision = 0)
+    @Column(name = "deleted", precision = 0)
     private Boolean deleted;
 
 }

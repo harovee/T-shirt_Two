@@ -11,12 +11,14 @@
         <a-input
           v-if="field.component === 'a-input'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder"
           :type="field.type"
+          @blur="handleGetAddress"
         ></a-input>
 
         <a-select
           v-else-if="field.component === 'a-select'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder" :options="field.options"
           show-search :filter-option="filterOption"
           @change="handleChangeOptions(field.name, $event)"
+          @blur="handleGetAddress"
         >
         </a-select>
       </a-form-item>
@@ -60,9 +62,13 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  selectedCustomer: {
+    type: Object,
+    required: true,
+  },
 });
 
-const emit = defineEmits(["update:selectedCustomerAddress"]);
+const emit = defineEmits(["handleResetActiveKey", "handleGetAddress", "update:selectedCustomerAddress"]);
 
 const emitUpdatedAddress = () => {
   if(modelRef.district && modelRef.ward){
@@ -147,13 +153,31 @@ const filterOption = (input: string, option: any) => {
 const modelRef = reactive<ClientAddressRequest>({
   name: props?.selectedCustomerAddress?.name,
   phoneNumber: props?.selectedCustomerAddress?.phoneNumber,
-  line: props?.selectedCustomerAddress?.line,
-  ward: props?.selectedCustomerAddress?.ward.toString(),
-  district: props?.selectedCustomerAddress?.district.toString(),
-  province: props?.selectedCustomerAddress?.province.toString(),
-  isDefault: props?.selectedCustomerAddress?.isDefault,
+  line: props?.selectedCustomerAddress?.line || null,
+  ward: props?.selectedCustomerAddress?.ward.toString() || null,
+  district: props?.selectedCustomerAddress?.district.toString() || null,
+  province: props?.selectedCustomerAddress?.province.toString() || null,
+  isDefault: props?.selectedCustomerAddress?.isDefault || false,
   clientId: props?.selectedCustomerAddress?.clientId,
 });
+
+watch(
+  () => props.selectedCustomer,
+  (newCustomer) => {
+    if (newCustomer) {
+      Object.assign(modelRef, {
+        name: "",
+        phoneNumber: "",
+        line: "",
+        ward: "",
+        district: "",
+        province: "",
+        isDefault: false,
+        clientId: null,
+      });
+    }
+  }
+);
 const refreshKey = ref(0);
 
 const rulesRef = reactive({
@@ -161,7 +185,7 @@ const rulesRef = reactive({
     {
       required: true,
       validator: (_, value) =>
-        value !== null && value.trim() !== ""
+        value && typeof value === "string" && value.trim() !== ""
           ? Promise.resolve()
           : Promise.reject("Tên không được để trống"),
       trigger: "blur",
@@ -248,6 +272,7 @@ const formFields = computed(() => [
   },
 ]);
 
+const fullAddressRef = ref("");
 /*** Handle ***/
 
 const handleChangeOptions = (key: string, value: any) => {
@@ -268,6 +293,7 @@ const handleChangeOptions = (key: string, value: any) => {
       wardsOptions.value = [defaultWardOption];
       modelRef.district = "";
       modelRef.ward = "";
+      updateFullAddress();
       getDistrictsByProvinceId(value, {
         onSuccess: (data) => {
           const options =
@@ -285,6 +311,7 @@ const handleChangeOptions = (key: string, value: any) => {
     case "district":
       wardsOptions.value = [defaultWardOption];
       modelRef.ward = "";
+      updateFullAddress();
       getWardsByDistrictId(value, {
         onSuccess: (data) => {
           const options =
@@ -299,14 +326,94 @@ const handleChangeOptions = (key: string, value: any) => {
         },
       });
       break;
-
-      case "ward":
-      modelRef.ward = value;
+    case "ward":
+    modelRef.ward = value;
+      updateFullAddress(); // Cập nhật địa chỉ mới
       break;
     default:
       return;
   }
   emitUpdatedAddress();
+};
+
+const updateFullAddress = () => {
+  const wardName =
+    wardsOptions.value.find((w) => w.value === modelRef.ward)?.label || "";
+  const districtName =
+    districtsOptions.value.find((d) => d.value === modelRef.district)?.label ||
+    "";
+  const provinceName =
+    provincesOptions.value.find((p) => p.value === modelRef.province)?.label ||
+    "";
+
+  fullAddressRef.value = `${wardName}, ${districtName}, ${provinceName}`.trim();
+};
+
+const handleGetAddress = (name: string) => {
+  validate();
+  const fullAddress = modelRef.line + ", " + fullAddressRef.value;
+  emit("handleGetAddress", modelRef, fullAddress);
+};
+
+const handleChangeDefault = (id: string) => {
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn đặt địa chỉ này làm địa chỉ mặc định?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        await validate();
+        changeClientAddressDefault(id, {
+          onSuccess: (res: any) => {
+            notification.success({
+              message: "Thông báo",
+              description: res.message,
+              duration: 4,
+            });
+            emit("handleResetActiveKey");
+          },
+          onError: (error: any) => {
+            notification.error({
+              message: "Thông báo",
+              description: error?.response?.data?.message,
+              duration: 4,
+            });
+          },
+        });
+      } catch (error: any) {
+        console.error("🚀 ~ handleUpdate ~ error:", error);
+        if (error?.response) {
+          notification.error({
+            message: "Thông báo",
+            description: error?.response?.data?.message,
+            duration: 4,
+          });
+        } else if (error?.errorFields) {
+          notification.warning({
+            message: "Thông báo",
+            description: "Vui lòng nhập đúng đủ các trường dữ liệu",
+            duration: 4,
+          });
+        }
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
+};
+
+const handleReset = () => {
+  modelRef.name = props?.selectedCustomerAddress?.name;
+  modelRef.phoneNumber = props?.selectedCustomerAddress?.phoneNumber;
+  modelRef.line = props?.selectedCustomerAddress?.line;
+  modelRef.province = props?.selectedCustomerAddress?.province.toString();
+  modelRef.district = props?.selectedCustomerAddress?.district.toString();
+  modelRef.ward = props?.selectedCustomerAddress?.ward;
+  refetchProvinces();
+  refetchDistricts();
+  refetchWards();
 };
 
 watch(
@@ -333,5 +440,4 @@ watch(
   },
   { immediate: true, deep: true }
 );
-
 </script>

@@ -185,11 +185,9 @@
           <div v-if="column.dataIndex === 'soLuong'" class="center">
             <a-space>{{ record.soLuong }}</a-space>
           </div>
-          <div v-if="column.dataIndex === 'giaBanHienTai'" class="text-right">
+          <div v-if="column.dataIndex === 'giaBanHienTai'" class="center">
             <a-typography-text
-              type="danger"
               strong
-              underline
               class="cursor-pointer"
             >
               {{

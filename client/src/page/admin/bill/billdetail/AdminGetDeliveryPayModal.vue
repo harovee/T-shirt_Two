@@ -30,13 +30,21 @@
           />
 
           <!-- Tiền khách đưa: Người dùng nhập -->
-          <a-input
+          <!-- <a-input
             v-else-if="field.name === 'tienKhachDua'"
             v-model:value="formattedValues.tienKhachDua"
             type="text"
             @beforeinput="handleBeforeInput"
             @input="handleInput($event, 'tienKhachDua')"
             placeholder="Nhập tiền khách đưa"
+          /> -->
+          <a-input-number
+            v-else-if="field.name === 'tienKhachDua'"
+            class="w-full"
+            v-model:value="modelRef.tienKhachDua"
+            min="0"
+            placeholder="Nhập tiền khách đưa"
+            :formatter="formatter"
           />
 
           <!-- Ghi chú (Xử lý nhập an toàn) -->
@@ -65,7 +73,7 @@ import { useGetPaymentMethod } from "@/infrastructure/services/service/admin/pay
 import { formatCurrencyVND } from "@/utils/common.helper";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { Form, Modal } from "ant-design-vue";
-import { computed, createVNode, reactive, ref, watchEffect } from "vue";
+import { computed, createVNode, reactive, ref, watchEffect, watch } from "vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { errorNotiSort, successNotiSort, warningNotiSort } from "@/utils/notification.config";
 
@@ -196,6 +204,12 @@ const formattedValues = computed(() => ({
 }));
 
 //xử lý nhập tiền khách đưa
+
+const formatter = (value: any) => {
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
 const MAX_AMOUNT = 1_000_000_000_000; // Giới hạn số tiền tối đa
 
 const handleBeforeInput = (event: InputEvent) => {
@@ -268,6 +282,10 @@ const handleInput = (event: Event, field: string) => {
     target.selectionStart = target.selectionEnd = Math.min(cursorPosition, positionBeforeCurrencySymbol);
   }, 0);
 };
+
+watch (() => modelRef.tienKhachDua, (newValue) => {
+  modelRef.soTienDu = Math.max(0,newValue - modelRef.tongTien);
+})
 
 const handleClose = () => {
   emit("handleClose");

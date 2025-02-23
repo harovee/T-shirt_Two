@@ -4,6 +4,7 @@ import com.shop.server.core.admin.staff.models.requests.AdminFindStaffRequest;
 import com.shop.server.core.admin.staff.models.responses.AdminDetailStaffResponse;
 import com.shop.server.core.admin.staff.models.responses.AdminStaffExcelResponse;
 import com.shop.server.core.admin.staff.models.responses.AdminStaffResponse;
+import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.repositories.NhanVienRepository;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AdminStaffRepository extends NhanVienRepository {
@@ -77,8 +79,8 @@ public interface AdminStaffRepository extends NhanVienRepository {
                     nv.ngay_tao as createdDate,
                     nv.ngay_sua as lastModifiedDate
                 FROM nhan_vien nv
-                LEFT JOIN nhan_vien nt ON nt.email = nv.nguoi_tao
-                LEFT JOIN nhan_vien ns ON ns.email = nv.nguoi_tao
+                LEFT JOIN nhan_vien nt ON nt.id = nv.nguoi_tao
+                LEFT JOIN nhan_vien ns ON ns.id = nv.nguoi_sua
                 WHERE nv.id = :id
             """, nativeQuery = true)
     AdminDetailStaffResponse getStaffDetail(String id);
@@ -135,4 +137,5 @@ public interface AdminStaffRepository extends NhanVienRepository {
             """, nativeQuery = true)
     List<AdminStaffExcelResponse> getStaffsExcel();
 
+    Optional<NhanVien> findByIdentity(String identity);
 }
