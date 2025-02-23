@@ -71,6 +71,7 @@
 import {debounce} from "lodash";
 import { defineEmits, ref, watch} from "vue";
 import {FindVoucherRequest, PropertyVoucherParams} from "@/infrastructure/services/api/admin/voucher/voucher.api";
+import dayjs, { Dayjs } from 'dayjs';
 
 const emit = defineEmits([
   "filter"
@@ -78,16 +79,16 @@ const emit = defineEmits([
 
 const dateRange = ref<[string | null, string | null] | null>(null);
 
-function onChangeDateRange(dates: [Date | null, Date | null] | null) {
-  if (dates) {
-    params.value.startDate = dates[0] ? dates[0].valueOf() : null;
-    params.value.endDate = dates[1] ? dates[1].valueOf() : null;
+
+function onChangeDateRange(dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) {
+  if (dates && dates[0] && dates[1]) {
+    params.value.startDate = dates[0].valueOf();
+    params.value.endDate = dates[1].valueOf();
   } else {
-    // Nếu không có ngày nào được chọn
     params.value.startDate = null;
     params.value.endDate = null;
   }
-  debouncedEmit(); // Gửi sự kiện để cập nhật dữ liệu
+  debouncedEmit();
 }
 
 

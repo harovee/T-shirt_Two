@@ -9,6 +9,8 @@ import {
     FindCustomerAddressRequest,
     getPriceNextVoucher,
     nextVoucherRequest,
+    ShippingFeeRequest,
+    calculateShippingFee,
     getListPaymentMethodDetail,
     paymentMethodDetailRequest,
     createPaymentMethodDetail,

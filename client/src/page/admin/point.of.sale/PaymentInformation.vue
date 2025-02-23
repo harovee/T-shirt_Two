@@ -10,6 +10,7 @@
       <pay-ment-address
         :selectedCustomer="selectedCustomerInfo"
         :selectedCustomerAddress="selectedCustomerAddress"
+         @update:selectedCustomerAddress="handleAddressUpdate"
         :isRefresh="isRefresh"
         @handleGetAddress="handleGetCustomerAddress"
       />
@@ -142,7 +143,7 @@
         </a-form-item> -->
 
         <!-- Phí vận chuyển -->
-        <a-form-item label="Phí vận chuyển" v-if="paymentInfo.isShipping">
+        <a-form-item label="Phí vận chuyển" v-if="paymentInfo.shippingFee">
           <a-input-number
             v-model:value="paymentInfo.shippingFee"
             placeholder="Nhập phí vận chuyển"
@@ -193,6 +194,7 @@ import {
   useGetListVoucher,
   useGetVoucherById,
   useGetPriceNextVoucher,
+  useGetShippingFee
 } from "@/infrastructure/services/service/admin/payment.action";
 import { useUpdateBillWait } from "@/infrastructure/services/service/admin/bill.action";
 import VoucherPaymentTable from "./voucher/VoucherPaymentTable.vue";
@@ -215,6 +217,7 @@ import {
   VoucherResponse,
   FindVoucherRequest,
   nextVoucherRequest,
+  ShippingFeeRequest,
   getWardByCode,
   getDistrictById,
   getProvinceById,
@@ -257,6 +260,25 @@ const emit = defineEmits(["handlePaymentInfo"]);
 const pageSize = ref(5);
 const current1 = ref(1);
 
+const selectedAddress = ref({});
+
+
+
+const calculateProductDimensions = () => {
+  const totalWeight = dataSourcePro.value.reduce((sum, product) => {
+    return sum + (product.soLuong * 200) // Assuming 500g per item, adjust as needed
+  }, 0);
+  const totalHeight = dataSourcePro.value.reduce((sum, product) => {
+    return sum + (product.soLuong * 5) // Assuming 500g per item, adjust as needed
+  }, 0);
+  return {
+    weight: totalWeight,
+    length: 20, // Default dimensions in cm
+    width: 20,  // Adjust these values based on your products
+    height: totalHeight
+  };
+};
+
 interface DataType extends POSProductDetailResponse {
   key: string;
   thanhTien: number;
@@ -270,6 +292,24 @@ const {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
+
+const shippingParams = computed<ShippingFeeRequest>(() => ({
+  fromDistrictId: 3440,
+  fromWardCode: "13007",
+  toDistrictId:  0,
+  toWardCode:"",   
+  serviceId: 53320,
+  ...calculateProductDimensions()
+}));
+
+const handleAddressUpdate = (newAddress) => {
+  selectedAddress.value = newAddress;
+ // console.log("Địa chỉ mới:", newAddress);
+  shippingParams.value.toDistrictId = newAddress.district,
+  shippingParams.value.toWardCode = newAddress.ward
+};
+
+//console.log(shippingParams);
 
 const dataSourcePro: DataType[] | any = computed(() => {
   return (
@@ -333,6 +373,48 @@ const paymentInfo = ref({
   phoneNumber: "" || null,
 });
 
+//console.log(shippingParams);
+
+
+const { data: shipping, refetch: refetchShipping} = useGetShippingFee(
+  shippingParams,{
+    refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+  enabled: paymentInfo.value.shippingOption === 'true' && 
+             !shippingParams.value.toDistrictId &&
+             !shippingParams.value.toWardCode 
+  });
+
+  watch(() => selectedAddress.value, (newValues) => {
+  console.log("Dữ liệu thay đổi:", shipping?.value?.data?.service_fee);
+    refetchShipping();
+}, { deep: true });
+
+  watch(
+  () => props.selectedCustomerAddress,
+  (newAddress) => {
+    if (newAddress?.districtId && newAddress?.wardCode) {
+      refetchShipping();
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  () => paymentInfo.value.shippingOption,
+  (newOption) => {
+    if (newOption === 'true' && props.selectedCustomerAddress?.districtId && props.selectedCustomerAddress?.wardCode) {
+      refetchShipping();
+    }
+  }
+);
+watch(() => props.selectedCustomerInfo, (newData) => {
+  if (props.selectedCustomerInfo) {
+    paramsVoucher.value.idKhachHang = newData.key
+    paramsNextPriceVoucher.value.idKhachHang = newData.key
+  }
+);
+
 watch(
   () => props.selectedCustomerInfo,
   (newData) => {
@@ -340,8 +422,7 @@ watch(
       paramsVoucher.value.idKhachHang = newData.key;
       paramsNextPriceVoucher.value.idKhachHang = newData.key;
     }
-  }
-);
+    })
 
 watch(
   () => dataSourcePro.value,
@@ -399,7 +480,6 @@ const { data: wards, refetch: refetchWards } = useGetWardsByDistrictIdQuery(
     enabled: false,
   }
 );
-
 watch(
   () => props.selectedCustomerAddress,
   async (newDataSource) => {
@@ -647,6 +727,12 @@ watch(totalAmount, (newTotal) => {
   }
 });
 
+// watch(() => shippingFee.value?.total, (newFee) => {
+//   if (newFee && paymentInfo.value.shippingOption === 'true') {
+//     paymentInfo.value.shippingFee = newFee;
+//     updateTotal();
+//   }
+// });
 // Theo dõi thay đổi và cập nhật tổng tiền
 watch(
   [() => paymentInfo.value.shippingFee, () => paymentInfo.value.discount],

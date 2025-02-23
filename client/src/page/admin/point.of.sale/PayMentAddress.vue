@@ -6,27 +6,17 @@
       v-for="field in formFields"
       class="col-span-1 md:col-span-1 lg:col-span-1"
     >
-      <a-form-item
-        :label="field.label"
-        :name="field.name"
-        v-bind="validateInfos[field.name]"
-        class="m-0"
+      <a-form-item :label="field.label" :name="field.name" v-bind="validateInfos[field.name]" class="m-0"
       >
         <a-input
-          v-if="field.component === 'a-input'"
-          v-model:value="modelRef[field.name]"
-          :placeholder="field.placeholder"
+          v-if="field.component === 'a-input'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder"
           :type="field.type"
           @blur="handleGetAddress"
         ></a-input>
 
         <a-select
-          v-else-if="field.component === 'a-select'"
-          v-model:value="modelRef[field.name]"
-          :placeholder="field.placeholder"
-          :options="field.options"
-          show-search
-          :filter-option="filterOption"
+          v-else-if="field.component === 'a-select'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder" :options="field.options"
+          show-search :filter-option="filterOption"
           @change="handleChangeOptions(field.name, $event)"
           @blur="handleGetAddress"
         >
@@ -78,8 +68,13 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["handleResetActiveKey", "handleGetAddress"]);
+const emit = defineEmits(["handleResetActiveKey", "handleGetAddress", "update:selectedCustomerAddress"]);
 
+const emitUpdatedAddress = () => {
+  if(modelRef.district && modelRef.ward){
+  emit("update:selectedCustomerAddress", { ...modelRef });
+}
+};
 const isRefetch = ref<boolean>(false);
 
 const province = ref<string>("");
@@ -147,7 +142,7 @@ watch(wards, (newWards) => {
       value: address.id,
     })) || [];
   const defaultOption = { label: "-- Chọn phường/xã --", value: "" };
-
+5
   wardsOptions.value = [defaultOption, ...options];
 });
 
@@ -332,11 +327,13 @@ const handleChangeOptions = (key: string, value: any) => {
       });
       break;
     case "ward":
+    modelRef.ward = value;
       updateFullAddress(); // Cập nhật địa chỉ mới
       break;
     default:
       return;
   }
+  emitUpdatedAddress();
 };
 
 const updateFullAddress = () => {
@@ -438,6 +435,8 @@ watch(
         clientId: newDataSource.clientId || "",
       });
     }
+   // console.log(newDataSource);
+    
   },
   { immediate: true, deep: true }
 );
