@@ -85,7 +85,6 @@
           @edit="onEdit"
           class="ms-5 me-5 mb-5 mt-2"
         >
-          <!-- :tab="`${bill.ma} (${dataSourcePro ? dataSourcePro.length : 0})`" -->
           <a-tab-pane v-for="bill in dataSource" :key="bill.id">
             <template #tab>
               <span class="relative pr-6">
