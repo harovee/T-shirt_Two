@@ -126,11 +126,11 @@ public class SecurityConfig {
                 auth -> auth.requestMatchers(
                                 Helper.appendWildcard(MappingConstant.API_AUTH_PREFIX),
                                 Helper.appendWildcard(MappingConstant.PATH_OAUTH2),
-                                Helper.appendWildcard(MappingConstant.API_EMBED_PREFIX)
+                                Helper.appendWildcard(MappingConstant.API_EMBED_PREFIX),
 //                                Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
 //                                Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
 //                                Helper.appendWildcard(MappingConstant.API_VERSION_PREFIX),
-//                                Helper.appendWildcard(MappingConstant.API_ADMIN_PAYMENT)
+                                Helper.appendWildcard(MappingConstant.API_ADMIN_POINT_SALE)
                         )
                         .permitAll()
         );

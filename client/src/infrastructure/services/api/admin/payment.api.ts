@@ -2,7 +2,7 @@ import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} fro
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
 import {API_ADMIN_PAYMENT} from "@/infrastructure/constants/url.ts";
-import {API_ADMIN_PAYMENT, GHN_API_URL, GHN_TOKEN} from "@/infrastructure/constants/url.ts";
+import {API_ADMIN_PAYMENT, GHN_API_URL, GHN_TOKEN, GHN_API_SERVICES} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
 export interface PropertyVoucherParams {
@@ -23,12 +23,18 @@ export type ShippingFeeRequest = {
     fromDistrictId: number;
     fromWardCode: string;
     serviceId: number | 53320;
-    toDistrictId: number;
+    toDistrictId: string;
     toWardCode: string;
     weight: number;
     length: number;
     width: number;
     height: number;
+}
+
+export type ServiceIdRequest ={
+    formDistrict : number,
+    toDistrict: number,
+    shopId : number
 }
 
 export interface FindCustomerAddressRequest extends PaginationParams {
@@ -109,6 +115,12 @@ export type PaymentMethodDetailResponse = ResponseList & {
     maGiaoDich : string;
     soTien: number;
 };
+
+export interface ServiceIdResponse{
+    service_id: number,
+    short_name: string,
+    service_type_id: number,
+}
 
 export interface ShippingFeeResponse {
     total: number;         // Tổng phí vận chuyển
@@ -256,6 +268,7 @@ export const calculateShippingFee = async (params: Ref<ShippingFeeRequest>) => {
                 from_district_id: params.value.fromDistrictId,
                 from_ward_code: params.value.fromWardCode,
                 service_id: params.value.serviceId,
+                service_type_id: 1,
                 to_district_id: params.value.toDistrictId,
                 to_ward_code: params.value.toWardCode,
                 weight: params.value.weight,
@@ -274,6 +287,26 @@ export const calculateShippingFee = async (params: Ref<ShippingFeeRequest>) => {
         return res.data;
     } catch (error) {
         console.error("Lỗi khi gọi API GHN:", error);
+    }
+};
+
+export const getServiceId = async (params: Ref<ServiceIdRequest>) => {
+    try {
+        const res = (await request({
+            url: `${GHN_API_SERVICES}`,
+            method: "GET",
+            params: {
+                from_district: params.value.formDistrict,
+	            to_district: params.value.toDistrict,
+	            shop_id: params.value.shopId
+            },
+            headers: {
+                token: GHN_TOKEN
+            },
+        })) as AxiosResponse<DefaultResponse<ServiceIdResponse>>;
+        return res.data;
+    } catch (error) {
+        console.error("Lỗi khi gọi API GHN Services:", error);
     }
 };
 

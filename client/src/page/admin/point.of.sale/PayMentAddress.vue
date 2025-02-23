@@ -20,6 +20,7 @@
           @change="handleChangeOptions(field.name, $event)"
           @blur="handleGetAddress"
         >
+        
         </a-select>
       </a-form-item>
     </template>
@@ -334,6 +335,9 @@ const handleChangeOptions = (key: string, value: any) => {
       return;
   }
   emitUpdatedAddress();
+  // validate();
+  const fullAddress = modelRef.line + ", " + fullAddressRef.value;
+  emit("handleGetAddress", modelRef, fullAddress);
 };
 
 const updateFullAddress = () => {
@@ -350,7 +354,7 @@ const updateFullAddress = () => {
 };
 
 const handleGetAddress = (name: string) => {
-  validate();
+  // validate();
   const fullAddress = modelRef.line + ", " + fullAddressRef.value;
   emit("handleGetAddress", modelRef, fullAddress);
 };

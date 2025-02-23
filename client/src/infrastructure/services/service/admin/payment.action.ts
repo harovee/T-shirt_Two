@@ -14,7 +14,9 @@ import {
     getListPaymentMethodDetail,
     paymentMethodDetailRequest,
     createPaymentMethodDetail,
-    getCustomerByPhoneNumber
+    getCustomerByPhoneNumber, 
+    ServiceIdRequest,
+    getServiceId
 } from "@/infrastructure/services/api/admin/payment.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -119,13 +121,23 @@ export const useGetCustomerById = (
     });
 };
 
-// export const useGetShippingFee = (
-//     params: Ref<ShippingFeeRequest>, options?: any
-// ): UseQueryReturnType<Awaited<ReturnType<typeof calculateShippingFee>>, Error> => {
-//     return useQuery({
-//         queryKey: [queryKey.admin.payment.shippingFee, params],
-//         queryFn: () => calculateShippingFee(params),
-//         ...options,
-//     });
-// };
+export const useGetShippingFee = (
+    params: Ref<ShippingFeeRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof calculateShippingFee>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.shippingFee, params],
+        queryFn: () => calculateShippingFee(params),
+        ...options,
+    });
+};
+
+export const useGetServiceId = (
+    params: Ref<ServiceIdRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getServiceId>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.serviceId, params],
+        queryFn: () => getServiceId(params),
+        ...options,
+    });
+};
 
