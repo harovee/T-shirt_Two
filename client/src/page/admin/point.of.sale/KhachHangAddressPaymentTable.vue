@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    :visible="open"
+    :open="open"
     @ok="handleClose"
     key=""
     :width="'800px'"
@@ -63,8 +63,8 @@ const current1 = ref(1);
 const props = defineProps({ open: Boolean,
   dataCustomerWithId: {
     type: Object,
-    required: true,
-  },
+    default: () => ({})
+  }
  });
 
 const emit = defineEmits(["handleClose", "selectCustomerAddress"]);

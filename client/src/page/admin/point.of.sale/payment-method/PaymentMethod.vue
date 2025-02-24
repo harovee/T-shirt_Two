@@ -154,6 +154,7 @@ const props = defineProps({
   dataCustomer: {
     type: Object,
     required: true,
+    default: () => ({})
   },
   totalAmount: {
     type: Number,
@@ -162,10 +163,12 @@ const props = defineProps({
   dataVoucher: {
     type: Object,
     required: true,
+    default: () => ({})
   },
   dataSourceInfo: {
     type: Object,
     required: true,
+    default: () => ({})
   },
 });
 

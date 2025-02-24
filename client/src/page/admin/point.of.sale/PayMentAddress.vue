@@ -1,26 +1,61 @@
 <template>
-  <h3 class="text-lg font-semibold mb-4">📍 Nhập địa chỉ người nhận</h3>
-
+  <div class="flex justify-between items-center space-x-3">
+    <h3 class="text-lg font-semibold mb-4">📍 Nhập địa chỉ người nhận</h3>
+    <a-tooltip title="Chọn địa chỉ" trigger="hover">
+      <a-button
+        class="bg-purple-300 flex justify-between items-center gap-2"
+        @click="handleOpenKhachHangAddress"
+        size="large"
+      >
+        <v-icon name="fa-address-book" />
+      </a-button>
+    </a-tooltip>
+  </div>
+  <KhachHangAddressPaymentTable
+    :open="openCustomerAddress"
+    @handleClose="handleCloseCustomerAddress"
+    @cancel="openCustomerAddress = false"
+    :dataCustomerWithId="selectedCustomer || {}"
+    @selectCustomerAddress="handleCustomerAddressSelected"
+    class="w-[600px] h-[400px]"
+  />
   <a-form layout="vertical" class="grid grid-cols-2 gap-4" :key="refreshKey">
     <template
       v-for="field in formFields"
       class="col-span-1 md:col-span-1 lg:col-span-1"
     >
-      <a-form-item :label="field.label" :name="field.name" v-bind="validateInfos[field.name]" class="m-0"
+      <a-form-item
+        :label="field.label"
+        :name="field.name"
+        v-bind="validateInfos[field.name]"
+        class="m-0"
       >
         <a-input
-          v-if="field.component === 'a-input'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder"
+          v-if="field.component === 'a-input'"
+          v-model:value="modelRef[field.name]"
+          :placeholder="field.placeholder"
           :type="field.type"
           @blur="handleGetAddress"
         ></a-input>
 
+        <a-input
+          v-if="field.component === 'a-input-number'"
+          v-model:value="modelRef[field.name]"
+          :placeholder="field.placeholder"
+          class="w-full"
+          @blur="handleGetAddress"
+        ></a-input>
+
         <a-select
-          v-else-if="field.component === 'a-select'" v-model:value="modelRef[field.name]" :placeholder="field.placeholder" :options="field.options"
-          show-search :filter-option="filterOption"
+          v-else-if="field.component === 'a-select'"
+          v-model:value="modelRef[field.name]"
+          :placeholder="field.placeholder"
+          :options="field.options"
+          show-search
+          :filter-option="filterOption"
           @change="handleChangeOptions(field.name, $event)"
           @blur="handleGetAddress"
         >
-        
         </a-select>
       </a-form-item>
     </template>
@@ -53,34 +88,102 @@ import {
 import { keepPreviousData } from "@tanstack/vue-query";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { log } from "console";
+import KhachHangAddressPaymentTable from "./KhachHangAddressPaymentTable.vue";
+import {
+  VoucherResponse,
+  FindVoucherRequest,
+  nextVoucherRequest,
+  ShippingFeeRequest,
+  getWardByCode,
+  getDistrictById,
+  getProvinceById,
+  ServiceIdRequest,
+} from "@/infrastructure/services/api/admin/payment.api";
 
 /*** process data ***/
 
 const props = defineProps({
   dataSource: Object,
   isRefresh: Boolean,
-  selectedCustomerAddress: {
-    type: Object,
-    required: true,
-  },
+  // selectedCustomerAddress: {
+  //   type: Object,
+  //   required: true,
+  // },
   selectedCustomer: {
     type: Object,
     required: true,
+    default: () => ({})
   },
 });
 
-const emit = defineEmits(["handleResetActiveKey", "handleGetAddress", "update:selectedCustomerAddress"]);
+const emit = defineEmits([
+  "handleResetActiveKey",
+  "handleGetAddress",
+  "update:selectedCustomerAddress",
+]);
 
 const emitUpdatedAddress = () => {
-  if(modelRef.district && modelRef.ward){
-  emit("update:selectedCustomerAddress", { ...modelRef });
-}
+  if (modelRef.district && modelRef.ward) {
+    emit("update:selectedCustomerAddress", { ...modelRef });
+  }
 };
+
+const address = ref(null);
 const isRefetch = ref<boolean>(false);
 
 const province = ref<string>("");
 const district = ref<string>("");
 const ward = ref<string>("");
+
+const openCustomerAddress = ref(false);
+const addressSelected = ref(null);
+
+watch(
+  () => addressSelected.value,
+  async (newDataSource) => {
+    if (newDataSource) {
+      const wardInfo = ref(null);
+      const districtInfo = ref(null);
+      const provinceInfo = ref(null);
+      const fullAddress = ref('');
+      try {
+        const response = await getWardByCode(newDataSource.ward);
+        wardInfo.value = response.data.data;
+
+        const responseDis = await getDistrictById(newDataSource.district);
+        districtInfo.value = responseDis.data.data;
+
+        const responsePro = await getProvinceById(newDataSource.province);
+        provinceInfo.value = responsePro.data.data;
+        fullAddress.value =
+          newDataSource.line +
+          ", " +
+          wardInfo.value +
+          ", " +
+          districtInfo.value +
+          ", " +
+          provinceInfo.value;
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
+      }
+      emit("handleGetAddress", newDataSource, fullAddress.value);
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+const handleCustomerAddressSelected = (selectedAddress: any) => {
+  addressSelected.value = selectedAddress
+  address.value = selectedAddress;
+};
+
+const handleOpenKhachHangAddress = () => {
+  openCustomerAddress.value = true;
+};
+
+const handleCloseCustomerAddress = () => {
+  openCustomerAddress.value = false;
+};
 
 const { data: provinces, refetch: refetchProvinces } = useGetProvinces({
   refetchOnWindowFocus: false,
@@ -88,14 +191,14 @@ const { data: provinces, refetch: refetchProvinces } = useGetProvinces({
 });
 
 const { data: districts, refetch: refetchDistricts } =
-  useGetDistrictsByProvinceIdQuery(props?.selectedCustomerAddress?.province, {
+  useGetDistrictsByProvinceIdQuery(address?.value?.province, {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
     enabled: false,
   });
 
 const { data: wards, refetch: refetchWards } = useGetWardsByDistrictIdQuery(
-  props?.selectedCustomerAddress?.district,
+  address?.value?.district,
   {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
@@ -143,7 +246,7 @@ watch(wards, (newWards) => {
       value: address.id,
     })) || [];
   const defaultOption = { label: "-- Chọn phường/xã --", value: "" };
-5
+  5;
   wardsOptions.value = [defaultOption, ...options];
 });
 
@@ -152,33 +255,33 @@ const filterOption = (input: string, option: any) => {
 };
 
 const modelRef = reactive<ClientAddressRequest>({
-  name: props?.selectedCustomerAddress?.name,
-  phoneNumber: props?.selectedCustomerAddress?.phoneNumber,
-  line: props?.selectedCustomerAddress?.line || null,
-  ward: props?.selectedCustomerAddress?.ward.toString() || null,
-  district: props?.selectedCustomerAddress?.district.toString() || null,
-  province: props?.selectedCustomerAddress?.province.toString() || null,
-  isDefault: props?.selectedCustomerAddress?.isDefault || false,
-  clientId: props?.selectedCustomerAddress?.clientId,
+  name: address?.value?.name,
+  phoneNumber: address?.value?.phoneNumber,
+  line: address?.value?.line || null,
+  ward: address?.value?.ward.toString() || null,
+  district: address?.value?.district.toString() || null,
+  province: address?.value?.province.toString() || null,
+  isDefault: address?.value?.isDefault || false,
+  clientId: address?.value?.clientId,
 });
 
-watch(
-  () => props.selectedCustomer,
-  (newCustomer) => {
-    if (newCustomer) {
-      Object.assign(modelRef, {
-        name: "",
-        phoneNumber: "",
-        line: "",
-        ward: "",
-        district: "",
-        province: "",
-        isDefault: false,
-        clientId: null,
-      });
-    }
-  }
-);
+// watch(
+//   () => props.selectedCustomer,
+//   (newCustomer) => {
+//     if (newCustomer) {
+//       Object.assign(modelRef, {
+//         name: "",
+//         phoneNumber: "",
+//         line: "",
+//         ward: "",
+//         district: "",
+//         province: "",
+//         isDefault: false,
+//         clientId: null,
+//       });
+//     }
+//   }
+// );
 const refreshKey = ref(0);
 
 const rulesRef = reactive({
@@ -241,6 +344,7 @@ const formFields = computed(() => [
     name: "phoneNumber",
     component: "a-input",
     placeholder: "Nhâp số điện thoại",
+    min: 0,
     type: "number",
   },
   {
@@ -328,7 +432,7 @@ const handleChangeOptions = (key: string, value: any) => {
       });
       break;
     case "ward":
-    modelRef.ward = value;
+      modelRef.ward = value;
       updateFullAddress(); // Cập nhật địa chỉ mới
       break;
     default:
@@ -349,7 +453,6 @@ const updateFullAddress = () => {
   const provinceName =
     provincesOptions.value.find((p) => p.value === modelRef.province)?.label ||
     "";
-
   fullAddressRef.value = `${wardName}, ${districtName}, ${provinceName}`.trim();
 };
 
@@ -408,20 +511,20 @@ const handleChangeDefault = (id: string) => {
   });
 };
 
-const handleReset = () => {
-  modelRef.name = props?.selectedCustomerAddress?.name;
-  modelRef.phoneNumber = props?.selectedCustomerAddress?.phoneNumber;
-  modelRef.line = props?.selectedCustomerAddress?.line;
-  modelRef.province = props?.selectedCustomerAddress?.province.toString();
-  modelRef.district = props?.selectedCustomerAddress?.district.toString();
-  modelRef.ward = props?.selectedCustomerAddress?.ward;
-  refetchProvinces();
-  refetchDistricts();
-  refetchWards();
-};
+// const handleReset = () => {
+//   modelRef.name = props?.selectedCustomerAddress?.name;
+//   modelRef.phoneNumber = props?.selectedCustomerAddress?.phoneNumber;
+//   modelRef.line = props?.selectedCustomerAddress?.line;
+//   modelRef.province = props?.selectedCustomerAddress?.province.toString();
+//   modelRef.district = props?.selectedCustomerAddress?.district.toString();
+//   modelRef.ward = props?.selectedCustomerAddress?.ward;
+//   refetchProvinces();
+//   refetchDistricts();
+//   refetchWards();
+// };
 
 watch(
-  () => props.selectedCustomerAddress,
+  () => address.value,
   (newDataSource) => {
     if (newDataSource) {
       if (newDataSource?.province && newDataSource?.district) {
@@ -439,8 +542,7 @@ watch(
         clientId: newDataSource.clientId || "",
       });
     }
-   // console.log(newDataSource);
-    
+    // console.log(newDataSource);
   },
   { immediate: true, deep: true }
 );

@@ -116,7 +116,7 @@
                       <v-icon name="md-manageaccounts-round" />
                     </a-button>
                   </a-tooltip>
-                  <a-tooltip
+                  <!-- <a-tooltip
                     v-if="
                       activeTabCustomers[bill.id] &&
                       activeTabPaymentInfo[bill.id].shippingOption === 'true'
@@ -131,7 +131,7 @@
                     >
                       <v-icon name="fa-address-book" />
                     </a-button>
-                  </a-tooltip>
+                  </a-tooltip> -->
                 </div>
                 <khach-hang-payment-table
                   :open="open"
@@ -143,7 +143,7 @@
                     (customer) => handleCustomerSelected(customer, bill)
                   "
                 />
-                <KhachHangAddressPaymentTable
+                <!-- <KhachHangAddressPaymentTable
                   :open="openCustomerAddress"
                   @handleClose="handleCloseCustomerAddress"
                   @cancel="openCustomerAddress = false"
@@ -157,7 +157,7 @@
                       )
                   "
                   class="w-[600px] h-[400px]"
-                />
+                /> -->
               </div>
               <div class="mb-6 h-100">
                 <p>
@@ -185,7 +185,6 @@
                 <payment-information
                   :dataSourceInfor="bill"
                   :selectedCustomerInfo="activeTabCustomers[bill.id]"
-                  :selectedCustomerAddress="activeTabCustomerAddress[bill.id]"
                   @handlePaymentInfo="
                     (paymentInfo) => handleChangePaymentInfo(paymentInfo, bill)
                   "
@@ -527,13 +526,13 @@ const dataSources = ref(null);
 
 const open = ref(false);
 
-const openCustomerAddress = ref(false);
+// const openCustomerAddress = ref(false);
 
 const activeTabCustomers = reactive({});
 
 const activeTabPaymentInfo = reactive({});
 
-const activeTabCustomerAddress = reactive({});
+// const activeTabCustomerAddress = reactive({});
 
 const isRefresh = ref(false);
 
@@ -561,9 +560,10 @@ const handleOpenKhachHang = () => {
   open.value = true;
 };
 
-const handleOpenKhachHangAddress = () => {
-  openCustomerAddress.value = true;
-};
+// const handleOpenKhachHangAddress = () => {
+//   openCustomerAddress.value = true;
+// };
+
 watch(
   () => dataSource.value,
   (newData) => {
@@ -578,9 +578,9 @@ const handleClose = () => {
   open.value = false;
 };
 
-const handleCloseCustomerAddress = () => {
-  openCustomerAddress.value = false;
-};
+// const handleCloseCustomerAddress = () => {
+//   openCustomerAddress.value = false;
+// };
 
 const selectedCustomer = ref<{
   id: string;
@@ -610,14 +610,14 @@ const handleChangePaymentInfo = (paymentInfo: any, bill: any) => {
   activeTabPaymentInfo[bill.id] = { ...paymentInfo };
 };
 
-const handleCustomerAddressSelected = (
-  customerAddress: any,
-  dataCustomerAddress: any,
-  bill: any
-) => {
-  activeTabCustomerAddress[bill.id] = { ...customerAddress };
-  isRefresh.value = !isRefresh.value;
-};
+// const handleCustomerAddressSelected = (
+//   customerAddress: any,
+//   dataCustomerAddress: any,
+//   bill: any
+// ) => {
+//   activeTabCustomerAddress[bill.id] = { ...customerAddress };
+//   isRefresh.value = !isRefresh.value;
+// };
 
 const getNameCustomer = (id: string) => {
   if (id !== null && id !== "") {

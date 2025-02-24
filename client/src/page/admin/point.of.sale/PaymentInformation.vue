@@ -9,7 +9,6 @@
     <div class="bg-white me-5" v-if="paymentInfo.shippingOption === 'true'">
       <pay-ment-address
         :selectedCustomer="selectedCustomerInfo"
-        :selectedCustomerAddress="selectedCustomerAddress"
         @update:selectedCustomerAddress="handleAddressUpdate"
         :isRefresh="isRefresh"
         @handleGetAddress="handleGetCustomerAddress"
@@ -92,11 +91,18 @@
           class="flex justify-between items-center w-[300px]"
           v-if="paymentInfo.shippingOption === 'true'"
         >
-          <p>Tiền ship:</p>
+          <p class="inline-flex items-center gap-1 mt-1">
+            Tiền ship:
+            <img
+              src="@/assets/image/logo/Logo-GHN.webp"
+              width="50"
+              height="24"
+            />
+          </p>
           <a-input-number
             v-model:value="paymentInfo.shippingFee"
             placeholder="Nhập phí vận chuyển"
-            class="w-[120px]"
+            class="w-[120px] inline-flex items-center"
             min="0"
             @change="updateTotal"
             :formatter="formatter"
@@ -218,14 +224,12 @@ const props = defineProps({
   dataSourceInfor: {
     type: Object,
     required: true,
+    default: () => ({}),
   },
   selectedCustomerInfo: {
     type: Object,
     required: true,
-  },
-  selectedCustomerAddress: {
-    type: Object,
-    required: true,
+    default: () => ({}),
   },
   isRefresh: Boolean,
 });
@@ -466,65 +470,66 @@ const dataNextPriceVouchers = computed(
 
 // Lấy địa chỉ theo xã huyện tỉnh
 
-const provincesOptions = ref<{ label: string; value: string }[]>([]);
-const districtsOptions = ref<{ label: string; value: string }[]>([]);
-const wardsOptions = ref<{ label: string; value: string }[]>([]);
+// const provincesOptions = ref<{ label: string; value: string }[]>([]);
+// const districtsOptions = ref<{ label: string; value: string }[]>([]);
+// const wardsOptions = ref<{ label: string; value: string }[]>([]);
 
-const { data: provinces, refetch: refetchProvinces } = useGetProvinces({
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-  enabled: false,
-});
+// const { data: provinces, refetch: refetchProvinces } = useGetProvinces({
+//   refetchOnWindowFocus: false,
+//   placeholderData: keepPreviousData,
+//   enabled: false,
+// });
 
-const { data: districts, refetch: refetchDistricts } =
-  useGetDistrictsByProvinceIdQuery(props?.selectedCustomerAddress?.province, {
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
-    enabled: false,
-  });
+// const { data: districts, refetch: refetchDistricts } =
+//   useGetDistrictsByProvinceIdQuery(props?.selectedCustomerAddress?.province, {
+//     refetchOnWindowFocus: false,
+//     placeholderData: keepPreviousData,
+//     enabled: false,
+//   });
 
-const { data: wards, refetch: refetchWards } = useGetWardsByDistrictIdQuery(
-  props?.selectedCustomerAddress?.district,
-  {
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
-    enabled: false,
-  }
-);
-watch(
-  () => props.selectedCustomerAddress,
-  async (newDataSource) => {
-    if (newDataSource) {
-      paymentInfo.value.name = newDataSource.name;
-      paymentInfo.value.phoneNumber = newDataSource.phoneNumber;
+// const { data: wards, refetch: refetchWards } = useGetWardsByDistrictIdQuery(
+//   props?.selectedCustomerAddress?.district,
+//   {
+//     refetchOnWindowFocus: false,
+//     placeholderData: keepPreviousData,
+//     enabled: false,
+//   }
+// );
 
-      const wardInfo = ref(null);
-      const districtInfo = ref(null);
-      const provinceInfo = ref(null);
-      try {
-        const response = await getWardByCode(newDataSource.ward);
-        wardInfo.value = response.data.data;
+// watch(
+//   () => props.selectedCustomerAddress,
+//   async (newDataSource) => {
+//     if (newDataSource && paymentInfo.value.shippingOption === "true") {
+//       paymentInfo.value.name = newDataSource.name;
+//       paymentInfo.value.phoneNumber = newDataSource.phoneNumber;
 
-        const responseDis = await getDistrictById(newDataSource.district);
-        districtInfo.value = responseDis.data.data;
+//       const wardInfo = ref(null);
+//       const districtInfo = ref(null);
+//       const provinceInfo = ref(null);
+//       try {
+//         const response = await getWardByCode(newDataSource.ward);
+//         wardInfo.value = response.data.data;
 
-        const responsePro = await getProvinceById(newDataSource.province);
-        provinceInfo.value = responsePro.data.data;
-        paymentInfo.value.fullAddress =
-          newDataSource.line +
-          ", " +
-          wardInfo.value +
-          ", " +
-          districtInfo.value +
-          ", " +
-          provinceInfo.value;
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
-      }
-    }
-  },
-  { immediate: true, deep: true }
-);
+//         const responseDis = await getDistrictById(newDataSource.district);
+//         districtInfo.value = responseDis.data.data;
+
+//         const responsePro = await getProvinceById(newDataSource.province);
+//         provinceInfo.value = responsePro.data.data;
+//         paymentInfo.value.fullAddress =
+//           newDataSource.line +
+//           ", " +
+//           wardInfo.value +
+//           ", " +
+//           districtInfo.value +
+//           ", " +
+//           provinceInfo.value;
+//       } catch (error) {
+//         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
+//       }
+//     }
+//   },
+//   { immediate: true, deep: true }
+// );
 
 // // Cập nhật danh sách quận/huyện
 // watch(districts, (newDistricts) => {
@@ -702,23 +707,22 @@ const handleUpdateBill = () => {
     centered: true,
 
     async onOk() {
-      try {
-        await updateBillWait({
-          idBill: props.dataSourceInfor.id,
-          params: payload,
-        });
-        successNotiSort("Thanh toán thành công!");
-        router.push(
-          ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-        );
-      } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
-        if (error?.response) {
-          errorNotiSort(error?.response?.data?.message);
-        }
-      }
-      // console.log(payload);
-      
+      // try {
+      //   await updateBillWait({
+      //     idBill: props.dataSourceInfor.id,
+      //     params: payload,
+      //   });
+      //   successNotiSort("Thanh toán thành công!");
+      //   router.push(
+      //     ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+      //   );
+      // } catch (error: any) {
+      //   console.error("🚀 ~ handleCreate ~ error:", error);
+      //   if (error?.response) {
+      //     errorNotiSort(error?.response?.data?.message);
+      //   }
+      // }
+      console.log(payload);
     },
     cancelText: "Huỷ",
     onCancel() {
@@ -758,37 +762,52 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 
   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
   serviceIdParams.value.toDistrict = Number(modelRef.district);
-  refetchService().then(() => {
-    shippingParams.value.serviceId = service?.value?.data[0].service_id;
-  });
-
+  
+  if (serviceIdParams.value.toDistrict !== 0) {
+    refetchService().then(() => {
+      shippingParams.value.serviceId = service?.value?.data[0].service_id;
+    });
+  }
   shippingParams.value.toDistrictId = modelRef.district;
   shippingParams.value.toWardCode = modelRef.ward;
-  refetchShipping().then(() => {
-    paymentInfo.value.shippingFee = shipping?.value?.data.total;
-  });
+  if (shippingParams.value.toWardCode !== null && shippingParams.value.toWardCode !== '') {
+    refetchShipping().then(() => {
+      paymentInfo.value.shippingFee = shipping?.value?.data.total;
+    });
+  }
 };
 
-watch(
-  () => props.selectedCustomerAddress,
-  (newData) => {
-    if (newData) {
-      serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
-      serviceIdParams.value.toDistrict = Number(newData.district);
-    }
-    refetchService().then(() => {
-        shippingParams.value.serviceId = service?.value?.data[0].service_id;
-      });
+// watch(
+//   () => shippingParams.value.toWardCode,
+//   (newData) => {
+//     if (newData && newData !== "") {
+//       refetchShipping().then(() => {
+//         paymentInfo.value.shippingFee = shipping?.value?.data.total;
+//       });
+//     }
+//   },
+//   { deep: true }
+// );
 
-      shippingParams.value.toDistrictId = newData.district;
-      shippingParams.value.toWardCode = newData.ward;
-      refetchShipping().then(() => {
-        paymentInfo.value.shippingFee = shipping?.value?.data.total;
-      });
-  },
-  { deep: true }
-);
+// watch(
+//   () => props.selectedCustomerAddress,
+//   (newData) => {
+//     if (newData) {
+//       serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
+//       serviceIdParams.value.toDistrict = Number(newData.district);
+//     }
+//     refetchService().then(() => {
+//       shippingParams.value.serviceId = service?.value?.data[0].service_id;
+//     });
 
+//     shippingParams.value.toDistrictId = newData.district;
+//     shippingParams.value.toWardCode = newData.ward;
+//     refetchShipping().then(() => {
+//       paymentInfo.value.shippingFee = shipping?.value?.data.total;
+//     });
+//   },
+//   { deep: true }
+// );
 
 // watch(
 //   () => props.selectedCustomerAddress,
@@ -807,7 +826,7 @@ watch(
 //       });
 //     }
 //   }, { deep: true }
-  
+
 // );
 
 watch(totalAmount, (newTotal) => {

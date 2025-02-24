@@ -15,6 +15,8 @@ import java.util.List;
 public class AdPOSInvoicePdfRequest {
     String tenKhachHang;
 
+    String tenNhanVien;
+
     String maHoaDon;
 
     List<AdOrderDetailResponse> products;

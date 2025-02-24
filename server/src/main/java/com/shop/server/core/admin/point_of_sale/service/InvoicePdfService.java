@@ -4,6 +4,7 @@ import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.UnitValue;
@@ -11,13 +12,17 @@ import com.itextpdf.layout.property.UnitValue;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSInvoicePdfRequest;
 import com.shop.server.core.admin.point_of_sale.model.response.AdOrderDetailResponse;
 import org.springframework.stereotype.Service;
+import com.itextpdf.layout.property.TextAlignment;
 
 @Service
 public class InvoicePdfService {
+
     public byte[] generateInvoicePdf(AdPOSInvoicePdfRequest request) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             String fontPath = "src/main/resources/fonts/timesbd.ttf"; //
@@ -27,15 +32,76 @@ public class InvoicePdfService {
             PdfWriter writer = new PdfWriter(outputStream);
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
-
-            // Tiêu đề hóa đơn
-            document.add(new Paragraph("HÓA ĐƠN BÁN HÀNG")
+            Paragraph title1 = new Paragraph("Cửa hàng T-shirt Two")
                     .setFont(vietnameseFont)
-                    .setBold().setFontSize(18));
+                    .setBold()
+                    .setFontSize(18)
+                    .setTextAlignment(TextAlignment.CENTER);
+            Paragraph diaChi = new Paragraph("Địa chỉ: Số 13 - Xuân Phương - Nam Từ Liêm - TP Hà Nội")
+                    .setFont(vietnameseFont)
+                    .setFontSize(13)
+                    .setTextAlignment(TextAlignment.CENTER);
+            Paragraph sdt = new Paragraph("SĐT: 0987654321")
+                    .setFont(vietnameseFont)
+                    .setFontSize(13)
+                    .setTextAlignment(TextAlignment.CENTER);
 
+            Paragraph camOn = new Paragraph("Cảm ơn quý khách ! Hẹn gặp lại.")
+                    .setFont(vietnameseFont)
+                    .setFontSize(13)
+                    .setTextAlignment(TextAlignment.CENTER);
+            // Tiêu đề hóa đơn
+            Paragraph title = new Paragraph("HÓA ĐƠN BÁN HÀNG")
+                    .setFont(vietnameseFont)
+                    .setBold()
+                    .setFontSize(18)
+                    .setTextAlignment(TextAlignment.CENTER); // Đặt căn giữa trước khi add vào document
+            SolidLine solidLine = new SolidLine(1); // Độ dày đường kẻ là 1
+            LineSeparator lineSeparator = new LineSeparator(solidLine);
+            lineSeparator.setWidth(UnitValue.createPercentValue(100)); // Độ dài 100% trang
+
+            LocalDateTime now = LocalDateTime.now();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            String formattedDateTime = now.format(formatter);
+            document.add(title1);
+            document.add(diaChi);
+            document.add(sdt);
+            document.add(new Paragraph(""));
+            document.add(lineSeparator);
+            document.add(new Paragraph(""));
+            document.add(title);
+            document.add(new Paragraph(""));
+            document.add(new Paragraph(""));
+            document.add(new Paragraph(""));
             // Thông tin khách hàng
-            document.add(new Paragraph("Khách hàng: " + request.getTenKhachHang())).setFont(vietnameseFont);
+            float[] columnWidths = {1, 1}; // Chia bảng thành 2 cột bằng nhau
+            Table table1 = new Table(columnWidths);
+            table1.setWidth(UnitValue.createPercentValue(100));
+            table1.addCell(new Cell().add(new Paragraph("Khách hàng: " + (request.getTenKhachHang() != null ? request.getTenKhachHang() : "Khách lẻ")))
+                    .setFont(vietnameseFont)
+                    .setTextAlignment(TextAlignment.LEFT) // Căn trái
+                    .setBorder(null)); // Xóa viền ô
 
+            table1.addCell(new Cell().add(new Paragraph("Mã HĐ: " + request.getMaHoaDon()))
+                    .setFont(vietnameseFont)
+                    .setTextAlignment(TextAlignment.RIGHT) // Căn phải
+                    .setBorder(null));
+
+            table1.addCell(new Cell().add(new Paragraph("Nhân viên: " + request.getTenNhanVien())) // Đổi thành getTenNhanVien()
+                    .setFont(vietnameseFont)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setBorder(null));
+
+            table1.addCell(new Cell().add(new Paragraph("Ngày tạo: " + formattedDateTime))
+                    .setFont(vietnameseFont)
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBorder(null));
+
+            document.add(table1);
+
+            document.add(new Paragraph(""));
+            document.add(new Paragraph(""));
             // Bảng sản phẩm
             Table table = new Table(UnitValue.createPercentArray(new float[]{40, 20, 20, 20}))
                     .useAllAvailableWidth();
@@ -50,34 +116,54 @@ public class InvoicePdfService {
             for (AdOrderDetailResponse product : request.getProducts()) {
                 BigDecimal total = BigDecimal.valueOf(Long.valueOf(product.getSoLuong()) * product.getGiaHienTai());
                 table.addCell(new Cell().add(new Paragraph(product.getTenSanPham() + " [ " + product.getTenMauSac() +
-                                                           " - " +product.getKichCo() + " ]")));
-                table.addCell(new Cell().add(new Paragraph(product.getSoLuong())));
-                table.addCell(new Cell().add(new Paragraph(df.format(product.getGiaHienTai()))));
-                table.addCell(new Cell().add(new Paragraph(df.format(total))));
+                                                           " - " +product.getKichCo() + " ]").setFont(vietnameseFont)));
+                table.addCell(new Cell().add(new Paragraph(product.getSoLuong()).setFont(vietnameseFont)));
+                table.addCell(new Cell().add(new Paragraph(df.format(product.getGiaHienTai())).setFont(vietnameseFont)));
+                table.addCell(new Cell().add(new Paragraph(df.format(total)).setFont(vietnameseFont)));
             }
-
-            document.add(table);
-
-            // Tổng tiền
-
-            document.add(new Paragraph("Tổng tiền: " + df.format(request.getTongTien())).setFont(vietnameseFont)
-                    .setBold().setFontSize(14));
-            document.add(new Paragraph("Phí vận chuyển: " + df.format(request.getPhiVanChuyen())).setFont(vietnameseFont)
-                    .setBold().setFontSize(14));
-            document.add(new Paragraph("Giảm giá: " + df.format(request.getGiamGia())).setFont(vietnameseFont)
-                    .setBold().setFontSize(14));
             BigDecimal tongThanhToan = request.getTongTien()
                     .add(request.getPhiVanChuyen())
                     .subtract(request.getGiamGia());
-            document.add(new Paragraph("Tổng thanh toán: " + df.format(tongThanhToan)).setFont(vietnameseFont)
-                    .setBold().setFontSize(14));
-            document.add(new Paragraph("Đã thanh toán: " + df.format(tongThanhToan)).setFont(vietnameseFont)
-                    .setBold().setFontSize(14));
+            document.add(table);
+            document.add(new Paragraph(""));
+            document.add(new Paragraph(""));
+            document.add(new Paragraph(""));
 
+            Table summaryTable = new Table(new float[]{2, 1});
+            summaryTable.setWidth(UnitValue.createPercentValue(100));
+
+            // Thêm các dòng vào bảng
+            addRow(summaryTable, "Tiền hàng:", df.format(request.getTongTien()), vietnameseFont);
+            addRow(summaryTable, "Phí vận chuyển:", df.format(request.getPhiVanChuyen()), vietnameseFont);
+            addRow(summaryTable, "Giảm giá:", df.format(request.getGiamGia()), vietnameseFont);
+
+            // Thêm dấu gạch ngang
+            summaryTable.addCell(new Cell(1, 2).add(new Paragraph("-----------------------------------------------------"))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setBorder(null));
+
+
+            // Thêm tổng tiền và số tiền thanh toán
+            addRow(summaryTable, "Tổng:", df.format(tongThanhToan), vietnameseFont);
+            addRow(summaryTable, "Đã thanh toán:", df.format(tongThanhToan), vietnameseFont);
+
+            document.add(summaryTable);
+            document.add(new Paragraph(""));
+            document.add(camOn);
             document.close();
             return outputStream.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi tạo PDF", e);
         }
+    }
+
+    private void addRow(Table table, String title, String value, PdfFont font) {
+        table.addCell(new Cell().add(new Paragraph(title).setFont(font))
+                .setTextAlignment(TextAlignment.LEFT)
+                .setBorder(null));
+
+        table.addCell(new Cell().add(new Paragraph(value).setFont(font).setBold())
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setBorder(null));
     }
 }

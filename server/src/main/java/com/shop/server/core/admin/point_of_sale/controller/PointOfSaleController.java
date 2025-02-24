@@ -5,6 +5,7 @@ import com.shop.server.core.admin.point_of_sale.model.request.AdPOSFindProductRe
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSInvoicePdfRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.core.admin.point_of_sale.service.InvoicePdfService;
+import com.shop.server.core.admin.point_of_sale.service.PdfStorageService;
 import com.shop.server.core.admin.point_of_sale.service.PointOfSaleServiceIml;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -86,5 +87,30 @@ public class PointOfSaleController {
                 .build());
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/save")
+    public ResponseEntity<String> saveInvoice(@RequestBody AdPOSInvoicePdfRequest request) {
+        try {
+            byte[] pdfBytes = invoicePdfService.generateInvoicePdf(request);
+
+            String filePath = PdfStorageService.savePdfToServer(pdfBytes, request.getMaHoaDon() + ".pdf");
+
+            if (filePath != null) {
+                return ResponseEntity.ok("File PDF đã lưu tại: " + filePath);
+            } else {
+                return ResponseEntity.status(500).body("Lỗi khi lưu file PDF.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi tạo PDF: " + e.getMessage());
+        }
+    }
+
+    private byte[] generateInvoicePdf(AdPOSInvoicePdfRequest request) {
+        try {
+            return new byte[0];
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tạo PDF", e);
+        }
     }
 }
