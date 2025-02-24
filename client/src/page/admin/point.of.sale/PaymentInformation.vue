@@ -429,15 +429,15 @@ watch(
   }
 );
 
-watch(
-  () => props.selectedCustomerInfo,
-  (newData) => {
-    if (props.selectedCustomerInfo) {
-      paramsVoucher.value.idKhachHang = newData.key;
-      paramsNextPriceVoucher.value.idKhachHang = newData.key;
-    }
-  }
-);
+// watch(
+//   () => props.selectedCustomerInfo,
+//   (newData) => {
+//     if (props.selectedCustomerInfo) {
+//       paramsVoucher.value.idKhachHang = newData.key;
+//       paramsNextPriceVoucher.value.idKhachHang = newData.key;
+//     }
+//   }
+// );
 
 watch(
   () => dataSourcePro.value,
@@ -445,6 +445,22 @@ watch(
     if (newData) {
       paramsVoucher.value.tongTien = totalAmount.value;
       paramsNextPriceVoucher.value.tongTien = totalAmount.value;
+      if (serviceIdParams.value.toDistrict !== 0) {
+        refetchService().then(() => {
+          shippingParams.value.serviceId = service?.value?.data[0].service_id;
+
+          console.log(shippingParams.value);
+          shippingParams.value.toDistrictId = getCustomerAddress.value.district;
+          shippingParams.value.toWardCode = getCustomerAddress.value.ward;
+          if (shippingParams.value.toWardCode) {
+            refetchShipping().then(() => {
+              paymentInfo.value.shippingFee = shipping?.value?.data.total;
+            });
+          }
+        });
+      } else {
+        paymentInfo.value.shippingFee = 0;
+      }
     }
   }
 );
@@ -731,12 +747,16 @@ const handleUpdateBill = () => {
   });
 };
 
+const getCustomerAddress = ref (null)
+
 const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
+  getCustomerAddress.value = modelRef
   paymentInfo.value.name = modelRef.name;
   paymentInfo.value.phoneNumber = modelRef.phoneNumber;
   const wardInfo = ref(null);
   const districtInfo = ref(null);
   const provinceInfo = ref(null);
+
   if (modelRef.ward || modelRef.district || modelRef.province) {
     try {
       const response = await getWardByCode(modelRef.ward);
@@ -762,18 +782,22 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 
   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
   serviceIdParams.value.toDistrict = Number(modelRef.district);
-  
+
   if (serviceIdParams.value.toDistrict !== 0) {
     refetchService().then(() => {
       shippingParams.value.serviceId = service?.value?.data[0].service_id;
+
+      shippingParams.value.toDistrictId = modelRef.district;
+      shippingParams.value.toWardCode = modelRef.ward;
+
+      if (shippingParams.value.toWardCode) {
+        refetchShipping().then(() => {
+          paymentInfo.value.shippingFee = shipping?.value?.data.total;
+        });
+      }
     });
-  }
-  shippingParams.value.toDistrictId = modelRef.district;
-  shippingParams.value.toWardCode = modelRef.ward;
-  if (shippingParams.value.toWardCode !== null && shippingParams.value.toWardCode !== '') {
-    refetchShipping().then(() => {
-      paymentInfo.value.shippingFee = shipping?.value?.data.total;
-    });
+  } else {
+    paymentInfo.value.shippingFee = 0;
   }
 };
 

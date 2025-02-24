@@ -32,7 +32,7 @@
           >
         </template>
         <template v-if="column.dataIndex === 'address'">
-          {{record.line}}
+          {{ record.line }}
         </template>
       </template>
     </a-table>
@@ -60,14 +60,21 @@ import { useRoute } from "vue-router";
 const pageSize = ref(5);
 const current1 = ref(1);
 
-const props = defineProps({ open: Boolean,
+const defaultAddress = ref<DataType | null>(null);
+
+const props = defineProps({
+  open: Boolean,
   dataCustomerWithId: {
     type: Object,
-    default: () => ({})
-  }
- });
+    default: () => ({}),
+  },
+});
 
-const emit = defineEmits(["handleClose", "selectCustomerAddress"]);
+const emit = defineEmits([
+  "handleClose",
+  "selectCustomerAddress",
+  "selectedDefaultAddress",
+]);
 
 const handleClose = () => emit("handleClose");
 
@@ -118,19 +125,21 @@ const params = ref<FindCustomerAddressRequest>({
   page: 1,
   size: 5,
   keyword: "",
-  idKhachHang: props.dataCustomerWithId ? props.dataCustomerWithId.id : null
+  idKhachHang: props.dataCustomerWithId ? props.dataCustomerWithId.id : null,
 });
 
-watch(() => props.dataCustomerWithId, (newVal) => {
-  if (newVal) {
-    params.value.idKhachHang = newVal.id
-  }
-  
-  // params.value.idKhachHang = newVal.key;
-}, { immediate: true });
+watch(
+  () => props.dataCustomerWithId,
+  (newVal) => {
+    if (newVal) {
+      params.value.idKhachHang = newVal.id;
+    }
+  },
+  { immediate: true }
+);
 
 const { data } = useGetListCustomerAddress(params, {
-  refetchOnWindowFocus: false
+  refetchOnWindowFocus: false,
 });
 
 const dataCustomerAddress: DataType[] | any = computed(() => {
@@ -138,31 +147,24 @@ const dataCustomerAddress: DataType[] | any = computed(() => {
     data?.value?.data?.data.map((e: any) => ({
       id: e.id || null,
 
-  name: e.name || null,
+      name: e.name || null,
 
-  phoneNumber: e.phoneNumber || null,
+      phoneNumber: e.phoneNumber || null,
 
-  line: e.line || null,
+      line: e.line || null,
 
-  ward: e.ward || null,
+      ward: e.ward || null,
 
-  district: e.district || null,
+      district: e.district || null,
 
-  province: e.province || null,
+      province: e.province || null,
 
-  clientId: e.clientId || null,
+      clientId: e.clientId || null,
 
-  isDefault: e.isDefault || null
+      isDefault: e.isDefault || null,
     })) || []
   );
 });
-
-// watch(
-//   () => data?.value,
-//   (newDataSource) => {
-//   },
-//   { immediate: true, deep: true }
-// );
 
 const handleSearch = (newValue: string) => {
   params.value.keyword = newValue;
@@ -172,6 +174,30 @@ const handleSearch = (newValue: string) => {
 watch(current1, () => {
   params.value.page = current1.value === 0 ? 1 : current1.value;
 });
+
+watch(
+  () => dataCustomerAddress.value,
+  (newTotal) => {
+    if (newTotal.length > 0) {
+      defaultAddress.value =
+        newTotal.find((addr) => addr.isDefault === true) || null;
+      emit("selectedDefaultAddress", defaultAddress.value);
+    } else {
+      defaultAddress.value = {
+        id: null,
+        name: null,
+        phoneNumber: null,
+        line: null,
+        ward: null,
+        district: null,
+        province: null,
+      clientId: null,
+      isDefault: null,
+      };
+      emit("selectedDefaultAddress", defaultAddress.value);
+    }
+  }
+);
 
 const handleSelectCustomerAddress = (customerAddress: DataType) => {
   emit("selectCustomerAddress", customerAddress, dataCustomerAddress.value);

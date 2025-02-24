@@ -17,6 +17,7 @@
     @cancel="openCustomerAddress = false"
     :dataCustomerWithId="selectedCustomer || {}"
     @selectCustomerAddress="handleCustomerAddressSelected"
+    @selectedDefaultAddress="handleSelectedDefaultAddress"
     class="w-[600px] h-[400px]"
   />
   <a-form layout="vertical" class="grid grid-cols-2 gap-4" :key="refreshKey">
@@ -60,13 +61,6 @@
       </a-form-item>
     </template>
   </a-form>
-  <!-- <div class="flex justify-end gap-4 mt-4">
-    <a-button v-if="props?.dataSource?.isDefault === false" @click="handleChangeDefault(props?.dataSource?.id)">
-      Đặt làm mặc định
-    </a-button>
-    <a-button @click="handleReset()">Đặt lại</a-button>
-    <a-button type="primary" @click="handleUpdate(props?.dataSource?.id)">Cập nhật</a-button>
-  </div> -->
 </template>
 
 <script setup lang="ts">
@@ -137,9 +131,51 @@ const ward = ref<string>("");
 
 const openCustomerAddress = ref(false);
 const addressSelected = ref(null);
+const defaultCustomerAddress = ref(null);
+
 
 watch(
   () => addressSelected.value,
+  async (newDataSource) => {
+    if (newDataSource) {
+      const wardInfo = ref(null);
+      const districtInfo = ref(null);
+      const provinceInfo = ref(null);
+      const fullAddress = ref('');
+      try {
+        const response = await getWardByCode(newDataSource.ward);
+        wardInfo.value = response.data.data;
+
+        const responseDis = await getDistrictById(newDataSource.district);
+        districtInfo.value = responseDis.data.data;
+
+        const responsePro = await getProvinceById(newDataSource.province);
+        provinceInfo.value = responsePro.data.data;
+        fullAddress.value =
+          newDataSource.line +
+          ", " +
+          wardInfo.value +
+          ", " +
+          districtInfo.value +
+          ", " +
+          provinceInfo.value;
+          
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
+      }
+      emit("handleGetAddress", newDataSource, fullAddress.value);
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+const handleSelectedDefaultAddress = (defaultAddress: any) => {
+  defaultCustomerAddress.value = defaultAddress;
+  address.value = defaultAddress;
+}
+
+watch(
+  () => defaultCustomerAddress.value,
   async (newDataSource) => {
     if (newDataSource) {
       const wardInfo = ref(null);
@@ -171,6 +207,8 @@ watch(
   },
   { immediate: true, deep: true }
 );
+
+
 
 const handleCustomerAddressSelected = (selectedAddress: any) => {
   addressSelected.value = selectedAddress
@@ -542,7 +580,6 @@ watch(
         clientId: newDataSource.clientId || "",
       });
     }
-    // console.log(newDataSource);
   },
   { immediate: true, deep: true }
 );
