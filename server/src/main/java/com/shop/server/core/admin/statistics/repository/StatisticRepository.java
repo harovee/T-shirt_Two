@@ -5,6 +5,7 @@ import com.shop.server.core.admin.statistics.model.response.NumberOrderByStatusR
 import com.shop.server.core.admin.statistics.model.response.RevenueResponse;
 import com.shop.server.core.admin.statistics.model.response.StatisticProductResponse;
 import com.shop.server.repositories.HoaDonRepository;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -55,48 +56,42 @@ public interface StatisticRepository extends HoaDonRepository {
 
 
     @Query(value = """
-                WITH revenue_data AS (
-                     SELECT
-                         hd.id AS id_hoa_don,
-                         get_time_display( :#{#req.timeUnit}, hd.ngay_tao ) AS time_display,
-                         hd.tong_tien AS total_revenue,
-                         (SELECT SUM(hdct.so_luong) FROM hoa_don_chi_tiet hdct WHERE hdct.id_hoa_don = hd.id) AS number_product_sold
-                     FROM hoa_don hd
-                     WHERE (hd.deleted IS NULL OR hd.deleted != 1)
-                       AND hd.trang_thai = 'Thành công'
-                       AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
-                 )
-                 SELECT
-                     time_display AS timeDisplay,
-                     '' AS objectValue,
-                     sum(total_revenue) AS totalRevenue,
-                     count(id_hoa_don) AS numberOrder,
-                     sum(number_product_sold) AS numberProductSold
-                 FROM revenue_data
-                 group by timeDisplay, objectValue
+                SELECT
+                    get_time_display(:#{#req.timeUnit}, hd.ngay_tao) AS time_display,
+                    '' AS object_value,
+                    SUM(hd.tong_tien) AS total_revenue,
+                    COUNT(DISTINCT hd.id) AS number_order,
+                    SUM(hdct.so_luong) AS number_product_sold
+
+                FROM hoa_don hd
+                JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
+                WHERE (hd.deleted is null or hd.deleted != 1)
+                AND hd.trang_thai = 'Thành công'
+                AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
+                GROUP BY time_display
+                ORDER BY time_display
             """, nativeQuery = true)
     List<RevenueResponse> getRevenueStatistics(RevenuesRequest req);
 
     @Query(value = """
-                WITH revenue_data AS (
-                     SELECT
-                         hd.id AS id_hoa_don,
-                         get_time_display( :#{#req.timeUnit}, hd.ngay_tao ) AS time_display,
-                         hd.tong_tien AS total_revenue,
-                         (SELECT SUM(hdct.so_luong) FROM hoa_don_chi_tiet hdct WHERE hdct.id_hoa_don = hd.id) AS number_product_sold
-                     FROM hoa_don hd
-                     WHERE (hd.deleted IS NULL OR hd.deleted != 1)
-                       AND hd.trang_thai = 'Thành công'
-                       AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
-                 )
-                 SELECT
-                     time_display AS timeDisplay,
-                     '' AS objectValue,
-                     sum(total_revenue) AS totalRevenue,
-                     count(id_hoa_don) AS numberOrder,
-                     sum(number_product_sold) AS numberProductSold
-                 FROM revenue_data
-                 group by timeDisplay, objectValue
+                SELECT
+                    CASE
+                        WHEN :#{#req.timeUnit} = 'DAY' THEN FROM_UNIXTIME(hd.ngay_tao / 1000, '%Y-%m-%d')
+                        WHEN :#{#req.timeUnit} = 'WEEK' THEN CONCAT(YEAR(FROM_UNIXTIME(hd.ngay_tao / 1000)), '-W', WEEK(FROM_UNIXTIME(hd.ngay_tao / 1000)))
+                        WHEN :#{#req.timeUnit} = 'MONTH' THEN FROM_UNIXTIME(hd.ngay_tao / 1000, '%Y-%m')
+                        WHEN :#{#req.timeUnit} = 'YEAR' THEN FROM_UNIXTIME(hd.ngay_tao / 1000, '%Y')
+                    END AS time_display,
+                    
+                    SUM(hd.tong_tien) AS total_revenue,
+                    COUNT(hd.id) AS number_order,
+                    SUM(hdct.so_luong) AS number_product_sold
+
+                FROM hoa_don hd
+                JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
+                WHERE (hd.deleted is null or hd.deleted != 1)
+                AND hd.trang_thai = 'Thành công'
+                AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
+                GROUP BY time_display ORDER BY time_display
             """, nativeQuery = true)
     Page<RevenueResponse> getRevenueStatistics(Pageable pageable, RevenuesRequest req);
 
@@ -157,7 +152,7 @@ public interface StatisticRepository extends HoaDonRepository {
     @Query(value = """
             SELECT
                 CONCAT(sp.ma_san_pham, ' - ', sp.ten)  AS object_value,
-                COALESCE(SUM(hdct.thanh_tien), 0) AS total_revenue,
+                COALESCE(SUM(hd.tong_tien), 0) AS total_revenue,
                 COALESCE(COUNT(hd.id), 0) AS number_order,
                 COALESCE(SUM(hdct.so_luong), 0) AS number_product_sold
             FROM hoa_don hd
@@ -168,14 +163,14 @@ public interface StatisticRepository extends HoaDonRepository {
             AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
             GROUP BY sp.ma_san_pham, sp.ten
             ORDER BY number_product_sold DESC
-            LIMIT 5;
+            LIMIT 10;
             """, nativeQuery = true)
     List<RevenueResponse> getTop10ProductBestSaleByRangeTime(RevenuesRequest req);
 
     @Query(value = """
             SELECT
                 CONCAT(sp.ma_san_pham, ' - ', sp.ten)  AS object_value,
-                COALESCE(SUM(hdct.thanh_tien), 0) AS total_revenue,
+                COALESCE(SUM(hd.tong_tien), 0) AS total_revenue,
                 COALESCE(COUNT(hd.id), 0) AS number_order,
                 COALESCE(SUM(hdct.so_luong), 0) AS number_product_sold
             FROM hoa_don hd
@@ -185,7 +180,7 @@ public interface StatisticRepository extends HoaDonRepository {
             WHERE (hd.deleted is null or hd.deleted != 1) AND hd.trang_thai = 'Thành công'
             GROUP BY sp.ma_san_pham, sp.ten
             ORDER BY number_product_sold DESC
-            LIMIT 5;
+            LIMIT 10;
             """, nativeQuery = true)
     List<RevenueResponse> getTop10ProductBestSale();
 
