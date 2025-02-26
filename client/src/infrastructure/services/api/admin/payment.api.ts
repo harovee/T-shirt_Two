@@ -97,7 +97,9 @@ export type VoucherResponse = ResponseList & {
     ngayBatDau: number;
     ngayKetThuc: number;
     trangThai : string;
+    giaTri: string
 };
+
 
 export type CustomerResponse = ResponseList & {
     profilePicture: string;

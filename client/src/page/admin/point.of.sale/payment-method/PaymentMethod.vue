@@ -10,8 +10,8 @@
     <h1 class="text-xl">Thanh toán</h1>
     <div class="flex justify-between">
       <p>Số tiền phải thanh toán:</p>
-      <p v-if="dataPaymentMethodDetails.length === 0" class="text-lg">{{ formatCurrencyVND(totalAmount) }}</p>
-      <p v-if="dataPaymentMethodDetails && dataPaymentMethodDetails.length && (totalAmountAfter > totalAmount)" class="text-lg">{{ formatCurrencyVND(0) }}</p>
+      <p class="text-lg">{{ formatCurrencyVND(totalAmount) }}</p>
+      <!-- <p v-if="dataPaymentMethodDetails && dataPaymentMethodDetails.length && (totalAmountAfter >= totalAmount)" class="text-lg">{{ formatCurrencyVND(0) }}</p> -->
     </div>
     <a-form :model="params" :rules="rulesRef" layout="vertical">
       <div class="gap-4">
@@ -172,7 +172,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["handleClose", "selectVoucher"]);
+const emit = defineEmits(["handleClosePaymentMethod", "handlePaymented"]);
 
 const { mutate: createPaymentMethodDetail } = useCreatePaymentMethodDetail();
 
@@ -246,10 +246,10 @@ watch(
   () => dataPaymentMethodDetails.value,
   (newData) => {
     totalAmountAfter.value = newData.reduce((sum, item) => sum + (item.soTien || 0), 0);
+    emit("handlePaymented", totalAmountAfter.value)
     if (params.value.tienKhachDua === null) {
       params.value.soTienDu = 0;
     }
-
     if (
       params.value.idPhuongThucThanhToan === "tienmat" &&
       params.value.tienKhachDua > 0
@@ -297,6 +297,9 @@ const handlePayment = () => {
           warningNotiSort("Tiền khách đưa chưa đủ!");
           return;
         }
+        if (params.value.tienKhachDua > props.totalAmount) {
+          params.value.tienKhachDua = props.totalAmount
+        }
         createPaymentMethodDetail(params.value, {
           onSuccess: (result) => {
             successNotiSort(result?.message);
@@ -324,16 +327,11 @@ const handlePayment = () => {
 };
 
 const handleClose = () => {
-  emit("handleClose");
+  emit("handleClosePaymentMethod");
   resetFields();
 };
 
-const handleSelectVoucher = (voucher: VoucherResponse) => {
-  emit("selectVoucher", voucher);
-  handleClose();
-};
-
-const columns: TableColumnType<VoucherResponse>[] = [
+const columns: TableColumnType<PaymentMethodDetailResponse>[] = [
   {
     title: "STT",
     dataIndex: "catalog",

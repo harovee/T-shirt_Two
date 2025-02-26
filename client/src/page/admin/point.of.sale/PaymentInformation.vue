@@ -60,10 +60,45 @@
               </a-button>
             </a-tooltip>
           </div>
-          <div v-if="dataNextPriceVouchers.length > 0" class="text-red-500">
-            (Hãy mua hàng thêm
-            {{ formatCurrencyVND(dataNextPriceVouchers - totalAmount) }} để có
-            thể sử dụng phiếu giảm giá tốt hơn.)
+          <!-- dataNextPriceVouchers > 0 && paymentInfo.value && paymentInfo.value.discount > 0 -->
+          <div
+            v-if="voucher"
+            class="text-red-500 text-xs border border-red-400 rounded-lg p-3 mt-3"
+          >
+            <div class="flex items-center">
+              <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
+              <span
+                >Bạn đang sử dụng: {{ voucher.ten }} - Số lượng:
+                {{ voucher.soLuong }} - Giá trị giảm ({{
+                  voucher.loaiGiam ? "Tiền mặt" : "%"
+                }}):
+                {{
+                  voucher.loaiGiam
+                    ? formatCurrencyVND(voucher.giaTri)
+                    : voucher.giaTri + "%"
+                }}</span
+              >
+            </div>
+            <span class="ms-8"  v-if="dataNextPriceVouchers > 0"
+              >Mua thêm
+              {{ formatCurrencyVND(dataNextPriceVouchers - totalAmount) }} để có
+              thể sử dụng phiếu giảm giá tốt hơn.</span
+            >
+            
+            <span class="ms-8"  v-if="dataNextPriceVouchers.length === 0"
+              >Không còn phiếu nào phù hợp hơn nữa.</span
+            >
+          </div>
+          <div
+            v-if="!voucher && dataNextPriceVouchers.length > 0"
+            class="mt-3 text-red-500 text-xs border border-red-400 rounded-lg p-3 flex items-center"
+          >
+            <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
+            <span
+              >Không có phiếu giảm giá nào phù hợp, mua thêm
+              {{ formatCurrencyVND(dataNextPriceVouchers - totalAmount) }} để có
+              thể sử dụng phiếu giảm giá tốt hơn.</span
+            >
           </div>
           <voucher-payment-table
             :open="open"
@@ -127,6 +162,7 @@
             :dataSourceInfo="dataSourceInfor"
             @handleClosePaymentMethod="handleClosePaymentMethod"
             @cancel="openPaymentMethod = false"
+            @handlePaymented="handleCheckPaymented"
             class="w-[600px] h-[400px]"
           />
         </a-form-item>
@@ -240,6 +276,8 @@ const pageSize = ref(5);
 const current1 = ref(1);
 
 const selectedAddress = ref({});
+
+const paymentedValue = ref(0);
 
 const calculateProductDimensions = () => {
   const totalWeight = dataSourcePro.value.reduce((sum: any, product: any) => {
@@ -448,7 +486,6 @@ watch(
       if (serviceIdParams.value.toDistrict !== 0) {
         refetchService().then(() => {
           shippingParams.value.serviceId = service?.value?.data[0].service_id;
-
           console.log(shippingParams.value);
           shippingParams.value.toDistrictId = getCustomerAddress.value.district;
           shippingParams.value.toWardCode = getCustomerAddress.value.ward;
@@ -568,6 +605,8 @@ const dataNextPriceVouchers = computed(
 // });
 
 //---------------------------------------------
+const voucher = ref(null);
+
 watch(
   () => dataListVoucher.value,
   (newData) => {
@@ -577,6 +616,10 @@ watch(
       paymentInfo.value.discount = parseFloat(newData[0].giaTriGiam);
       paymentInfo.value.totalProductPrice =
         totalAmount.value - paymentInfo.value.discount;
+      voucher.value =
+        newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
+        null;
+      console.log(dataNextPriceVouchers.value);
     } else {
       paymentInfo.value.voucherCode = "";
       paymentInfo.value.voucherId = null;
@@ -587,12 +630,12 @@ watch(
   }
 );
 
-watch(
-  () => dataNextPriceVouchers.value,
-  (newData) => {
-    // console.log(newData);
-  }
-);
+// watch(
+//   () => dataNextPriceVouchers.value,
+//   (newData) => {
+//     console.log(newData);
+//   }
+// );
 
 // Hàm format tiền sang VNĐ
 const formatter = (value: any) => {
@@ -648,6 +691,10 @@ const updateTotal = () => {
     (paymentInfo.value.shippingFee || 0) - (paymentInfo.value.discount || 0);
 };
 
+const handleCheckPaymented = (totalAmountAfter: number) => {
+  paymentedValue.value = totalAmountAfter
+}
+
 const handleVoucherSelected = (voucher) => {
   paymentInfo.value.voucherCode = voucher.ma;
   paymentInfo.value.voucherId = voucher.id;
@@ -660,7 +707,33 @@ const handleVoucherSelected = (voucher) => {
     paymentInfo.value.totalProductPrice =
       totalAmount.value - paymentInfo.value.discount;
   }
+  // console.log(dataListVoucher.value);
+
+  // if (dataListVoucher.value) {
+  //   console.log("ok");
+
+  //   voucher =
+  //     dataListVoucher.value.find(
+  //       (voucherSelected) => voucherSelected.id === voucher.id
+  //     ) || null;
+  //   console.log(voucher);
+  // }
 };
+
+watch(
+  () => paymentInfo.value,
+  (newData) => {
+    if (dataListVoucher.value) {
+      console.log("ok");
+
+      voucher.value =
+        dataListVoucher.value.find(
+          (voucherSelected) => voucherSelected.id === paymentInfo.value.voucherId
+        ) || null;
+      console.log(voucher.value);
+    }
+  }, {deep: true}
+);
 
 const handleNotVoucher = () => {
   paymentInfo.value.voucherCode = "";
@@ -717,28 +790,31 @@ const handleUpdateBill = () => {
     warningNotiSort("Vui lòng chọn địa chỉ người nhận!");
     return;
   }
+  if (paymentedValue.value === 0) {
+    warningNotiSort("Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!");
+    return;
+  }
   Modal.confirm({
     content: "Bạn chắc chắn muốn hoàn thành thanh toán?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
 
     async onOk() {
-      // try {
-      //   await updateBillWait({
-      //     idBill: props.dataSourceInfor.id,
-      //     params: payload,
-      //   });
-      //   successNotiSort("Thanh toán thành công!");
-      //   router.push(
-      //     ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-      //   );
-      // } catch (error: any) {
-      //   console.error("🚀 ~ handleCreate ~ error:", error);
-      //   if (error?.response) {
-      //     errorNotiSort(error?.response?.data?.message);
-      //   }
-      // }
-      console.log(payload);
+      try {
+        await updateBillWait({
+          idBill: props.dataSourceInfor.id,
+          params: payload,
+        });
+        successNotiSort("Thanh toán thành công!");
+        router.push(
+          ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+        );
+      } catch (error: any) {
+        console.error("🚀 ~ handleCreate ~ error:", error);
+        if (error?.response) {
+          errorNotiSort(error?.response?.data?.message);
+        }
+      }
     },
     cancelText: "Huỷ",
     onCancel() {
@@ -747,10 +823,10 @@ const handleUpdateBill = () => {
   });
 };
 
-const getCustomerAddress = ref (null)
+const getCustomerAddress = ref(null);
 
 const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
-  getCustomerAddress.value = modelRef
+  getCustomerAddress.value = modelRef;
   paymentInfo.value.name = modelRef.name;
   paymentInfo.value.phoneNumber = modelRef.phoneNumber;
   const wardInfo = ref(null);
