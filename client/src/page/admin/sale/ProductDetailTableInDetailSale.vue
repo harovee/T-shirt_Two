@@ -1,7 +1,7 @@
 <template>
   <div class=" flex justify-between">
-    <a-space class="text-lg" v-if="currentStatus">Các sản phẩm chi tiết đang được áp dụng</a-space>
-    <a-space class="text-lg" v-if="!currentStatus">Các sản phẩm chi tiết đã được áp dụng</a-space>
+    <a-space class="text-lg font-semibold mb-4" v-if="currentStatus">Các sản phẩm chi tiết đang được áp dụng</a-space>
+    <a-space class="text-lg font-semibold mb-4" v-if="!currentStatus">Các sản phẩm chi tiết đã được áp dụng</a-space>
     <a-statistic title="Số lượng" :value="data?.data.totalElements" style="margin-right: 50px" />
   </div>
   <div>

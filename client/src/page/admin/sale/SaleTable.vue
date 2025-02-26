@@ -141,7 +141,7 @@ const handleRedirectSaleAdd = () => {
 
 const columnsSale: ColumnType[] = [
   {
-    title: "STT",
+    title: "#",
     dataIndex: "catalog",
     key: "catalog",
     ellipsis: true,
@@ -154,7 +154,8 @@ const columnsSale: ColumnType[] = [
     key: "maDotGiamGia",
     ellipsis: true,
     width: 60,
-    resizable: true
+    resizable: true,
+    align: "center"
   },
   {
     title: "Tên",
@@ -162,7 +163,8 @@ const columnsSale: ColumnType[] = [
     key: "ten",
     ellipsis: true,
     width: 150,
-    resizable: true
+    resizable: true,
+    align: "center"
   },
   {
     title: "Giá trị giảm",

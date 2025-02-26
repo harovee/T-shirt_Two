@@ -12,7 +12,7 @@
         v-model:value="params.idDanhMuc"
         style="width: 200px;"
         >
-            <a-select-option :value="null">Tất cả</a-select-option>
+            <a-select-option :value="null">-- Tất cả danh mục --</a-select-option>
             <a-select-option v-for="item in categories"
              :value="item.id">{{ item.ten }}</a-select-option>
         </a-select>
