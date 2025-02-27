@@ -20,4 +20,5 @@ public class AdminCreateBillDetailRequest {
 
     private BigDecimal gia;
 
+    private String idHoaDonChiTiet;
 }

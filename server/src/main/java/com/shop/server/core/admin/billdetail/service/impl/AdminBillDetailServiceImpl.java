@@ -74,6 +74,7 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         Optional<HoaDonChiTiet> existingBillDetailOpt = adminBillDetailRepository.findByHoaDonAndSanPhamChiTiet(hoaDon, sanPhamChiTiet);
 
         HoaDonChiTiet billDetail;
+
         if (existingBillDetailOpt.isPresent()) {
             billDetail = existingBillDetailOpt.get();
             billDetail.setGia(sanPhamChiTiet.getGia());
@@ -84,7 +85,6 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             int oldQuantity = billDetail.getSoLuong();
             int newQuantity = oldQuantity + request.getSoLuong();
             billDetail.setSoLuong((short) newQuantity);
-
             // ✅ Tính lại thành tiền
             BigDecimal newTotalAmount = currentPrice.multiply(new BigDecimal(newQuantity));
             billDetail.setThanhTien(newTotalAmount);
@@ -95,7 +95,6 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             billDetail.setSanPhamChiTiet(sanPhamChiTiet);
             billDetail.setGia(sanPhamChiTiet.getGia());
             billDetail.setSoLuong(request.getSoLuong());
-
             // ✅ Kiểm tra giá trước khi nhân
             BigDecimal currentPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
             BigDecimal totalAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
@@ -104,7 +103,12 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             billDetail.setThanhTien(totalAmount);
         }
 
+
         adminBillDetailRepository.save(billDetail);
+
+        request.setIdHoaDonChiTiet(billDetail.getId());
+        System.out.println(request.toString());
+        adminBillDetailRepository.updateQuantityProductDetailInBill(request);
 
         // ✅ Cập nhật tổng tiền hóa đơn
         updateBillTotalAmount(hoaDon);
@@ -115,6 +119,7 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         );
     }
 
+    // đang dùng
     @Override
     public ResponseObject<?> updateBillDetail(String id, AdminUpdateBillDetailRequest request) {
         Optional<HoaDonChiTiet> billDetailOpt = adminBillDetailRepository.findById(id);

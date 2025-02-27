@@ -165,6 +165,12 @@ const handleUpdateBill = () => {
 
 const handleClose = () => {
   emit("handleClose");
-  resetFields();
+  // resetFields();
+  if (props.billData) {
+    modelRef.soDienThoai = props.billData.soDienThoai || null;
+    modelRef.diaChiNguoiNhan = props.billData.diaChiNguoiNhan || null;
+    modelRef.tenNguoiNhan = props.billData.tenNguoiNhan || null;
+    modelRef.ghiChu = props.billData.ghiChu || null;
+  }
 };
 </script>

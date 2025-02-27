@@ -11,7 +11,7 @@
       </div>
       <div class="flex items-center">
         <span class="font-medium">Tên khách hàng:</span>
-        <span class="ml-2">{{ copiedBillData?.tenKhachHang }}</span>
+        <span class="ml-2">{{ copiedBillData?.tenKhachHang || "Khách lẻ" }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">SĐT người nhận:</span>
@@ -44,6 +44,7 @@
         @click="handleOpenModalUpdateBill"
         :disabled="
           [
+            'Chờ giao hàng',
             'Đang vận chuyển',
             'Đã giao hàng',
             'Đã thanh toán',
@@ -93,6 +94,7 @@
         @click="handleOpenModalAddProductToOrder"
         :disabled="
           [
+            'Chờ giao hàng',
             'Đang vận chuyển',
             'Đã giao hàng',
             'Đã thanh toán',
@@ -182,6 +184,7 @@
             class="w-16 text-center border rounded"
             :disabled="
               [
+                'Chờ giao hàng',
                 'Đang vận chuyển',
                 'Đã giao hàng',
                 'Đã thanh toán',
