@@ -127,7 +127,7 @@ public class AdminStaffServiceImpl implements AdminStaffService {
             Long count = adminStaffRepository.countNhanVienByRole(Role.USER) + 1;
             staff.setCode(String.valueOf(count));
             staff.setIdentity(request.getIdentity());
-            staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday()));
+            staff.setBirthday(DateTimeUtil.convertStringToTimeStampSecond(request.getBirthday(), "dd/MM/yyyy"));
             staff.setGender(request.getGender().equalsIgnoreCase("Nam"));
             staff.setRole(Role.USER);
             staff.setStatus(Status.INACTIVE);

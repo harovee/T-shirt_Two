@@ -119,7 +119,7 @@
           >
             <a-collapse-panel
                 :key="index"
-                :header="clientAddress.isDefault ? `Địa chỉ mặc định: ${clientAddress.line}` : `Địa chỉ thường: ${clientAddress.line}`"
+                :header="getShortHeader(clientAddress)"
             >
               <client-address
                   :data-source="clientAddress"
@@ -490,6 +490,12 @@ const handleOpenModalCreateClientAddress = () => {
 const handleCloseModalCreateClientAddress = () => {
   isOpenModalCreateClientAddress.value = false;
 };
+
+function getShortHeader(clientAddress) {
+  const prefix = clientAddress.isDefault ? "Địa chỉ mặc định: " : "Địa chỉ thường: ";
+  const maxLength = 30;
+  return prefix + (clientAddress.line.length > maxLength ? clientAddress.line.substring(0, maxLength) + "..." : clientAddress.line);
+}
 
 watch(
     clientDetail,

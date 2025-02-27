@@ -1,5 +1,6 @@
 package com.shop.server.infrastructure.security.oauth2.user;
 
+import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.ActorConstants;
 import lombok.Getter;
@@ -37,30 +38,47 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserPrincipal create(NhanVien nhanVien) {
+    public static UserPrincipal create(NhanVien staff) {
         List<GrantedAuthority> authorities = Collections.
                 singletonList(new SimpleGrantedAuthority(ActorConstants.ADMIN));
 
         return new UserPrincipal(
-                nhanVien.getId(),
-                nhanVien.getEmail(),
+                staff.getId(),
+                staff.getEmail(),
                 authorities
         );
     }
 
-    public static UserPrincipal create(NhanVien nhanVien, String role) {
+    public static UserPrincipal create(NhanVien staff, String role) {
         List<GrantedAuthority> authorities = Collections.
                 singletonList(new SimpleGrantedAuthority(role));
 
         return new UserPrincipal(
-                nhanVien.getId(),
-                nhanVien.getEmail(),
+                staff.getId(),
+                staff.getEmail(),
                 authorities
         );
     }
 
-    public static UserPrincipal create(NhanVien nhanVien, Map<String, Object> attributes, String roles) {
-        UserPrincipal userPrincipal = UserPrincipal.create(nhanVien, roles);
+    public static UserPrincipal create(KhachHang client, String role) {
+        List<GrantedAuthority> authorities = Collections.
+                singletonList(new SimpleGrantedAuthority(role));
+
+        return new UserPrincipal(
+                client.getId(),
+                client.getEmail(),
+                authorities
+        );
+    }
+
+    public static UserPrincipal create(NhanVien staff, Map<String, Object> attributes, String roles) {
+        UserPrincipal userPrincipal = UserPrincipal.create(staff, roles);
+        userPrincipal.setAttributes(attributes);
+        return userPrincipal;
+    }
+
+    public static UserPrincipal create(KhachHang client, Map<String, Object> attributes, String roles) {
+        UserPrincipal userPrincipal = UserPrincipal.create(client, roles);
         userPrincipal.setAttributes(attributes);
         return userPrincipal;
     }

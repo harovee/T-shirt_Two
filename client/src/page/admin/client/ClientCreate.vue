@@ -292,6 +292,7 @@ const rulesRef = reactive({
       validator: (_, value) => value !== null && value.trim() !== "" ? Promise.resolve() : Promise.reject("Vui lòng điền số nhà/ngõ/đường"),
       trigger: "blur"
     },
+    {max: 120, message: "Tên không được dài quá 120 ký tự", trigger: "blur"},
   ]
 });
 
