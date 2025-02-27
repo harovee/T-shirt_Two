@@ -238,6 +238,7 @@ import {
   getDistrictById,
   getProvinceById,
   ServiceIdRequest,
+  createInvoicePdf
 } from "@/infrastructure/services/api/admin/payment.api";
 import {
   ClientAddressCommonOptionsResponse,
@@ -468,14 +469,14 @@ watch(
 );
 
 // watch(
-//   () => props.selectedCustomerInfo,
+//   () => props.dataSourceInfor,
 //   (newData) => {
-//     if (props.selectedCustomerInfo) {
-//       paramsVoucher.value.idKhachHang = newData.key;
-//       paramsNextPriceVoucher.value.idKhachHang = newData.key;
+//     if (newData) {
+//       console.log(newData);
 //     }
 //   }
 // );
+console.log(props.dataSourceInfor);
 
 watch(
   () => dataSourcePro.value,
@@ -696,6 +697,10 @@ const handleCheckPaymented = (totalAmountAfter: number) => {
 }
 
 const handleVoucherSelected = (voucher) => {
+  if (paymentedValue.value !== 0) {
+    warningNotiSort("Bạn đã thanh toán không thể thay đổi phiếu giảm giá!");
+    return;
+  }
   paymentInfo.value.voucherCode = voucher.ma;
   paymentInfo.value.voucherId = voucher.id;
   if (!voucher.loaiGiam) {
@@ -750,6 +755,21 @@ const changeShippingOption = (option: string) => {
 const { mutate: updateBillWait } = useUpdateBillWait();
 
 const handleUpdateBill = () => {
+  const pdfParams = {
+    idKhachHang: props.selectedCustomerInfo ? props.selectedCustomerInfo.id : null,
+
+    idNhanVien: null,
+
+    idHoaDon: props.dataSourceInfor.id,
+
+    products: dataSourcePro.value,
+
+    tongTien: paymentInfo.value.totalProductPrice,
+
+    phiVanChuyen: paymentInfo.value.shippingFee,
+
+    giamGia: paymentInfo.value.discount
+  }
   const payload = {
     trangThai:
       paymentInfo.value.shippingOption === "true"
@@ -805,6 +825,7 @@ const handleUpdateBill = () => {
           idBill: props.dataSourceInfor.id,
           params: payload,
         });
+        await createInvoicePdf(pdfParams)
         successNotiSort("Thanh toán thành công!");
         router.push(
           ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
@@ -815,6 +836,8 @@ const handleUpdateBill = () => {
           errorNotiSort(error?.response?.data?.message);
         }
       }
+      // console.log(pdfParams);
+      
     },
     cancelText: "Huỷ",
     onCancel() {

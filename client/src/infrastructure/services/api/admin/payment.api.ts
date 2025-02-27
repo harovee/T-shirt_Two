@@ -1,7 +1,7 @@
 import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} from "@/infrastructure/types/api.common";
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
-import {API_ADMIN_PAYMENT} from "@/infrastructure/constants/url.ts";
+import {API_ADMIN_PAYMENT, API_ADMIN_POINT_OF_SALE} from "@/infrastructure/constants/url.ts";
 import {API_ADMIN_PAYMENT, GHN_API_URL, GHN_TOKEN, GHN_API_SERVICES} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
 
@@ -60,6 +60,22 @@ export interface paymentMethodDetailRequest {
     maGiaoDich: string | null;
 
     tienChuyenKhoan: number | null
+}
+
+export interface invoicePdfRequest {
+    idKhachHang: string | null;
+
+    idNhanVien: string | null;
+
+    idHoaDon: string | null;
+
+    products: Array<any> | [];
+
+    tongTien: number;
+
+    phiVanChuyen: number;
+
+    giamGia: number;
 }
 
 
@@ -150,6 +166,17 @@ export const createPaymentMethodDetail = async (data: paymentMethodDetailRequest
         DefaultResponse<DefaultResponse<null>>
     >;
 
+    return res.data;
+};
+
+export const createInvoicePdf = async (data: invoicePdfRequest) => {
+    const res = (await request({
+        url: `${API_ADMIN_POINT_OF_SALE}/save`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
     return res.data;
 };
 

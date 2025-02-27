@@ -4,6 +4,7 @@ import com.shop.server.core.admin.point_of_sale.model.request.AdPOSAddProductsTo
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSFindProductRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSInvoicePdfRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
+import com.shop.server.core.admin.point_of_sale.repository.PointOfSaleRepository;
 import com.shop.server.core.admin.point_of_sale.service.InvoicePdfService;
 import com.shop.server.core.admin.point_of_sale.service.PdfStorageService;
 import com.shop.server.core.admin.point_of_sale.service.PointOfSaleServiceIml;
@@ -35,6 +36,8 @@ public class PointOfSaleController {
     private final PointOfSaleServiceIml pointOfSaleService;
 
     private final InvoicePdfService invoicePdfService;
+
+    private final PointOfSaleRepository pointOfSaleRepository;
 
     @GetMapping("/products")
     public ResponseEntity<?> getProducts(final AdPOSFindProductRequest adFindProductRequest) {
@@ -78,12 +81,13 @@ public class PointOfSaleController {
 
     @PostMapping("/download")
     public ResponseEntity<byte[]> downloadInvoice(@RequestBody AdPOSInvoicePdfRequest request ) {
+        String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(request.getIdHoaDon());
         byte[] pdfBytes = invoicePdfService.generateInvoicePdf(request);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(ContentDisposition
                 .builder("attachment")
-                .filename(request.getMaHoaDon() + ".pdf", StandardCharsets.UTF_8)
+                .filename( maHoaDon + ".pdf", StandardCharsets.UTF_8)
                 .build());
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
@@ -94,7 +98,8 @@ public class PointOfSaleController {
         try {
             byte[] pdfBytes = invoicePdfService.generateInvoicePdf(request);
 
-            String filePath = PdfStorageService.savePdfToServer(pdfBytes, request.getMaHoaDon() + ".pdf");
+            String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(request.getIdHoaDon());
+            String filePath = PdfStorageService.savePdfToServer(pdfBytes, maHoaDon + ".pdf");
 
             if (filePath != null) {
                 return ResponseEntity.ok("File PDF đã lưu tại: " + filePath);

@@ -17,11 +17,16 @@ import java.time.format.DateTimeFormatter;
 
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSInvoicePdfRequest;
 import com.shop.server.core.admin.point_of_sale.model.response.AdOrderDetailResponse;
+import com.shop.server.core.admin.point_of_sale.repository.PointOfSaleRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.itextpdf.layout.property.TextAlignment;
 
 @Service
+@RequiredArgsConstructor
 public class InvoicePdfService {
+
+    private final PointOfSaleRepository pointOfSaleRepository;
 
     public byte[] generateInvoicePdf(AdPOSInvoicePdfRequest request) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -78,17 +83,20 @@ public class InvoicePdfService {
             float[] columnWidths = {1, 1}; // Chia bảng thành 2 cột bằng nhau
             Table table1 = new Table(columnWidths);
             table1.setWidth(UnitValue.createPercentValue(100));
-            table1.addCell(new Cell().add(new Paragraph("Khách hàng: " + (request.getTenKhachHang() != null ? request.getTenKhachHang() : "Khách lẻ")))
+            String tenKhachHang = request.getIdKhachHang() != null ? pointOfSaleRepository.getCustomerNameById(request.getIdKhachHang()) : "Khách lẻ";
+            String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(request.getIdHoaDon());
+            String tenNhanVien = request.getIdNhanVien() != null ? pointOfSaleRepository.getStaffNameById(request.getIdNhanVien()): "Nhân viên không xác định";
+            table1.addCell(new Cell().add(new Paragraph("Khách hàng: " + tenKhachHang))
                     .setFont(vietnameseFont)
                     .setTextAlignment(TextAlignment.LEFT) // Căn trái
                     .setBorder(null)); // Xóa viền ô
 
-            table1.addCell(new Cell().add(new Paragraph("Mã HĐ: " + request.getMaHoaDon()))
+            table1.addCell(new Cell().add(new Paragraph("Mã HĐ: " + maHoaDon))
                     .setFont(vietnameseFont)
                     .setTextAlignment(TextAlignment.RIGHT) // Căn phải
                     .setBorder(null));
 
-            table1.addCell(new Cell().add(new Paragraph("Nhân viên: " + request.getTenNhanVien())) // Đổi thành getTenNhanVien()
+            table1.addCell(new Cell().add(new Paragraph("Nhân viên: " + tenNhanVien)) // Đổi thành getTenNhanVien()
                     .setFont(vietnameseFont)
                     .setTextAlignment(TextAlignment.LEFT)
                     .setBorder(null));
