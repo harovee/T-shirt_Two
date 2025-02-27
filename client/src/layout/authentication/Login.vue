@@ -26,7 +26,7 @@
     <a-button
         @click="handleSubmitLogin()"
         html-type="submit"
-        :loading="isLoginPass"
+        :disabled="isLoginPass"
         class="h-12 w-full rounded-2xl bg-blue-700 text-white hover:bg-blue-900 hover:text-white cursor-pointer text-xs"
     >
       Đăng nhập
@@ -58,22 +58,22 @@
       >
         <v-icon width="40" height="40" name="fc-google"/>
       </button>
-<!--      <button-->
-<!--          @click="handleLoginGithub"-->
-<!--          type="button"-->
-<!--          class="p-2 border-2 rounded-2xl text-gray-900"-->
-<!--          :disabled="isLoginGithub"-->
-<!--      >-->
-<!--        <v-icon width="40" height="40" name="vi-folder-type-github-opened"/>-->
-<!--      </button>-->
-<!--      <button-->
-<!--          @click="handleLoginFacebook"-->
-<!--          type="button"-->
-<!--          class="p-2 border-2 rounded-2xl text-gray-900"-->
-<!--          :disabled="isLoginFacebook"-->
-<!--      >-->
-<!--        <v-icon width="40" height="40" size="x-large" name="md-facebook" class="text-blue-800"/>-->
-<!--      </button>-->
+      <!--      <button-->
+      <!--          @click="handleLoginGithub"-->
+      <!--          type="button"-->
+      <!--          class="p-2 border-2 rounded-2xl text-gray-900"-->
+      <!--          :disabled="isLoginGithub"-->
+      <!--      >-->
+      <!--        <v-icon width="40" height="40" name="vi-folder-type-github-opened"/>-->
+      <!--      </button>-->
+      <!--      <button-->
+      <!--          @click="handleLoginFacebook"-->
+      <!--          type="button"-->
+      <!--          class="p-2 border-2 rounded-2xl text-gray-900"-->
+      <!--          :disabled="isLoginFacebook"-->
+      <!--      >-->
+      <!--        <v-icon width="40" height="40" size="x-large" name="md-facebook" class="text-blue-800"/>-->
+      <!--      </button>-->
     </div>
   </div>
 </template>
@@ -82,17 +82,18 @@
 import {URL_FRONTEND, URL_OAUTH2_FACEBOOK, URL_OAUTH2_GITHUB, URL_OAUTH2_GOOGLE} from "@/infrastructure/constants/url";
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
 import router from "@/infrastructure/routes/router.ts";
-import {computed, reactive, ref, watch} from "vue";
+import {computed, reactive, ref} from "vue";
 import {Form} from "ant-design-vue";
 import {toast} from "vue3-toastify";
-import {keepPreviousData} from "@tanstack/vue-query";
-import {useLogin} from "@/infrastructure/services/service/authentication/authentication.action.ts";
 import {LoginForm} from "@/infrastructure/services/api/authentication/authentication.api.ts";
+import {useLogin} from "@/infrastructure/services/service/authentication/authentication.action.ts";
 
 let isLoginPass = ref(false);
 let isLoginGoogle = ref(false);
 let isLoginGithub = ref(false);
 let isLoginFacebook = ref(false);
+
+const {mutate: login} = useLogin();
 
 const modelRef = reactive<LoginForm>({
   email: "",
@@ -102,12 +103,27 @@ const modelRef = reactive<LoginForm>({
 const rulesRef = reactive({
   email: [
     {required: true, message: "Vui lòng nhập email", trigger: "blur"},
-    {type: "email", message: "Email không hợp lệ", trigger: "blur"},
+    {
+      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com)$/,
+      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com)",
+      trigger: "blur"
+    },
+    {max: 50, message: "Email không được dài quá 50 ký tự", trigger: "blur"},
   ],
   password: [
     {required: true, message: "Vui lòng nhập mật khẩu", trigger: "blur"},
-    {min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự", trigger: "blur"},
-    {max: 50, message: "Mật khẩu phải ít hơn 50 ký tự", trigger: "blur"},
+    {
+      pattern: /[A-Z]/,
+      message: "Mật khẩu phải có ít nhất 1 ký tự viết hoa",
+      trigger: "blur"
+    },
+    {
+      pattern: /\W/,
+      message: "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+      trigger: "blur"
+    },
+    {min: 8, message: "Mật khẩu phải có độ dài từ 8 ký tự trở lên"},
+    {max: 20, message: "Mật khẩu phải có độ dài từ 20 ký tự trở xuống"}
   ],
 })
 
@@ -131,40 +147,36 @@ const formFields = computed(() => [
   },
 ]);
 
-let buttonClicked = ref<Boolean>(false);
-
-const {data: state} = useLogin(modelRef, {
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-  enabled: computed(() => buttonClicked.value)
-});
-
-watch(
-    () => state.value,
-    (result) => {
-      if (result?.data) {
-        window.location.href = `${URL_FRONTEND}?state=${result.data}`;
-      } else {
-        buttonClicked.value = false;
-        toast.error(
-            result?.response?.data?.message
-        );
-      }
-    }
-);
-
 const handleSubmitLogin = async () => {
   try {
     await validate();
-    buttonClicked.value = true;
+    isLoginPass.value = true;
+
+    setTimeout(() => {
+      login(modelRef, {
+        onSuccess: (result) => {
+          isLoginPass.value = false;
+          if (result?.data) {
+            window.location.href = `${URL_FRONTEND}?state=${result.data}`;
+          }
+          if (result?.response?.data?.message) {
+            toast.warning(result?.response?.data?.message);
+          }
+        },
+        onError: (error) => {
+          isLoginPass.value = false;
+          console.error("Đã xảy ra lỗi khi đăng nhập:", error);
+          toast.error(error?.response?.data?.message || "Đăng nhập thất bại!");
+        },
+      });
+    }, 500);
   } catch (error: any) {
+    isLoginPass.value = false;
     console.error("🚀 ~ onFinish login ~ error:", error);
     if (error.errorFields) {
       return;
     }
-    toast.error(
-        error?.response?.data?.message
-    );
+    toast.error(error?.response?.data?.message || "Đăng nhập thất bại!");
   }
 };
 

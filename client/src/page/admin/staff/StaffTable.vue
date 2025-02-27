@@ -84,9 +84,11 @@
         </div>
         <div v-else-if="column.key === 'email'">
           <div v-if="record.email === null">Chưa thiết lập</div>
+          <div v-else>{{record.email}}</div>
         </div>
         <div v-else-if="column.key === 'phoneNumber'">
           <div v-if="record.phoneNumber === null">Chưa thiết lập</div>
+          <div v-else>{{record.phoneNumber}}</div>
         </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>

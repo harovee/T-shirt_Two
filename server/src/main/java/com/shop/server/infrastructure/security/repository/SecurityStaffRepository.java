@@ -7,10 +7,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface SecurityNhanVienRepository extends NhanVienRepository {
+public interface SecurityStaffRepository extends NhanVienRepository {
 
     Optional<NhanVien> findByEmail(String email);
 
     Optional<NhanVien> findByPhoneNumber(String phoneNumber);
+
+    boolean existsNhanVienById(String id);
 
 }

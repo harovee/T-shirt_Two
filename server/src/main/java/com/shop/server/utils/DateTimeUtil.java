@@ -1,10 +1,9 @@
 package com.shop.server.utils;
 
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -29,9 +28,13 @@ public class DateTimeUtil {
         if (date == null || date.isEmpty()) {
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(date, formatter);
-        return Date.from(zonedDateTime.toInstant());
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(format);
+            return formatter.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace(System.out);
+            return null;
+        }
     }
 
 
@@ -66,6 +69,7 @@ public class DateTimeUtil {
         }
         return null;
     }
+
     public static String convertDateToStringDate(Date date) {
         if (date != null) {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
@@ -74,6 +78,7 @@ public class DateTimeUtil {
         }
         return null;
     }
+
     public static Date addMinutes(Date date, int minutes) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -95,6 +100,7 @@ public class DateTimeUtil {
         System.out.println(DateTimeUtil.convertStringToTimeStampSecond("2024-12-04T06:53:29.493Z"));
         System.out.println(DateTimeUtil.convertTimeStampSecondToString(1736755662935L / 1000L));
         System.out.println(DateTimeUtil.convertDateToStringForExcel(new Date()));
+        System.out.println(DateTimeUtil.convertStringToTimeStampSecond("05/12/2004", "dd/MM/yyyy"));
     }
 
 }

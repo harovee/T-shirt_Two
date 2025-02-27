@@ -81,7 +81,8 @@
                 class="w-full"
                 v-else-if="field.component === 'a-date-picker'"
                 v-model:value="modelRef[field.name]"
-                format="YYYY-MM-DD"
+                :format="field.format"
+                :presets="field.presets"
                 show-time
                 :placeholder="field.placeholder"
             ></a-date-picker>
@@ -105,7 +106,7 @@ export default {
 
 <script lang="ts" setup>
 import {ROUTES_CONSTANTS} from "@/infrastructure/constants/path.ts";
-import {computed, createVNode, reactive, watch} from "vue";
+import {computed, createVNode, reactive, ref, watch} from "vue";
 import {DetailStaffResponse, StaffRequest} from "@/infrastructure/services/api/admin/staff.api.ts";
 import {Form, Modal, notification} from "ant-design-vue";
 import {
@@ -120,6 +121,7 @@ import {
   convertDateFormat, convertTextCode, convertToAntdDatePicker
 } from "@/utils/common.helper.ts";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
+import dayjs from "dayjs";
 
 const staffId = computed(() => {
   const currentUrl = window.location.href;
@@ -258,6 +260,10 @@ const {validate, validateInfos} = Form.useForm(
     rulesRef
 );
 
+const presets = ref([
+  {label: '18 Years Ago', value: dayjs().subtract(18, 'year')},
+]);
+
 const formFields = computed(() => [
   {
     label: "Tên nhân viên",
@@ -291,7 +297,9 @@ const formFields = computed(() => [
     label: "Ngày sinh",
     name: "birthday",
     component: "a-date-picker",
-    placeholder: "Nhâp ngày sinh"
+    placeholder: "Nhâp ngày sinh",
+    format: 'DD-MM-YYYY',
+    presets: presets.value,
   },
   {
     label: "Số điện thoại",
