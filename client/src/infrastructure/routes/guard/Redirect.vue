@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import {useAuthStore} from "@/infrastructure/stores/auth";
-import {getUserInformation, isTokenExpired} from "@/utils/token.helper";
+import {getUserInformation} from "@/utils/token.helper";
 import {onMounted} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {ROLES} from "@/infrastructure/constants/role.ts";
@@ -45,7 +45,7 @@ onMounted(() => {
         router.push({name: ROUTES_CONSTANTS.USER.name});
         break;
       case ROLES.CLIENT:
-        router.push({name: ROUTES_CONSTANTS.CLIENT.name});
+        router.push({name: ROUTES_CONSTANTS.CLIENT.children.HOME.name});
         break;
       default:
         router.push({name: ROUTES_CONSTANTS.AUTHENTICATION.name});

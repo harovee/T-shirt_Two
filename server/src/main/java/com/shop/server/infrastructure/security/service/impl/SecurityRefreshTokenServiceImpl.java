@@ -1,15 +1,16 @@
 package com.shop.server.infrastructure.security.service.impl;
 
 import com.shop.server.core.common.base.ResponseObject;
-import com.shop.server.entities.main.NhanVien;
+import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.RefreshToken;
 import com.shop.server.infrastructure.security.model.request.AuthLoginRequest;
 import com.shop.server.infrastructure.security.model.request.AuthRefreshRequest;
 import com.shop.server.infrastructure.security.model.request.AuthRegisterRequest;
 import com.shop.server.infrastructure.security.model.response.AuthRefreshResponse;
 import com.shop.server.infrastructure.security.model.response.TokenUriResponse;
-import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
+import com.shop.server.infrastructure.security.repository.SecurityClientRepository;
 import com.shop.server.infrastructure.security.repository.SecurityRefreshRepository;
+import com.shop.server.infrastructure.security.repository.SecurityStaffRepository;
 import com.shop.server.infrastructure.security.service.RefreshTokenService;
 import com.shop.server.infrastructure.security.service.SecurityRefreshTokenService;
 import com.shop.server.infrastructure.security.service.TokenProvider;
@@ -32,7 +33,9 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
 
     private final SecurityRefreshRepository authRefreshTokenRepository;
 
-    private final SecurityNhanVienRepository authStaffRepository;
+    private final SecurityStaffRepository authStaffRepository;
+
+    private final SecurityClientRepository authClientRepository;
 
     private final RefreshTokenService refreshTokenService;
 
@@ -77,20 +80,20 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
     @Override
     public ResponseObject<?> login(AuthLoginRequest request) {
         try {
-            Optional<NhanVien> nhanVienOptional = authStaffRepository.findByPhoneNumber(request.getUserName());
-            if (nhanVienOptional.isPresent()) {
-                NhanVien staff = nhanVienOptional.get();
-                if (staff.getPassword().equals(request.getPassword())) {
-                    String accessToken = tokenProvider.createToken(staff.getId());
-                    String refreshToken = refreshTokenService.createRefreshToken(staff.getId()).getRefreshToken();
+            Optional<KhachHang> khachHangOptional = authClientRepository.getKhachHangByEmailOrPhoneNumber(request.getUserName(), request.getUserName());
+            if (khachHangOptional.isPresent()) {
+                KhachHang client = khachHangOptional.get();
+                if (client.getPassword().equals(request.getPassword())) {
+                    String accessToken = tokenProvider.createToken(client.getId());
+                    String refreshToken = refreshTokenService.createRefreshToken(client.getId()).getRefreshToken();
                     return ResponseObject.successForward(TokenUriResponse.getState(accessToken, refreshToken), "Get state successfully");
                 } else {
-                    return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Incorrect password");
+                    return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Mật khẩu hoặc tài khoản sai");
                 }
             }
-            return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "User does not exits");
+            return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Tài khoản không tồn tại trong hệ thống");
         } catch (Exception e) {
-            log.info("😢😢 ~> Error login");
+            e.printStackTrace(System.out);
             return ResponseObject.errorForward(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -98,20 +101,18 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
     @Override
     public ResponseObject<?> register(AuthRegisterRequest request) {
         try {
-//            Optional<KhachHang> userOptional = authStaffRepository.findByEmail(request.getEmail());
-//            if (userOptional.isPresent()) {
-//                return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Email already in use");
-//            }
-//            NhanVien nhanVien = new NhanVien();
-//            nhanVien.setEmail(request.getEmail());
-//            nhanVien.setPassword(request.getPassword());
-//            nhanVien.setRole(Role.CLIENT);
-//            nhanVien.setStatus(Status.ACTIVE);
-//            String userId = authStaffRepository.save(nhanVien).getId();
-//            String accessToken = tokenProvider.createToken(userId);
-//            String refreshToken = refreshTokenService.createRefreshToken(userId).getRefreshToken();
-//            return ResponseObject.successForward(TokenUriResponse.getState(accessToken, refreshToken), "Get state successfully");
-            return null;
+            Optional<KhachHang> userOptional = authClientRepository.findByEmail(request.getEmail());
+            if (userOptional.isPresent()) {
+                return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Email already in use");
+            }
+            KhachHang khachHang = new KhachHang();
+            khachHang.setEmail(request.getEmail());
+            khachHang.setPassword(request.getPassword());
+            khachHang.setDeleted(false);
+            String userId = authClientRepository.save(khachHang).getId();
+            String accessToken = tokenProvider.createToken(userId);
+            String refreshToken = refreshTokenService.createRefreshToken(userId).getRefreshToken();
+            return ResponseObject.successForward(TokenUriResponse.getState(accessToken, refreshToken), "Get state successfully");
         } catch (Exception e) {
             log.info("😢😢 ~> Error encrypt register");
             return ResponseObject.errorForward(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());

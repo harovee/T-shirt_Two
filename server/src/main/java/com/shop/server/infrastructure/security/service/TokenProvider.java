@@ -2,11 +2,14 @@ package com.shop.server.infrastructure.security.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.auth.Session;
+import com.shop.server.infrastructure.constants.module.Role;
 import com.shop.server.infrastructure.security.model.response.InfoUserTShirtTwoResponse;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
-import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
+import com.shop.server.infrastructure.security.repository.SecurityClientRepository;
+import com.shop.server.infrastructure.security.repository.SecurityStaffRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -37,47 +40,92 @@ public class TokenProvider {
     private final long TOKEN_EXP = 10 * 60 * 60 * 1000;
 
     @Setter(onMethod_ = @Autowired)
-    private SecurityNhanVienRepository userAuthRepository;
+    private SecurityStaffRepository userAuthStaffRepository;
+
+    @Setter(onMethod_ = @Autowired)
+    private SecurityClientRepository userAuthClientRepository;
 
     @Setter(onMethod_ = @Autowired)
     private HttpSession httpSession;
 
     public String createToken(Authentication authentication) throws BadRequestException, JsonProcessingException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        NhanVien nhanVien = getCurrentUserLogin(userPrincipal.getEmail());
 
-        if (nhanVien == null) throw new BadRequestException("user not found");
+        if (userAuthStaffRepository.existsNhanVienById(userPrincipal.getId())) {
+            NhanVien nhanVien = getCurrentUserStaffLogin(userPrincipal.getEmail());
 
-        InfoUserTShirtTwoResponse infoUserTShirtTwoResponse = getInfoUserSpotifyResponse(nhanVien);
-        String subject = new ObjectMapper().writeValueAsString(infoUserTShirtTwoResponse);
-        Map<String, Object> claims = getBodyClaims(infoUserTShirtTwoResponse);
+            if (nhanVien == null) throw new BadRequestException("user staff not found");
 
-        return Jwts.builder()
-                .setSubject(subject)
-                .setClaims(claims)
-                .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
-                .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
-                .setIssuer("T-Shirt Two")
-                .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
-                .compact();
+            InfoUserTShirtTwoResponse infoUserTShirtTwoResponse = getInfoUserSpotifyResponse(nhanVien);
+            String subject = new ObjectMapper().writeValueAsString(infoUserTShirtTwoResponse);
+            Map<String, Object> claims = getBodyClaims(infoUserTShirtTwoResponse);
+
+            return Jwts.builder()
+                    .setSubject(subject)
+                    .setClaims(claims)
+                    .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
+                    .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
+                    .setIssuer("T-Shirt Two")
+                    .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
+                    .compact();
+        } else if (userAuthClientRepository.existsKhachHangById(userPrincipal.getId())) {
+            KhachHang khachHang = getCurrentUserClientLogin(userPrincipal.getEmail());
+
+            if (khachHang == null) throw new BadRequestException("user client not found");
+
+            InfoUserTShirtTwoResponse infoUserTShirtTwoResponse = getInfoUserSpotifyResponse(khachHang);
+            String subject = new ObjectMapper().writeValueAsString(infoUserTShirtTwoResponse);
+            Map<String, Object> claims = getBodyClaims(infoUserTShirtTwoResponse);
+
+            return Jwts.builder()
+                    .setSubject(subject)
+                    .setClaims(claims)
+                    .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
+                    .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
+                    .setIssuer("T-Shirt Two")
+                    .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
+                    .compact();
+        } else {
+            throw new BadRequestException("user client not found");
+        }
     }
 
     public String createToken(String userId) throws BadRequestException, JsonProcessingException {
-        NhanVien nhanVien = userAuthRepository.findById(userId).orElse(null);
-        if (nhanVien == null) throw new BadRequestException("user not found");
+        if (userAuthStaffRepository.existsNhanVienById(userId)) {
+            NhanVien nhanVien = userAuthStaffRepository.findById(userId).orElse(null);
+            if (nhanVien == null) throw new BadRequestException("user staff not found");
 
-        InfoUserTShirtTwoResponse response = getInfoUserSpotifyResponse(nhanVien);
-        String subject = new ObjectMapper().writeValueAsString(response);
-        Map<String, Object> claims = getBodyClaims(response);
+            InfoUserTShirtTwoResponse response = getInfoUserSpotifyResponse(nhanVien);
+            String subject = new ObjectMapper().writeValueAsString(response);
+            Map<String, Object> claims = getBodyClaims(response);
 
-        return Jwts.builder()
-                .setSubject(subject)
-                .setClaims(claims)
-                .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
-                .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
-                .setIssuer("T-Shirt Two")
-                .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
-                .compact();
+            return Jwts.builder()
+                    .setSubject(subject)
+                    .setClaims(claims)
+                    .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
+                    .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
+                    .setIssuer("T-Shirt Two")
+                    .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
+                    .compact();
+        } else if (userAuthClientRepository.existsKhachHangById(userId)) {
+            KhachHang khachHang = userAuthClientRepository.findById(userId).orElse(null);
+            if (khachHang == null) throw new BadRequestException("user staff not found");
+
+            InfoUserTShirtTwoResponse response = getInfoUserSpotifyResponse(khachHang);
+            String subject = new ObjectMapper().writeValueAsString(response);
+            Map<String, Object> claims = getBodyClaims(response);
+
+            return Jwts.builder()
+                    .setSubject(subject)
+                    .setClaims(claims)
+                    .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
+                    .setExpiration(new java.util.Date(System.currentTimeMillis() + TOKEN_EXP))
+                    .setIssuer("T-Shirt Two")
+                    .signWith(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
+                    .compact();
+        } else {
+            throw new BadRequestException("user client not found");
+        }
     }
 
     private InfoUserTShirtTwoResponse getInfoUserSpotifyResponse(NhanVien nhanVien) {
@@ -89,6 +137,18 @@ public class TokenProvider {
         response.setProfilePicture(nhanVien.getProfilePicture());
         response.setRoleCode(nhanVien.getRole().name());
         response.setRoleName(nhanVien.getRole().name());
+        return response;
+    }
+
+    private InfoUserTShirtTwoResponse getInfoUserSpotifyResponse(KhachHang khachHang) {
+        InfoUserTShirtTwoResponse response = new InfoUserTShirtTwoResponse();
+        response.setId(khachHang.getId());
+        response.setUserName(khachHang.getFullName());
+        response.setEmail(khachHang.getEmail());
+        response.setSubscriptionType(khachHang.getSubscriptionType());
+        response.setProfilePicture(khachHang.getProfilePicture());
+        response.setRoleCode(Role.CLIENT.name());
+        response.setRoleName(Role.CLIENT.name());
         return response;
     }
 
@@ -127,6 +187,32 @@ public class TokenProvider {
         return claims.get("email", String.class);
     }
 
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        String roleCode = claims.get("roleCode", String.class);
+        if (roleCode != null && !roleCode.isEmpty()) {
+            return roleCode;
+        }
+        return claims.get("email", String.class);
+    }
+
+    public boolean isStaff(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(tokenSecret.getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        String roleCode = claims.get("roleCode", String.class);
+        if (roleCode != null && !roleCode.isEmpty()) {
+            return roleCode.equalsIgnoreCase(Role.ADMIN.name()) || roleCode.equalsIgnoreCase(Role.USER.name());
+        }
+        return false;
+    }
+
     public boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder()
@@ -148,8 +234,13 @@ public class TokenProvider {
         return false;
     }
 
-    private NhanVien getCurrentUserLogin(String email) {
-        Optional<NhanVien> user = userAuthRepository.findByEmail(email);
+    private NhanVien getCurrentUserStaffLogin(String email) {
+        Optional<NhanVien> user = userAuthStaffRepository.findByEmail(email);
+        return user.orElse(null);
+    }
+
+    private KhachHang getCurrentUserClientLogin(String email) {
+        Optional<KhachHang> user = userAuthClientRepository.findByEmail(email);
         return user.orElse(null);
     }
 

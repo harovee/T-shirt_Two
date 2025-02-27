@@ -49,6 +49,14 @@
         <div v-else-if="column.key === 'code'">
           KH{{ record.code }}
         </div>
+        <div v-else-if="column.key === 'phoneNumber'">
+          <div v-if="record.phoneNumber === null">Chưa thiết lập</div>
+          <div v-else>{{record.phoneNumber}}</div>
+        </div>
+        <div v-else-if="column.key === 'address'">
+          <div v-if="record.address === null">Chưa thiết lập</div>
+          <div v-else>{{record.address}}</div>
+        </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.status === 'false'" color="success">Hoạt động</a-tag>
           <a-tag v-else-if="record.status === 'true'" color="warning">Vô hiệu hóa</a-tag>

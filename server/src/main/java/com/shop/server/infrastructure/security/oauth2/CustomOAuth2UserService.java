@@ -1,5 +1,6 @@
 package com.shop.server.infrastructure.security.oauth2;
 
+import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.constants.module.ActorConstants;
 import com.shop.server.infrastructure.constants.module.Role;
@@ -7,7 +8,9 @@ import com.shop.server.infrastructure.security.exception.OAuth2AuthenticationPro
 import com.shop.server.infrastructure.security.oauth2.user.OAuth2UserInfo;
 import com.shop.server.infrastructure.security.oauth2.user.OAuth2UserInfoFactory;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
-import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
+import com.shop.server.infrastructure.security.repository.SecurityClientRepository;
+import com.shop.server.infrastructure.security.repository.SecurityStaffRepository;
+import com.shop.server.utils.AESPasswordCryptoUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -25,7 +28,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final SecurityNhanVienRepository userRepository;
+    private final SecurityStaffRepository userStaffRepository;
+
+    private final SecurityClientRepository userClientRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
@@ -49,35 +54,50 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
         }
 
-        Optional<NhanVien> userAuthOptional = userRepository.findByEmail(oAuth2UserInfo.getEmail());
+        Optional<NhanVien> userAuthStaffOptional = userStaffRepository.findByEmail(oAuth2UserInfo.getEmail());
+        Optional<KhachHang> userAuthClientOptional = userClientRepository.findByEmail(oAuth2UserInfo.getEmail());
 
-        if (userAuthOptional.isPresent()) {
-            NhanVien nhanVien = userAuthOptional.get();
-            if (nhanVien.getDeleted().equals(true)) {
+        if (userAuthClientOptional.isPresent()) {
+            KhachHang client = userAuthClientOptional.get();
+            if (client.getDeleted().equals(true)) {
                 throw new OAuth2AuthenticationProcessingException("The specified user is disabled");
             }
-            NhanVien nhanVienExist = (NhanVien) updateExistingUser(nhanVien, oAuth2UserInfo);
+            KhachHang khachHangExist = (KhachHang) updateExistingUser(client, oAuth2UserInfo);
+            return UserPrincipal.create(khachHangExist, oAuth2User.getAttributes(), Role.CLIENT.name());
+        }
+
+        if (userAuthStaffOptional.isPresent()) {
+            NhanVien staff = userAuthStaffOptional.get();
+            if (staff.getDeleted().equals(true)) {
+                throw new OAuth2AuthenticationProcessingException("The specified user is disabled");
+            }
+            NhanVien nhanVienExist = (NhanVien) updateExistingUser(staff, oAuth2UserInfo);
             return UserPrincipal.create(nhanVienExist, oAuth2User.getAttributes(), nhanVienExist.getRole().name());
         }
 
         Object newUser = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
-        if (newUser instanceof NhanVien originNhanVien) {
-            return UserPrincipal.create(originNhanVien, oAuth2User.getAttributes(), ActorConstants.CLIENT);
+        if (newUser instanceof KhachHang originClient) {
+            return UserPrincipal.create(originClient, oAuth2User.getAttributes(), ActorConstants.CLIENT);
         } else {
-            throw new OAuth2AuthenticationProcessingException("Invalid email format");
+            throw new OAuth2AuthenticationProcessingException("Invalid Client Fomat");
         }
     }
 
     private Object registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
-        NhanVien nhanVien = new NhanVien();
-        nhanVien.setFullName(oAuth2UserInfo.getName());
-        nhanVien.setEmail(oAuth2UserInfo.getEmail());
-        nhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
-        nhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
-        nhanVien.setDeleted(false);
-        nhanVien.setRole(Role.CLIENT);
-        nhanVien.setPassword(null);
-        return userRepository.save(nhanVien);
+        KhachHang client = new KhachHang();
+        client.setFullName(oAuth2UserInfo.getName());
+        client.setEmail(oAuth2UserInfo.getEmail());
+        client.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
+        client.setProfilePicture(oAuth2UserInfo.getImageUrl());
+        client.setDeleted(false);
+        client.setPassword(null);
+        String pass = AESPasswordCryptoUtil.genPassword(8L);
+        client.setPassword(pass);
+        Long count = userClientRepository.count() + 1;
+        String formattedCode = String.format("%09d", count);
+        client.setCode(formattedCode);
+        client.setDeleted(false);
+        return userClientRepository.save(client);
     }
 
     private Object updateExistingUser(NhanVien existingNhanVien, OAuth2UserInfo oAuth2UserInfo) {
@@ -85,7 +105,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         existingNhanVien.setProfilePicture(oAuth2UserInfo.getImageUrl());
         existingNhanVien.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
         if (existingNhanVien.getDeleted() == null) existingNhanVien.setDeleted(true);
-        return userRepository.save(existingNhanVien);
+        return userStaffRepository.save(existingNhanVien);
+    }
+
+    private Object updateExistingUser(KhachHang existingKhachHang, OAuth2UserInfo oAuth2UserInfo) {
+        existingKhachHang.setFullName(oAuth2UserInfo.getName());
+        existingKhachHang.setProfilePicture(oAuth2UserInfo.getImageUrl());
+        existingKhachHang.setSubscriptionType(oAuth2UserInfo.getSubscriptionType());
+        if (existingKhachHang.getDeleted() == null) existingKhachHang.setDeleted(true);
+        return userClientRepository.save(existingKhachHang);
     }
 
 }
