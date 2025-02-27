@@ -644,12 +644,6 @@ const formatter = (value: any) => {
   return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-// Hàm format tiền sang VNĐ
-const formatter = (value: any) => {
-  if (!value) return "";
-  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-};
-
 const totalAmount = computed(() => {
   const total =
     dataSourcePro.value.reduce((total, e) => {
