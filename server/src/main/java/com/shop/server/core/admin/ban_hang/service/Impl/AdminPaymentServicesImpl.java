@@ -125,8 +125,11 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
             ctpttt2.setMaGiaoDich(request.getMaGiaoDich());
             ctpttt2.setDeleted(false);
             ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt1);
-            ChiTietPhuongThucThanhToan ct2 = adminChiTietPhuongThucThanhToanRepository.save(ctpttt2);
-            return new ResponseObject<>("ok", HttpStatus.CREATED, "Thêm chi tiết pttt thành công");
+            // Nếu chuyển khoản 0 đồng thì k lưu
+            if (ctpttt2.getTienKhachDua() != null && ctpttt2.getTienKhachDua().compareTo(BigDecimal.ZERO) > 0) {
+                ChiTietPhuongThucThanhToan ct2 = adminChiTietPhuongThucThanhToanRepository.save(ctpttt2);
+            }
+            return new ResponseObject<>("ok", HttpStatus.CREATED, "Thanh toán thành công.");
         }
 
         PhuongThucThanhToan pttt = request.getIdPhuongThucThanhToan() != null ? adPhuongThucThanhToanRepository.findById(request.getIdPhuongThucThanhToan()).orElse(null) : null;
@@ -138,7 +141,7 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
         ctpttt.setMaGiaoDich(request.getMaGiaoDich());
         ctpttt.setDeleted(false);
         ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt);
-        return new ResponseObject<>(ct, HttpStatus.CREATED, "Thêm chi tiết pttt thành công");
+        return new ResponseObject<>(ct, HttpStatus.CREATED, "Thanh toán thành công.");
     }
 
     @Override

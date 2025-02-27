@@ -145,5 +145,24 @@ public interface PointOfSaleRepository extends SanPhamChiTietRepository {
             """, nativeQuery = true)
     List<AdPOSOrderDetailResponse> getProductsInOrder(String idOrder);
 
+    @Query(value = """
+    select kh.ho_va_ten
+        from khach_hang kh
+        where kh.id = :idKhachHang
+    """, nativeQuery = true)
+    String getCustomerNameById (String idKhachHang);
 
+    @Query(value = """
+    select nv.ho_va_ten
+        from nhan_vien nv
+        where nv.id = :idStaff
+    """, nativeQuery = true)
+    String getStaffNameById (String idStaff);
+
+    @Query(value = """
+    select hd.ma_hoa_don
+        from hoa_don hd
+        where hd.id = :idHoaDon
+    """, nativeQuery = true)
+    String getInvoiceCodeById (String idHoaDon);
 }

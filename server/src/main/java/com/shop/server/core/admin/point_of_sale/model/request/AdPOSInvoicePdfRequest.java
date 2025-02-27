@@ -13,9 +13,11 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 public class AdPOSInvoicePdfRequest {
-    String tenKhachHang;
+    String idKhachHang;
 
-    String maHoaDon;
+    String idNhanVien;
+
+    String idHoaDon;
 
     List<AdOrderDetailResponse> products;
 

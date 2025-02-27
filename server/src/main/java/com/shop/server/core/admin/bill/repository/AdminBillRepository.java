@@ -1,8 +1,10 @@
 package com.shop.server.core.admin.bill.repository;
 
 import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
+import com.shop.server.core.admin.bill.model.request.AdminUpdateBillWaitRequest;
 import com.shop.server.core.admin.bill.model.response.AdminBillResponse;
 import com.shop.server.core.admin.bill.model.response.AdminBillWaitResponse;
+import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.repositories.HoaDonRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -157,4 +160,13 @@ public interface AdminBillRepository extends HoaDonRepository {
     @Modifying
     @Query(value = "DELETE FROM lich_su_hoa_don lshd WHERE lshd.id_hoa_don = :idHoaDon", nativeQuery = true)
     void deleteLichSuByIdHoaDon(@Param("idHoaDon") String idHoaDon);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+    UPDATE phieu_giam_gia pgg
+    SET pgg.so_luong = pgg.so_luong - 1
+    WHERE pgg.id = :idPhieuGiamGia
+    """, nativeQuery = true)
+    void updateQuantityVoucher(String idPhieuGiamGia);
 }
