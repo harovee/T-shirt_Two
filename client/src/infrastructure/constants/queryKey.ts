@@ -118,7 +118,12 @@ export const queryKey = {
             khachHangList: "adKhachHangListKey"
         },
     },
-
+    client :{
+        product: {
+            productList: "clientAllProductKey",
+            productDetailList: "clientProductDetailKey"
+        },
+    },
     user: {
         another: {},
 

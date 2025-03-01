@@ -53,7 +53,7 @@ public class MappingConstant {
 
     // employee
     public static final String API_CLIENT_ANOTHER = API_CLIENT_PREFIX + "/another";
-
+    public static final String API_CLIENT_PRODUCT = API_CLIENT_PREFIX + "/products";
     public static final String API_COMMON_ANOTHER = API_COMMON + "/another";
 
     /* AUTHENTICATION */
