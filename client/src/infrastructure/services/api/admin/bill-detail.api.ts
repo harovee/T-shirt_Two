@@ -17,6 +17,7 @@ export interface FindBillDetailRequest extends BillDetailPropsParams, Pagination
 
 export interface UpdateBillDetailRequest {
     soLuong: number | null;
+    idHoaDonChiTiet: string | null;
 }
 
 export interface CreateBillDetailRequest {
@@ -76,7 +77,7 @@ export const updateBillDetail = async (idBillDetail: string, data: UpdateBillDet
         headers: {
             "Content-Type": "application/json", // ✅ Đảm bảo API nhận diện JSON
         },
-        data: JSON.stringify(data)
+        data: data
     }) as AxiosResponse<
         DefaultResponse<null>
     >;

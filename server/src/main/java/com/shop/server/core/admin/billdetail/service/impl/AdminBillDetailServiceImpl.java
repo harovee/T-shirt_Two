@@ -88,7 +88,8 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             // ✅ Tính lại thành tiền
             BigDecimal newTotalAmount = currentPrice.multiply(new BigDecimal(newQuantity));
             billDetail.setThanhTien(newTotalAmount);
-
+            request.setIdHoaDonChiTiet(billDetail.getId());
+            adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
         } else {
             billDetail = new HoaDonChiTiet();
             billDetail.setHoaDon(hoaDon);
@@ -101,14 +102,9 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
 
             billDetail.setGia(currentPrice); // Gán giá trị để tránh `null`
             billDetail.setThanhTien(totalAmount);
+            adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
         }
-
-
         adminBillDetailRepository.save(billDetail);
-
-        request.setIdHoaDonChiTiet(billDetail.getId());
-        System.out.println(request.toString());
-        adminBillDetailRepository.updateQuantityProductDetailInBill(request);
 
         // ✅ Cập nhật tổng tiền hóa đơn
         updateBillTotalAmount(hoaDon);
@@ -139,6 +135,7 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             adminBillDetailRepository.delete(billDetail);
         } else {
             // Cập nhật chi tiết hóa đơn
+            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
             BigDecimal currentPrice = billDetail.getGia();
             BigDecimal newAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
 

@@ -2,6 +2,7 @@ package com.shop.server.core.admin.billdetail.repository;
 
 import com.shop.server.core.admin.billdetail.model.request.AdminCreateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminFindBillDetailRequest;
+import com.shop.server.core.admin.billdetail.model.request.AdminUpdateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailResponse;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.entities.main.HoaDon;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,5 +100,14 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
                     from hoa_don_chi_tiet hdct
                     where hdct.id = :#{#req.idHoaDonChiTiet});
             """, nativeQuery = true)
-    void updateQuantityProductDetailInBill(AdminCreateBillDetailRequest req);
+    void updateQuantityProductDetailInBill(AdminUpdateBillDetailRequest req);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+                update san_pham_chi_tiet spct
+                    set spct.so_luong = spct.so_luong - :soLuong
+                    where spct.id = :idSanPhamChiTiet;
+            """, nativeQuery = true)
+    void decreaseStockInAdd(@Param("idSanPhamChiTiet") String idSanPhamChiTiet,@Param("soLuong") int soLuong);
 }

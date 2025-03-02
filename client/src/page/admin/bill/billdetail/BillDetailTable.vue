@@ -110,6 +110,7 @@
         :open="isOpenModalAddProductToOrder"
         @handleClose="handleCloseModalAddProductToOrder"
         @onCancel="isOpenModalAddProductToOrder = false"
+        :loadingValue="loadingValue"
       />
     </div>
 
@@ -203,7 +204,7 @@ import TableExample from "@/components/ui/TableExample.vue";
 import { ColumnType } from "ant-design-vue/es/table";
 import { ref, watch, computed } from "vue";
 import AdminPayHistory from "./AdminPayHistory.vue";
-import UpdateBillModal from "../bill/UpdateBillModal.vue";
+import UpdateBillModal from "../bill/UpdateBillModals.vue";
 import AddProductDetailModal from "./AddProductDetailModal.vue";
 import AdminGetDeliveryPayModal from "./AdminGetDeliveryPayModal.vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
@@ -236,6 +237,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  loadingValue: {
+    type: Boolean,
+    required: true,
+  }
 });
 
 const emit = defineEmits(["update:paginationParams", "update-quantity"]);
