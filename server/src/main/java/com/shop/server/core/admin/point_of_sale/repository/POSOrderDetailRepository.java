@@ -136,9 +136,6 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
             """, nativeQuery = true)
     void updateExistingProductInCart(AdPOSAddProductsToCartRequest req);
 
-
-
-
     @Modifying
     @Transactional
     @Query(value = """

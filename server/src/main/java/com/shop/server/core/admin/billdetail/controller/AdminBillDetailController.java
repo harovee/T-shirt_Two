@@ -41,7 +41,7 @@ public class AdminBillDetailController {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<?> updateBillDetail(@PathVariable String id, @Valid @RequestBody final AdminUpdateBillDetailRequest request) {
+    ResponseEntity<?> updateBillDetail(@PathVariable String id,@RequestBody AdminUpdateBillDetailRequest request) {
         return Helper.createResponseEntity(adminBillDetailService.updateBillDetail(id, request));
     }
 }
