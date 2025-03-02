@@ -103,6 +103,10 @@ const handleLogout = () => {
 };
 
 const menuItems = ref([
+{
+    key: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name,
+    path: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.path,
+  },
   {
     key: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name,
     path: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.path,
@@ -191,6 +195,7 @@ const menuItems = ref([
 ]);
 
 const items: ItemType[] = reactive([
+  getItem('Tổng quan', ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name, () => h(BarChartOutlined)),
   getItem('Thống kê', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () => h(BarChartOutlined)),
 
   getItem('Bán tại quầy', ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name, () => h(ShoppingCartOutlined)),
