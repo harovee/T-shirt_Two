@@ -1,6 +1,6 @@
 <template>
   <step-history-bill 
-  :data-source="dataHistory"
+  :data-source="dataHistory || {}"
   :loading="isHistoryLoading || isHistoryFetching"
    />
   

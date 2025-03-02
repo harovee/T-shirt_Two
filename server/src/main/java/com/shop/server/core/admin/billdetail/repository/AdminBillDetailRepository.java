@@ -1,15 +1,21 @@
 package com.shop.server.core.admin.billdetail.repository;
 
+import com.shop.server.core.admin.billdetail.model.request.AdminCreateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminFindBillDetailRequest;
+import com.shop.server.core.admin.billdetail.model.request.AdminUpdateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailResponse;
+import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.entities.main.HoaDon;
 import com.shop.server.entities.main.HoaDonChiTiet;
 import com.shop.server.entities.main.SanPhamChiTiet;
 import com.shop.server.repositories.HoaDonChiTietRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -84,4 +90,24 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
 
     Optional<HoaDonChiTiet> findByHoaDonAndSanPhamChiTiet(HoaDon hoaDon, SanPhamChiTiet sanPhamChiTiet);
 
+    @Modifying
+    @Transactional
+    @Query(value = """
+            
+            update san_pham_chi_tiet spct
+                set spct.so_luong = spct.so_luong + (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = :#{#req.idHoaDonChiTiet}) - :#{#req.soLuong}
+                where spct.id =  (select hdct.id_san_pham_chi_tiet
+                    from hoa_don_chi_tiet hdct
+                    where hdct.id = :#{#req.idHoaDonChiTiet});
+            """, nativeQuery = true)
+    void updateQuantityProductDetailInBill(AdminUpdateBillDetailRequest req);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+                update san_pham_chi_tiet spct
+                    set spct.so_luong = spct.so_luong - :soLuong
+                    where spct.id = :idSanPhamChiTiet;
+            """, nativeQuery = true)
+    void decreaseStockInAdd(@Param("idSanPhamChiTiet") String idSanPhamChiTiet,@Param("soLuong") int soLuong);
 }

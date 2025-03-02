@@ -8,7 +8,6 @@
         :icon="item.icon"
         :loading="loading"
       >
-        <!-- Custom content for each step -->
         <template #title>
           <div class="step-title">{{ item.title }}</div>
         </template>
@@ -34,7 +33,7 @@
         <a-button v-if="current == 4" type="primary" @click="confirmCompleted()"> Hoàn thành </a-button>
 
         <a-button
-          v-if="current > 0 && current < 2"
+          
           style="margin-left: 8px"
           @click="rollBack()"
         >

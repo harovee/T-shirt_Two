@@ -1,5 +1,7 @@
 <template>
-  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+  <div
+    style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px"
+  >
     <a-input
       v-model="params.keyword"
       @change="onChangeInput('keyword', $event)"
@@ -10,17 +12,17 @@
       <a-button
         class="me-3 bg-purple-300 flex justify-between items-center gap-2"
         size="large"
-        @click="resetFilter(); clearInputText()"
+        @click="
+          resetFilter();
+          clearInputText();
+        "
       >
         <v-icon name="ri-refresh-fill" style="font-size: 14px"></v-icon>
       </a-button>
     </a-tooltip>
   </div>
   <div>
-    <a-space
-      wrap
-      style="width: 100%; display: flex; flex-wrap: wrap; gap: 8.3px"
-    >
+    <a-space wrap style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%">
       <!-- Flexbox for wrapping and spacing -->
       <a-select
         v-for="filter in filters"
@@ -30,7 +32,7 @@
         :options="filter.list"
         allowClear
         @change="onChangeFilter(filter.key, $event)"
-        style="min-width: 118.5px; width: 100%"
+        style="flex: 1; min-width: 117px; max-width: calc(33.33% - 8px)"
       />
     </a-space>
   </div>
@@ -101,7 +103,7 @@ const params = ref<Record<string, any>>({
 });
 
 const resetFilter = () => {
-    (params.value.keyword = ""),
+  (params.value.keyword = ""),
     (params.value.idChatLieu = null),
     (params.value.idCoAo = null),
     (params.value.idHoaTiet = null),
@@ -115,9 +117,8 @@ const resetFilter = () => {
 };
 
 const clearInputText = () => {
-  params.value.keyword = "";  // Clear the text in the input field
+  params.value.keyword = ""; // Clear the text in the input field
 };
-
 
 const debouncedEmit = debounce(() => {
   const payload = { ...params.value };
