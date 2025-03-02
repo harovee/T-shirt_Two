@@ -70,4 +70,6 @@ export const PREFIX_API_USER_FEATURE = `${API_URL}/admin/feature` as string;
 
 // CLIENT API
 export const PREFIX_API_CLIENT_FEATURE = `${API_URL}/client/feature` as string;
+export const API_CLIENT_ALLPRODUCT = `${API_URL}/client/products` as string;
+
 
