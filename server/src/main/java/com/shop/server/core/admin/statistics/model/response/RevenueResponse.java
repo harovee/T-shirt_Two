@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 
 public interface RevenueResponse {
 
-    String getTimeD();
+    String getTimeDisplay();
 
     String getObjectValue();
 

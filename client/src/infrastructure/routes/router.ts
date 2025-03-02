@@ -60,8 +60,17 @@ const routes: Array<RouteRecordRaw> = [
             requiresRole: ROLES.ADMIN,
             requiresAuth: true
         },
-        redirect: ROUTES_CONSTANTS.ADMIN.children.STATISTIC,
+        redirect: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD,
         children: [
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name,
+                component: () => import('@/page/admin/statistic/Dashboard.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
             {
                 path: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name,
@@ -396,6 +405,14 @@ const routes: Array<RouteRecordRaw> = [
         name: ROUTES_CONSTANTS.NOT_FOUND.name,
         component: () => import("@/page/exception/404/NotFound.vue"),
         meta: {requiresAuth: false},
+    },
+    {
+        path: ROUTES_CONSTANTS.COMMON.children.STATISTIC.path,
+        name: ROUTES_CONSTANTS.COMMON.children.STATISTIC.name,
+        component: () => import('@/page/admin/statistic/Statistic.vue'),
+        meta: {
+            requiresAuth: false
+        },
     },
 ];
 

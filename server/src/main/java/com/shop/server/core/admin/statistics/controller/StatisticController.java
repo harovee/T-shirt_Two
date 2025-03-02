@@ -50,7 +50,7 @@ public class StatisticController {
     @GetMapping("/today")
     public ResponseEntity<?> getToDayStatistic() {
         RevenuesRequest request = new RevenuesRequest();
-        request.setTimeUnit(StatisticTimeUnit.DAY);
+        request.setTimeUnit(StatisticTimeUnit.DAY.name());
         request.setStartTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         request.setEndTime(System.currentTimeMillis());
 
