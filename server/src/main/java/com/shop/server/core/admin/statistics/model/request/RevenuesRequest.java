@@ -16,7 +16,7 @@ public class RevenuesRequest {
 
     private String statisticType;
 
-    private StatisticTimeUnit timeUnit;
+    private String timeUnit;
 
     private Long startTime;
 

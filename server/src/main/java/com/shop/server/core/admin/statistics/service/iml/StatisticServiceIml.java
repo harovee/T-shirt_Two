@@ -6,6 +6,7 @@ import com.shop.server.core.admin.statistics.service.StatisticService;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.infrastructure.constants.module.Message;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class StatisticServiceIml implements StatisticService {
 
