@@ -11,8 +11,7 @@ export interface LoginForm {
 export interface RegisterForm {
     fullName: string,
     email: string,
-    businessName: string,
-    businessType: null,
+    phoneNumber: string,
     password: string,
     rePassword: string,
 }

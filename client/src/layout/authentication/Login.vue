@@ -137,7 +137,7 @@ const formFields = computed(() => [
     label: "Email",
     name: "email",
     component: "a-input",
-    props: {placeholder: "Email / Tên đăng nhập"},
+    props: {placeholder: "Email / Số điện thoại"},
   },
   {
     label: "Password",
