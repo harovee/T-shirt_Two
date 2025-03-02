@@ -28,7 +28,7 @@ export interface StaffRequest {
 
 export interface StaffQRRequest {
     name: string;
-    birthDay: string;
+    birthday: string;
     gender: string;
     identity: string;
     line: string;

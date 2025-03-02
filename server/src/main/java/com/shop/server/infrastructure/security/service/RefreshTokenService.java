@@ -1,10 +1,8 @@
 package com.shop.server.infrastructure.security.service;
 
 import com.shop.server.entities.main.RefreshToken;
-import com.shop.server.entities.main.NhanVien;
 import com.shop.server.infrastructure.security.oauth2.user.UserPrincipal;
 import com.shop.server.infrastructure.security.repository.SecurityRefreshRepository;
-import com.shop.server.infrastructure.security.repository.SecurityNhanVienRepository;
 import com.shop.server.utils.DateTimeUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,20 +16,16 @@ import java.util.UUID;
 @Service
 public class RefreshTokenService {
 
-    // 6 hours
-    private final long REFRESH_EXPIRED_TIME = 6 * 60 * 60 * 1000;
+    // 24 hours
+    private final long REFRESH_EXPIRED_TIME = 24 * 60 * 60 * 1000;
 
     private final SecurityRefreshRepository refreshRepository;
 
-    private final SecurityNhanVienRepository userRepository;
-
     @Autowired
     public RefreshTokenService(
-            SecurityRefreshRepository refreshRepository,
-            SecurityNhanVienRepository userAuthRepository
+            SecurityRefreshRepository refreshRepository
     ) {
         this.refreshRepository = refreshRepository;
-        this.userRepository = userAuthRepository;
     }
 
     public Optional<RefreshToken> findByToken(String refreshToken) {

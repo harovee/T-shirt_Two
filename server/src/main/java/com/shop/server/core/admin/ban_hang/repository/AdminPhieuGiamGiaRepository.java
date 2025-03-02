@@ -29,6 +29,7 @@ public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
         pgg.ngay_bat_dau AS ngayBatDau,
         pgg.ngay_ket_thuc AS ngayKetThuc,
         pgg.loai_phieu as kieu,
+        pgg.gia_tri_giam as giaTri,
         CAST(
             CASE
                 WHEN :#{#request.tongTien} IS NULL THEN

@@ -12,10 +12,11 @@
     destroyOnClose
     centered
   >
-    <filter-product-to-order 
+    <div class="mb-4">
+      <filter-product-to-order 
       @filter="handleFilterProductToOrder"
-      style="margin-bottom: 15px"
     />
+    </div>
     <product-detail-table-to-order
       :data-source="dataSource"
       :loading="isLoading || isFetching"
@@ -36,6 +37,7 @@ import {
   reactive,
   onMounted,
   provide,
+  watch
 } from "vue";
 import ProductDetailTableToOrder from "./ProductDetailTableToOrder.vue";
 import FilterProductToOrder from "./FilterProductToOrder.vue";
@@ -58,6 +60,10 @@ import { useGetListTrademark } from "@/infrastructure/services/service/admin/tra
 const props = defineProps({
   open: Boolean,
   productList: Object,
+  loadingValue: {
+    type: Boolean,
+    required: true,
+  }
 });
 
 // Định nghĩa Emits
@@ -109,6 +115,24 @@ onMounted(() => {
   }
 });
 
+watch(
+  () => props.open,
+  (newVal) => {
+    if (newVal) {
+      refetch(); // Gọi lại API khi mở modal
+    }
+  }
+);
+
+watch(
+  () => props.loadingValue,
+  (newVal) => {
+    if (newVal) {
+      refetch(); // Gọi lại API khi mở modal
+    }
+  }
+);
+
 const handleAddProducts = () => {
   if (selectedProducts.value.length === 0) {
     console.warn("Chưa chọn sản phẩm nào!");
@@ -152,6 +176,7 @@ const {
   data: productData,
   isLoading,
   isFetching,
+  refetch
 } = useGetAllProductDetail(paramsAll, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,

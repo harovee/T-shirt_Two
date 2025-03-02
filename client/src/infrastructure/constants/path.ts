@@ -203,6 +203,10 @@ export const ROUTES_CONSTANTS = {
                 path: "products",
                 name: "client-products"
             },
+            PRODUCTS_DETAIL: {
+                path: "products/:id",
+                name: "client-product-detail"
+            },
             ABOUT: {
                 path: "about",
                 name: "client-about"

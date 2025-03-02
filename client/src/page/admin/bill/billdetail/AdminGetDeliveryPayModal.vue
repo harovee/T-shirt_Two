@@ -1,333 +1,316 @@
 <template>
   <a-modal
-    :open="props.open"
-    title="Thanh toán"
+    :open="open"
+    @ok="handlePayment"
     @cancel="handleClose"
-    @ok="handleCreatePayment"
-    ok-text="Lưu"
-    cancel-text="Hủy"
-    destroyOnClose
-    centered
+    key=""
+    :width="'700px'"
+    :okText="'Xác nhận'"
+    :cancelText="'Hủy bỏ'"
   >
-    <a-form layout="vertical" class="pt-3">
-      <template v-for="field in formFields" :key="field.name">
-        <a-form-item
-          :label="field.label"
-          :name="field.name"
-          v-bind="validateInfos[field.name]"
-        >
-          <a-radio-group
-            v-if="field.component === 'a-radio-group'"
-            v-model:value="modelRef.idPhuongThucThanhToan"
-            :options="listPaymentMethod"
-          />
-          <!-- Trường Tổng tiền & Tiền thừa: Chỉ đọc -->
-          <a-input
-            v-else-if="['tongTien', 'soTienDu'].includes(field.name)"
-            v-model:value="formattedValues[field.name]"
-            type="text"
-            readonly
-          />
-
-          <!-- Tiền khách đưa: Người dùng nhập -->
-          <!-- <a-input
-            v-else-if="field.name === 'tienKhachDua'"
-            v-model:value="formattedValues.tienKhachDua"
-            type="text"
-            @beforeinput="handleBeforeInput"
-            @input="handleInput($event, 'tienKhachDua')"
-            placeholder="Nhập tiền khách đưa"
-          /> -->
-          <a-input-number
-            v-else-if="field.name === 'tienKhachDua'"
+    <h1 class="text-xl">Thanh toán</h1>
+    <div class="flex justify-between">
+      <p>Số tiền phải thanh toán:</p>
+      <p class="text-lg">{{ formatCurrencyVND(totalPrice) }}</p>
+      <!-- <p v-if="dataPaymentMethodDetails && dataPaymentMethodDetails.length && (totalAmountAfter >= totalAmount)" class="text-lg">{{ formatCurrencyVND(0) }}</p> -->
+    </div>
+    <a-form :model="params" :rules="rulesRef" layout="vertical">
+      <div class="gap-4">
+        <a-form-item label="Hình thức thanh toán">
+          <a-select
+            ref="select"
+            v-model:value="params.idPhuongThucThanhToan"
             class="w-full"
-            v-model:value="modelRef.tienKhachDua"
+            @change="handleChange"
+          >
+            <a-select-option value="tienmat">Tiền mặt</a-select-option>
+            <a-select-option value="chuyenkhoan">Chuyển khoản</a-select-option>
+            <a-select-option value="cahai">Cả hai</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item
+          v-if="params.idPhuongThucThanhToan === 'tienmat'"
+          label="Tiền khách đưa"
+          name="tienKhachDua"
+        >
+          <a-input-number
+            class="w-full"
+            v-model:value="params.tienKhachDua"
             min="0"
-            placeholder="Nhập tiền khách đưa"
             :formatter="formatter"
           />
-
-          <!-- Ghi chú (Xử lý nhập an toàn) -->
-          <!-- <a-textarea
-            v-else-if="field.name === 'ghiChu'"
-            v-model:="modelRef.ghiChu"
-            placeholder="Nhập ghi chú"
-          /> -->
-          <component
-            v-else
-            :is="field.component"
-            v-bind="field.props"
-            v-model:value="modelRef[field.name]"
-          >
-          </component>
+          <p class="mt-3 text-red-500" v-if="params.soTienDu < 0">
+            Còn thiếu: {{ formatCurrencyVND(params.soTienDu) }}
+          </p>
+          <p class="mt-3" v-if="params.soTienDu > 0">
+            Tiền thừa: {{ formatCurrencyVND(params.soTienDu) }}
+          </p>
         </a-form-item>
-      </template>
+
+        <a-form-item
+          v-if="params.idPhuongThucThanhToan === 'cahai'"
+          label="Tiền mặt"
+          name="tienKhachDua"
+        >
+          <a-input-number
+            class="w-full"
+            v-model:value="params.tienKhachDua"
+            min="0"
+            :formatter="formatter"
+          />
+          <p class="mt-3" v-if="params.soTienDu > 0">
+            Tiền thừa: {{ formatCurrencyVND(params.soTienDu) }}
+          </p>
+        </a-form-item>
+
+        <a-form-item
+          v-if="params.idPhuongThucThanhToan === 'cahai'"
+          label="Tiền chuyển khoản"
+        >
+          <a-input-number
+            class="w-full"
+            v-model:value="params.tienChuyenKhoan"
+            min="0"
+            :formatter="formatter"
+            readonly
+          />
+        </a-form-item>
+
+        <a-form-item
+          v-if="
+            params.idPhuongThucThanhToan === 'chuyenkhoan' ||
+            params.idPhuongThucThanhToan === 'cahai'
+          "
+          label="Mã giao dịch"
+          name="maGiaoDich"
+        >
+          <a-input v-model:value="params.maGiaoDich"> </a-input>
+        </a-form-item>
+      </div>
     </a-form>
   </a-modal>
 </template>
 <script lang="ts" setup>
-
-import { CreateDeliveryPaymentRequest } from "@/infrastructure/services/api/admin/deliverypayment.api";
-import { useCreateDeliveryPayment } from "@/infrastructure/services/service/admin/deliverypayment.action";
-import { useGetPaymentMethod } from "@/infrastructure/services/service/admin/payhistory.action";
-import { formatCurrencyVND } from "@/utils/common.helper";
+import type { TableProps, TableColumnType } from "ant-design-vue";
+import { Form, message, Modal, Upload } from "ant-design-vue";
+import {
+  formatCurrencyVND,
+  getDateFormat,
+  getDateTimeMinutesFormat,
+} from "@/utils/common.helper";
+import {
+  defineProps,
+  computed,
+  defineEmits,
+  ref,
+  watch,
+  onMounted,
+  reactive,
+  createVNode,
+} from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { Form, Modal } from "ant-design-vue";
-import { computed, createVNode, reactive, ref, watchEffect, watch } from "vue";
+import {
+  VoucherResponse,
+  FindVoucherRequest,
+  PaymentMethodDetailResponse,
+  nextVoucherRequest,
+  paymentMethodDetailRequest,
+} from "@/infrastructure/services/api/admin/payment.api";
+import {
+  useGetListPaymentMethodDetail,
+  useCreatePaymentMethodDetail,
+} from "@/infrastructure/services/service/admin/payment.action";
+import { convertDateFormatTime } from "@/utils/common.helper";
+import { useRoute } from "vue-router";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { errorNotiSort, successNotiSort, warningNotiSort } from "@/utils/notification.config";
+import { toast } from "vue3-toastify";
+import {
+  warningNotiSort,
+  successNotiSort,
+  errorNotiSort,
+} from "@/utils/notification.config";
+
+const pageSize = ref(5);
+const current1 = ref(1);
 
 const props = defineProps({
-  open: Boolean,
+  open: {
+    type: Boolean,
+    required: true,
+  },
   totalPrice: Number,
 });
 
-const {mutate: createPayment} = useCreateDeliveryPayment();
+const emit = defineEmits(["handleClose", "handlePaymented"]);
 
-const isPaymentDisabled = ref(false); // Biến trạng thái để disable nút thanh toán
-
-const handleCreatePayment = () => {
-  Modal.confirm({
-    content: "Bạn muốn lưu lại thanh toán?",
-    icon: createVNode(ExclamationCircleOutlined),
-    centered: true,
-    async onOk() {
-      try {
-        await validate();
-        console.log("API", modelRef);
-
-        isPaymentDisabled.value = true; // Disable nút khi bắt đầu thanh toán
-
-        createPayment(modelRef, {
-          onSuccess: (result) => {
-            successNotiSort(result?.message);
-            handleClose();
-          },
-          onError: (error: any) => {
-            errorNotiSort(error?.response?.data?.message);
-            isPaymentDisabled.value = false; // Nếu lỗi, bật lại nút
-          },
-        });
-      } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
-        warningNotiSort("Vui lòng nhập đầy đủ các trường dữ liệu");
-        isPaymentDisabled.value = false; // Nếu lỗi, bật lại nút
-      }
-    },
-    cancelText: "Hủy",
-    onCancel() {
-      Modal.destroyAll();
-    }
-  });
-};
-
-const getIdHoaDonFromUrl = () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get("idHoaDon") || "";
-};
-
-const emit = defineEmits(["handleClose"]);
-
-const modelRef = reactive<CreateDeliveryPaymentRequest>({
-  idHoaDon: getIdHoaDonFromUrl(),
-  idPhuongThucThanhToan: null,
-  tongTien: 0,
-  tienKhachDua: 0,
-  soTienDu: 0,
-  ghiChu: null,
-  maGiaoDich: null,
-});
+const { mutate: createPaymentMethodDetail } = useCreatePaymentMethodDetail();
 
 const rulesRef = reactive({
   tienKhachDua: [
     {
       required: true,
       message: "Vui lòng nhập tiền khách đưa",
-      trigger: "blur",
+      trigger: ["blur", "change"],
     },
     {
       validator: (_, value) => {
-        if (modelRef.tongTien && value < modelRef.tongTien) {
-          return Promise.reject("Tiền khách đưa phải lớn hơn hoặc bằng tổng tiền");
+        if (value === 0) {
+          return Promise.reject(new Error("Tiền khách đưa phải lớn hơn 0"));
         }
         return Promise.resolve();
       },
-      trigger: "blur",
+      trigger: ["blur", "change"],
     },
   ],
-  ghiChu: [
+  maGiaoDich: [
     {
-      max: 255,
-      message: "Ghi chú không được vượt quá 255 ký tự",
-      trigger: "blur",
+      validator: (_, value) => {
+        if (
+          (params.value.idPhuongThucThanhToan === "chuyenkhoan" ||
+            params.value.idPhuongThucThanhToan === "cahai") &&
+          !value
+        ) {
+          return Promise.reject(new Error("Vui lòng nhập mã giao dịch"));
+        }
+        return Promise.resolve();
+      },
+      trigger: ["blur", "change"],
     },
   ],
 });
 
+const getIdHoaDonFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("idHoaDon") || null;
+};
 
-const { resetFields, validate, validateInfos } = Form.useForm(
-  modelRef,
-  rulesRef
+const params = ref<paymentMethodDetailRequest>({
+  idHoaDon: getIdHoaDonFromUrl(),
+  idPhuongThucThanhToan: "tienmat",
+  tienKhachDua: 0,
+  maGiaoDich: null,
+  soTienDu: null,
+  tienChuyenKhoan: 0,
+});
+
+const { resetFields, validate, validateInfos } = Form.useForm(params, rulesRef);
+
+const handleChange = (value: string) => {
+  if (value === "tienmat") {
+    params.value.tienKhachDua = 0;
+    params.value.soTienDu = 0;
+  } else if (value === "cahai") {
+    params.value.tienKhachDua = 0;
+    params.value.soTienDu = 0;
+  } else {
+    params.value.soTienDu = 0;
+  }
+  params.value.idPhuongThucThanhToan = value;
+};
+
+const { data: dataPaymentMethodDetail } = useGetListPaymentMethodDetail(
+  params,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  }
 );
 
-const { data: paymentMethods } = useGetPaymentMethod({
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-});
+const dataPaymentMethodDetails = computed(
+  () => dataPaymentMethodDetail?.value?.data || []
+);
 
-const listPaymentMethod = computed(() => {
-  return (
-    paymentMethods?.value?.data?.map((method) => ({
-      value: method.id,
-      label: method.tenPhuongThuc,
-    })) || []
-  );
-});
+const totalAmountAfter = ref(0);
 
-watchEffect(() => {
-  if (props.open && listPaymentMethod.value.length > 0) {
-    const tienMat = listPaymentMethod.value.find(
-      (method) => method.label === "Tiền mặt"
-    );
-    modelRef.idPhuongThucThanhToan = tienMat
-      ? tienMat.value
-      : listPaymentMethod.value[0].value;
-
-    modelRef.tongTien = props.totalPrice || 0;
+watch(
+  () => props.open,
+  (newData) => {
+    resetFields();
   }
-});
+);
 
-const formattedValues = computed(() => ({
-  tongTien: formatCurrencyVND(modelRef.tongTien),
-  tienKhachDua: formatCurrencyVND(modelRef.tienKhachDua),
-  soTienDu: formatCurrencyVND(modelRef.soTienDu),
-}));
-
-//xử lý nhập tiền khách đưa
+watch(
+  () => params.value,
+  (newData) => {
+    if (params.value.tienKhachDua === null) {
+      params.value.soTienDu = 0;
+    }
+    if (params.value.idPhuongThucThanhToan === "tienmat") {
+      if (params.value.tienKhachDua > 0) {
+        params.value.soTienDu = params.value.tienKhachDua - props.totalPrice;
+      }
+    } else if (params.value.idPhuongThucThanhToan === "chuyenkhoan") {
+      params.value.tienKhachDua = props.totalPrice;
+    } else {
+      if (params.value.tienKhachDua > 0 && params.value.tienChuyenKhoan === 0) {
+        params.value.soTienDu = params.value.tienKhachDua - props.totalPrice;
+      }
+      params.value.tienChuyenKhoan =
+        props.totalPrice - params.value.tienKhachDua;
+      if (params.value.tienChuyenKhoan < 0) {
+        params.value.tienChuyenKhoan = 0;
+      }
+    }
+  },
+  { deep: true, immediate: true }
+);
 
 const formatter = (value: any) => {
   if (!value) return "";
   return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-const MAX_AMOUNT = 1_000_000_000_000; // Giới hạn số tiền tối đa
+const handlePayment = () => {
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn thanh toán?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        await validate();
 
-const handleBeforeInput = (event: InputEvent) => {
-  const target = event.target as HTMLInputElement | null;
-  if (!target) return;
-
-  let rawValue = target.value.replace(/\D/g, ""); // Lấy số hiện tại
-  let newValue = rawValue + event.data; // Giá trị sau khi nhập thêm
-
-  if (Number(newValue) > MAX_AMOUNT) {
-    console.warn(`🚫 Chặn nhập: ${newValue} vượt giới hạn ${MAX_AMOUNT}`);
-    event.preventDefault(); // Ngăn không cho nhập tiếp
-  }
+        // if (props.totalPrice === 0) {
+        //   warningNotiSort(
+        //     "Bạn đã thanh toán đủ số tiền cần thanh toán !"
+        //   );
+        //   return;
+        // }
+        // if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < props.totalPrice) {
+        //   warningNotiSort("Tiền khách đưa chưa đủ!");
+        //   return;
+        // }
+        // if (params.value.tienKhachDua > props.totalPrice) {
+        //   params.value.tienKhachDua = props.totalPrice
+        // }
+        // createPaymentMethodDetail(params.value, {
+        //   onSuccess: (result) => {
+        //     successNotiSort(result?.message);
+        //     handleClose();
+        //   },
+        //   onError: (error: any) => {
+        //     errorNotiSort(error?.response?.data?.message);
+        //   },
+        // });
+        console.log(params.value);
+      } catch (error: any) {
+        console.error("🚀 ~ handleCreate ~ error:", error);
+        if (error?.response) {
+          warningNotiSort(error?.response?.data?.message);
+        } else if (error?.errorFields) {
+          warningNotiSort("Vui lòng nhập đầy đủ các trường dữ liệu");
+        }
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
 };
-
-const handleInput = (event: Event, field: string) => {
-
-  const target = event.target as HTMLInputElement | null;
-  if (!target) return;
-
-  let rawValue = target.value;
-  let cursorPosition = target.selectionStart || 0; // Lưu vị trí con trỏ trước khi format
-
-  // Kiểm tra nếu toàn bộ văn bản bị bôi đen
-  let isAllSelected = target.selectionStart === 0 && target.selectionEnd === rawValue.length;
-
-  // Chỉ giữ lại số
-  let numericValue = rawValue.replace(/\D/g, "");
-  // console.log(numericValue);
-  
-
-  // Nếu nhập sai (chỉ toàn chữ) hoặc bôi đen toàn bộ rồi nhập chữ
-  if (numericValue === "") {
-    // console.log("Nhập ký tự không hợp lệ!");
-
-    if (isAllSelected) {
-      target.value = "";
-      modelRef[field] = 0;
-    } else {
-      target.value = formattedValues.value[field];
-    }
-    return;
-  }
-  // console.log("✅ modelRef sau khi cập nhật:", { ...modelRef });
-
-  // Kiểm tra nếu số vượt quá giới hạn
-  let numberValue = Number(numericValue);
-  if (numberValue > MAX_AMOUNT) {
-    console.warn(`🚫 Đã đạt giới hạn ${MAX_AMOUNT}, chặn nhập số tiếp theo!`);
-    target.value = formattedValues.value[field]; // Không thay đổi giá trị hiển thị
-    return;
-  }
-
-  // Cập nhật giá trị hợp lệ vào modelRef
-  modelRef[field] = numberValue;
-
-  // Cập nhật tiền thừa: soTienDu = tienKhachDua - tongTien
-  if (field === "tienKhachDua" && modelRef.tongTien && modelRef.tienKhachDua) {
-    modelRef.soTienDu = Math.max(0, modelRef.tienKhachDua - modelRef.tongTien);
-  }
-
-  let formattedValue = formatCurrencyVND(modelRef[field]);
-
-  // Cập nhật lại giá trị input
-  target.value = formattedValue;
-
-  // Điều chỉnh lại vị trí con trỏ trước chữ "đ"
-  setTimeout(() => {
-    let positionBeforeCurrencySymbol = formattedValue.length - 2; // Vị trí trước chữ "đ"
-    target.selectionStart = target.selectionEnd = Math.min(cursorPosition, positionBeforeCurrencySymbol);
-  }, 0);
-};
-
-watch (() => modelRef.tienKhachDua, (newValue) => {
-  modelRef.soTienDu = Math.max(0,newValue - modelRef.tongTien);
-})
 
 const handleClose = () => {
   emit("handleClose");
   resetFields();
 };
-
-const formFields = computed(() => [
-  {
-    label: "Tổng tiền",
-    name: "tongTien",
-    component: "a-input",
-  },
-  {
-    label: "Tiền khách đưa",
-    name: "tienKhachDua",
-    component: "a-input",
-    props: { placeholder: "Nhập tiền khách đưa", type: "number" },
-  },
-  {
-    label: "Tiền thừa",
-    name: "soTienDu",
-    component: "a-input",
-  },
-  {
-    label: "Ghi chú",
-    name: "ghiChu",
-    component: "a-input",
-    props: { placeholder: "Nhập ghi chú" },
-  },
-  {
-    label: "Phương thức thanh toán",
-    name: "phuongThucThanhToan",
-    component: "a-radio-group",
-    props: {
-      options: listPaymentMethod.value,
-    },
-  },
-  {
-    label: "Mã giao dịch",
-    name: "maGiaoDich",
-    component: "a-input",
-    props: { placeholder: "Nhập mã giao dịch" },
-  },
-]);
 </script>
+  

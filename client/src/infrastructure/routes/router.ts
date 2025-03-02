@@ -369,6 +369,14 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.CLIENT.children.PRODUCTS_DETAIL.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.PRODUCTS_DETAIL.name,
+                component: () => import('@/page/client/products/ProductDetail.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.CLIENT.children.ABOUT.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.ABOUT.name,
                 component: () => import('@/page/client/menu/About.vue'),

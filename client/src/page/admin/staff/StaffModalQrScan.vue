@@ -35,7 +35,7 @@
           <h3 class="text-center text-xl font-semibold text-gray-700">Thông tin QR Code</h3>
           <p>Tên: {{ personData.name }}</p>
           <p>Mã định danh cá nhân: {{ personData.identity }}</p>
-          <p>Ngày Sinh: {{ personData.birthDay }}</p>
+          <p>Ngày Sinh: {{ personData.birthday }}</p>
           <p>Giới Tính: {{ personData.gender }}</p>
         </div>
       </transition>
@@ -76,15 +76,15 @@ const parseQRData = (qrString: string): StaffQRRequest | null => {
 
     let identity = rawData[0].trim();
     let name = rawData[2].trim();
-    let birthDay = rawData[3].trim();
+    let birthday = rawData[3].trim();
     const gender = rawData[4].trim();
     const address = rawData[5].trim();
 
-    birthDay = formatDate(birthDay);
+    birthday = formatDate(birthday);
 
     const {line, ward, district, province} = parseAddress(address);
 
-    return {name, birthDay, gender, identity, line, ward, district, province};
+    return {name, birthday: birthday, gender, identity, line, ward, district, province};
   } catch (error) {
     console.error("❌ Lỗi khi phân tích dữ liệu QR:", error);
     return null;
