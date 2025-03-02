@@ -1,5 +1,6 @@
 package com.shop.server.infrastructure.security.service.impl;
 
+import com.shop.server.core.admin.client.repositories.AdminClientRepository;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.KhachHang;
 import com.shop.server.entities.main.RefreshToken;
@@ -14,6 +15,7 @@ import com.shop.server.infrastructure.security.repository.SecurityStaffRepositor
 import com.shop.server.infrastructure.security.service.RefreshTokenService;
 import com.shop.server.infrastructure.security.service.SecurityRefreshTokenService;
 import com.shop.server.infrastructure.security.service.TokenProvider;
+import com.shop.server.utils.DefaultImageUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,7 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
     private final SecurityClientRepository authClientRepository;
 
     private final RefreshTokenService refreshTokenService;
+    private final AdminClientRepository adminClientRepository;
 
     @Override
     public ResponseObject<?> getRefreshToken(@Valid AuthRefreshRequest request) {
@@ -80,7 +83,7 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
     @Override
     public ResponseObject<?> login(AuthLoginRequest request) {
         try {
-            Optional<KhachHang> khachHangOptional = authClientRepository.getKhachHangByEmailOrPhoneNumber(request.getUserName(), request.getUserName());
+            Optional<KhachHang> khachHangOptional = authClientRepository.getKhachHangByEmailOrPhoneNumber(request.getEmail(), request.getEmail());
             if (khachHangOptional.isPresent()) {
                 KhachHang client = khachHangOptional.get();
                 if (client.getPassword().equals(request.getPassword())) {
@@ -106,6 +109,13 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
                 return ResponseObject.errorForward(HttpStatus.BAD_REQUEST, "Email already in use");
             }
             KhachHang khachHang = new KhachHang();
+
+            khachHang.setFullName(request.getFullName());
+            khachHang.setPhoneNumber(request.getPhoneNumber());
+            Long count = adminClientRepository.count() + 1;
+            String formattedCode = String.format("%09d", count);
+            khachHang.setCode(formattedCode);
+            khachHang.setProfilePicture(DefaultImageUtil.IMAGE);
             khachHang.setEmail(request.getEmail());
             khachHang.setPassword(request.getPassword());
             khachHang.setDeleted(false);
@@ -114,6 +124,7 @@ public class SecurityRefreshTokenServiceImpl implements SecurityRefreshTokenServ
             String refreshToken = refreshTokenService.createRefreshToken(userId).getRefreshToken();
             return ResponseObject.successForward(TokenUriResponse.getState(accessToken, refreshToken), "Get state successfully");
         } catch (Exception e) {
+            e.printStackTrace(System.out);
             log.info("😢😢 ~> Error encrypt register");
             return ResponseObject.errorForward(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

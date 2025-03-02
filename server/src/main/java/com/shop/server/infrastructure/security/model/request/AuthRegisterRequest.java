@@ -22,11 +22,7 @@ public class AuthRegisterRequest {
     @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank(message = "Business name is required")
-    private String businessName;
-
-    @NotBlank(message = "Business type ID is required")
-    private String businessType;
+    private String phoneNumber;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters long")
