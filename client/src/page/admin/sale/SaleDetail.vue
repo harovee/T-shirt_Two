@@ -16,7 +16,7 @@
         <div class="col-span-5 md:col-span-5 lg:col-span-2 w-full shadow-md flex justify-center h-fit">
             <div class="w-[30rem] p-5">
                 <!-- FORM CHI TIẾT ĐỢT GIẢM GIÁ -->
-
+                <h4 class="text-lg font-semibold mb-4">Chi tiết đợt giảm giá</h4>
                 <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical" :disabled="!currentStatus">
                     <div class="flex justify-start" style="width: 100%;">
                         <a-alert banner :showIcon="false" :message="'Ngày tạo: ' + getDateFormat(formState.createdDate)"
@@ -101,6 +101,7 @@
                         <span><TagsOutlined />Thêm sản phẩm vào đợt</span>
                     </template>
                         <div>
+                            <h4 class="text-lg font-semibold mb-4">Danh sách sản phẩm</h4>
                             <product-table
                             :categories="listAttributes.data.value?.data.categories"
                             :id-san-phams="idSanPhams"
@@ -175,7 +176,6 @@ import ProductTable from "./ProductTable.vue";
 import ProductDetailTable from "./ProductDetailTableInAddSale.vue";
 import ProductDetailTableInDetailSale from "./ProductDetailTableInDetailSale.vue";
 import {
-     defaultSaleDatePickerRules,
      defaultSaleRequest,
      FormState,
      disabledDate, disabledDateTime
@@ -218,7 +218,28 @@ const formState: UnwrapRef<FormState> = reactive( {
     lastModifiedDate: null,
 });
 const validStartDate = ref<number | null> (dayjs().valueOf());
-const rangePresets = ref(defaultSaleDatePickerRules);
+const rangePresets = ref([
+    { label: 'Bây giờ', value: [dayjs().add(1, 'minute'), dayjs().add(16, 'minute')] },
+    { label: 'Ngày mai', value: [dayjs().startOf('d').add(1, 'd'), dayjs().endOf('d').add(1, 'd')] },
+    { label: '7 ngày tiếp theo', value: [dayjs(), dayjs().add(7, 'd')] },
+    { label: '15 ngày tiếp theo', value: [dayjs(), dayjs().add(15, 'd')] },
+    { label: '30 ngày tiếp theo', value: [dayjs(), dayjs().add(30, 'd')] },
+    {
+        label: 'Tuần sau',
+        value: [
+            dayjs().startOf('week').add(1, 'week').add(1, 'd'),
+            dayjs().endOf('week').add(1, 'week').add(1, 'd')
+        ]
+    },
+    {
+        label: 'Tháng sau',
+        value: [
+            dayjs().startOf('month').add(1, 'month'),
+            dayjs().endOf('month').add(1, 'month'),
+        ]
+    },
+
+]);
 const rules: Record<string, Rule[]> = {
     ten: [
         { required: true, message: 'Vui lòng nhập tên đợt giảm giá', trigger: 'change' },
@@ -234,6 +255,9 @@ const rules: Record<string, Rule[]> = {
                 if (formState.loai === 'PERCENT' && value > 100) {
                     return Promise.reject('Giá trị giảm chỉ bé hơn hoặc bằng 100%');
                 }
+                if (formState.loai !== 'PERCENT' && value > 100000000) {
+                  return Promise.reject('Giá trị giảm không lớn hơn 100.000.000 vnđ');
+              }
                 return Promise.resolve();
             },
             trigger: 'change',

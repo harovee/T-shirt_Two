@@ -15,6 +15,7 @@
   <div class="p-3 grid grid-cols-5 gap-6">
       <div class="col-span-5 md:col-span-5 lg:col-span-2 w-full h-fit shadow-md flex justify-center">
           <div class="w-[30rem] p-5">
+              <h4 class="text-lg font-semibold mb-4">Chi tiết đợt giảm giá</h4>
               <!-- FORM CHI TIẾT ĐỢT GIẢM GIÁ -->
               <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
                     <a-form-item class="m-0 mt-2" ref="ten" label="Tên" name="ten" required>
@@ -42,9 +43,9 @@
                             :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']" :presets="rangePresets" />
                     </a-form-item>
 
-                    <a-form-item class="m-0 mt-2 hidden" label="" name="trangThai">
+                    <!-- <a-form-item class="m-0 mt-2 hidden" label="" name="trangThai">
                         <a-checkbox checked="true">Hoạt động</a-checkbox>
-                    </a-form-item>
+                    </a-form-item> -->
 
 
                     <a-form-item class="m-0 mt-3">
@@ -58,6 +59,7 @@
 
       <div class="col-span-3 md:col-span-5 lg:col-span-3">
               <div class="p-3 rounded-sm shadow-md h-96">
+                  <h4 class="text-lg font-semibold mb-4">Danh sách sản phẩm</h4>
                   <product-table
                       :categories="listAttributes.data.value?.data.categories"
                       :id-san-phams="idSanPhams"
@@ -104,7 +106,7 @@ export default {
 
 <script lang="ts" setup>
 import router from "@/infrastructure/routes/router.ts";
-import { reactive, ref, createVNode, onMounted, watch } from "vue";
+import { reactive, ref, createVNode, onMounted, watch, computed, onUnmounted } from "vue";
 import type { UnwrapRef } from 'vue';
 import {Modal} from "ant-design-vue";
 import {ExclamationCircleOutlined, PlusCircleOutlined, AppstoreAddOutlined} from "@ant-design/icons-vue";
@@ -116,7 +118,7 @@ import { SaleAndSaleProductRequest, SaleRequest } from "@/infrastructure/service
 import { useCreateSale, useCreateSaleAndSaleProduct, useGetAttributes } from "@/infrastructure/services/service/admin/sale.action.ts";
 import ProductTable from "./ProductTable.vue";
 import ProductDetailTable from "./ProductDetailTableInAddSale.vue";
-import { defaultSaleDatePickerRules, defaultSaleRequest, FormState, disabledDate, disabledDateTime} from "./base/DefaultConfig";
+import { defaultSaleRequest, FormState, disabledDate, disabledDateTime, defaultSaleDatePickerRules} from "./base/DefaultConfig";
 import { notificationType, openNotification } from "@/utils/notification.config";
 import { useSaleStore } from "./base/SaleStore";
 
@@ -159,6 +161,9 @@ const rules: Record<string, Rule[]> = {
               if (formState.loai === 'PERCENT' && value > 100) {
                   return Promise.reject('Giá trị giảm không lớn hơn 100%');
               }
+              if (formState.loai !== 'PERCENT' && value > 100000000) {
+                  return Promise.reject('Giá trị giảm không lớn hơn 100.000.000 vnđ');
+              }
               return Promise.resolve();
           },
           trigger: 'change',
@@ -182,23 +187,35 @@ const rules: Record<string, Rule[]> = {
   ngayBatDauVaKetThuc: [{ required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', trigger: 'change', type: 'array'},
     {
           validator: (rule, value) => {
-          const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
-          dayjs(date).valueOf()
-          );
-          const now = dayjs().valueOf();
-          if (ngayBatDau < now) {
-            return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
-          }
-          if (ngayKetThuc < ngayBatDau) {
-            return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
-          }
-          return Promise.resolve();
+            if (value != null ) {
+              const [ngayBatDau, ngayKetThuc] = value.map( (date: any) => dayjs(date).valueOf() );
+              console.log(ngayBatDau, ngayKetThuc);
+              const now = dayjs().valueOf();
+              if (ngayBatDau < now) {
+                return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+              }
+              if (ngayKetThuc < ngayBatDau) {
+                return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
+              }
+              const fifteenMinutes = 15 * 60 * 1000;
+              const diffMilliseconds = Math.abs(ngayKetThuc - ngayBatDau);
+              if (diffMilliseconds < fifteenMinutes) {
+                  console.log("Khoảng cách nhỏ hơn 15 phút.");
+                  return Promise.reject('Khoảng thời gian phải tối thiểu từ 15 phút');
+              }
+              return Promise.resolve();
+
+            }
           },
           trigger: 'change',
     }
   ],
   loai: [{ required: true, message: 'Vui lòng chọn loại đợt giảm giá', trigger: 'change' }],
 };
+
+const updateRangePresets = () => {
+  rangePresets[0] = { label: 'Bây giờ', value: [dayjs().add(1, 'minute').startOf('minute'), dayjs().add(16, 'minute').startOf('minute')] };
+}
 
 function loadDataFromStore() {
   const savedSaleData = saleStore.saleData;
@@ -224,6 +241,8 @@ function loadDataFromStore() {
 
 onMounted(() => {
   loadDataFromStore();
+  const interval = setInterval(updateRangePresets, 60000);
+  onUnmounted(() => clearInterval(interval));
 });
 
 const { mutate: createSale } = useCreateSale();

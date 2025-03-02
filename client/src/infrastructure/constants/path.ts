@@ -1,4 +1,3 @@
-import { path } from 'path';
 export const ROUTES_CONSTANTS = {
     AUTHENTICATION: {
         path: "/authentication",
@@ -22,6 +21,10 @@ export const ROUTES_CONSTANTS = {
         path: "/admin",
         name: "admin",
         children: {
+            DASHBOARD: {
+                path: "dashboard",
+                name: "dashboard",
+            },
             STATISTIC: {
                 path: "statistic",
                 name: "admin-statistic",
@@ -225,5 +228,13 @@ export const ROUTES_CONSTANTS = {
     REDIRECT: {
         path: "/redirect",
         name: "redirect",
+    },
+    COMMON: {
+        children: {
+            STATISTIC: {
+                path: "/cm-statistic",
+                name: "cm-statistic",
+            },
+        }
     },
 };
