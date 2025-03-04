@@ -1,6 +1,7 @@
 package com.shop.server.core.client.product.services.Impl;
 
 import com.shop.server.core.client.product.model.request.ClientProductDetailRequest;
+import com.shop.server.core.client.product.model.request.ClientProductRequest;
 import com.shop.server.core.client.product.model.request.ClientProductSearchRequest;
 import com.shop.server.core.client.product.model.response.thuoc_tinh.ChatLieuResponse;
 import com.shop.server.core.client.product.model.response.ClientProductProjectionResponse;
@@ -45,7 +46,7 @@ public class ClientProductServiceImpl implements ClientProductService {
                 "Lấy sản phẩm thành công");
     }
     @Override
-    public ResponseObject<?> getProductById(String idSanPham, ClientProductDetailRequest request) {
+    public ResponseObject<?> getProductById(String idSanPham, ClientProductRequest request) {
         if (idSanPham == null || idSanPham.isEmpty()) {
             return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "idSanPham không tồn tại hoặc null");
         }
@@ -85,6 +86,7 @@ public class ClientProductServiceImpl implements ClientProductService {
         response.setId(projection.getId());
         response.setMaSanPham(projection.getMaSanPham());
         response.setTen(projection.getTen());
+        response.setMoTa(projection.getMoTa());
         response.setDanhMuc(new DanhMucResponse(projection.getIdDanhMuc(),projection.getTenDanhMuc()));
         response.setChatLieu(new ChatLieuResponse(projection.getIdChatLieu(),projection.getTenChatLieu()));
         response.setTayAo(new TayAoResponse(projection.getIdTayAo(),projection.getTenTayAo()));
@@ -104,6 +106,12 @@ public class ClientProductServiceImpl implements ClientProductService {
                 .map(BigDecimal::new)
                 .collect(Collectors.toList());
         response.setGia(prices);
+
+        List<String> maSPCTs = Arrays.stream(projection.getMaSPCTs().split(","))
+                .map(String::trim)
+                .map(String::new)
+                .collect(Collectors.toList());
+        response.setMaSPCTs(maSPCTs);
 
         if (projection.getdiscount() != null) {
         List<BigDecimal> giaGiam = Arrays.stream(projection.getdiscount().split(","))

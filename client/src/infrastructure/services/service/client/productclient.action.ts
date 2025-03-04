@@ -4,7 +4,8 @@ import {
     getProductDetailById,
     getTop8ProductsMoiNhat,
     ClientProductDetailRequest,
-    getProductById
+    getProductById,
+    ClientProductRequest
 } from "@/infrastructure/services/api/client/clientproduct.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -45,7 +46,7 @@ export const useGetProductDetailById = (
 
 export const useGetProductById = (
     sanPhamId: Ref<string | null>,
-    params: Ref<ClientProductDetailRequest>,
+    params: Ref<ClientProductRequest>,
     options?: any
 ): UseQueryReturnType<Awaited<ReturnType<typeof getProductById>>, Error> => {
     return useQuery({

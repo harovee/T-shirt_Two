@@ -29,6 +29,10 @@ public class ClientProductResponse {
 
     private String id;
 
+    private List<String> maSPCTs;
+
+    private String moTa;
+
     private  List<ImageResponse> anh;
 
     private String maSanPham;
