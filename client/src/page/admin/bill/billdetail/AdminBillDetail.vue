@@ -38,6 +38,7 @@
       :total-pages="totalPage"
       @update:paginationParams="handlePaginationChange"
       @update-quantity="handleChangeTotalPrice"
+      :loadingValue="refereshAllProduct"
     />
   </div>
 
@@ -88,7 +89,10 @@ import {
   FindBillDetailRequest,
   BillDetailResponse,
 } from "@/infrastructure/services/api/admin/bill-detail.api";
-import { useGetBillDetails, useUpdateBillDetail } from "@/infrastructure/services/service/admin/bill-detail.action";
+import {
+  useGetBillDetails,
+  useUpdateBillDetail,
+} from "@/infrastructure/services/service/admin/bill-detail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { computed, onMounted, ref, watch } from "vue";
 import AdminBillHistory from "./AdminBillHistory.vue";
@@ -177,25 +181,27 @@ const handlePaginationChange = (newParams: FindBillDetailRequest) => {
   params.value = { ...params.value, ...newParams };
 };
 
-const {mutate: updateQuantity} = useUpdateBillDetail();
+const { mutate: updateQuantity } = useUpdateBillDetail();
+
+const refereshAllProduct = ref(false)
 
 // Hàm cập nhật giá trị thanhTien
 const handleChangeTotalPrice = (record) => {
   const item = detailDataSources.value.find((item) => item.id === record.id);
+  
   if (item) {
     // Cập nhật số lượng và thành tiền trước khi gửi request
     item.soLuong = record.soLuong;
-    
+    const params = { idHoaDonChiTiet: item.id, soLuong: item.soLuong };
     // Gửi request cập nhật dữ liệu lên server
     updateQuantity(
       {
         idBillDetail: record.id,
-        data: { soLuong: record.soLuong }
+        data: params,
       },
       {
         onSuccess: () => {
-          // console.log("Cập nhật thành công!");
-          
+          refereshAllProduct.value = !refereshAllProduct.value
           refetch(); // Refresh dữ liệu sau khi cập nhật thành công
         },
         onError: (error) => {
@@ -204,7 +210,6 @@ const handleChangeTotalPrice = (record) => {
       }
     );
   }
-
 };
 
 const columnsBill: ColumnType[] = [

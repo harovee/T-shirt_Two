@@ -30,12 +30,19 @@
           @change="onRangeChange" />
     </a-form-item>
 
-    <a-form-item label=" ">
-      <a-button type="dashed" @click="removeSaleFiler()">Bỏ lọc</a-button>
-    </a-form-item>
-    
-
   </a-form>
+
+  <div class="flex justify-end">
+      <a-tooltip title="Làm mới bộ lọc" trigger="hover">
+          <a-button
+            class="me-3 bg-purple-300 flex justify-between items-center gap-2"
+            size="large"
+            @click="removeSaleFiler()"
+          >
+            <v-icon name="ri-refresh-fill" style="font-size: 14px"></v-icon>
+          </a-button>
+        </a-tooltip>
+  </div>
 </template>
 
 <script setup lang="ts">

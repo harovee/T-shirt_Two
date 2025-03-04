@@ -4,7 +4,9 @@ import com.shop.server.core.admin.point_of_sale.model.request.AdPOSAddProductsTo
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSFindProductRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSInvoicePdfRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
+import com.shop.server.core.admin.point_of_sale.repository.PointOfSaleRepository;
 import com.shop.server.core.admin.point_of_sale.service.InvoicePdfService;
+import com.shop.server.core.admin.point_of_sale.service.PdfStorageService;
 import com.shop.server.core.admin.point_of_sale.service.PointOfSaleServiceIml;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -34,6 +36,8 @@ public class PointOfSaleController {
     private final PointOfSaleServiceIml pointOfSaleService;
 
     private final InvoicePdfService invoicePdfService;
+
+    private final PointOfSaleRepository pointOfSaleRepository;
 
     @GetMapping("/products")
     public ResponseEntity<?> getProducts(final AdPOSFindProductRequest adFindProductRequest) {
@@ -77,14 +81,41 @@ public class PointOfSaleController {
 
     @PostMapping("/download")
     public ResponseEntity<byte[]> downloadInvoice(@RequestBody AdPOSInvoicePdfRequest request ) {
+        String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(request.getIdHoaDon());
         byte[] pdfBytes = invoicePdfService.generateInvoicePdf(request);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(ContentDisposition
                 .builder("attachment")
-                .filename(request.getMaHoaDon() + ".pdf", StandardCharsets.UTF_8)
+                .filename( maHoaDon + ".pdf", StandardCharsets.UTF_8)
                 .build());
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/save")
+    public ResponseEntity<String> saveInvoice(@RequestBody AdPOSInvoicePdfRequest request) {
+        try {
+            byte[] pdfBytes = invoicePdfService.generateInvoicePdf(request);
+
+            String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(request.getIdHoaDon());
+            String filePath = PdfStorageService.savePdfToServer(pdfBytes, maHoaDon + ".pdf");
+
+            if (filePath != null) {
+                return ResponseEntity.ok("File PDF đã lưu tại: " + filePath);
+            } else {
+                return ResponseEntity.status(500).body("Lỗi khi lưu file PDF.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi tạo PDF: " + e.getMessage());
+        }
+    }
+
+    private byte[] generateInvoicePdf(AdPOSInvoicePdfRequest request) {
+        try {
+            return new byte[0];
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tạo PDF", e);
+        }
     }
 }

@@ -1,3 +1,4 @@
+
 <template>
   <div class="product-detail-container" v-if="product">
     <h4 class="breadcrumb-title">
@@ -219,6 +220,7 @@ watch(product, (newProduct) => {
     
     // Set initial image
     if (newProduct.anh && newProduct.anh.length > 0) {
+
       selectedImage.value = newProduct.anh[0];
     } else {
       selectedImage.value = '/default-product-image.jpg';
@@ -305,7 +307,6 @@ const buyNow = () => {
   addToCart();
   console.log('Buy now clicked');
 };
-
 const decreaseQuantity = () => {
   if (quantity.value > 1) {
     quantity.value--;

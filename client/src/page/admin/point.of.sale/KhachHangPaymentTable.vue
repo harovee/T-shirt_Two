@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    :visible="open"
+    :open="open"
     @ok="handleClose"
     key=""
     :width="'800px'"

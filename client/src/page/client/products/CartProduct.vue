@@ -139,7 +139,7 @@ const handleRedirectProductDetail = (product) => {
         idKieuDang: product.kieuDang?.id || "",
         idTayAo: product.tayAo?.id || "",
         idThuongHieu: product.thuongHieu?.id || "",
-        idTinhNang: product.tinhNang?.id || "",
+        idTinhNang: product.tinhNang?.id || ""
     };
     localStorage.setItem('productDetailParams', JSON.stringify(detailParams));
     

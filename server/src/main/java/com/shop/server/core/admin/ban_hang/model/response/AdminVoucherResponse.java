@@ -26,4 +26,6 @@ public interface AdminVoucherResponse extends BaseResponse {
 
     String getTrangThai();
 
+    String getGiaTri ();
+
 }
