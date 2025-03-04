@@ -5,23 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ClientProductDetailRequest {
-
-    private String idHoaTiet;
-
-    private String idTinhNang;
-
-    private String idCoAo;
-
-    private String idTayAo;
-
-    private String idThuongHieu;
-
-    private String idKieuDang;
-
-    private String idChatLieu;
-
-    private String idDanhMuc;
+public class ClientProductDetailRequest extends ClientProductRequest{
 
     private String idKichCo;
 

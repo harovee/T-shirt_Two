@@ -96,6 +96,18 @@
           </a-card>
         </a-col>
       </a-row>
+      <div class="pagination-container flex justify-center mt-8 mb-4">
+        <a-pagination
+          v-model:current="currentPage"
+          :total="totalItems"
+          :pageSize="pageSize"
+          @change="handlePageChange"
+          show-size-changer
+          :pageSizeOptions="['12', '20', '40', '60']"
+          :showTotal="total => `Tổng ${total} sản phẩm`"
+          @showSizeChange="handleSizeChange"
+        />
+      </div>
     </div>
 </template>
 
@@ -103,15 +115,16 @@
 import { reactive, ref, watch, onMounted, computed } from "vue";
 import { formatCurrency } from "@/utils/common.helper";
 import { useGetAllProducts } from "@/infrastructure/services/service/client/productclient.action";
-import { FindProductClientRequest,ClientProductResponse, ClientProductDetailRequest } from "@/infrastructure/services/api/client/clientproduct.api";
+import { FindProductClientRequest,ClientProductResponse, ClientProductDetailRequest, ClientProductRequest } from "@/infrastructure/services/api/client/clientproduct.api";
 import { keepPreviousData } from "@tanstack/vue-query";
 import SPCT from "./ProductDetail.vue"; // Import the ProductDetail component
 import { ArrowLeftOutlined } from '@ant-design/icons-vue';
 import router from "@/infrastructure/routes/router.ts";
 
 const selectedArrange = ref("default");
-const showProductDetail = ref(false);
-const selectedProduct = ref(null);
+const currentPage = ref(1);
+const pageSize = ref(20);
+const totalItems = ref(0);
 
 const arrangesData = ref([
   { value: "default", name: "Mặc định" },
@@ -136,22 +149,50 @@ const params= ref<FindProductClientRequest>({
 });
 
 
-const { data: allProduct } = useGetAllProducts(params,{
+const { data: allProduct, refetch } = useGetAllProducts(params,{
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData
 });
 
 const products = computed(() => allProduct?.value?.data?.data || []);
 
+watch(allProduct, (newValue) => {
+  if (newValue && newValue.data) {
+    // console.log(newValue);
+    
+    totalItems.value = newValue?.data?.totalElements || 0;
+  }
+});
 
 // watch(selectedArrange, (newValue) => {
 //   // Implement your sorting logic here
 //   console.log("Sorting by:", newValue);
 // });
+// Xử lý khi thay đổi trang
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+  updateParams();
+};
 
+// Xử lý khi thay đổi số lượng hiển thị mỗi trang
+const handleSizeChange = (current: number, size: number) => {
+  pageSize.value = size;
+  currentPage.value = 1; // Reset về trang 1 khi thay đổi số lượng
+  updateParams();
+};
+
+// Cập nhật tham số và tải lại dữ liệu
+const updateParams = () => {
+  params.value = {
+    ...params.value,
+    page: currentPage.value,
+    size: pageSize.value
+  };
+  refetch();
+};
 const handleRedirectProductDetail = (product) => {
     // Create detail params based on the product
-    const detailParams: ClientProductDetailRequest = {
+    const detailParams: ClientProductRequest = {
         idChatLieu: product.chatLieu?.id || "",
         idCoAo: product.coAo?.id || "",
         idDanhMuc: product.danhMuc?.id || "",
@@ -160,8 +201,6 @@ const handleRedirectProductDetail = (product) => {
         idTayAo: product.tayAo?.id || "",
         idThuongHieu: product.thuongHieu?.id || "",
         idTinhNang: product.tinhNang?.id || "",
-        idKichCo: null,
-        idMauSac: null,
     };
     localStorage.setItem('productDetailParams', JSON.stringify(detailParams));
     

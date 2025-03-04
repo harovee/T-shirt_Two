@@ -1,6 +1,7 @@
 package com.shop.server.core.client.product.controller;
 
 import com.shop.server.core.client.product.model.request.ClientProductDetailRequest;
+import com.shop.server.core.client.product.model.request.ClientProductRequest;
 import com.shop.server.core.client.product.model.request.ClientProductSearchRequest;
 import com.shop.server.core.client.product.services.ClientProductService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
@@ -27,7 +28,7 @@ public class ClientProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProduct(@PathVariable final String id,@Valid final  ClientProductDetailRequest request) {
+    public ResponseEntity<?> getProduct(@PathVariable final String id,@Valid final ClientProductRequest request) {
         return Helper.createResponseEntity(clientProductService.getProductById(id, request));
     }
     @GetMapping("/moi-nhat")

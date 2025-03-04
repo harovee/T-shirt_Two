@@ -96,7 +96,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from "vue";
 import {formatCurrency} from "@/utils/common.helper"
-import { ClientProductDetailRequest, FindProductClientRequest } from "@/infrastructure/services/api/client/clientproduct.api";
+import { ClientProductDetailRequest, ClientProductRequest, FindProductClientRequest } from "@/infrastructure/services/api/client/clientproduct.api";
 import { useGetTop8ProductsMoiNhat } from "@/infrastructure/services/service/client/productclient.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import router from "@/infrastructure/routes/router.ts";
@@ -125,30 +125,13 @@ const { data: top8Product } = useGetTop8ProductsMoiNhat(params,{
 });
 
 const products = computed(() => top8Product?.value?.data || []);
-console.log(products);
 
-const viewProductDetail = (product) => {
-  selectedProduct.value = product;
-  showProductDetail.value = true;
-  // You might want to scroll to top for better UX
-  window.scrollTo(0, 0);
-};
-
-// Function to go back to product list
-const backToList = () => {
-  showProductDetail.value = false;
-  selectedProduct.value = null;
-};
-
-// Watch for changes in sort order to apply sorting
 watch(selectedArrange, (newValue) => {
-  // Implement your sorting logic here
   console.log("Sorting by:", newValue);
 });
 
 const handleRedirectProductDetail = (product) => {
-    // Create detail params based on the product
-    const detailParams: ClientProductDetailRequest = {
+    const detailParams: ClientProductRequest = {
         idChatLieu: product.chatLieu?.id || "",
         idCoAo: product.coAo?.id || "",
         idDanhMuc: product.danhMuc?.id || "",
@@ -156,9 +139,7 @@ const handleRedirectProductDetail = (product) => {
         idKieuDang: product.kieuDang?.id || "",
         idTayAo: product.tayAo?.id || "",
         idThuongHieu: product.thuongHieu?.id || "",
-        idTinhNang: product.tinhNang?.id || "",
-        idKichCo: null,
-        idMauSac: null
+        idTinhNang: product.tinhNang?.id || ""
     };
     localStorage.setItem('productDetailParams', JSON.stringify(detailParams));
     

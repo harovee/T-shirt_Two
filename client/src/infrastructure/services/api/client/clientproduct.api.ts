@@ -1,3 +1,4 @@
+import { ClientProductDetailRequest } from './clientproduct.api';
 import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} from "@/infrastructure/types/api.common";
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
@@ -22,7 +23,7 @@ export interface FindProductClientRequest extends PropertyProductParams, Paginat
 
 }
 
-export interface ClientProductDetailRequest {
+export interface ClientProductRequest {
 
       idHoaTiet: string;
 
@@ -39,10 +40,13 @@ export interface ClientProductDetailRequest {
      idChatLieu: string;
 
      idDanhMuc: string;
+}
 
-     idKichCo: string | null;
+export interface ClientProductDetailRequest extends ClientProductRequest{
+    
+    idKichCo: string;
 
-     idMauSac: string| null;
+    idMauSac: string;
 }
 
 export type  ImageResponse={
@@ -193,7 +197,7 @@ export const getProductDetailById = async (sanPhamId: Ref<string | null>, params
     >;
 };
 
-export const getProductById = async (sanPhamId: Ref<string | null>, params: Ref<ClientProductDetailRequest>) => {
+export const getProductById = async (sanPhamId: Ref<string | null>, params: Ref<ClientProductRequest>) => {
     return await request({
         url: `${API_CLIENT_ALLPRODUCT}/${sanPhamId.value}`,
         params: params.value,

@@ -1,6 +1,7 @@
 package com.shop.server.core.client.product.repository;
 
 import com.shop.server.core.client.product.model.request.ClientProductDetailRequest;
+import com.shop.server.core.client.product.model.request.ClientProductRequest;
 import com.shop.server.core.client.product.model.request.ClientProductSearchRequest;
 import com.shop.server.core.client.product.model.response.ClientProductDetailResponse;
 import com.shop.server.core.client.product.model.response.ClientProductProjectionResponse;
@@ -20,6 +21,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     sp.id as id,
                     sp.ma_san_pham as maSanPham,
                     sp.ten as ten,
+                    sp.mo_ta as moTa,
                     cl.id as idChatLieu,
                     cl.ten as tenChatLieu,
                     dm.id as idDanhMuc,
@@ -36,6 +38,8 @@ public interface ClientProductRepository extends SanPhamRepository {
                     th.ten as tenThuongHieu,
                     kd.id as idKieuDang,
                     kd.ten as tenKieuDang,
+                    GROUP_CONCAT(DISTINCT spct.ma_san_pham_chi_tiet) as maSPCTs,
+                    GROUP_CONCAT(DISTINCT spgg.gia_sau_giam ORDER BY spgg.gia_sau_giam ASC) AS discount,
                     GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
                     GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,
                     GROUP_CONCAT(DISTINCT CONCAT(ms.id,':' ,ms.ma_mau_sac, ':', ms.ten)) AS colors,
@@ -76,6 +80,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     spct.id as id,
                     spct.ma_san_pham_chi_tiet as maSPCT,
                     sp.ten as ten,
+                    sp.mo_ta as moTa,
                     cl.ten as chatLieu,
                     dm.ten as danhMuc,
                     ca.ten as coAo,
@@ -121,6 +126,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     sp.id as id,
                     sp.ma_san_pham as maSanPham,
                     sp.ten as ten,
+                    sp.mo_ta as moTa,
                     cl.id as idChatLieu,
                     cl.ten as tenChatLieu,
                     dm.id as idDanhMuc,
@@ -137,6 +143,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     th.ten as tenThuongHieu,
                     kd.id as idKieuDang,
                     kd.ten as tenKieuDang,
+                    GROUP_CONCAT(DISTINCT spct.ma_san_pham_chi_tiet) as maSPCTs,
                     GROUP_CONCAT(DISTINCT spgg.gia_sau_giam ORDER BY spgg.gia_sau_giam ASC) AS discount,
                     GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
                     GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,
@@ -179,6 +186,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     sp.id as id,
                     sp.ma_san_pham as maSanPham,
                     sp.ten as ten,
+                    sp.mo_ta as moTa,
                     cl.id as idChatLieu,
                     cl.ten as tenChatLieu,
                     dm.id as idDanhMuc,
@@ -195,6 +203,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     th.ten as tenThuongHieu,
                     kd.id as idKieuDang,
                     kd.ten as tenKieuDang,
+                    GROUP_CONCAT(DISTINCT spct.ma_san_pham_chi_tiet) as maSPCTs,
                     GROUP_CONCAT(DISTINCT spgg.gia_sau_giam ORDER BY spgg.gia_sau_giam ASC) AS discount,
                     GROUP_CONCAT( spct.gia ORDER BY spct.gia ASC) AS gia,
                     GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,
@@ -227,7 +236,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     AND  ta.id =  :#{#request.idTayAo}
             GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham
 """,nativeQuery = true)
-    ClientProductProjectionResponse getProductById(String idSanPham, ClientProductDetailRequest request);
+    ClientProductProjectionResponse getProductById(String idSanPham, ClientProductRequest request);
 
 
     @Query(value = """
@@ -235,6 +244,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     sp.id as id,
                     sp.ma_san_pham as maSanPham,
                     sp.ten as ten,
+                    sp.mo_ta as moTa,
                     cl.id as idChatLieu,
                     cl.ten as tenChatLieu,
                     dm.id as idDanhMuc,
@@ -251,6 +261,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                     th.ten as tenThuongHieu,
                     kd.id as idKieuDang,
                     kd.ten as tenKieuDang,
+                    GROUP_CONCAT(DISTINCT spct.ma_san_pham_chi_tiet) as maSPCTs,
                     GROUP_CONCAT(DISTINCT spgg.gia_sau_giam ORDER BY spgg.gia_sau_giam ASC) AS discount,
                     GROUP_CONCAT( spct.gia ORDER BY spct.gia ASC) AS gia,
                     GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,

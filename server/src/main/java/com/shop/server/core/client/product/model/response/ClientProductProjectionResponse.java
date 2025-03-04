@@ -7,6 +7,10 @@ public interface ClientProductProjectionResponse extends BaseResponse {
 
     String getTen();
 
+    String getMaSPCTs();
+
+    String getMoTa();
+
     String getIdDanhMuc();
 
     String getTenDanhMuc();
