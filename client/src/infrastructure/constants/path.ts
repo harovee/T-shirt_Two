@@ -219,6 +219,10 @@ export const ROUTES_CONSTANTS = {
                 path: "cart",
                 name: "client-cart"
             },
+            CHECKOUT: {
+                path: "check-out",
+                name: "client-check-out"
+            }
         },
     },
     NOT_FOUND: {

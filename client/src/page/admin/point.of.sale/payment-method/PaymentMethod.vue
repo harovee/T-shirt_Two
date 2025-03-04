@@ -284,6 +284,7 @@ const handlePayment = () => {
     async onOk() {
       try {
         await validate();
+        console.log(props.totalAmount);
         
         if (props.totalAmount === 0) {
           warningNotiSort("Bạn chưa thêm sản phẩm vào giỏ, không thể thanh toán!");

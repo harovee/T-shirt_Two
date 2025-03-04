@@ -138,9 +138,12 @@ import { ClientProductDetailRequest, ClientProductRequest } from '@/infrastructu
 import { useGetProductById, useGetProductDetailById } from "@/infrastructure/services/service/client/productclient.action";
 import { useRoute } from 'vue-router';
 import { keepPreviousData } from '@tanstack/vue-query';
+import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import ProductDetail from '@/page/admin/product/product-detail/ProductDetail.vue';
 
 const productId = ref<string | null>("");
+
+const router = useRouter();
 
 const paramsProduct = ref<ClientProductRequest>({
   idChatLieu: "",
@@ -304,6 +307,9 @@ const addToCart = () => {
 };
 
 const buyNow = () => {
+  router.push({
+        name: 'client-cart'
+    });
   addToCart();
   console.log('Buy now clicked');
 };
