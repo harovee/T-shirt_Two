@@ -1,6 +1,6 @@
 
 <template>
-  <div class="product-detail-container" v-if="product">
+  <div class="product-detail-container container mx-auto" v-if="product">
     <h4 class="breadcrumb-title">
         <router-link to="/home" class="breadcrumb-link">Trang chủ</router-link> / 
         <router-link to="/products" class="breadcrumb-link">Sản phẩm</router-link> / 
@@ -33,7 +33,7 @@
       
       <!-- Right side - Product Information -->
       <a-col :span="12">
-        <div class="product-info">
+        <div class="ms-10">
           <h1 class="product-title">{{ product.ten }}</h1>
           
           <div class="product-price">
@@ -124,12 +124,6 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-name: 'client-product-detail',
-};
-</script>
-
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { formatCurrency } from '@/utils/common.helper';
@@ -138,8 +132,12 @@ import { ClientProductDetailRequest, ClientProductRequest } from '@/infrastructu
 import { useGetProductById, useGetProductDetailById } from "@/infrastructure/services/service/client/productclient.action";
 import { useRoute } from 'vue-router';
 import { keepPreviousData } from '@tanstack/vue-query';
+import { useRouter } from "vue-router";
+import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 
 const productId = ref<string | null>("");
+
+const router = useRouter();
 
 const paramsProduct = ref<ClientProductRequest>({
   idChatLieu: "",
@@ -221,7 +219,7 @@ watch(product, (newProduct) => {
     // Set initial image
     if (newProduct.anh && newProduct.anh.length > 0) {
 
-      selectedImage.value = newProduct.anh[0];
+      selectedImage.value = newProduct.anh[0].url;
     } else {
       selectedImage.value = '/default-product-image.jpg';
     }
@@ -278,8 +276,8 @@ watch(dataDetail, (newDetail) => {
     }
     
     if (detailData.anh && detailData.anh.length > 0) {
-      displayedImages.value = detailData.anh;
-      selectedImage.value = detailData.anh[0];
+      displayedImages.value = detailData.anh.url;
+      selectedImage.value = detailData.anh[0].url;
     }
     
     // console.log('Updated product details with variant data:', detailData);
@@ -304,6 +302,9 @@ const addToCart = () => {
 };
 
 const buyNow = () => {
+  router.push({ 
+        name: 'client-cart'
+    });
   addToCart();
   console.log('Buy now clicked');
 };

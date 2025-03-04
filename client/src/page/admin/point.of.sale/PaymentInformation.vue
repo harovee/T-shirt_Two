@@ -807,7 +807,7 @@ const handleUpdateBill = () => {
       !paymentInfo.value.phoneNumber ||
       !paymentInfo.value.fullAddress)
   ) {
-    warningNotiSort("Vui lòng chọn địa chỉ người nhận!");
+    warningNotiSort("Vui lòng điền thông tin người nhận!");
     return;
   }
   if (paymentedValue.value === 0) {
@@ -897,6 +897,8 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
   } else {
     paymentInfo.value.shippingFee = 0;
   }
+  console.log(paymentInfo.value);
+  
 };
 
 // watch(
@@ -959,9 +961,11 @@ watch(totalAmount, (newTotal) => {
 watch(
   () => paymentInfo.value.shippingFee,
   (newTotal) => {
-    if (newTotal !== 0) {
+    if (newTotal && newTotal !== 0) {
       paymentInfo.value.totalProductPrice =
         totalAmount.value + newTotal - paymentInfo.value.discount;
+    } else {
+      paymentInfo.value.totalProductPrice = 0;
     }
   }
 );
