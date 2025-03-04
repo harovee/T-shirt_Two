@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -132,17 +133,25 @@ public class ClientProductServiceImpl implements ClientProductService {
     }
 
     private List<ImageResponse> processImages(String anhWithIds) {
-        if (anhWithIds == null ) {
+        if (anhWithIds == null || anhWithIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return Arrays.stream(anhWithIds.split(","))
-                .map(String::trim)
-                .map(pair -> {
-                    String[] parts = pair.split(":");
-                    return new ImageResponse(parts[0], parts[1]);
-                })
-                .collect(Collectors.toList());
+        List<ImageResponse> results = new ArrayList<>();
+        // Split by comma to get each ID:URL pair
+        String[] pairs = anhWithIds.split(",");
+
+        for (String pair : pairs) {
+            // Find the position of the first colon which separates ID from URL
+            int firstColonIndex = pair.indexOf(":");
+            if (firstColonIndex > 0) {
+                String id = pair.substring(0, firstColonIndex).trim();
+                String url = pair.substring(firstColonIndex + 1).trim();
+                results.add(new ImageResponse(id, url));
+            }
+        }
+
+        return results;
     }
 
     private List<SizeResponse> processSizes(String sizesWithIds) {

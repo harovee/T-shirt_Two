@@ -4,6 +4,7 @@ import com.shop.server.core.client.product.model.request.ClientProductDetailRequ
 import com.shop.server.core.client.product.model.request.ClientProductRequest;
 import com.shop.server.core.client.product.model.request.ClientProductSearchRequest;
 import com.shop.server.core.client.product.services.ClientProductService;
+import com.shop.server.core.client.product.services.ClientThuocTinhServices;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
 import jakarta.validation.Valid;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClientProductController {
     private final ClientProductService clientProductService;
 
+    private final ClientThuocTinhServices clientThuocTinhServices;
+
     @GetMapping
     public ResponseEntity<?> getAllProducts(@Valid final ClientProductSearchRequest request) {
         return Helper.createResponseEntity(clientProductService.getAllProducts(request));
@@ -38,5 +41,30 @@ public class ClientProductController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getProductDetailById(@PathVariable String id, @Valid final ClientProductDetailRequest request) {
         return Helper.createResponseEntity(clientProductService.getProductDetaiById(id,request));
+    }
+
+    @GetMapping("/danh-muc")
+    public ResponseEntity<?> getProductDanhMuc() {
+        return  Helper.createResponseEntity(clientThuocTinhServices.getDanhMuc());
+    }
+
+    @GetMapping("/chat-lieu")
+    public ResponseEntity<?> getProductChatLieu() {
+        return  Helper.createResponseEntity(clientThuocTinhServices.getChatLieu());
+    }
+
+    @GetMapping("/thuong-hieu")
+    public ResponseEntity<?> getProductThuongHieu() {
+        return  Helper.createResponseEntity(clientThuocTinhServices.getThuongHieu());
+    }
+
+    @GetMapping("/color")
+    public ResponseEntity<?> getProductMauSac() {
+        return  Helper.createResponseEntity(clientThuocTinhServices.getColor());
+    }
+
+    @GetMapping("/kieu-dang")
+    public ResponseEntity<?> getProductKieuDang() {
+        return  Helper.createResponseEntity(clientThuocTinhServices.getKieuDang());
     }
 }

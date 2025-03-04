@@ -121,7 +121,12 @@ export const queryKey = {
     client :{
         product: {
             productList: "clientAllProductKey",
-            productDetailList: "clientProductDetailKey"
+            productDetailList: "clientProductDetailKey",
+            danhMucList: "danhMucListKey",
+            colorList: "colorListkey",
+            thuongHieuList: "thuongHieuListKey",
+            kieuDangList: "kieuDangListKey",
+            chatLieuList: "chatLieuListKey"
         },
     },
     user: {

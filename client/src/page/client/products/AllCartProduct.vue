@@ -8,7 +8,7 @@
             v-for="arrange in arrangesData"
             :key="arrange.value"
             :value="arrange.value"
-            >{{ arrange.name }}</a-select-option
+            >{{ arrange.name  }}</a-select-option
           >
         </a-select>
       </div>
@@ -16,7 +16,7 @@
         <!-- Lặp qua danh sách sản phẩm -->
         <a-col
           :span="6"
-          v-for="product in products"
+          v-for="product in props.dataSource"
           :key="product.id"
           class="p-3"
         >
@@ -25,20 +25,20 @@
               <div class="product-image-container">
                 <img 
                   :alt="product.ten" 
-                  :src="product.anh && product.anh.length > 0 ? product.anh[0] : '/default-product-image.jpg'" 
+                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'" 
                   class="product-image primary-image"
                 />
                 <img 
                   v-if="product.anh && product.anh.length > 1" 
                   :alt="product.ten" 
-                  :src="product.anh[1]" 
+                  :src="product.anh[1].url" 
                   class="product-image hover-image"
                 />
                 <!-- Nếu không có hình thứ 2, dùng hình đầu tiên hoặc ảnh mặc định -->
                 <img 
                   v-else
                   :alt="product.ten" 
-                  :src="product.anh && product.anh.length > 0 ? product.anh[0] : '/default-product-image.jpg'" 
+                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'" 
                   class="product-image hover-image"
                 />
               </div>
@@ -47,23 +47,12 @@
               <template #description>
                 <div>
                   <p>
-                      <span 
-                        v-if="product.discount && product.discount.length > 0" 
-                        class="original-price"
-                      >
-                        {{ formatCurrency(product.gia && product.gia.length > 0 ? product.gia[0] : 0, "VND", "vi-VN") }}
-                      </span>
-                      
-                      <span class="discounted-price">
-                        {{
-                          product.discount && product.discount.length > 0 
-                            ? formatCurrency(product.discount[0], "VND", "vi-VN") 
-                            : formatCurrency(product.gia && product.gia.length > 0 ? product.gia[0] : 0, "VND", "vi-VN")
-                        }}
-                      </span>
-                    </p>
-
-
+                    <span class="price-range">
+                      {{
+                        getFormattedPriceRange(product)
+                      }}
+                    </span>
+                  </p>
                   <!-- Size dynamic list -->
                   <p class="mb-2">
                     Size:
@@ -99,7 +88,7 @@
       <div class="pagination-container flex justify-center mt-8 mb-4">
         <a-pagination
           v-model:current="currentPage"
-          :total="totalItems"
+          :total="props.dataSource?.totalElements"
           :pageSize="pageSize"
           @change="handlePageChange"
           show-size-changer
@@ -126,6 +115,11 @@ const currentPage = ref(1);
 const pageSize = ref(20);
 const totalItems = ref(0);
 
+const props = defineProps({
+  dataSource: Object,
+  loading: Boolean,
+});
+
 const arrangesData = ref([
   { value: "default", name: "Mặc định" },
   { value: "new", name: "Mới nhất" },
@@ -149,49 +143,50 @@ const params= ref<FindProductClientRequest>({
 });
 
 
-const { data: allProduct, refetch } = useGetAllProducts(params,{
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData
-});
-
-const products = computed(() => allProduct?.value?.data?.data || []);
-
-watch(allProduct, (newValue) => {
-  if (newValue && newValue.data) {
-    // console.log(newValue);
-    
-    totalItems.value = newValue?.data?.totalElements || 0;
-  }
-});
-
-// watch(selectedArrange, (newValue) => {
-//   // Implement your sorting logic here
-//   console.log("Sorting by:", newValue);
-// });
-// Xử lý khi thay đổi trang
 const handlePageChange = (page: number) => {
   currentPage.value = page;
   updateParams();
 };
 
-// Xử lý khi thay đổi số lượng hiển thị mỗi trang
 const handleSizeChange = (current: number, size: number) => {
   pageSize.value = size;
-  currentPage.value = 1; // Reset về trang 1 khi thay đổi số lượng
+  currentPage.value = 1;
   updateParams();
 };
 
-// Cập nhật tham số và tải lại dữ liệu
 const updateParams = () => {
   params.value = {
     ...params.value,
     page: currentPage.value,
     size: pageSize.value
   };
-  refetch();
 };
+
+const getPriceRange = (product) => {
+  let prices = [];
+
+  if (product.gia && product.gia.length > 0) {
+    prices.push(...product.gia);
+  }
+
+  if (product.discount && product.discount.length > 0) {
+    prices.push(...product.discount);
+  }
+
+  return prices.length > 0 ? prices : [0]; // Nếu không có giá, mặc định là 0
+};
+
+const getFormattedPriceRange = (product) => {
+  const prices = getPriceRange(product);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  return minPrice === maxPrice
+    ? formatCurrency(minPrice, "VND", "vi-VN")
+    : `${formatCurrency(minPrice, "VND", "vi-VN")} - ${formatCurrency(maxPrice, "VND", "vi-VN")}`;
+};
+
 const handleRedirectProductDetail = (product) => {
-    // Create detail params based on the product
     const detailParams: ClientProductRequest = {
         idChatLieu: product.chatLieu?.id || "",
         idCoAo: product.coAo?.id || "",
@@ -239,14 +234,17 @@ const handleRedirectProductDetail = (product) => {
 .product-image-container {
   position: relative;
   width: 100%;
-  height: 260px; /* Thiết lập chiều cao cố định */
-  overflow: hidden;
+  height: 260px; /* Keeping your original fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Removed overflow: hidden to allow images to extend beyond container */
 }
 
 .product-image {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Đảm bảo ảnh lấp đầy không gian và giữ tỷ lệ */
+  object-fit: contain; /* Keeps the original aspect ratio */
   position: absolute;
   top: 0;
   left: 0;
@@ -268,6 +266,12 @@ const handleRedirectProductDetail = (product) => {
 .product-image-container:hover .hover-image {
   opacity: 1;
 }
+.price-range {
+  font-weight: bold;
+  font-size: 17px;
+  color: red;
+}
+
 </style>
 
 <script lang="ts">
@@ -275,3 +279,4 @@ export default {
   name: 'client-products',
 };
 </script>
+

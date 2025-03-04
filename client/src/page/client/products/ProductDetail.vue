@@ -7,31 +7,32 @@
       </h4>
     <a-row :gutter="[24, 24]">
       <!-- Left side - Product Images -->
-      <a-col :span="12">
-        <div class="product-images">
-          <div class="main-image-container">
-            <img 
-              :src="selectedImage" 
-              :alt="product.ten" 
-              class="main-image" 
-            />
-          </div>
-          <div class="thumbnail-container">
-            <img 
-              v-for="(image, index) in displayedImages" 
-              :key="index" 
-              :src="image" 
-              :alt="`${product.ten} - ảnh ${index + 1}`" 
-              class="thumbnail" 
-              :class="{ 'active': selectedImage === image }"
-              @click="selectedImage = image"
-            />
-          </div>
-        </div>
+      <a-col :span="16">
+              <div class="product-images">
+                  <div class="thumbnail-container">
+                    <img 
+                      v-for="(image, index) in displayedImages" 
+                      :key="index" 
+                      :src="image" 
+                      :alt="`${product.ten} - ảnh ${index + 1}`" 
+                      class="thumbnail" 
+                      :class="{ 'active': selectedImage === image }"
+                      @click="selectedImage = image"
+                    />
+                  </div>
+                  
+                  <div class="main-image-container">
+                    <img 
+                      :src="selectedImage" 
+                      :alt="product.ten" 
+                      class="main-image" 
+                    />
+                  </div>
+      </div>
       </a-col>
       
       <!-- Right side - Product Information -->
-      <a-col :span="12">
+      <a-col :span="8">
         <div class="product-info">
           <h1 class="product-title">{{ product.ten }}</h1>
           
@@ -137,6 +138,7 @@ import { ClientProductDetailRequest, ClientProductRequest } from '@/infrastructu
 import { useGetProductById, useGetProductDetailById } from "@/infrastructure/services/service/client/productclient.action";
 import { useRoute } from 'vue-router';
 import { keepPreviousData } from '@tanstack/vue-query';
+import ProductDetail from '@/page/admin/product/product-detail/ProductDetail.vue';
 
 const productId = ref<string | null>("");
 
@@ -204,27 +206,31 @@ const selectedSize = ref('');
 const selectedColor = ref('');
 const quantity = ref(1);
 
-// Create refs for the displayed values that may change with variant selection
 const displayedPrice = ref<number[]>([]);
 const displayedDiscount = ref<number[]>([]);
 const displayedImages = ref<string[]>([]);
 
-// Initial setup when product data loads
+
 watch(product, (newProduct) => {
   if (newProduct) {
-    // Initialize displayed values with product defaults
     displayedPrice.value = newProduct.gia || [];
     displayedDiscount.value = newProduct.discount || [];
-    displayedImages.value = newProduct.anh || [];
     
-    // Set initial image
-    if (newProduct.anh && newProduct.anh.length > 0) {
-      selectedImage.value = newProduct.anh[0];
+    // Sửa cách lấy URL ảnh
+    if (newProduct.anh && Array.isArray(newProduct.anh)) {
+      displayedImages.value = newProduct.anh.map(img => img.url);
+      
+      if (displayedImages.value.length > 0) {
+        selectedImage.value = displayedImages.value[0];
+      } else {
+        selectedImage.value = '/default-product-image.jpg';
+      }
     } else {
+      displayedImages.value = [];
       selectedImage.value = '/default-product-image.jpg';
     }
     
-    // Set initial size and color
+    // Phần còn lại giữ nguyên
     if (newProduct.kichCo && newProduct.kichCo.length > 0) {
       selectedSize.value = newProduct.kichCo[0].id;
       paramsDetail.value.idKichCo = selectedSize.value;
@@ -235,23 +241,7 @@ watch(product, (newProduct) => {
       paramsDetail.value.idMauSac = selectedColor.value;
     }
   }
-}, { immediate: true });
-
-// Watch for size changes to update params and trigger refetch
-watch(selectedSize, (newSize) => {
-  if (newSize) {
-    paramsDetail.value.idKichCo = newSize;
-    // Force refetch with the new parameter
-    refetchDetail();
-  }
-});
-
-watch(selectedColor, (newColor) => {
-  if (newColor) {
-    paramsDetail.value.idMauSac = newColor;
-    refetchDetail();
-  }
-});
+}, { immediate: true });  
 
 const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   productId,
@@ -263,24 +253,36 @@ const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   }
 );
 
+watch(selectedSize, (newSize) => {
+  if (newSize) {
+    paramsDetail.value.idKichCo = newSize;
+    refetchDetail();
+  }
+});
+
+watch(selectedColor, (newColor) => {
+  if (newColor) {
+    paramsDetail.value.idMauSac = newColor;
+    refetchDetail();
+  }
+});
+
+
 watch(dataDetail, (newDetail) => {
-  if (newDetail && newDetail.data && newDetail.data.data) {
-    const detailData = newDetail.data.data;
-    
+  if (newDetail && newDetail.data && newDetail?.data?.data) {
+    const detailData = newDetail?.data?.data;
     if (detailData.gia && detailData.gia.length > 0) {
       displayedPrice.value = detailData.gia;
     }
-    
-    if (detailData.discount && detailData.discount.length > 0) {
-      displayedDiscount.value = detailData.discount;
+    displayedDiscount.value = detailData.discount;
+    // Sửa cách lấy URL ảnh
+    if (detailData.anh && Array.isArray(detailData.anh)) {
+      displayedImages.value = detailData.anh.map(img => img.url);
+      
+      if (displayedImages.value.length > 0) {
+        selectedImage.value = displayedImages.value[0];
+      }
     }
-    
-    if (detailData.anh && detailData.anh.length > 0) {
-      displayedImages.value = detailData.anh;
-      selectedImage.value = detailData.anh[0];
-    }
-    
-    // console.log('Updated product details with variant data:', detailData);
   }
 });
 
@@ -293,7 +295,7 @@ const addToCart = () => {
   if (!product.value) return;
   
   console.log('Adding to cart:', {
-    product: product.value,
+    ProductDetail: dataDetail?.value?.data?.data,
     size: selectedSize.value,
     color: selectedColor.value,
     quantity: quantity.value,
@@ -319,6 +321,7 @@ const increaseQuantity = () => {
 
 <style scoped>
 .product-detail-container {
+  margin: 0 200px;
   padding: 24px;
 }
 
@@ -330,38 +333,49 @@ const increaseQuantity = () => {
   min-height: 400px;
 }
 
-.main-image-container {
-  width: 100%;
-  height: 400px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  border: 1px solid #eee;
-}
-
-.main-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.product-images {
+  display: flex;
+  gap: 16px;
+  margin-right: 30px;
 }
 
 .thumbnail-container {
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
+  flex-direction: column;
+  gap: 10px;
+  width: 80px;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .thumbnail {
-  width: 80px;
-  height: 80px;
+  width: 75px;
+  height: 75px;
   object-fit: cover;
   cursor: pointer;
-  border: 2px solid transparent;
+  border: 1px solid #eee;
+  padding: 2px;
 }
 
 .thumbnail.active {
   border-color: #1890ff;
+  border-width: 2px;
 }
 
+.main-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+  max-width: calc(100% - 100px);
+}
+
+.main-image {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+}
 .product-title {
   font-size: 24px;
   font-weight: bold;

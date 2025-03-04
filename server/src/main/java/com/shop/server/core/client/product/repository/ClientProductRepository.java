@@ -17,7 +17,7 @@ import java.util.List;
 public interface ClientProductRepository extends SanPhamRepository {
 
     @Query(value = """
-            SELECT  ROW_NUMBER() OVER(ORDER BY MAX(spct.ngay_tao) DESC) AS catalog,
+                SELECT  ROW_NUMBER() OVER(ORDER BY MAX(spct.ngay_tao) DESC) AS catalog,
                     sp.id as id,
                     sp.ma_san_pham as maSanPham,
                     sp.ten as ten,
@@ -57,7 +57,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
             WHERE   sp.trang_thai = 0
                     AND spct.so_luong >0
@@ -162,7 +162,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia            
             WHERE   sp.trang_thai = 0
                     AND spct.so_luong >0
@@ -222,7 +222,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia            
             WHERE   sp.trang_thai = 0
                     AND  sp.id = :#{#idSanPham} 
@@ -280,7 +280,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia            
             WHERE   sp.trang_thai = 0
                     AND  sp.id = :#{#idSanPham} 
