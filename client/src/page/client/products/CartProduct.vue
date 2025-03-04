@@ -25,20 +25,20 @@
               <div class="product-image-container">
                 <img 
                   :alt="product.ten" 
-                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'" 
+                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
                   class="product-image primary-image"
                 />
                 <img 
                   v-if="product.anh && product.anh.length > 1" 
                   :alt="product.ten" 
-                  :src="product.anh[1].url" 
+                  :src="product.anh[1].url"
                   class="product-image hover-image"
                 />
                 <!-- Nếu không có hình thứ 2, dùng hình đầu tiên hoặc ảnh mặc định -->
                 <img 
                   v-else
                   :alt="product.ten" 
-                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'" 
+                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
                   class="product-image hover-image"
                 />
               </div>

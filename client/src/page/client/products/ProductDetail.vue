@@ -1,8 +1,8 @@
 <template>
   <div class="product-detail-container" v-if="product">
     <h4 class="breadcrumb-title">
-        <router-link to="/home" class="breadcrumb-link">Trang chủ</router-link> / 
-        <router-link to="/products" class="breadcrumb-link">Sản phẩm</router-link> / 
+        <router-link to="/home" class="breadcrumb-link">Trang chủ</router-link> /
+        <router-link to="/products" class="breadcrumb-link">Sản phẩm</router-link> /
         {{ product.ten }}
       </h4>
     <a-row :gutter="[24, 24]">
@@ -10,56 +10,56 @@
       <a-col :span="16">
               <div class="product-images">
                   <div class="thumbnail-container">
-                    <img 
-                      v-for="(image, index) in displayedImages" 
-                      :key="index" 
-                      :src="image" 
-                      :alt="`${product.ten} - ảnh ${index + 1}`" 
-                      class="thumbnail" 
+                    <img
+                      v-for="(image, index) in displayedImages"
+                      :key="index"
+                      :src="image"
+                      :alt="`${product.ten} - ảnh ${index + 1}`"
+                      class="thumbnail"
                       :class="{ 'active': selectedImage === image }"
                       @click="selectedImage = image"
                     />
                   </div>
-                  
+
                   <div class="main-image-container">
-                    <img 
-                      :src="selectedImage" 
-                      :alt="product.ten" 
-                      class="main-image" 
+                    <img
+                      :src="selectedImage"
+                      :alt="product.ten"
+                      class="main-image"
                     />
                   </div>
       </div>
       </a-col>
-      
+
       <!-- Right side - Product Information -->
       <a-col :span="8">
         <div class="product-info">
           <h1 class="product-title">{{ product.ten }}</h1>
-          
+
           <div class="product-price">
-            <span 
-              v-if="displayedDiscount && displayedDiscount.length > 0" 
+            <span
+              v-if="displayedDiscount && displayedDiscount.length > 0"
               class="original-price"
             >
               {{ formatCurrency(displayedPrice && displayedPrice.length > 0 ? displayedPrice[0] : 0, "VND", "vi-VN") }}
             </span>
             <span class="discounted-price">
-              {{ 
-                displayedDiscount && displayedDiscount.length > 0 
-                  ? formatCurrency(displayedDiscount[0], "VND", "vi-VN") 
-                  : formatCurrency(displayedPrice && displayedPrice.length > 0 ? displayedPrice[0] : 0, "VND", "vi-VN") 
+              {{
+                displayedDiscount && displayedDiscount.length > 0
+                  ? formatCurrency(displayedDiscount[0], "VND", "vi-VN")
+                  : formatCurrency(displayedPrice && displayedPrice.length > 0 ? displayedPrice[0] : 0, "VND", "vi-VN")
               }}
             </span>
           </div>
-          
+
           <!-- Size selection -->
           <div class="product-size mb-4" v-if="product.kichCo && product.kichCo.length > 0">
             <p class="attribute-label">Kích cỡ:</p>
             <div class="size-options">
               <a-radio-group v-model:value="selectedSize">
-                <a-radio-button 
-                  v-for="(size, index) in product.kichCo" 
-                  :key="index" 
+                <a-radio-button
+                  v-for="(size, index) in product.kichCo"
+                  :key="index"
                   :value="size.id"
                 >
                   {{ size.ten }}
@@ -67,20 +67,20 @@
               </a-radio-group>
             </div>
           </div>
-          
+
           <!-- Color selection -->
           <div class="product-color mb-4" v-if="product.color && product.color.length > 0">
                 <p class="attribute-label">Màu sắc:</p>
                 <div class="color-options">
                   <a-radio-group v-model:value="selectedColor">
                     <a-radio-button v-for="(mausac, index) in product.color" :key="index" :value="mausac.id">
-                        <span :style="{ backgroundColor: mausac.code, width: '30px', height: '30px', 
+                        <span :style="{ backgroundColor: mausac.code, width: '30px', height: '30px',
                         display: 'inline-block', borderRadius: '50%' }"></span>
                   </a-radio-button>
               </a-radio-group>
                 </div>
               </div>
-          
+
               <div class="product-quantity mb-4">
               <p class="attribute-label">Số lượng:</p>
               <div class="quantity-container">
@@ -89,7 +89,7 @@
                 <button @click="increaseQuantity" class="quantity-btn">+</button>
               </div>
             </div>
-        
+
           <div class="product-actions">
             <a-button type="primary" size="large" class="mr-4" @click="addToCart">
               <shopping-cart-outlined /> Thêm vào giỏ hàng
@@ -98,14 +98,14 @@
               Mua ngay
             </a-button>
           </div>
-          
+
           <!-- Product description -->
           <div class="product-description mt-6">
             <a-divider />
             <h3>Mô tả sản phẩm</h3>
             <p>{{ product.moTa || 'Không có mô tả cho sản phẩm này.' }}</p>
           </div>
-          
+
           <!-- Product details -->
           <div class="product-details mt-4">
             <h3>Thông tin chi tiết</h3>
@@ -215,11 +215,11 @@ watch(product, (newProduct) => {
   if (newProduct) {
     displayedPrice.value = newProduct.gia || [];
     displayedDiscount.value = newProduct.discount || [];
-    
+
     // Sửa cách lấy URL ảnh
     if (newProduct.anh && Array.isArray(newProduct.anh)) {
       displayedImages.value = newProduct.anh.map(img => img.url);
-      
+
       if (displayedImages.value.length > 0) {
         selectedImage.value = displayedImages.value[0];
       } else {
@@ -241,7 +241,7 @@ watch(product, (newProduct) => {
       paramsDetail.value.idMauSac = selectedColor.value;
     }
   }
-}, { immediate: true });  
+}, { immediate: true });
 
 const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   productId,
@@ -278,7 +278,7 @@ watch(dataDetail, (newDetail) => {
     // Sửa cách lấy URL ảnh
     if (detailData.anh && Array.isArray(detailData.anh)) {
       displayedImages.value = detailData.anh.map(img => img.url);
-      
+
       if (displayedImages.value.length > 0) {
         selectedImage.value = displayedImages.value[0];
       }
@@ -293,7 +293,7 @@ const getAttributeName = (attribute) => {
 
 const addToCart = () => {
   if (!product.value) return;
-  
+
   console.log('Adding to cart:', {
     ProductDetail: dataDetail?.value?.data?.data,
     size: selectedSize.value,
