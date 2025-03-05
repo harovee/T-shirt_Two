@@ -12,7 +12,7 @@ export interface PropertyProductParams {
     tenChatLieu?: string | null;
     tenKieuDang?: string | null;
     tenThuongHieu?: string | null;
-    khoangGia?: number | null; 
+    khoangGia?: number | null;
     [key: string]: any;
 }
 

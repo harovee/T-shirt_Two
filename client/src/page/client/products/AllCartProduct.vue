@@ -23,21 +23,21 @@
           <a-card hoverable class="w-full">
             <template #cover>
               <div class="product-image-container">
-                <img 
-                  :alt="product.ten" 
+                <img
+                  :alt="product.ten"
                   :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
                   class="product-image primary-image"
                 />
-                <img 
-                  v-if="product.anh && product.anh.length > 1" 
-                  :alt="product.ten" 
+                <img
+                  v-if="product.anh && product.anh.length > 1"
+                  :alt="product.ten"
                   :src="product.anh[1].url"
                   class="product-image hover-image"
                 />
                 <!-- Nếu không có hình thứ 2, dùng hình đầu tiên hoặc ảnh mặc định -->
-                <img 
+                <img
                   v-else
-                  :alt="product.ten" 
+                  :alt="product.ten"
                   :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
                   class="product-image hover-image"
                 />
@@ -198,9 +198,9 @@ const handleRedirectProductDetail = (product) => {
         idTinhNang: product.tinhNang?.id || "",
     };
     localStorage.setItem('productDetailParams', JSON.stringify(detailParams));
-    
-    router.push({ 
-        name: 'client-product-detail', 
+
+    router.push({
+        name: 'client-product-detail',
         params: { id: product.id }
     });
 }
