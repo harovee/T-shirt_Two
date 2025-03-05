@@ -48,7 +48,7 @@
             </template>
             <a-button
               class="me-6 w-10 h-10 flex justify-center items-center"
-              type="text"
+              type="text" @click="redirectCart"
             >
               <v-icon name="bi-cart3" class="w-8 h-8"></v-icon>
             </a-button>
@@ -113,6 +113,12 @@ const handleLogout = () => {
   auth.logout();
   router.push(ROUTES_CONSTANTS.AUTHENTICATION.path);
 };
+
+const redirectCart = () => {
+  router.push({
+    name: 'client-cart'
+  })
+}
 </script>
 
 <script lang="ts">
