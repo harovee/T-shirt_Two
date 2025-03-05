@@ -61,6 +61,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
             WHERE   sp.trang_thai = 0
                     AND spct.so_luong >0
+                    AND (spct.gia <= :#{#request.khoangGia} OR :#{#request.khoangGia} IS NULL)
                     AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
                     AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
                     AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))

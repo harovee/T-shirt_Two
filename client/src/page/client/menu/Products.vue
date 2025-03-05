@@ -34,12 +34,9 @@ const params= ref<FindProductClientRequest>({
     tenSanPham: "",
     tenDanhMuc: "",
     tenChatLieu: "",
-    tenTayAo: "",
-    tenTinhNang: "",
     tenKieuDang: "",
-    tenCoAo: "",
     tenThuongHieu: "",
-    tenHoaTiet: ""
+    khoangGia: null
 });
 
 

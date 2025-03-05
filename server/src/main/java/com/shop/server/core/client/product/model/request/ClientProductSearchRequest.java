@@ -4,10 +4,13 @@ import com.shop.server.core.common.base.PageableRequest;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 
 @Getter
 @Setter
 public class ClientProductSearchRequest extends PageableRequest {
+
     private String tenSanPham;
 
     private String tenChatLieu;
@@ -16,13 +19,7 @@ public class ClientProductSearchRequest extends PageableRequest {
 
     private String tenDanhMuc;
 
-    private String tenCoAo;
-
-    private String tenHoaTiet;
-
-    private String tenTinhNang;
-
-    private String tenTayAo;
-
     private String tenKieuDang;
+
+    private BigDecimal khoangGia;
 }

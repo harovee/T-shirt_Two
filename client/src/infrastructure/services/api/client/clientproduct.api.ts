@@ -10,13 +10,9 @@ export interface PropertyProductParams {
     tenSanPham?: string | null;
     tenDanhMuc?: string | null;
     tenChatLieu?: string | null;
-    tenTayAo?: string | null;
-    tenTinhNang?: string | null;
     tenKieuDang?: string | null;
-    tenCoAo?: string | null;
     tenThuongHieu?: string | null;
-    tenHoaTiet?: string | null;
-
+    khoangGia?: number | null; 
     [key: string]: any;
 }
 
