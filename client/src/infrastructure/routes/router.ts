@@ -408,6 +408,14 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: false
                 },
             },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.name,
+                component: () => import('@/page/client/payment/Checkout.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
         ],
     },
     {
