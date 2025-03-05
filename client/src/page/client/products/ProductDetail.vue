@@ -136,7 +136,7 @@ import { formatCurrency } from '@/utils/common.helper';
 import { ShoppingCartOutlined } from '@ant-design/icons-vue';
 import { ClientProductDetailRequest, ClientProductRequest } from '@/infrastructure/services/api/client/clientproduct.api';
 import { useGetProductById, useGetProductDetailById } from "@/infrastructure/services/service/client/productclient.action";
-import { useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { keepPreviousData } from '@tanstack/vue-query';
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import ProductDetail from '@/page/admin/product/product-detail/ProductDetail.vue';
@@ -302,7 +302,7 @@ const addToCart = () => {
     size: selectedSize.value,
     color: selectedColor.value,
     quantity: quantity.value,
-    price: displayedDiscount.value.length > 0 ? displayedDiscount.value[0] : displayedPrice.value[0]
+    price: displayedDiscount.value && displayedDiscount.value.length > 0 ? displayedDiscount.value[0] : displayedPrice.value[0]
   });
 };
 

@@ -65,12 +65,8 @@ public interface ClientProductRepository extends SanPhamRepository {
                     AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
                     AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
                     AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
-                    AND (:#{#request.tenCoAo} IS NULL OR ca.ten LIKE CONCAT('%', :#{#request.tenCoAo}, '%'))
-                    AND (:#{#request.tenHoaTiet} IS NULL OR ht.ten LIKE CONCAT('%', :#{#request.tenHoaTiet}, '%'))
-                    AND (:#{#request.tenTinhNang} IS NULL OR tn.ten LIKE CONCAT('%', :#{#request.tenTinhNang}, '%'))
                     AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
                     AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
-                    AND (:#{#request.tenTayAo} IS NULL OR ta.ten LIKE CONCAT('%', :#{#request.tenTayAo}, '%'))
             GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham
 """,nativeQuery = true)
     Page<ClientProductProjectionResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request);
@@ -170,12 +166,8 @@ public interface ClientProductRepository extends SanPhamRepository {
                     AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
                     AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
                     AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
-                    AND (:#{#request.tenCoAo} IS NULL OR ca.ten LIKE CONCAT('%', :#{#request.tenCoAo}, '%'))
-                    AND (:#{#request.tenHoaTiet} IS NULL OR ht.ten LIKE CONCAT('%', :#{#request.tenHoaTiet}, '%'))
-                    AND (:#{#request.tenTinhNang} IS NULL OR tn.ten LIKE CONCAT('%', :#{#request.tenTinhNang}, '%'))
                     AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
                     AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
-                    AND (:#{#request.tenTayAo} IS NULL OR ta.ten LIKE CONCAT('%', :#{#request.tenTayAo}, '%'))
             GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham
             LIMIT 8
 """,nativeQuery = true)
