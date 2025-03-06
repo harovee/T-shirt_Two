@@ -1,6 +1,7 @@
 package com.shop.server.core.admin.ban_hang.repository;
 
 import com.shop.server.core.admin.ban_hang.model.request.AdminHoaDonKhachHangRequest;
+import com.shop.server.core.admin.ban_hang.model.request.AdminVoucherRequest;
 import com.shop.server.core.admin.ban_hang.model.response.AdminVoucherResponse;
 import com.shop.server.entities.main.PhieuGiamGia;
 import com.shop.server.repositories.PhieuGiamGiaRepository;
@@ -125,4 +126,27 @@ public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
                 AND pgg.id = (:#{#request.idPhieuGiamGia})
 """,nativeQuery = true)
     AdminVoucherResponse getPhieuGiamGiaById(AdminHoaDonKhachHangRequest request);
+
+    @Query(value = """
+    SELECT  
+            pgg.id AS id,
+            pgg.ma_phieu_giam_gia AS ma,
+            pgg.ten AS ten,
+            pgg.so_luong AS soLuong,
+            pgg.loai_giam AS loaiGiam,
+            pgg.dieu_kien_giam AS dieuKienGiam,
+            pgg.gia_tri_giam AS giaTri,
+            pgg.loai_phieu as kieu,
+            pgg.giam_toi_da as giamToiDa
+             FROM phieu_giam_gia pgg
+                    LEFT JOIN khach_hang_phieu_giam_gia khpgg ON pgg.id = khpgg.id_phieu_giam_gia
+             WHERE pgg.ngay_bat_dau <= UNIX_TIMESTAMP()*1000
+                AND pgg.ngay_ket_thuc >= UNIX_TIMESTAMP()*1000
+                AND pgg.trang_thai = 'ACTIVE'
+                AND (:#{#request.idKhachHang} IS NULL
+                OR khpgg.id_khach_hang = :#{#request.idKhachHang})
+                AND pgg.so_luong > 0
+                AND pgg.ma_phieu_giam_gia = (:#{#request.keyword})
+""",nativeQuery = true)
+    AdminVoucherResponse getPhieuGiamGiaByCode(AdminVoucherRequest request);
 }

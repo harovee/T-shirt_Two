@@ -3,18 +3,26 @@
     <h1 class="text-2xl font-bold">
       <v-icon name="md-locationon-round" /> ĐỊA CHỈ GIAO HÀNG
     </h1>
-    <a-tooltip title="Chọn địa chỉ" trigger="hover">
+    <div v-if="paramsCutomer.id">
+      <a-tooltip title="Chọn địa chỉ" trigger="hover">
       <a-button
-        class="bg-purple-300 flex justify-between items-center gap-2"
+        class="flex justify-between items-center gap-2"
+        :style="{
+                backgroundColor: '#b91c1c',
+                borderColor: '#b91c1c',
+                color: 'white',
+              }"
         @click="handleOpenKhachHangAddress"
         size="large"
       >
         <v-icon name="fa-address-book" />
       </a-button>
     </a-tooltip>
+    </div>
   </div>
   <KhachHangAddressPaymentTable
     :open="openCustomerAddress"
+    :dataCustomerWithId="paramsCutomer || {}"
     @handleClose="handleCloseCustomerAddress"
     @cancel="openCustomerAddress = false"
     @selectCustomerAddress="handleCustomerAddressSelected"
@@ -96,7 +104,9 @@
 
       <template
         v-for="field in formFields.filter(
-          (f) => f.component === 'a-input' && f.name === 'line' || f.name === 'ghiChu'
+          (f) =>
+            (f.component === 'a-input' && f.name === 'line') ||
+            f.name === 'ghiChu'
         )"
         :key="field.name"
       >
@@ -124,7 +134,7 @@ import { Form, Modal, notification } from "ant-design-vue";
 import {
   ClientAddressCommonOptionsResponse,
   ClientAddressRequest,
-  ClientAddressPaymentRequest
+  ClientAddressPaymentRequest,
 } from "@/infrastructure/services/api/admin/client.api";
 import {
   useChangeClientAddressDefault,
@@ -149,16 +159,25 @@ import {
   getProvinceById,
   ServiceIdRequest,
 } from "@/infrastructure/services/api/admin/payment.api";
-
-/*** process data ***/
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 const props = defineProps({
   dataSource: Object,
   isRefresh: Boolean,
-  // selectedCustomerAddress: {
-  //   type: Object,
-  //   required: true,
-  // },
+});
+
+const paramsCutomer = ref<{ 
+  id: string; 
+  name: string; 
+  phoneNumber: string; 
+  email: string; 
+  profilePicture: string;
+}>({
+  id: useAuthStore().user?.id || null,
+  name: useAuthStore().user?.userName || null,
+  phoneNumber: "",
+  email: useAuthStore().user?.email,
+  profilePicture: useAuthStore().user?.profilePicture,
 });
 
 const emit = defineEmits([
@@ -212,7 +231,7 @@ watch(
       } catch (error) {
         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
       }
-      emit("handleGetAddress", newDataSource, fullAddress.value);
+      emit("handleGetAddress", newDataSource, fullAddress.value, false);
     }
   },
   { immediate: true, deep: true }
@@ -251,7 +270,7 @@ watch(
       } catch (error) {
         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
       }
-      emit("handleGetAddress", newDataSource, fullAddress.value);
+      emit("handleGetAddress", newDataSource, fullAddress.value, false);
     }
   },
   { immediate: true, deep: true }
@@ -352,23 +371,6 @@ const modelRef = reactive<ClientAddressPaymentRequest>({
   ghiChu: address?.value?.ghiChu,
 });
 
-// watch(
-//   () => props.selectedCustomer,
-//   (newCustomer) => {
-//     if (newCustomer) {
-//       Object.assign(modelRef, {
-//         name: "",
-//         phoneNumber: "",
-//         line: "",
-//         ward: "",
-//         district: "",
-//         province: "",
-//         isDefault: false,
-//         clientId: null,
-//       });
-//     }
-//   }
-// );
 const refreshKey = ref(0);
 
 const rulesRef = reactive({
@@ -384,20 +386,20 @@ const rulesRef = reactive({
     { max: 50, message: "Tên không được dài quá 50 ký tự", trigger: "blur" },
   ],
   email: [
-  {
-    required: true,
-    validator: (_, value) =>
-      value && typeof value === "string" && value.trim() !== ""
-        ? Promise.resolve()
-        : Promise.reject("Email không được để trống"),
-    trigger: "blur",
-  },
-  {
-    pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com)$/,
-    message: "Email không hợp lệ (chỉ chấp nhận @gmail.com)",
-    trigger: "blur",
-  }
-],
+    {
+      required: true,
+      validator: (_, value) =>
+        value && typeof value === "string" && value.trim() !== ""
+          ? Promise.resolve()
+          : Promise.reject("Email không được để trống"),
+      trigger: "blur",
+    },
+    {
+      pattern: /^[a-zA-Z0-9._%+-]+@(gmail\.com)$/,
+      message: "Email không hợp lệ (chỉ chấp nhận @gmail.com)",
+      trigger: "blur",
+    },
+  ],
 
   phoneNumber: [
     { required: true, message: "Vui lòng nhập số điện thoại", trigger: "blur" },
@@ -573,59 +575,25 @@ const updateFullAddress = () => {
   fullAddressRef.value = `${wardName}, ${districtName}, ${provinceName}`.trim();
 };
 
-const handleGetAddress = (name: string) => {
-  validate();
-  const fullAddress = modelRef.line + ", " + fullAddressRef.value;
-  emit("handleGetAddress", modelRef, fullAddress);
-};
+const check = ref(false);
 
-const handleChangeDefault = (id: string) => {
-  Modal.confirm({
-    content: "Bạn chắc chắn muốn đặt địa chỉ này làm địa chỉ mặc định?",
-    icon: createVNode(ExclamationCircleOutlined),
-    centered: true,
-    async onOk() {
-      try {
-        await validate();
-        changeClientAddressDefault(id, {
-          onSuccess: (res: any) => {
-            notification.success({
-              message: "Thông báo",
-              description: res.message,
-              duration: 4,
-            });
-            emit("handleResetActiveKey");
-          },
-          onError: (error: any) => {
-            notification.error({
-              message: "Thông báo",
-              description: error?.response?.data?.message,
-              duration: 4,
-            });
-          },
-        });
-      } catch (error: any) {
-        console.error("🚀 ~ handleUpdate ~ error:", error);
-        if (error?.response) {
-          notification.error({
-            message: "Thông báo",
-            description: error?.response?.data?.message,
-            duration: 4,
-          });
-        } else if (error?.errorFields) {
-          notification.warning({
-            message: "Thông báo",
-            description: "Vui lòng nhập đúng đủ các trường dữ liệu",
-            duration: 4,
-          });
-        }
-      }
-    },
-    cancelText: "Huỷ",
-    onCancel() {
-      Modal.destroyAll();
-    },
-  });
+const handleGetAddress = async (name: string) => {
+  const wardName =
+    wardsOptions.value.find((w) => w.value === modelRef.ward)?.label || "";
+  const districtName =
+    districtsOptions.value.find((d) => d.value === modelRef.district)?.label ||
+    "";
+  const provinceName =
+    provincesOptions.value.find((p) => p.value === modelRef.province)?.label ||
+    "";
+  fullAddressRef.value = `${wardName}, ${districtName}, ${provinceName}`.trim();
+  const fullAddress = modelRef.line + ", " + fullAddressRef.value;
+  try {
+    await validate();
+    emit("handleGetAddress", modelRef, fullAddress, true);
+  } catch (error) {
+    emit("handleGetAddress", modelRef, fullAddress, false);
+  }
 };
 
 watch(
@@ -646,7 +614,7 @@ watch(
         province: newDataSource.province?.toString() || "",
         isDefault: newDataSource.isDefault ?? false,
         clientId: newDataSource.clientId || "",
-        ghiChu: newDataSource.ghiChu || ""
+        ghiChu: newDataSource.ghiChu || "",
       });
     }
   },

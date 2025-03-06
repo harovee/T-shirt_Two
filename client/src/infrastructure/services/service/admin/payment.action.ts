@@ -16,7 +16,8 @@ import {
     createPaymentMethodDetail,
     getCustomerByPhoneNumber, 
     ServiceIdRequest,
-    getServiceId
+    getServiceId, voucherRequest,
+    getVoucherByCode
 } from "@/infrastructure/services/api/admin/payment.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -30,6 +31,16 @@ export const useGetListVoucher = (
     return useQuery({
         queryKey: [queryKey.admin.payment.voucherPayList, params],
         queryFn: () => getListVoucher(params),
+        ...options,
+    });
+};
+
+export const useGetVoucherByCode = (
+    params: Ref<voucherRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getVoucherByCode>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.payment.voucherByCode, params],
+        queryFn: () => getVoucherByCode(params),
         ...options,
     });
 };

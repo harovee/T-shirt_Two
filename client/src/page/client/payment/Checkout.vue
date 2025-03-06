@@ -11,7 +11,7 @@
         <a-col :span="16">
           <div class="bg-gray-100 p-8">
             <payment-info-address
-            @handleGetAddress="handleGetAddress"
+            @handleGetAddress="handleGetAddressCustomer"
              />
           </div>
           <div class="bg-gray-100 mt-5 mb-5 p-5">
@@ -22,7 +22,11 @@
         </a-col>
         <a-col :span="8" class="">
           <payment-infomation
-          :dataInfo="paymentInfo"
+          :dataAddress="info"
+          :totalPrice="paymentInfo.totalProductPrice"
+          :shippingFee="paymentInfo.shippingFee"
+          :fullAddressCustomer="fullAddress"
+          :validateAddress="validateAddress"
           />
         </a-col>
       </a-row>
@@ -62,12 +66,14 @@ const cartStore = useCartStore();
 const listProducts = computed(() => cartStore.checkoutData);
 
 const totalPrice = computed(() => {
-  paymentInfo.value.totalProductPrice = listProducts.value.reduce((total, item) => total + item.gia * item.soLuong, 0);
+  return listProducts.value.reduce((total, item) => total + item.gia * item.soLuong, 0);
 });
 
 const fullAddress = ref(null);
 
 const info = ref(null);
+
+const validateAddress = ref(false)
 
 const paymentInfo = ref({
   method: "cash",
@@ -77,17 +83,24 @@ const paymentInfo = ref({
   shippingFee: 0,
   discount: 0,
   total: 0,
-  totalProductPrice: 0,
+  totalProductPrice: totalPrice.value,
   name: "" || null,
   fullAddress: "" || null,
   phoneNumber: "" || null,
 });
 
-const handleGetAddress = (modelRef: any, fullAddressRef: string) => {
+const handleGetAddressCustomer = (modelRef: any, fullAddressRef: string, check: boolean) => {
   fullAddress.value = fullAddressRef;
+  console.log(fullAddress.value);
+  
   info.value = modelRef;
   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
   serviceIdParams.value.toDistrict = Number(modelRef.district);
+  if(check) {
+    validateAddress.value = true
+  } else {
+    validateAddress.value = false
+  }
 }
 
 const calculateProductDimensions = () => {
@@ -150,8 +163,6 @@ watch(
       if (serviceIdParams.value.toDistrict !== 0) {
         refetchService().then(() => {
           shippingParams.value.serviceId = service?.value?.data[0].service_id;
-          console.log(shippingParams.value.serviceId);
-          
           shippingParams.value.toDistrictId = info.value.district;
           shippingParams.value.toWardCode = info.value.ward;
           if (shippingParams.value.toWardCode) {
@@ -167,10 +178,10 @@ watch(
   }, {deep: true}
 );
 
-watch(() => totalPrice.value , (newData) => {
-  paymentInfo.value.totalProductPrice = newData
-  console.log(paymentInfo.value);
-}) 
+// watch(() => totalPrice.value , (newData) => {
+//   paymentInfo.value.totalProductPrice = newData
+//   console.log(paymentInfo.value);
+// }) 
 
 </script>
 

@@ -54,7 +54,7 @@
             </a-button>
           </a-tooltip>
 
-          <div class="me-10 user-info flex items-center justify-between">
+          <div v-if="userInfo" class="me-10 user-info flex items-center justify-between">
             <a-dropdown placement="bottomRight" arrow>
               <div class="flex items-center cursor-pointer">
                 <a-avatar
@@ -76,6 +76,11 @@
                 </a-menu>
               </template>
             </a-dropdown>
+          </div>
+          <div v-if="!userInfo" class="me-10">
+            <router-link to="/authentication/login"><a-button>
+              Đăng nhập
+            </a-button></router-link>
           </div>
       </a-layout-header>
       <a-layout-content class="mt-[80px]">

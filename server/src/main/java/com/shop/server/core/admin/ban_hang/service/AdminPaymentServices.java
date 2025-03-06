@@ -35,4 +35,6 @@ public interface AdminPaymentServices {
     ResponseObject<?> getDistrictById(String id);
 
     ResponseObject<?> getProvinceById(String id);
+
+    ResponseObject<?> getVoucherByCode(AdminVoucherRequest request);
 }

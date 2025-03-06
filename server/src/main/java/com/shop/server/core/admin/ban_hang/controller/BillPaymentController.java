@@ -41,6 +41,11 @@ public class BillPaymentController {
         return Helper.createResponseEntity(adminPaymentServices.getAllVoucherKhachHangNoId(request));
     }
 
+    @GetMapping("/voucher-code")
+    public ResponseEntity<?> getVoucherByCode(@Valid final AdminVoucherRequest request) {
+        return Helper.createResponseEntity(adminPaymentServices.getVoucherByCode(request));
+    }
+
     @GetMapping("/voucher/next-voucher")
     public ResponseEntity<?> getNextVoucherByTotalPrice(@Valid final AdminHoaDonKhachHangRequest request) {
         return Helper.createResponseEntity(adminPaymentServices.getNextTotalPriceToVoucher(request));

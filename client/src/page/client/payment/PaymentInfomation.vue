@@ -16,7 +16,7 @@
                 borderColor: '#b91c1c',
                 color: 'white',
               }"
-              @click="openVoucherModal"
+              @click="getVoucher"
             >
               ÁP DỤNG
             </a-button>
@@ -64,7 +64,7 @@
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <div class="flex justify-between items-center w-[300px]">
           <p>Tạm tính:</p>
-          <p class="font-bold">{{ formatCurrencyVND(dataInfo.totalProductPrice) }}</p>
+          <p class="font-bold">{{ formatCurrencyVND(paymentInfo.totalProductPrice) }}</p>
         </div>
 
         <div class="flex justify-between items-center w-[300px]">
@@ -77,18 +77,18 @@
             />
           </p>
           <p class="font-bold">
-            {{ formatCurrencyVND(dataInfo.shippingFee) }}
+            {{ formatCurrencyVND(paymentInfo.shippingFee) }}
           </p>
         </div>
         <div class="flex justify-between items-center w-[300px]">
           <p>Mã giảm giá:</p>
           <p class="text-red-500 font-bold">
-            -{{ formatCurrencyVND(dataInfo.discount) }}
+            -{{ formatCurrencyVND(paymentInfo.discount) }}
           </p>
         </div>
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <a-form-item label="PHƯƠNG THỨC THANH TOÁN" class="text-l mt-8">
-          <a-radio-group v-model:value="dataInfo.shippingOption">
+          <a-radio-group v-model:value="paymentInfo.shippingOption">
             <a-radio value="false">Thanh toán khi nhận hàng (COD)</a-radio>
             <a-radio value="true">Thanh toán qua VN Pay</a-radio>
           </a-radio-group>
@@ -99,7 +99,7 @@
         >
           <p>Tổng thanh toán:</p>
           <p class="text-3xl font-bold">
-            {{ formatCurrencyVND(dataInfo.total) }}
+            {{ formatCurrencyVND(paymentInfo.total) }}
           </p>
         </div>
 
@@ -112,6 +112,7 @@
             color: 'white',
             height: '50px',
           }"
+          @click="handlePayment"
           >ĐẶT HÀNG</a-button
         >
       </a-form>
@@ -122,6 +123,7 @@
 <script lang="ts" setup>
 import {
   ref,
+  onMounted,
   watch,
   reactive,
   defineProps,
@@ -146,6 +148,7 @@ import {
   useGetPriceNextVoucher,
   useGetShippingFee,
   useGetServiceId,
+  useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
 import { useUpdateBillWait } from "@/infrastructure/services/service/admin/bill.action";
 import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
@@ -174,6 +177,7 @@ import {
   getProvinceById,
   ServiceIdRequest,
   createInvoicePdf,
+  voucherRequest,
 } from "@/infrastructure/services/api/admin/payment.api";
 import {
   ClientAddressCommonOptionsResponse,
@@ -193,13 +197,16 @@ import { log } from "console";
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
 
 const props = defineProps({
-  dataInfo: {
+  dataAddress: {
     type: Object,
     required: true,
     default: () => ({}),
   },
+  totalPrice: Number,
+  shippingFee: Number,
   isRefresh: Boolean,
-  totalPrice: Number
+  fullAddressCustomer: String,
+  validateAddress: Boolean
 });
 
 const emit = defineEmits(["handlePaymentInfo"]);
@@ -210,6 +217,8 @@ const current1 = ref(1);
 const selectedAddress = ref({});
 
 const paymentedValue = ref(0);
+
+const voucher = ref({});
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -228,6 +237,11 @@ const paramsVoucher = ref<FindVoucherRequest>({
   tongTien: 0,
 });
 
+const voucherRequest = ref<voucherRequest>({
+  keyword: "",
+  idKhachHang: null
+})
+
 const paramsNextPriceVoucher = ref<nextVoucherRequest>({
   idKhachHang: null,
   tongTien: 0,
@@ -239,12 +253,12 @@ const paymentInfo = ref({
   voucherCode: "",
   voucherId: null,
   shippingOption: "false",
-  shippingFee: 0,
+  shippingFee: props.shippingFee || 0,
   discount: 0,
   total: 0,
-  totalProductPrice: 0,
+  totalProductPrice: props.totalPrice || 0,
   name: "" || null,
-  fullAddress: "" || null,
+  fullAddress: props.fullAddressCustomer || null,
   phoneNumber: "" || null,
 });
 
@@ -254,6 +268,11 @@ const { data: dataVouchers } = useGetListVoucher(paramsVoucher, {
 });
 
 const dataListVoucher = computed(() => dataVouchers?.value?.data?.data || []);
+
+const { data: dataVoucherByCode, refetch } = useGetVoucherByCode(voucherRequest, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
 
 const { data: dataNextPriceVoucher } = useGetPriceNextVoucher(
   paramsNextPriceVoucher,
@@ -297,13 +316,27 @@ const handleClosePaymentMethod = () => {
 };
 
 const updateTotal = () => {
-  paymentInfo.value.total =
-    (paymentInfo.value.shippingFee || 0) - (paymentInfo.value.discount || 0);
+  paymentInfo.value.total = (paymentInfo.value.totalProductPrice + 
+    (paymentInfo.value.shippingFee || 0)) - (paymentInfo.value.discount || 0);
 };
 
 const handleCheckPaymented = (totalAmountAfter: number) => {
   paymentedValue.value = totalAmountAfter;
 };
+
+
+const getVoucher = () => {
+  voucherRequest.value.keyword = paymentInfo.value.voucherCode
+
+  refetch().then(() => {
+    voucher.value = dataVoucherByCode?.value?.data
+    if (!voucher.value) {
+      warningNotiSort("Không tồn tại phiếu giảm giá này!")
+    }
+  }).catch(error => {
+    console.error("Error fetching voucher:", error);
+  });
+}
 
 // watch(
 //   () => paymentInfo.value,
@@ -495,6 +528,34 @@ const { mutate: updateBillWait } = useUpdateBillWait();
 //     }
 //   }
 // );
+
+const handlePayment = () => {
+  if (!props.validateAddress) {
+    warningNotiSort("Vui lòng nhập đủ thông tin giao hàng.")
+  } else {
+    console.log(paymentInfo.value);
+  }
+}
+
+console.log(props.fullAddressCustomer);
+
+
+watch(
+  [() => props.dataAddress, ()=> props.shippingFee],
+  (newTotal) => {
+    if (newTotal) {
+      paymentInfo.value.name = props.dataAddress.name
+      paymentInfo.value.phoneNumber = props.dataAddress.phoneNumber
+      paymentInfo.value.shippingFee = props.shippingFee
+    }
+  }, {deep: true}
+);
+
+watch(() => props.fullAddressCustomer, (newVal) => {
+  paymentInfo.value.fullAddress = props.fullAddressCustomer
+});
+
+
 
 watch(
   [() => paymentInfo.value.shippingFee, () => paymentInfo.value.discount],
