@@ -1,4 +1,4 @@
-package com.shop.server.core.admin.anh_san_pham.model.response;
+package com.shop.server.core.admin.image.model.response;
 
 import com.shop.server.core.common.base.BaseResponse;
 

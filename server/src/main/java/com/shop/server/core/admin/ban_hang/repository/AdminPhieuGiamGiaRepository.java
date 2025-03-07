@@ -143,8 +143,13 @@ public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
              WHERE pgg.ngay_bat_dau <= UNIX_TIMESTAMP()*1000
                 AND pgg.ngay_ket_thuc >= UNIX_TIMESTAMP()*1000
                 AND pgg.trang_thai = 'ACTIVE'
-                AND (:#{#request.idKhachHang} IS NULL
-                OR khpgg.id_khach_hang = :#{#request.idKhachHang})
+                AND ((:#{#request.idKhachHang} IS NULL AND pgg.loai_phieu = false)
+                       \s
+                        OR (EXISTS (
+                                           SELECT 1 FROM khach_hang_phieu_giam_gia khpgg_check
+                                           WHERE khpgg_check.id_khach_hang = :#{#request.idKhachHang}
+                                           AND khpgg_check.id_phieu_giam_gia = pgg.id
+                                       ) OR pgg.loai_phieu = false))
                 AND pgg.so_luong > 0
                 AND pgg.ma_phieu_giam_gia = (:#{#request.keyword})
 """,nativeQuery = true)

@@ -1,6 +1,6 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.model.request;
 
-import com.shop.server.core.admin.anh_san_pham.model.request.AdCreateUpdateAnhRequest;
+import com.shop.server.core.admin.image.model.request.AdCreateUpdateAnhRequest;
 import lombok.Getter;
 import lombok.Setter;
 

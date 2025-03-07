@@ -1,8 +1,8 @@
-package com.shop.server.core.admin.anh_san_pham.controller;
+package com.shop.server.core.admin.image.controller;
 
-import com.shop.server.core.admin.anh_san_pham.model.request.AdCreateUpdateAnhRequest;
-import com.shop.server.core.admin.anh_san_pham.model.request.AdFindAnhRequest;
-import com.shop.server.core.admin.anh_san_pham.service.AdAnhService;
+import com.shop.server.core.admin.image.model.request.AdCreateUpdateAnhRequest;
+import com.shop.server.core.admin.image.model.request.AdFindAnhRequest;
+import com.shop.server.core.admin.image.service.AdAnhService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
 import jakarta.validation.Valid;

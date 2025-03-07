@@ -20,7 +20,23 @@
             >
               ÁP DỤNG
             </a-button>
+            
           </div>
+          <div class="text-xs border border-black-500 rounded-lg p-3 mt-3" v-if="voucher">
+              <div class="flex items-center">
+                <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
+                <span
+                >Bạn đang sử dụng: {{ voucher.ten }} - Số lượng:
+                {{ voucher.soLuong }} - Giá trị giảm ({{
+                  voucher.loaiGiam ? "Tiền mặt" : "%"
+                }}):
+                {{
+                  voucher.loaiGiam
+                    ? formatCurrencyVND(voucher.giaTri)
+                    : voucher.giaTri + "%"
+                }}</span>
+              </div>
+            </div>
           <!-- <div
             v-if="voucher"
             class="text-red-500 text-xs border border-red-400 rounded-lg p-3 mt-3"
@@ -64,7 +80,9 @@
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <div class="flex justify-between items-center w-[300px]">
           <p>Tạm tính:</p>
-          <p class="font-bold">{{ formatCurrencyVND(paymentInfo.totalProductPrice) }}</p>
+          <p class="font-bold">
+            {{ formatCurrencyVND(paymentInfo.totalProductPrice) }}
+          </p>
         </div>
 
         <div class="flex justify-between items-center w-[300px]">
@@ -88,9 +106,9 @@
         </div>
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <a-form-item label="PHƯƠNG THỨC THANH TOÁN" class="text-l mt-8">
-          <a-radio-group v-model:value="paymentInfo.shippingOption">
-            <a-radio value="false">Thanh toán khi nhận hàng (COD)</a-radio>
-            <a-radio value="true">Thanh toán qua VN Pay</a-radio>
+          <a-radio-group v-model:value="paymentInfo.method">
+            <a-radio value="cash">Thanh toán khi nhận hàng (COD)</a-radio>
+            <a-radio value="bank">Thanh toán qua VN Pay</a-radio>
           </a-radio-group>
         </a-form-item>
         <hr class="border-t border-gray-400 border-dashed mb-5" />
@@ -153,6 +171,7 @@ import {
 import { useUpdateBillWait } from "@/infrastructure/services/service/admin/bill.action";
 import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   formatCurrencyVND,
   getDateFormat,
@@ -206,7 +225,7 @@ const props = defineProps({
   shippingFee: Number,
   isRefresh: Boolean,
   fullAddressCustomer: String,
-  validateAddress: Boolean
+  validateAddress: Boolean,
 });
 
 const emit = defineEmits(["handlePaymentInfo"]);
@@ -218,7 +237,7 @@ const selectedAddress = ref({});
 
 const paymentedValue = ref(0);
 
-const voucher = ref({});
+const voucher = ref<VoucherResponse>();
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -239,8 +258,8 @@ const paramsVoucher = ref<FindVoucherRequest>({
 
 const voucherRequest = ref<voucherRequest>({
   keyword: "",
-  idKhachHang: null
-})
+  idKhachHang: useAuthStore().user?.id || null,
+});
 
 const paramsNextPriceVoucher = ref<nextVoucherRequest>({
   idKhachHang: null,
@@ -269,10 +288,13 @@ const { data: dataVouchers } = useGetListVoucher(paramsVoucher, {
 
 const dataListVoucher = computed(() => dataVouchers?.value?.data?.data || []);
 
-const { data: dataVoucherByCode, refetch } = useGetVoucherByCode(voucherRequest, {
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-});
+const { data: dataVoucherByCode, refetch } = useGetVoucherByCode(
+  voucherRequest,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  }
+);
 
 const { data: dataNextPriceVoucher } = useGetPriceNextVoucher(
   paramsNextPriceVoucher,
@@ -316,27 +338,50 @@ const handleClosePaymentMethod = () => {
 };
 
 const updateTotal = () => {
-  paymentInfo.value.total = (paymentInfo.value.totalProductPrice + 
-    (paymentInfo.value.shippingFee || 0)) - (paymentInfo.value.discount || 0);
+  paymentInfo.value.total =
+    paymentInfo.value.totalProductPrice +
+    (paymentInfo.value.shippingFee || 0) -
+    (paymentInfo.value.discount || 0);
 };
 
 const handleCheckPaymented = (totalAmountAfter: number) => {
   paymentedValue.value = totalAmountAfter;
 };
 
-
 const getVoucher = () => {
-  voucherRequest.value.keyword = paymentInfo.value.voucherCode
+  if (paymentInfo.value.voucherCode === "") {
+    warningNotiSort("Vui lòng nhập mã phiếu giảm giá!");
+    voucher.value = null;
+    return;
+  }
+  voucherRequest.value.keyword = paymentInfo.value.voucherCode;
 
-  refetch().then(() => {
-    voucher.value = dataVoucherByCode?.value?.data
-    if (!voucher.value) {
-      warningNotiSort("Không tồn tại phiếu giảm giá này!")
-    }
-  }).catch(error => {
-    console.error("Error fetching voucher:", error);
-  });
-}
+  refetch()
+    .then(() => {
+      voucher.value = dataVoucherByCode?.value?.data;
+      console.log(voucher.value);
+
+      if (!voucher.value) {
+        paymentInfo.value.voucherCode = null;
+        paymentInfo.value.voucherId = null;
+        warningNotiSort("Không tồn tại phiếu giảm giá này!");
+      } else {
+        paymentInfo.value.voucherCode = voucher.value.ma;
+        paymentInfo.value.voucherId = voucher.value.id;
+        if (voucher.value.loaiGiam) {
+          paymentInfo.value.discount = Number(voucher.value.giaTri);
+        } else {
+          paymentInfo.value.discount =
+            (paymentInfo.value.totalProductPrice *
+              Number(voucher.value.giaTri)) /
+            100;
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching voucher:", error);
+    });
+};
 
 // watch(
 //   () => paymentInfo.value,
@@ -531,31 +576,32 @@ const { mutate: updateBillWait } = useUpdateBillWait();
 
 const handlePayment = () => {
   if (!props.validateAddress) {
-    warningNotiSort("Vui lòng nhập đủ thông tin giao hàng.")
+    warningNotiSort("Vui lòng nhập đủ thông tin giao hàng.");
   } else {
     console.log(paymentInfo.value);
   }
-}
+};
 
 console.log(props.fullAddressCustomer);
 
-
 watch(
-  [() => props.dataAddress, ()=> props.shippingFee],
+  [() => props.dataAddress, () => props.shippingFee],
   (newTotal) => {
     if (newTotal) {
-      paymentInfo.value.name = props.dataAddress.name
-      paymentInfo.value.phoneNumber = props.dataAddress.phoneNumber
-      paymentInfo.value.shippingFee = props.shippingFee
+      paymentInfo.value.name = props.dataAddress.name;
+      paymentInfo.value.phoneNumber = props.dataAddress.phoneNumber;
+      paymentInfo.value.shippingFee = props.shippingFee;
     }
-  }, {deep: true}
+  },
+  { deep: true }
 );
 
-watch(() => props.fullAddressCustomer, (newVal) => {
-  paymentInfo.value.fullAddress = props.fullAddressCustomer
-});
-
-
+watch(
+  () => props.fullAddressCustomer,
+  (newVal) => {
+    paymentInfo.value.fullAddress = props.fullAddressCustomer;
+  }
+);
 
 watch(
   [() => paymentInfo.value.shippingFee, () => paymentInfo.value.discount],

@@ -1,4 +1,4 @@
-package com.shop.server.core.admin.anh_san_pham.model.request;
+package com.shop.server.core.admin.image.model.request;
 
 import lombok.Getter;
 import lombok.Setter;

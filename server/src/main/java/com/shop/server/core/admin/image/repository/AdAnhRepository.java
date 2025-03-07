@@ -1,14 +1,9 @@
-package com.shop.server.core.admin.anh_san_pham.repository;
+package com.shop.server.core.admin.image.repository;
 
-import com.shop.server.core.admin.anh_san_pham.model.request.AdFindAnhRequest;
-import com.shop.server.core.admin.anh_san_pham.model.response.AdAnhResponse;
-import com.shop.server.core.admin.anh_san_pham.model.response.AdGetDanhMucResponse;
+import com.shop.server.core.admin.image.model.request.AdFindAnhRequest;
+import com.shop.server.core.admin.image.model.response.AdAnhResponse;
 import com.shop.server.repositories.AnhRepository;
-import com.shop.server.repositories.DanhMucRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

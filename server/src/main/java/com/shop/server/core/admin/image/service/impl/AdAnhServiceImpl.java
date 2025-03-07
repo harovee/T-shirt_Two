@@ -1,24 +1,18 @@
-package com.shop.server.core.admin.anh_san_pham.service.impl;
+package com.shop.server.core.admin.image.service.impl;
 
-import com.shop.server.core.admin.anh_san_pham.model.request.AdCreateUpdateAnhRequest;
-import com.shop.server.core.admin.anh_san_pham.model.request.AdFindAnhRequest;
-import com.shop.server.core.admin.anh_san_pham.repository.AdAnhRepository;
-import com.shop.server.core.admin.anh_san_pham.service.AdAnhService;
+import com.shop.server.core.admin.image.model.request.AdCreateUpdateAnhRequest;
+import com.shop.server.core.admin.image.model.request.AdFindAnhRequest;
+import com.shop.server.core.admin.image.repository.AdAnhRepository;
+import com.shop.server.core.admin.image.service.AdAnhService;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
-import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.Anh;
-import com.shop.server.entities.main.DanhMuc;
-import com.shop.server.repositories.SanPhamChiTietRepository;
-import com.shop.server.utils.Helper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Random;
 
 
 @Service
