@@ -1,6 +1,6 @@
 package com.shop.server.core.admin.statistics.model.request;
 
-import com.shop.server.infrastructure.constants.module.StatisticTimeUnit;
+import com.shop.server.core.common.base.PageableRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class RevenuesRequest {
+public class RevenuesRequest extends PageableRequest {
 
     private String statisticType;
 

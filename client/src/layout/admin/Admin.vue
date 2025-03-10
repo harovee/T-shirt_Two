@@ -112,14 +112,6 @@ const menuItems = ref([
     path: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.path,
   },
   {
-    key: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name,
-    path: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.path
-  },
-  {
-    key: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name,
-    path: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.path
-  },
-  {
     key: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
     path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
   },
