@@ -57,6 +57,15 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
     }
 
     @Override
+    public ResponseObject<?> getBillDetailRefundByMaHD(String maHoaDon) {
+        return new ResponseObject<>(
+                adminBillDetailRepository.getAdminBillDetailByMaHD(maHoaDon),
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
+    }
+
+    @Override
     public ResponseObject<?> createBillDetail(AdminCreateBillDetailRequest request) {
         Optional<HoaDon> billOpt = hoaDonRepository.findById(request.getIdHoaDon());
         Optional<SanPhamChiTiet> prodOpt = sanPhamChiTietRepository.findById(request.getIdSanPhamChiTiet());

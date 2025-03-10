@@ -18,6 +18,7 @@ public interface AdminPayHistoryRepository extends ChiTietPhuongThucThanhToanRep
         cttt.ghi_chu AS ghiChu,
         cttt.ngay_tao AS ngayTao,
         cttt.nguoi_tao AS nguoiTao,
+        cttt.tien_khach_dua AS tienKhachDua,
         hd.tong_tien AS tongTienHD
         FROM chi_tiet_phuong_thuc_thanh_toan cttt
         JOIN phuong_thuc_thanh_toan pt ON cttt.id_phuong_thuc_thanh_toan = pt.id

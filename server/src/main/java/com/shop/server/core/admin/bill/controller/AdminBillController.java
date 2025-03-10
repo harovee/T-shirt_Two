@@ -41,6 +41,11 @@ public class AdminBillController {
         return Helper.createResponseEntity(adminBillService.getDetailBillById(id));
     }
 
+    @GetMapping("/refund/{maHoaDon}")
+    public ResponseEntity<?> getBillOnRefund(@PathVariable String maHoaDon) {
+        return Helper.createResponseEntity(adminBillService.getBillRefundByMaHD(maHoaDon));
+    }
+
 //    @PostMapping()
 //    public ResponseEntity<?> createBill(@Valid @RequestBody final AdminSaveBillRequest request, BindingResult result) {
 //        return Helper.createResponseEntity(adminBillService.createBill(request, result));
