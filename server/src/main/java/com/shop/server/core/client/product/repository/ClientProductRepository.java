@@ -17,7 +17,7 @@ import java.util.List;
 public interface ClientProductRepository extends SanPhamRepository {
 
     @Query(value = """
-            SELECT  ROW_NUMBER() OVER(ORDER BY MAX(spct.ngay_tao) DESC) AS catalog,
+                SELECT  ROW_NUMBER() OVER(ORDER BY MAX(spct.ngay_tao) DESC) AS catalog,
                     sp.id as id,
                     sp.ma_san_pham as maSanPham,
                     sp.ten as ten,
@@ -57,19 +57,16 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
             WHERE   sp.trang_thai = 0
                     AND spct.so_luong >0
+                    AND (spct.gia <= :#{#request.khoangGia} OR :#{#request.khoangGia} IS NULL)
                     AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
                     AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
                     AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
-                    AND (:#{#request.tenCoAo} IS NULL OR ca.ten LIKE CONCAT('%', :#{#request.tenCoAo}, '%'))
-                    AND (:#{#request.tenHoaTiet} IS NULL OR ht.ten LIKE CONCAT('%', :#{#request.tenHoaTiet}, '%'))
-                    AND (:#{#request.tenTinhNang} IS NULL OR tn.ten LIKE CONCAT('%', :#{#request.tenTinhNang}, '%'))
                     AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
                     AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
-                    AND (:#{#request.tenTayAo} IS NULL OR ta.ten LIKE CONCAT('%', :#{#request.tenTayAo}, '%'))
             GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham
 """,nativeQuery = true)
     Page<ClientProductProjectionResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request);
@@ -162,19 +159,15 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia            
             WHERE   sp.trang_thai = 0
                     AND spct.so_luong >0
                     AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
                     AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
                     AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
-                    AND (:#{#request.tenCoAo} IS NULL OR ca.ten LIKE CONCAT('%', :#{#request.tenCoAo}, '%'))
-                    AND (:#{#request.tenHoaTiet} IS NULL OR ht.ten LIKE CONCAT('%', :#{#request.tenHoaTiet}, '%'))
-                    AND (:#{#request.tenTinhNang} IS NULL OR tn.ten LIKE CONCAT('%', :#{#request.tenTinhNang}, '%'))
                     AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
                     AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
-                    AND (:#{#request.tenTayAo} IS NULL OR ta.ten LIKE CONCAT('%', :#{#request.tenTayAo}, '%'))
             GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham
             LIMIT 8
 """,nativeQuery = true)
@@ -222,7 +215,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia            
             WHERE   sp.trang_thai = 0
                     AND  sp.id = :#{#idSanPham} 
@@ -280,7 +273,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                             JOIN kich_co kc ON kc.id = spct.id_kich_co
                             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spgg.id
+                            LEFT JOIN san_pham_giam_gia spgg ON  spgg.id_san_pham_chi_tiet = spct.id
                             LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia            
             WHERE   sp.trang_thai = 0
                     AND  sp.id = :#{#idSanPham} 

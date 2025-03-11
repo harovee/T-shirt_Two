@@ -10,13 +10,10 @@ export interface PropertyProductParams {
     tenSanPham?: string | null;
     tenDanhMuc?: string | null;
     tenChatLieu?: string | null;
-    tenTayAo?: string | null;
-    tenTinhNang?: string | null;
     tenKieuDang?: string | null;
-    tenCoAo?: string | null;
     tenThuongHieu?: string | null;
-    tenHoaTiet?: string | null;
-
+    khoangGia?: number | null;
+    [key: string]: any;
 }
 
 export interface FindProductClientRequest extends PropertyProductParams, PaginationParams {
@@ -207,3 +204,52 @@ export const getProductById = async (sanPhamId: Ref<string | null>, params: Ref<
     >;
 };
 
+export const getChatLieu = async () => {
+    const res = (await request({
+        url: `${API_CLIENT_ALLPRODUCT}/chat-lieu`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<ChatLieuResponse>>
+    >;
+    return res.data;
+};
+
+export const getThuongHieu = async () => {
+    const res = (await request({
+        url: `${API_CLIENT_ALLPRODUCT}/thuong-hieu`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<ThuongHieuResponse>>
+    >;
+    return res.data;
+};
+
+export const getKieuDang = async () => {
+    const res = (await request({
+        url: `${API_CLIENT_ALLPRODUCT}/kieu-dang`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<KieuDangResponse>>
+    >;
+    return res.data;
+};
+
+export const getDanhMuc = async () => {
+    const res = (await request({
+        url: `${API_CLIENT_ALLPRODUCT}/danh-muc`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<DanhMucResponse>>
+    >;
+    return res.data;
+};
+
+export const getColor = async () => {
+    const res = (await request({
+        url: `${API_CLIENT_ALLPRODUCT}/color`,
+        method: "GET",
+    })) as AxiosResponse<
+        DefaultResponse<Array<ColorResponse>>
+    >;
+    return res.data;
+};

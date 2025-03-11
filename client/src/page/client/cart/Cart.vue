@@ -6,191 +6,91 @@
       <v-icon name="md-shoppingbag-sharp" style="width: 35px; height: 35px" />
       GIỎ HÀNG
     </h1>
-    <div class="m-5">
+    <div v-if="listProducts.length > 0" class="m-5">
       <a-row :gutter="[8, 24]">
-        <a-col :span="16">
-          <div class="flex items-center">
-            <h1 class="text-2xl font-bold m-5">GIỎ HÀNG</h1>
-            <p class="mt-4 text-red-400">(1 sản phẩm)</p>
-          </div>
-          <div class="m-5">
-            <a-table
-              :loading="isLoading"
-              :columns="columns"
-              :data-source="dataSource"
-              :pagination="false"
-              :scroll="{ y: 400 }"
-              :locale="{ emptyText: 'Không có sản phẩm' }"
-            >
-              <template #bodyCell="{ record, column }">
-                <a-image-preview-group>
-                  <div
-                    v-if="column.dataIndex === 'linkAnh'"
-                    class="text-center"
-                  >
-                    <a-image
-                      :width="100"
-                      :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
-                      :src="
-                        record.linkAnh != 'default-product-detail-image-url.jpg'
-                          ? record.linkAnh
-                          : defaultProductImageSaleUrl
-                      "
-                    />
-                  </div>
-                  <div
-                    v-if="column.dataIndex === 'thongTinChung'"
-                    class="text-left"
-                  >
-                    <a-space direction="vertical">
-                      <a-space
-                        >{{ record.maSanPhamChiTiet }} -
-                        {{ record.ten }}</a-space
-                      >
-                      <a-space>{{ record.tenSanPham }}</a-space>
-                      <a-space
-                        >Giá gốc:
-                        <a-tag color="#108ee9">
-                          {{
-                            formatCurrency(record.gia, "VND", "vi-VN")
-                          }}</a-tag
-                        ></a-space
-                      >
-                    </a-space>
-                  </div>
-                  <div v-if="column.dataIndex === 'chiTiet'" class="text-left">
-                    <a-space direction="vertical">
-                      <a-space>Giới tính: {{ record.gioiTinh }}</a-space>
-                      <a-space>Kích cỡ: {{ record.kichCo }}</a-space>
-                      <a-space>
-                        Màu: {{ record.tenMauSac }}
-                        <div
-                          :style="{
-                            width: '25px',
-                            height: '25px',
-                            background: record.maMauSac,
-                            'border-radius': '5px',
-                          }"
-                          class=""
-                        ></div>
-                        {{ record.maMauSac }}
-                      </a-space>
-                    </a-space>
-                  </div>
-                  <div v-if="column.dataIndex === 'soLuong'" class="center">
-                    <!-- <a-space>{{ record.soLuong }}</a-space>
-                 -->
-                    <a-input
-                      type="number"
-                      v-model:value="record.soLuong"
-                      @change="handleQuantityChange(record)"
-                      min="1"
-                    >
-                    </a-input>
-                  </div>
-                  <div
-                    v-if="column.dataIndex === 'giaBanHienTai'"
-                    class="center"
-                  >
-                    <a-typography-text strong class="cursor-pointer">
-                      {{
-                        formatCurrency(
-                          record.giaHienTai ? record.giaHienTai : record.gia,
-                          "VND",
-                          "vi-VN"
-                        )
-                      }}
-                    </a-typography-text>
-                  </div>
-                  <div v-if="column.dataIndex === 'thanhTien'" class="center">
-                    <a-typography-text strong class="cursor-pointer text-xl">
-                      {{
-                        formatCurrency(
-                          record.giaHienTai
-                            ? record.giaHienTai * record.soLuong
-                            : record.gia * record.soLuong,
-                          "VND",
-                          "vi-VN"
-                        )
-                      }}
-                    </a-typography-text>
-                  </div>
-                  <div
-                    v-else-if="column.dataIndex === 'hanhDong'"
-                    class="flex items-center justify-center space-x-2"
-                  >
-                    <a-tooltip
-                      placement="left"
-                      :title="'Xóa sản phẩm khỏi giỏ hàng này?'"
-                      trigger="hover"
-                    >
-                      <a-button
-                        class="bg-purple-100"
-                        size="middle"
-                        shape="round"
-                        @click="handleDelete(record.key)"
-                      >
-                        <v-icon name="fa-trash-alt" />
-                      </a-button>
-                    </a-tooltip>
-                  </div>
-                </a-image-preview-group>
-              </template>
-            </a-table>
-          </div>
+        <a-col :span="16" class="bg-gray-100">
+          <cart-table
+            :dataSource="listProducts"
+          />
         </a-col>
-        <a-col :span="8">
-          <h1 class="text-2xl font-bold m-5">ĐƠN HÀNG</h1>
+        <a-col :span="7" :offset="1">
+          <div class="mt-5">
+            <h1 class="text-2xl font-bold">ĐƠN HÀNG</h1>
+            <div class="mt-8 flex justify-between items-center">
+              <p>Tổng giá trị đơn hàng: </p>
+              <p class="text-2xl font-bold text-red-700">{{formatCurrencyVND(tongTien)}}</p>
+            </div>
+            <hr class="border-t border-gray-400 border-dashed mt-2">
+            <a-button class="mt-10 mb-4 w-full h-12 text-xl" :style="{ backgroundColor: '#b91c1c', borderColor: '#b91c1c', color: 'white' }" type="primary" danger @click="redirectPayment">TIẾN HÀNH THANH TOÁN</a-button>
+            <p>
+              Dùng mã giảm giá của <strong>T-shirtTwo</strong> trong bước tiếp theo.
+            </p>
+          </div>
         </a-col>
       </a-row>
+    </div>
+    <div v-else class="flex flex-col items-center justify-center text-center">
+      <img
+        :width="500"
+        src="/src/assets/image/images/empty-cart.webp"
+      />
+      <h4 class="text-l">Bạn chưa có sản phẩm nào trong giỏ hàng.</h4>
+      <router-link to="/home"><a-button class="mt-5" type="primary" danger>TIẾP TỤC MUA SẮM</a-button></router-link>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import type { TableProps, TableColumnType} from "ant-design-vue";
+import CartTable from "./CartTable.vue";
+import { ref, computed } from "vue";
 import {
-  POSProductDetailResponse,
-  POSUpdateCartRequest,
-} from "@/infrastructure/services/api/admin/point-of-sale.api";
+  formatCurrencyVND
+} from "@/utils/common.helper";
+import { useRouter } from "vue-router";
+import { useCartStore } from '@/infrastructure/stores/cart';
 
-interface DataType extends POSProductDetailResponse {
-  key: string;
+const router = useRouter();
+
+const cartStore = useCartStore();
+
+const listProducts = ref([
+  {
+    id: "3b511629-f0b8-4df2-951c-7b20b99ae6c6",
+    tenHang: 'Sản phẩm 1',
+    anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740921453/t%E1%BA%A3i_xu%E1%BB%91ng_clpitw.jpg',
+    gia: 250000,
+    soLuong: 2,
+    tongTien: 500000,
+  },
+  {
+    id: "e550b1ca-a519-433c-9ee3-c8a2caf0a058",
+    tenHang: 'Sản phẩm 2',
+    anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740922472/images_1_jarwau.jpg',
+    gia: 200000,
+    soLuong: 3,
+    tongTien: 600000,
+  },
+  {
+    id: "85c04ead-c674-4870-9110-57b015cf99e1",
+    tenHang: 'Sản phẩm 3',
+    anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740921453/t%E1%BA%A3i_xu%E1%BB%91ng_3_vwlnzd.jpg',
+    gia: 100000,
+    soLuong: 10,
+    tongTien: 1000000,
+  }
+]);
+
+const tongTien = computed(() => {
+  return listProducts.value.reduce((total, item) => total + item.gia * item.soLuong, 0);
+});
+
+const redirectPayment = () => {
+  cartStore.setCheckoutData(listProducts);
+  router.push({
+    name: 'client-check-out'
+  })
 }
 
-const columns: TableColumnType<DataType>[] = [
-  {
-    title: "Tên hàng",
-    dataIndex: "tenHang",
-    width: 230,
-    align: "center",
-  },
-  {
-    title: "Giá",
-    dataIndex: "chiTiet",
-    width: 100,
-
-    align: "center",
-  },
-  {
-    title: "Số lượng",
-    dataIndex: "soLuong",
-    width: 100,
-    align: "center",
-  },
-  {
-    title: "Tổng tiền",
-    dataIndex: "thanhTien",
-    width: 100,
-    align: "center",
-  },
-  {
-    title: "Xóa",
-    dataIndex: "hanhDong",
-    width: 100,
-    align: "center",
-  },
-];
 </script>
 
 <style scoped>

@@ -290,7 +290,6 @@ const handlePayment = () => {
             errorNotiSort(error?.response?.data?.message);
           },
         });
-        console.log(params.value);
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {

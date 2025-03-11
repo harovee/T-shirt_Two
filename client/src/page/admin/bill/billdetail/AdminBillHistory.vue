@@ -3,7 +3,6 @@
   :data-source="dataHistory || {}"
   :loading="isHistoryLoading || isHistoryFetching"
    />
-  
 </template>
 
 <script lang="ts" setup>

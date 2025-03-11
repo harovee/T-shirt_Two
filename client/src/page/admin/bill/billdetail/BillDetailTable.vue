@@ -82,7 +82,9 @@
         @onCancel="isOpenModalGetPay = false"
       />
     </div>
-    <admin-pay-history />
+    <admin-pay-history 
+      :isPaymented="isPaymented"
+    />
   </div>
 
   <!-- danh sách sản phẩm chi tiết -->
@@ -293,6 +295,8 @@ const updateBillData = (updatedBill) => {
 //modal update thông tin hóa đơn: người nhận, sđt,. .
 const isOpenModalUpdateBill = ref(false);
 
+const isPaymented = ref(false);
+
 const handleOpenModalUpdateBill = () => {
   isOpenModalUpdateBill.value = true;
 };
@@ -321,6 +325,7 @@ const handleOpenModalGetPay = () => {
 
 const handleCloseModalGetPay = () => {
   isOpenModalGetPay.value = false;
+  isPaymented.value = !isPaymented.value
 };
 
 const dataSources: BillDetailResponse[] | any = computed(() => {

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface ClientProductService {
     ResponseObject<?> getAllProducts(ClientProductSearchRequest request);
-  
+
     ResponseObject<?> getProductById(String idSanPham, ClientProductRequest request);
 
     ResponseObject<?> getTop8Product(ClientProductSearchRequest request);

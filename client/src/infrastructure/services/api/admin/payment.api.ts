@@ -48,6 +48,12 @@ export interface nextVoucherRequest {
     tongTien: number | null;
 }
 
+export interface voucherRequest {
+    keyword: string | null
+
+    idKhachHang: string | null;
+}
+
 export interface paymentMethodDetailRequest {
     idHoaDon: string | null;
 
@@ -187,6 +193,18 @@ export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
         params: params.value,
     })) as AxiosResponse<
         DefaultResponse<PaginationResponse<Array<VoucherResponse>>>
+    >;
+
+    return res.data;
+};
+
+export const getVoucherByCode = async (params: Ref<voucherRequest>) => {
+    const res = (await request({
+        url: `${API_ADMIN_PAYMENT}/voucher-code`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<VoucherResponse>
     >;
 
     return res.data;

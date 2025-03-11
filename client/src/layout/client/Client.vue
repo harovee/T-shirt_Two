@@ -48,13 +48,13 @@
             </template>
             <a-button
               class="me-6 w-10 h-10 flex justify-center items-center"
-              type="text"
+              type="text" @click="redirectCart"
             >
               <v-icon name="bi-cart3" class="w-8 h-8"></v-icon>
             </a-button>
           </a-tooltip>
 
-          <div class="me-10 user-info flex items-center justify-between">
+          <div v-if="userInfo" class="me-10 user-info flex items-center justify-between">
             <a-dropdown placement="bottomRight" arrow>
               <div class="flex items-center cursor-pointer">
                 <a-avatar
@@ -73,9 +73,18 @@
                   <a-menu-item key="logout" @click="handleLogout">
                     Đăng xuất
                   </a-menu-item>
+                  <a-menu-item @click="handleBought">
+                    Đơn hàng đã mua
+                  </a-menu-item>
                 </a-menu>
+                
               </template>
             </a-dropdown>
+          </div>
+          <div v-if="!userInfo" class="me-10">
+            <router-link to="/authentication/login"><a-button>
+              Đăng nhập
+            </a-button></router-link>
           </div>
       </a-layout-header>
       <a-layout-content class="mt-[80px]">
@@ -113,6 +122,16 @@ const handleLogout = () => {
   auth.logout();
   router.push(ROUTES_CONSTANTS.AUTHENTICATION.path);
 };
+
+const handleBought = () => {
+  router.push(ROUTES_CONSTANTS.CLIENT.children.MY_ORDER.path);
+};
+
+const redirectCart = () => {
+  router.push({
+    name: 'client-cart'
+  })
+}
 </script>
 
 <script lang="ts">

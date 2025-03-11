@@ -189,4 +189,11 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     public ResponseObject<?> getProvinceById(String id) {
         return new ResponseObject<>(adminClientProvinceRepository.getProvinceById(id), HttpStatus.OK, "Lấy tỉnh theo code thành công");
     }
+
+    @Override
+    public ResponseObject<?> getVoucherByCode(AdminVoucherRequest request) {
+        return ResponseObject.successForward(adminPhieuGiamGiaRepository.getPhieuGiamGiaByCode(request),
+                "Lấy Phiếu giảm giá thành công"
+        );
+    }
 }

@@ -1,7 +1,7 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.service.impl;
 
-import com.shop.server.core.admin.anh_san_pham.model.request.AdCreateUpdateAnhRequest;
-import com.shop.server.core.admin.anh_san_pham.repository.AdAnhRepository;
+import com.shop.server.core.admin.image.model.request.AdCreateUpdateAnhRequest;
+import com.shop.server.core.admin.image.repository.AdAnhRepository;
 import com.shop.server.core.admin.chat_lieu.repository.AdChatLieuRepository;
 import com.shop.server.core.admin.co_ao.repository.AdCoAoRepository;
 import com.shop.server.core.admin.hoa_tiet.repository.AdHoaTietRepository;

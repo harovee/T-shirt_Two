@@ -5,7 +5,12 @@ import {
     getTop8ProductsMoiNhat,
     ClientProductDetailRequest,
     getProductById,
-    ClientProductRequest
+    ClientProductRequest,
+    getDanhMuc,
+    getChatLieu,
+    getThuongHieu,
+    getKieuDang,
+    getColor
 } from "@/infrastructure/services/api/client/clientproduct.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -52,6 +57,57 @@ export const useGetProductById = (
     return useQuery({
         queryKey: [queryKey.client.product.productDetailList, sanPhamId,params],
         queryFn: () => getProductById(sanPhamId,params),
+        ...options,
+    });
+};
+
+
+export const useGetDanhMuc = (
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getDanhMuc>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.danhMucList, ],
+        queryFn: () => getDanhMuc(),
+        ...options,
+    });
+};
+
+export const useGetChatLieu = (
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getChatLieu>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.chatLieuList, ],
+        queryFn: () => getChatLieu(),
+        ...options,
+    });
+};
+
+export const useGetThuongHieu = (
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getThuongHieu>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.thuongHieuList, ],
+        queryFn: () => getThuongHieu(),
+        ...options,
+    });
+};
+
+export const useGetKieuDang = (
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getKieuDang>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.kieuDangList, ],
+        queryFn: () => getKieuDang(),
+        ...options,
+    });
+};
+
+export const useGetColor = (
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getColor>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.colorList, ],
+        queryFn: () => getColor(),
         ...options,
     });
 };

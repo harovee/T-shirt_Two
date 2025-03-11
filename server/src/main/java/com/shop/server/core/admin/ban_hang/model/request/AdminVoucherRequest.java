@@ -8,10 +8,8 @@ import java.math.BigDecimal;
 
 @Setter
 @Getter
-public class AdminVoucherRequest extends PageableRequest {
+public class AdminVoucherRequest{
     String keyword;
 
     String idKhachHang;
-
-    BigDecimal tongTien;
 }

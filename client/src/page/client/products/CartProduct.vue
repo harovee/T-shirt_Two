@@ -23,22 +23,22 @@
           <a-card hoverable class="w-full">
             <template #cover>
               <div class="product-image-container">
-                <img 
-                  :alt="product.ten" 
-                  :src="product.anh && product.anh.length > 0 ? product.anh[0] : '/default-product-image.jpg'" 
+                <img
+                  :alt="product.ten"
+                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
                   class="product-image primary-image"
                 />
-                <img 
-                  v-if="product.anh && product.anh.length > 1" 
-                  :alt="product.ten" 
-                  :src="product.anh[1]" 
+                <img
+                  v-if="product.anh && product.anh.length > 1"
+                  :alt="product.ten"
+                  :src="product.anh[1].url"
                   class="product-image hover-image"
                 />
                 <!-- Nếu không có hình thứ 2, dùng hình đầu tiên hoặc ảnh mặc định -->
-                <img 
+                <img
                   v-else
-                  :alt="product.ten" 
-                  :src="product.anh && product.anh.length > 0 ? product.anh[0] : '/default-product-image.jpg'" 
+                  :alt="product.ten"
+                  :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
                   class="product-image hover-image"
                 />
               </div>
@@ -47,12 +47,11 @@
               <template #description>
                 <div>
                   <p>
-                    <span class="original-price">{{
-                      formatCurrency(product.gia && product.gia.length > 0 ? product.gia[0] : 0, "VND", "vi-VN")
-                    }}</span>
-                    <span class="discounted-price">{{
-                      formatCurrency(product.gia && product.gia.length > 0 ? product.gia[0] : 0, "VND", "vi-VN")
-                    }}</span>
+                    <span class="price-range">
+                      {{
+                        getFormattedPriceRange(product)
+                      }}
+                    </span>
                   </p>
 
                   <!-- Size dynamic list -->
@@ -130,6 +129,31 @@ watch(selectedArrange, (newValue) => {
   console.log("Sorting by:", newValue);
 });
 
+const getPriceRange = (product) => {
+  let prices = [];
+
+  if (product.gia && product.gia.length > 0) {
+    prices.push(...product.gia);
+  }
+
+  if (product.discount && product.discount.length > 0) {
+    prices.push(...product.discount);
+  }
+
+  return prices.length > 0 ? prices : [0]; // Nếu không có giá, mặc định là 0
+};
+
+const getFormattedPriceRange = (product) => {
+  const prices = getPriceRange(product);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  return minPrice === maxPrice
+    ? formatCurrency(minPrice, "VND", "vi-VN")
+    : `${formatCurrency(minPrice, "VND", "vi-VN")} - ${formatCurrency(maxPrice, "VND", "vi-VN")}`;
+};
+
+
 const handleRedirectProductDetail = (product) => {
     const detailParams: ClientProductRequest = {
         idChatLieu: product.chatLieu?.id || "",
@@ -139,12 +163,12 @@ const handleRedirectProductDetail = (product) => {
         idKieuDang: product.kieuDang?.id || "",
         idTayAo: product.tayAo?.id || "",
         idThuongHieu: product.thuongHieu?.id || "",
-        idTinhNang: product.tinhNang?.id || ""
+        idTinhNang: product.tinhNang?.id || "",
     };
     localStorage.setItem('productDetailParams', JSON.stringify(detailParams));
-    
-    router.push({ 
-        name: 'client-product-detail', 
+
+    router.push({
+        name: 'client-product-detail',
         params: { id: product.id }
     });
 }
@@ -181,14 +205,17 @@ export default {
 .product-image-container {
   position: relative;
   width: 100%;
-  height: 260px; /* Thiết lập chiều cao cố định */
-  overflow: hidden;
+  height: 260px; /* Keeping your original fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Removed overflow: hidden to allow images to extend beyond container */
 }
 
 .product-image {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Đảm bảo ảnh lấp đầy không gian và giữ tỷ lệ */
+  object-fit: contain; /* Keeps the original aspect ratio */
   position: absolute;
   top: 0;
   left: 0;
@@ -209,6 +236,12 @@ export default {
 
 .product-image-container:hover .hover-image {
   opacity: 1;
+}
+
+.price-range {
+  font-weight: bold;
+  font-size: 17px;
+  color: red;
 }
 </style>
 

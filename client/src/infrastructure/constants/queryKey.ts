@@ -113,6 +113,7 @@ export const queryKey = {
             customerDetail: "adCustomerDetailKey",
             voucherPayList: "voucherPayListKey",
             voucherPayDetail: "voucherPayDetailKey",
+            voucherByCode: "voucherByCode",
             customerAddress: "adCustomerAddress",
             nextPriceVoucher: "adNextPriceVoucher",
             shippingFee: "shippingFeeKey",
@@ -128,8 +129,19 @@ export const queryKey = {
     client :{
         product: {
             productList: "clientAllProductKey",
-            productDetailList: "clientProductDetailKey"
+            productDetailList: "clientProductDetailKey",
+            danhMucList: "danhMucListKey",
+            colorList: "colorListkey",
+            thuongHieuList: "thuongHieuListKey",
+            kieuDangList: "kieuDangListKey",
+            chatLieuList: "chatLieuListKey"
         },
+        payment: {
+            invoiceOnline: "clientInvoiceOnlineKey"
+        },
+        myOrder: {
+            clientBill: "clientBillList"
+        }
     },
     user: {
         another: {},

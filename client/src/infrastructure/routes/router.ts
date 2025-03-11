@@ -426,6 +426,30 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: false
                 },
             },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.name,
+                component: () => import('@/page/client/payment/Checkout.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER.name,
+                component: () => import('@/page/client/my-order/MyOrder.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER_DETAIL.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER_DETAIL.name,
+                component: () => import('@/page/client/my-order/MyOrderDetail.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
         ],
     },
     {

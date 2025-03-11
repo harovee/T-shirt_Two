@@ -34,6 +34,10 @@ import { onMounted, ref, watch } from "vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
 import { convertDateFormat } from "@/utils/common.helper";
 
+const props= defineProps ({
+  isPaymented: Boolean
+})
+
 interface ColumnType {
   title: string;
   dataIndex: string | number;
@@ -56,7 +60,7 @@ onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
 });
 
-const { data, isLoading, isFetching } = useGetPayHistory(params, {
+const { data, isLoading, isFetching, refetch } = useGetPayHistory(params, {
   refetchOnWindowClose: false,
   placeholderData: keepPreviousData,
 });
@@ -69,6 +73,13 @@ watch(
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => props.isPaymented,
+  (newData) => {
+    refetch();
+  }
 );
 
 const columnsBill: ColumnType[] = [

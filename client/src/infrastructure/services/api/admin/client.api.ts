@@ -61,6 +61,19 @@ export type ClientAddressRequest = {
     clientId: string,
 }
 
+export type ClientAddressPaymentRequest = {
+    name: string,
+    email:string,
+    phoneNumber: string,
+    line: string,
+    ward: string,
+    district: string,
+    province: string,
+    isDefault: string,
+    clientId: string,
+    ghiChu: string
+}
+
 export type ClientAddressRequestCreate = {
     name: String,
     phoneNumber: String,
