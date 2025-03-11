@@ -61,7 +61,7 @@ export type BillResponse = ResponseList & {
     ma: string | null;
     maNhanVien: string | null;
     loaiHD: string | null;
-    tongTien: number | null;
+    tongTien: number;
     tienShip: number | null;
     tienGiam: number | null;
     trangThai: string | null;
@@ -70,6 +70,16 @@ export type BillResponse = ResponseList & {
     diaChiNguoiNhan: string | null;
     tenNguoiNhan: string | null;
     ghiChu: string | null;
+}
+
+export type BillRefundResponse = ResponseList & {
+    ma: string | null;
+    tongTien: number | null;
+    tienGiam: number | null;
+    tenKhachHang: string | null;
+    soDienThoai: string | null;
+    diaChiNguoiNhan: string | null;
+    tenNguoiNhan: string | null;
 }
 
 export type BillWaitResponse = ResponseList & {
@@ -124,8 +134,18 @@ export const getBillById = async (billId: string | null) => {
         url: `${API_ADMIN_BILL}/${billId}`,
         method: 'GET'
     }) as AxiosResponse<
-        DefaultResponse<PaginationResponse<Array<BillResponse>>>
+        DefaultResponse<BillResponse>
     >;
+}
+
+export const getBillRefundByMaHD = async (billCode: string) => {
+    const res = (await request ({
+        url: `${API_ADMIN_BILL}/refund/${billCode}`,
+        method: 'GET',
+    })) as AxiosResponse<
+        DefaultResponse<BillRefundResponse>
+    >;
+    return res.data
 }
 
 export const createBillsWait = async (data: BillCreateRequest) => {

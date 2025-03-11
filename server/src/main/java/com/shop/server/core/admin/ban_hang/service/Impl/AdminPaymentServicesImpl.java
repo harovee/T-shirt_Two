@@ -10,7 +10,10 @@ import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.ChiTietPhuongThucThanhToan;
 import com.shop.server.entities.main.HoaDon;
+import com.shop.server.entities.main.LichSuHoaDon;
 import com.shop.server.entities.main.PhuongThucThanhToan;
+import com.shop.server.repositories.HoaDonRepository;
+import com.shop.server.repositories.LichSuHoaDonRepository;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +41,8 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
     private final AdminClientWardRepository adminClientWardRepository;
 
     private final AdminClientDistrictRepository adminClientDistrictRepository;
+    private final HoaDonRepository hoaDonRepository;
+    private final LichSuHoaDonRepository lichSuHoaDonRepository;
 
     @Override
     public ResponseObject<?> getAllKhachHang(AdminKhachHangSearchRequest request) {
@@ -129,6 +134,16 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
             if (ctpttt2.getTienKhachDua() != null && ctpttt2.getTienKhachDua().compareTo(BigDecimal.ZERO) > 0) {
                 ChiTietPhuongThucThanhToan ct2 = adminChiTietPhuongThucThanhToanRepository.save(ctpttt2);
             }
+
+            hoaDon.setTrangThai("Đã thanh toán");
+            HoaDon hd1 = hoaDonRepository.save(hoaDon);
+
+            LichSuHoaDon ls = new LichSuHoaDon();
+            ls.setIdHoaDon(hoaDon);
+            ls.setHanhDong("Thanh toán thành công, chuyển trạng thái hóa đơn -> 'Đã thanh toán'");
+            ls.setMoTa(request.getMoTa());
+            ls.setTrangThai(hoaDon.getTrangThai());
+            LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
             return new ResponseObject<>("ok", HttpStatus.CREATED, "Thanh toán thành công.");
         }
 
@@ -141,7 +156,18 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
         ctpttt.setMaGiaoDich(request.getMaGiaoDich());
         ctpttt.setDeleted(false);
         ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt);
+
+        hoaDon.setTrangThai("Đã thanh toán");
+        HoaDon hd1 = hoaDonRepository.save(hoaDon);
+
+        LichSuHoaDon ls = new LichSuHoaDon();
+        ls.setIdHoaDon(hoaDon);
+        ls.setHanhDong("Thanh toán thành công, chuyển trạng thái hóa đơn -> 'Đã thanh toán'");
+        ls.setMoTa(request.getMoTa());
+        ls.setTrangThai(hoaDon.getTrangThai());
+        LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
         return new ResponseObject<>(ct, HttpStatus.CREATED, "Thanh toán thành công.");
+
     }
 
     @Override

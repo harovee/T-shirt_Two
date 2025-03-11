@@ -12,18 +12,20 @@ import java.util.List;
 @Repository
 public interface AdminPayHistoryRepository extends ChiTietPhuongThucThanhToanRepository {
     @Query(value = """
-    SELECT
-        cttt.ma_giao_dich AS maGiaoDich,
-        pt.ten_phuong_thuc  tenPhuongThuc,
-        cttt.ghi_chu AS ghiChu,
-        cttt.ngay_tao AS ngayTao,
-        cttt.nguoi_tao AS nguoiTao,
-        cttt.tien_khach_dua AS tongTienHD
-        FROM chi_tiet_phuong_thuc_thanh_toan cttt
-        JOIN phuong_thuc_thanh_toan pt ON cttt.id_phuong_thuc_thanh_toan = pt.id
-        JOIN hoa_don hd ON cttt.id_hoa_don = hd.id
-        WHERE
-            (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = cttt.id_hoa_don)
-    """, nativeQuery = true)
+            SELECT
+                cttt.ma_giao_dich AS maGiaoDich,
+                pt.ten_phuong_thuc  tenPhuongThuc,
+                cttt.ghi_chu AS ghiChu,
+                cttt.ngay_tao AS ngayTao,
+                CONCAT(nv.sub_code,nv.ma_nhan_vien) AS nguoiTao,
+                cttt.tien_khach_dua AS tienKhachDua,
+                hd.tong_tien AS tongTienHD
+            FROM chi_tiet_phuong_thuc_thanh_toan cttt
+            JOIN phuong_thuc_thanh_toan pt ON cttt.id_phuong_thuc_thanh_toan = pt.id
+            JOIN hoa_don hd ON cttt.id_hoa_don = hd.id
+            LEFT JOIN nhan_vien nv ON nv.id = cttt.nguoi_tao
+            WHERE
+                (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = cttt.id_hoa_don)
+            """, nativeQuery = true)
     List<AdminPayHistoryResponse> getPayHistory(AdminFindPayHistoryRequest req);
 }

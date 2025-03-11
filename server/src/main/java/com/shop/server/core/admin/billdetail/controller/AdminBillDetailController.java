@@ -35,6 +35,11 @@ public class AdminBillDetailController {
         return Helper.createResponseEntity(adminBillDetailService.getBillDetailById(id));
     }
 
+    @GetMapping("/refund/{maHoaDon}")
+    ResponseEntity<?> getAdminBillDetailRefundByMaHD(@PathVariable String maHoaDon) {
+        return Helper.createResponseEntity(adminBillDetailService.getBillDetailRefundByMaHD(maHoaDon));
+    }
+
     @PostMapping()
     ResponseEntity<?> createBillDetail(@Valid @RequestBody final AdminCreateBillDetailRequest request) {
         return Helper.createResponseEntity(adminBillDetailService.createBillDetail(request));

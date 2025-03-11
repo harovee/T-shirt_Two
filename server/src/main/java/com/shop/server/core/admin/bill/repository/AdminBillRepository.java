@@ -2,6 +2,7 @@ package com.shop.server.core.admin.bill.repository;
 
 import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminUpdateBillWaitRequest;
+import com.shop.server.core.admin.bill.model.response.AdminBillRefundResponse;
 import com.shop.server.core.admin.bill.model.response.AdminBillResponse;
 import com.shop.server.core.admin.bill.model.response.AdminBillWaitResponse;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
@@ -139,6 +140,24 @@ public interface AdminBillRepository extends HoaDonRepository {
         WHERE hd.id = :id
     """, nativeQuery = true)
     AdminBillResponse getDetailBillById(String id);
+
+    @Query(value = """
+        SELECT
+            hd.id AS id,
+            hd.ma_hoa_don AS ma,
+            hd.tien_giam AS tienGiam,
+            hd.tong_tien AS tongTien,
+            hd.ten_nguoi_nhan AS tenNguoiNhan,
+            hd.so_dien_thoai AS soDienThoai,
+            hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan,
+            hd.trang_thai AS trangThai,
+            kh.ho_va_ten AS tenKhachHang
+        FROM hoa_don hd
+        LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
+        LEFT JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
+        WHERE hd.ma_hoa_don = :maHoaDon
+    """, nativeQuery = true)
+    AdminBillRefundResponse getDetailBillByMaOnRefund(String maHoaDon);
 
     boolean existsHoaDonByMa(String ma);
 
