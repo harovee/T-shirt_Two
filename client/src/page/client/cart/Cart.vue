@@ -1,96 +1,94 @@
 <template>
-  <div class="container mx-auto pt-10">
-    <h1
-      class="flex items-center justify-center text-center gap-4 text-4xl font-bold mb-10 text-red-700"
-    >
+  <div class="mx-auto p-10">
+    <h1 class="text-4xl font-bold text-center flex items-center justify-center gap-4 text-red-700">
       <v-icon name="md-shoppingbag-sharp" style="width: 35px; height: 35px" />
       GIỎ HÀNG
     </h1>
-    <div v-if="listProducts.length > 0" class="m-5">
-      <a-row :gutter="[8, 24]">
-        <a-col :span="16" class="bg-gray-100">
-          <cart-table
-            :dataSource="listProducts"
-          />
+
+    <div v-if="listProducts.length > 0" class="mt-10">
+      <a-row :gutter="[24, 24]">
+        <!-- Danh sách sản phẩm -->
+        <a-col :span="16">
+          <a-card class="shadow-lg rounded-2xl">
+            <cart-table :dataSource="listProducts" />
+          </a-card>
         </a-col>
-        <a-col :span="7" :offset="1">
-          <div class="mt-5">
-            <h1 class="text-2xl font-bold">ĐƠN HÀNG</h1>
-            <div class="mt-8 flex justify-between items-center">
-              <p>Tổng giá trị đơn hàng: </p>
-              <p class="text-2xl font-bold text-red-700">{{formatCurrencyVND(tongTien)}}</p>
+
+        <!-- Tổng tiền & Thanh toán -->
+        <a-col :span="8">
+          <a-card class="shadow-lg rounded-2xl p-5">
+            <h2 class="text-2xl font-bold mb-4">ĐƠN HÀNG</h2>
+            <div class="flex justify-between items-center text-lg">
+              <span>Tổng cộng:</span>
+              <span class="text-2xl font-bold text-red-700">
+                {{ formatCurrencyVND(tongTien) }}
+              </span>
             </div>
-            <hr class="border-t border-gray-400 border-dashed mt-2">
-            <a-button class="mt-10 mb-4 w-full h-12 text-xl" :style="{ backgroundColor: '#b91c1c', borderColor: '#b91c1c', color: 'white' }" type="primary" danger @click="redirectPayment">TIẾN HÀNH THANH TOÁN</a-button>
-            <p>
+            <a-divider />
+            <a-button
+              type="primary"
+              class="w-full h-12 text-xl"
+              danger
+              @click="redirectPayment"
+            >
+              TIẾN HÀNH THANH TOÁN
+            </a-button>
+            <p class="text-center mt-3 text-gray-600">
               Dùng mã giảm giá của <strong>T-shirtTwo</strong> trong bước tiếp theo.
             </p>
-          </div>
+          </a-card>
         </a-col>
       </a-row>
     </div>
-    <div v-else class="flex flex-col items-center justify-center text-center">
-      <img
-        :width="500"
-        src="/src/assets/image/images/empty-cart.webp"
-      />
-      <h4 class="text-l">Bạn chưa có sản phẩm nào trong giỏ hàng.</h4>
-      <router-link to="/home"><a-button class="mt-5" type="primary" danger>TIẾP TỤC MUA SẮM</a-button></router-link>
+
+    <!-- Giỏ hàng trống -->
+    <div v-else class="text-center flex flex-col items-center">
+      <img src="/src/assets/image/images/empty-cart.webp" width="400" />
+      <h4 class="text-lg mt-3">Bạn chưa có sản phẩm nào trong giỏ hàng.</h4>
+      <router-link to="/home">
+        <a-button class="mt-5 px-6 py-2 text-lg" type="primary" danger>
+          TIẾP TỤC MUA SẮM
+        </a-button>
+      </router-link>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import CartTable from "./CartTable.vue";
 import { ref, computed } from "vue";
-import {
-  formatCurrencyVND
-} from "@/utils/common.helper";
 import { useRouter } from "vue-router";
-import { useCartStore } from '@/infrastructure/stores/cart';
+import { useCartStore } from "@/infrastructure/stores/cart";
+import { formatCurrencyVND } from "@/utils/common.helper";
+import CartTable from "./CartTable.vue";
+import { useCartStorageBL } from "../products/business.logic/useCartLocalStorageBL";
+
+const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } = useCartStorageBL();
 
 const router = useRouter();
-
 const cartStore = useCartStore();
 
-const listProducts = ref([
-  {
-    id: "3b511629-f0b8-4df2-951c-7b20b99ae6c6",
-    tenHang: 'Sản phẩm 1',
-    anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740921453/t%E1%BA%A3i_xu%E1%BB%91ng_clpitw.jpg',
-    gia: 250000,
-    soLuong: 2,
-    tongTien: 500000,
-  },
-  {
-    id: "e550b1ca-a519-433c-9ee3-c8a2caf0a058",
-    tenHang: 'Sản phẩm 2',
-    anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740922472/images_1_jarwau.jpg',
-    gia: 200000,
-    soLuong: 3,
-    tongTien: 600000,
-  },
-  {
-    id: "85c04ead-c674-4870-9110-57b015cf99e1",
-    tenHang: 'Sản phẩm 3',
-    anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740921453/t%E1%BA%A3i_xu%E1%BB%91ng_3_vwlnzd.jpg',
-    gia: 100000,
-    soLuong: 10,
-    tongTien: 1000000,
-  }
-]);
+// Danh sách sản phẩm đã được map lại
+const listProducts = computed(() =>
+  cart.value.map((item) => ({
+    tenHang: `Sản phẩm ${item.id?.slice(0, 5) || "?"}`, // Giả sử không có tên sản phẩm, đặt tạm ID, gọi API lấy thông tin ra nhé
+    anh: "https://via.placeholder.com/150", // Chưa có ảnh, dùng ảnh placeholder
+    gia: item.price || 0,
+    soLuong: item.quantity || 1,
+    tongTien: (item.price || 0) * (item.quantity || 1),
+  }))
+);
 
 const tongTien = computed(() => {
-  return listProducts.value.reduce((total, item) => total + item.gia * item.soLuong, 0);
+  return listProducts.value.reduce(
+    (total, item) => total + item.gia * item.soLuong,
+    0
+  );
 });
 
 const redirectPayment = () => {
   cartStore.setCheckoutData(listProducts);
-  router.push({
-    name: 'client-check-out'
-  })
-}
-
+  router.push({ name: "client-check-out" });
+};
 </script>
 
 <style scoped>
