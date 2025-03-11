@@ -13,6 +13,8 @@ public interface AdminBillDetailService {
 
     ResponseObject<?> getBillDetailById(String id);
 
+    ResponseObject<?> getBillDetailRefundByMaHD(String maHoaDon);
+
     ResponseObject<?> createBillDetail(@Valid AdminCreateBillDetailRequest request);
 
     ResponseObject<?> updateBillDetail(String id, @Valid AdminUpdateBillDetailRequest request);

@@ -47,10 +47,11 @@ public interface AdminBillHistoryRepository extends LichSuHoaDonRepository {
             ls.hanh_dong AS hanhDong,
             ls.mo_ta AS moTa,
             ls.ngay_tao AS ngayTao,
-            ls.nguoi_tao AS nguoiTao,
+            CONCAT(nv.sub_code,nv.ma_nhan_vien) AS nguoiTao,
             ls.trang_thai AS trangThai
             FROM lich_su_hoa_don ls
             JOIN hoa_don hd ON hd.id = ls.id_hoa_don
+            LEFT JOIN nhan_vien nv ON nv.id = ls.nguoi_tao
             WHERE
                 (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
         """, countQuery = """
@@ -58,6 +59,7 @@ public interface AdminBillHistoryRepository extends LichSuHoaDonRepository {
                 COUNT(ls.id)
             FROM lich_su_hoa_don ls
             JOIN hoa_don hd ON hd.id = ls.id_hoa_don
+            LEFT JOIN nhan_vien nv ON nv.id = ls.nguoi_tao
             WHERE
                 (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
         """, nativeQuery = true)

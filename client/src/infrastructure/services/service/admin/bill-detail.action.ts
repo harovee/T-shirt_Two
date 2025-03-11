@@ -1,5 +1,5 @@
 import { Ref } from "vue";
-import { createBillDetail, CreateBillDetailRequest, FindBillDetailRequest, getBillDetailsByIdHoaDon, updateBillDetail, UpdateBillDetailRequest } from "../../api/admin/bill-detail.api";
+import { createBillDetail, CreateBillDetailRequest, FindBillDetailRequest, getBillDetailsByIdHoaDon, getBillDetailsByMaHoaDon, updateBillDetail, UpdateBillDetailRequest } from "../../api/admin/bill-detail.api";
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey";
 
@@ -13,6 +13,16 @@ export const useGetBillDetails = (
         ...options,
     });
 }
+
+export const useGetBillDetailRefundByMaHD = (
+    billCode: string, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getBillDetailsByMaHoaDon>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.billdetail.billDetailByMaHD, billCode],
+        queryFn: () => getBillDetailsByMaHoaDon(billCode),
+        ...options,
+    });
+};
 
 export const useUpdateBillDetail = () => {
     const queryClient = useQueryClient();

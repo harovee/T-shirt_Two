@@ -8,8 +8,8 @@
         :scroll="{ x: 'max-content' }"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'tongTienHD'">
-            <span v-if="record?.tongTienHD">{{ formatCurrencyVND(record.tongTienHD) }}</span>
+          <template v-if="column.key === 'tienKhachDua'">
+            <span v-if="record?.tongTienHD">{{ formatCurrencyVND(record.tienKhachDua) }}</span>
           </template>
           <template v-else-if="column.key === 'ngayTao'">
             <span v-if="record?.ngayTao">{{ convertDateFormat(record.ngayTao) }}</span>
@@ -85,8 +85,8 @@ watch(
 const columnsBill: ColumnType[] = [
   {
     title: "Số tiền",
-    dataIndex: "tongTienHD",
-    key: "tongTienHD",
+    dataIndex: "tienKhachDua",
+    key: "tienKhachDua",
     ellipsis: true,
     align: "center",
   },

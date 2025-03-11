@@ -18,6 +18,8 @@ public interface AdminBillService {
 
     ResponseObject<?> getDetailBillById(String id);
 
+    ResponseObject<?> getBillRefundByMaHD(String maHoaDon);
+
 //    ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult bindingResult);
 
     ResponseObject<?> createBill(AdminSaveBillRequest request);

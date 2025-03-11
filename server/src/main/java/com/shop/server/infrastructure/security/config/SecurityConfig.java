@@ -130,11 +130,7 @@ public class SecurityConfig {
 //                                Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
 //                                Helper.appendWildcard(MappingConstant.API_CLIENT_PREFIX),
                                 Helper.appendWildcard(MappingConstant.API_VERSION_PREFIX),
-//                                Helper.appendWildcard(MappingConstant.API_VERSION_PREFIX),
-                                Helper.appendWildcard(MappingConstant.API_ADMIN_POINT_SALE),
-                                Helper.appendWildcard(MappingConstant.API_CLIENT_PRODUCT),
-                                Helper.appendWildcard(MappingConstant.API_CLIENT_PAYMENT),
-                                Helper.appendWildcard(MappingConstant.API_CLIENT_MY_ORDER)
+                                Helper.appendWildcard(MappingConstant.API_ADMIN_POINT_SALE)
                         )
                         .permitAll()
         );

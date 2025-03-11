@@ -69,7 +69,7 @@
     <div class="flex justify-between items-center mb-2">
       <h3 class="text-lg font-bold">Lịch sử thanh toán</h3>
       <a-button
-        v-if="billData?.trangThai === 'Đã giao hàng'"
+        v-if="billData?.trangThai === 'Đã giao hàng' && (!PaymentData || PaymentData.data.length === 0)"
         class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
         @click="handleOpenModalGetPay"
       >
@@ -142,7 +142,7 @@
           v-else-if="column.key === 'action'"
           class="flex items-center justify-center space-x-2"
         >
-          <a-tooltip title="Hoàn trả" trigger="hover">
+          <a-tooltip title="Hoàn hàng" trigger="hover">
             <a-button class="bg-purple-100" size="middle" shape="round">
               <v-icon name="fa-undo-alt" />
             </a-button>
@@ -204,7 +204,7 @@
 <script lang="ts" setup>
 import TableExample from "@/components/ui/TableExample.vue";
 import { ColumnType } from "ant-design-vue/es/table";
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import AdminPayHistory from "./AdminPayHistory.vue";
 import UpdateBillModal from "../bill/UpdateBillModals.vue";
 import AddProductDetailModal from "./AddProductDetailModal.vue";
@@ -213,6 +213,9 @@ import { formatCurrencyVND } from "@/utils/common.helper";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
+import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
+import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
+import { keepPreviousData } from "@tanstack/vue-query";
 
 const props = defineProps({
   wrapperClassName: {
@@ -265,6 +268,24 @@ watch(
     // console.log(copiedBillData.value);
   }
 );
+
+const getIdHoaDonFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("idHoaDon") || "";
+};
+
+const params = ref<FindPayHistoryRequest>({
+  idHoaDon: "",
+});
+
+onMounted(() => {
+  params.value.idHoaDon = getIdHoaDonFromUrl();
+});
+
+const { data: PaymentData } = useGetPayHistory(params, {
+  refetchOnWindowClose: false,
+  placeholderData: keepPreviousData,
+});
 
 const updateBillData = (updatedBill) => {
   // console.log("Dữ liệu cập nhật từ API:", updatedBill);

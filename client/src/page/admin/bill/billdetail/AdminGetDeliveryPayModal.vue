@@ -123,7 +123,6 @@ import {
 import { convertDateFormatTime } from "@/utils/common.helper";
 import { useRoute } from "vue-router";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { toast } from "vue3-toastify";
 import {
   warningNotiSort,
   successNotiSort,
@@ -291,7 +290,6 @@ const handlePayment = () => {
             errorNotiSort(error?.response?.data?.message);
           },
         });
-        // console.log(params.value);
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {

@@ -9,7 +9,6 @@ import com.shop.server.entities.main.HoaDon;
 import com.shop.server.entities.main.LichSuHoaDon;
 import com.shop.server.entities.main.PhuongThucThanhToan;
 import com.shop.server.infrastructure.constants.module.Message;
-import com.shop.server.repositories.ChiTietPhuongThucThanhToanRepository;
 import com.shop.server.repositories.HoaDonRepository;
 import com.shop.server.repositories.LichSuHoaDonRepository;
 import com.shop.server.repositories.PhuongThucThanhToanRepository;

@@ -3,6 +3,7 @@ package com.shop.server.core.admin.billdetail.repository;
 import com.shop.server.core.admin.billdetail.model.request.AdminCreateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminFindBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminUpdateBillDetailRequest;
+import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailRefundResponse;
 import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailResponse;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.entities.main.HoaDon;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 @Repository
 public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
+
     @Query(value = """
         SELECT
             DISTINCT 
@@ -87,6 +89,27 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
     """, nativeQuery = true)
     AdminBillDetailResponse getAdminBillDetailById(String id);
 
+    @Query(value = """
+        SELECT
+            ROW_NUMBER() OVER(ORDER BY ct.id DESC) AS catalog,
+            ct.id AS id,
+            sp.ten AS tenSanPham,
+            ms.ten AS tenMau,
+            kc.ten AS tenKC,
+            anh.url AS anhSanPhamChiTiet,
+            ct.so_luong AS soLuong,
+            ct.gia AS gia,
+            ct.thanh_tien AS thanhTien
+        FROM hoa_don_chi_tiet ct
+        LEFT JOIN san_pham_chi_tiet spct ON ct.id_san_pham_chi_tiet = spct.id
+        LEFT JOIN san_pham sp ON sp.id = spct.id_san_pham
+        LEFT JOIN mau_sac ms ON spct.id_mau_sac = ms.id
+        LEFT JOIN kich_co kc ON spct.id_kich_co = kc.id
+        LEFT JOIN anh ON spct.id = anh.id_san_pham_chi_tiet
+        LEFT JOIN hoa_don hd ON ct.id_hoa_don = hd.id
+        WHERE hd.ma_hoa_don = :maHoaDon
+    """, nativeQuery = true)
+    List<AdminBillDetailRefundResponse> getAdminBillDetailByMaHD(String maHoaDon);
 
     Optional<HoaDonChiTiet> findByHoaDonAndSanPhamChiTiet(HoaDon hoaDon, SanPhamChiTiet sanPhamChiTiet);
 
