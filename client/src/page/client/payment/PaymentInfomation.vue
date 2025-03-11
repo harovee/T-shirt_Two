@@ -121,7 +121,7 @@ import {
   errorNotiSort,
 } from "@/utils/notification.config";
 import { keepPreviousData } from "@tanstack/vue-query";
-import PayMentAddress from "./PayMentAddress.vue";
+// import PayMentAddress from "./PayMentAddress.vue";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import { useRouter } from "vue-router";
 import {
@@ -132,7 +132,7 @@ import {
   useGetServiceId,
   useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
-import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
+import { useCreateInvoiceOnline } from "@/infrastructure/services/service/client/clientPayment.action";
 
 import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
@@ -155,6 +155,9 @@ import {
   useUpdateQuantityOrderDetails,
   useDeleteCartById,
 } from "@/infrastructure/services/service/admin/point-of-sale";
+import {
+  clearCart
+} from "@/page/client/products/business.logic/CartLocalStorageBL";
 import {
   VoucherResponse,
   FindVoucherRequest,
@@ -550,7 +553,7 @@ const getVoucher = () => {
 // );
 
 const { mutate: createInvoice } = useCreateInvoiceOnline();
-const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
+// const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
 
 const handlePayment = () => {
   if (!props.validateAddress) {
@@ -560,11 +563,11 @@ const handlePayment = () => {
       (product) => ({
         idSanPhamChiTiet: product.id || null,
         soLuong: product.soLuong || null,
-        gia: product.tongTien || null,
+        gia: product.gia || null,
       })
     );
 
-    const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
+    // const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
 
     const payload = {
       diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
@@ -592,7 +595,9 @@ const handlePayment = () => {
         async onOk() {
           try {
             await createInvoice(payload);
+            clearCart();
             successNotiSort("Hoàn thành đơn hàng!");
+            router.push({ name: "client-complete-payment" });
           } catch (error: any) {
             console.error("🚀 ~ handleCreate ~ error:", error);
             if (error?.response) {
@@ -613,8 +618,8 @@ const handlePayment = () => {
 
         async onOk() {
           try {
-            const response = await createInvoiceMutation.mutateAsync(payload);
-            console.log(response);
+            // const response = await createInvoiceMutation.mutateAsync(payload);
+            // console.log(response);
           } catch (error: any) {
             console.error("🚀 ~ handleCreate ~ error:", error);
             if (error?.response) {

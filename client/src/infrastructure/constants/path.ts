@@ -238,6 +238,10 @@ export const ROUTES_CONSTANTS = {
                 path: "my-order-detail",
                 name: "client-my-order-detail",
             },
+            COMPLETE_PAYMENT: {
+                path: "complete-payment",
+                name: "client-complete-payment"
+            }
         },
     },
     NOT_FOUND: {

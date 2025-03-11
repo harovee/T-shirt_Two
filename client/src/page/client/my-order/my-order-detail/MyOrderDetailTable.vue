@@ -1,200 +1,202 @@
 <template>
-  
-    <a-row :gutter="[8, 24]">
-      <a-col :span="16">
-        <div class="p-4 bg-white rounded-lg border border-gray-300">
+  <a-row :gutter="[8, 24]">
+    <a-col :span="16">
+      <div class="p-4 bg-white rounded-lg border border-gray-300">
         <div class="flex justify-end mb-4">
           <my-order-step-history
             :data-source="dataHistory || {}"
             :loading="isHistoryLoading || isHistoryFetching"
           />
         </div>
-        </div>
-        <div class="p-4 bg-white rounded-lg border border-gray-300 mt-5">
-          <!-- Nút thêm sản phẩm -->
-          <div class="flex justify-end mb-4">
-            <a-button
-              class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
-              @click="handleOpenModalAddProductToOrder"
-              :disabled="
-                [
-                  'Chờ giao hàng',
-                  'Đang vận chuyển',
-                  'Đã giao hàng',
-                  'Đã thanh toán',
-                  'Thành công',
-                  'Đã hủy'
-                ].includes(billData?.trangThai)
-              "
-            >
-              Thêm sản phẩm
-            </a-button>
-
-            <!-- Modal thêm sản phẩm -->
-            <my-order-add-product-modal
-              :open="isOpenModalAddProductToOrder"
-              @handleClose="handleCloseModalAddProductToOrder"
-              @onCancel="isOpenModalAddProductToOrder = false"
-              :loadingValue="loadingValue"
-            />
-          </div>
-
-          <!-- Bảng sản phẩm -->
-          <table-example
-            class="min-h-[5rem]"
-            v-if="props"
-            :wrapperClassName="props.wrapperClassName"
-            :columns="props.columns"
-            :data-source="dataSources"
-            :loading="props.loading"
-            :pagination-params="props.paginationParams"
-            :total-pages="props.totalPages || 1"
-            @update:pagination-params="$emit('update:paginationParams', $event)"
-          >
-            <template #bodyCell="{ column, record }">
-              <div v-if="column.key === 'status'" class="text-center">
-                <a-tag v-if="record.status === 'false'" color="success">
-                  Hoạt động
-                </a-tag>
-                <a-tag v-else-if="record.status === 'true'" color="warning">
-                  Vô hiệu hóa
-                </a-tag>
-                <a-tag v-else color="secondary">Không xác định</a-tag>
-              </div>
-              <div
-                v-else-if="column.key === 'action'"
-                class="flex items-center justify-center space-x-2"
-              >
-                <a-tooltip title="Hoàn trả" trigger="hover">
-                  <a-button class="bg-purple-100" size="middle" shape="round">
-                    <v-icon name="fa-undo-alt" />
-                  </a-button>
-                </a-tooltip>
-              </div>
-
-              <div v-else-if="column.key === 'thanhTien'" style="color: red">
-                <!-- <a-input v-model:value="record.thanhTien"></a-input> -->
-                {{ formatCurrencyVND(record.thanhTien) }}
-              </div>
-
-              <div v-else-if="column.key === 'chiTietSanPham'">
-                <p>
-                  {{ record.tenSanPham }} - {{ record.tenMau }} -
-                  <a-tag> {{ record.tenKichCo }}</a-tag>
-                </p>
-                <p style="color: red">
-                  {{
-                    record.gia
-                      ? formatCurrencyVND(record.gia)
-                      : "Không có dữ liệu"
-                  }}
-                </p>
-              </div>
-
-              <div v-else-if="column.key === 'anhSanPhamChiTiet'">
-                <Image
-                  :width="60"
-                  :src="record?.anhSanPhamChiTiet"
-                  alt="Ảnh SP"
-                  class="product-image"
-                />
-              </div>
-
-              <div
-                v-if="column.key === 'soLuong'"
-                class="flex items-center justify-center space-x-2"
-              >
-                <input
-                  type="number"
-                  min="0"
-                  v-model="record.soLuong"
-                  @change="handleChangeQuantity(record)"
-                  class="w-16 text-center border rounded"
-                  :disabled="
-                    [
-                      'Chờ giao hàng',
-                      'Đang vận chuyển',
-                      'Đã giao hàng',
-                      'Đã thanh toán',
-                      'Thành công',
-                      'Đã hủy'
-                    ].includes(billData?.trangThai)
-                  "
-                />
-              </div>
-            </template>
-          </table-example>
-        </div>
+      </div>
+      <div class="p-4 bg-white rounded-lg border border-gray-300 mt-5">
+        <!-- Nút thêm sản phẩm -->
         
-      </a-col>
-      <a-col :span="8">
-        <div class="p-4 bg-white rounded-lg border border-gray-300 p-5 ms-3">
-          <h3 class="text-lg font-bold">
-            Thông tin đơn hàng - Đơn hàng {{ copiedBillData?.loaiHD }}
-          </h3>
-          <div>
-            <div class="flex items-center">
-              <p class="font-medium">Mã đơn hàng:</p>
-              <p class="ml-2">{{ copiedBillData?.ma }}</p>
-            </div>
-            <div class="flex items-center">
-              <p class="font-medium">Hình thức đặt hàng:</p>
-              <p class="ml-2">{{ copiedBillData?.loaiHD }}</p>
-            </div>
-            <div class="flex items-center">
-              <p class="font-medium">Trạng thái:</p>
-              <a-tag class="ml-2" color="orange">{{
-                copiedBillData?.trangThai
-              }}</a-tag>
-            </div>
-            <div class="flex items-center">
-              <p class="font-medium">Khách hàng:</p>
-              <p class="ml-2">
-                {{ copiedBillData?.tenKhachHang || "Khách lẻ" }}
-              </p>
-            </div>
-            <div class="flex items-center">
-              <p class="font-medium">Tên người nhận:</p>
-              <p class="ml-2">{{ copiedBillData?.tenNguoiNhan || "" }}</p>
-            </div>
-            <div class="flex items-center">
-              <p class="font-medium">SĐT người nhận:</p>
-              <p class="ml-2">{{ copiedBillData?.soDienThoai }}</p>
-            </div>
-
-            <div class="flex items-center">
-              <p class="font-medium">Địa chỉ người nhận:</p>
-              <p class="ml-2" color="blue">
-                {{ copiedBillData?.diaChiNguoiNhan || "" }}
-              </p>
-            </div>
-
-            <div class="flex items-center">
-              <p class="font-medium">Ghi chú:</p>
-              <p class="ml-2">{{ copiedBillData?.ghiChu || "" }}</p>
-            </div>
+        <div class="flex justify-between mb-4">
+          <div class="flex items-center">
+            <h3 class="text-xl mt-2">Sản phẩm đã mua</h3> <span class="ms-3">({{dataSources.length}} sản phẩm)</span>
           </div>
-          <div class="flex justify-end mt-4">
-            <a-button
-              class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
-              @click="handleOpenModalUpdateBill"
-              :disabled="
-                [
-                  'Chờ giao hàng',
-                  'Đang vận chuyển',
-                  'Đã giao hàng',
-                  'Đã thanh toán',
-                  'Thành công',
-                  'Đã hủy'
-                ].includes(billData?.trangThai)
-              "
+          <a-button
+            class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
+            @click="handleOpenModalAddProductToOrder"
+            :disabled="
+              [
+                'Chờ giao hàng',
+                'Đang vận chuyển',
+                'Đã giao hàng',
+                'Đã thanh toán',
+                'Thành công',
+                'Đã hủy',
+              ].includes(billData?.trangThai)
+            "
+          >
+            Thêm sản phẩm
+          </a-button>
+
+          <!-- Modal thêm sản phẩm -->
+          <my-order-add-product-modal
+            :open="isOpenModalAddProductToOrder"
+            @handleClose="handleCloseModalAddProductToOrder"
+            @onCancel="isOpenModalAddProductToOrder = false"
+            :loadingValue="loadingValue"
+          />
+        </div>
+
+        <!-- Bảng sản phẩm -->
+        <table-example
+          class="min-h-[5rem]"
+          v-if="props"
+          :wrapperClassName="props.wrapperClassName"
+          :columns="props.columns"
+          :data-source="dataSources"
+          :loading="props.loading"
+          :pagination-params="props.paginationParams"
+          :total-pages="props.totalPages || 1"
+          @update:pagination-params="$emit('update:paginationParams', $event)"
+        >
+          <template #bodyCell="{ column, record }">
+            <div v-if="column.key === 'status'" class="text-center">
+              <a-tag v-if="record.status === 'false'" color="success">
+                Hoạt động
+              </a-tag>
+              <a-tag v-else-if="record.status === 'true'" color="warning">
+                Vô hiệu hóa
+              </a-tag>
+              <a-tag v-else color="secondary">Không xác định</a-tag>
+            </div>
+            <div
+              v-else-if="column.key === 'action'"
+              class="flex items-center justify-center space-x-2"
             >
-              Cập nhật
-            </a-button>
+              <a-tooltip title="Hoàn trả" trigger="hover">
+                <a-button class="bg-purple-100" size="middle" shape="round">
+                  <v-icon name="fa-undo-alt" />
+                </a-button>
+              </a-tooltip>
+            </div>
+
+            <div v-else-if="column.key === 'thanhTien'" style="color: red">
+              <!-- <a-input v-model:value="record.thanhTien"></a-input> -->
+              {{ formatCurrencyVND(record.thanhTien) }}
+            </div>
+
+            <div v-else-if="column.key === 'chiTietSanPham'">
+              <p>
+                {{ record.tenSanPham }} - {{ record.tenMau }} -
+                <a-tag> {{ record.tenKichCo }}</a-tag>
+              </p>
+              <p style="color: red">
+                {{
+                  record.gia
+                    ? formatCurrencyVND(record.gia)
+                    : "Không có dữ liệu"
+                }}
+              </p>
+            </div>
+
+            <div v-else-if="column.key === 'anhSanPhamChiTiet'">
+              <Image
+                :width="60"
+                :src="record?.anhSanPhamChiTiet"
+                alt="Ảnh SP"
+                class="product-image"
+              />
+            </div>
+
+            <div
+              v-if="column.key === 'soLuong'"
+              class="flex items-center justify-center space-x-2"
+            >
+              <input
+                type="number"
+                min="0"
+                v-model="record.soLuong"
+                @change="handleChangeQuantity(record)"
+                class="w-16 text-center border rounded"
+                :disabled="
+                  [
+                    'Chờ giao hàng',
+                    'Đang vận chuyển',
+                    'Đã giao hàng',
+                    'Đã thanh toán',
+                    'Thành công',
+                    'Đã hủy',
+                  ].includes(billData?.trangThai)
+                "
+              />
+            </div>
+          </template>
+        </table-example>
+      </div>
+    </a-col>
+    <a-col :span="8">
+      <div class="p-4 bg-white rounded-lg border border-gray-300 p-5 ms-3">
+        <h3 class="text-lg font-bold">
+          Thông tin đơn hàng - Đơn hàng {{ copiedBillData?.loaiHD }}
+        </h3>
+        <div>
+          <div class="flex items-center">
+            <p class="font-medium">Mã đơn hàng:</p>
+            <p class="ml-2">{{ copiedBillData?.ma }}</p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Hình thức đặt hàng:</p>
+            <p class="ml-2">{{ copiedBillData?.loaiHD }}</p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Trạng thái:</p>
+            <a-tag class="ml-2" color="orange">{{
+              copiedBillData?.trangThai
+            }}</a-tag>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Khách hàng:</p>
+            <p class="ml-2">
+              {{ copiedBillData?.tenKhachHang || "Khách lẻ" }}
+            </p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Tên người nhận:</p>
+            <p class="ml-2">{{ copiedBillData?.tenNguoiNhan || "" }}</p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">SĐT người nhận:</p>
+            <p class="ml-2">{{ copiedBillData?.soDienThoai }}</p>
+          </div>
+
+          <div class="flex items-center">
+            <p class="font-medium">Địa chỉ người nhận:</p>
+            <p class="ml-2" color="blue">
+              {{ copiedBillData?.diaChiNguoiNhan || "" }}
+            </p>
+          </div>
+
+          <div class="flex items-center">
+            <p class="font-medium">Ghi chú:</p>
+            <p class="ml-2">{{ copiedBillData?.ghiChu || "" }}</p>
           </div>
         </div>
-      </a-col>
-    </a-row>
+        <div class="flex justify-end mt-4">
+          <a-button
+            class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
+            @click="handleOpenModalUpdateBill"
+            :disabled="
+              [
+                'Chờ giao hàng',
+                'Đang vận chuyển',
+                'Đã giao hàng',
+                'Đã thanh toán',
+                'Thành công',
+                'Đã hủy',
+              ].includes(billData?.trangThai)
+            "
+          >
+            Cập nhật
+          </a-button>
+        </div>
+      </div>
+    </a-col>
+  </a-row>
   <my-order-update-modal
     :open="isOpenModalUpdateBill"
     :billData="copiedBillData"
@@ -278,7 +280,7 @@ const {
   placeholderData: keepPreviousData,
 });
 
-const dataHistory = computed(() => historyData?.value)
+const dataHistory = computed(() => historyData?.value);
 
 watch(
   () => props?.billData,

@@ -20,7 +20,8 @@
           :key="product.id"
           class="p-3"
         >
-          <a-card hoverable class="w-full">
+          <div @click="handleRedirectProductDetail(product)">
+            <a-card hoverable class="w-full">
             <template #cover>
               <div class="product-image-container">
                 <img
@@ -78,11 +79,12 @@
                 </div>
               </template>
             </a-card-meta>
-            <div class="flex justify-evenly">
+            <!-- <div class="flex justify-evenly">
               <a-button type="primary">Thêm vào giỏ</a-button>
               <a-button type="primary" @click="handleRedirectProductDetail(product)">Xem chi tiết</a-button>
-            </div>
+            </div> -->
           </a-card>
+          </div>
         </a-col>
       </a-row>
       <div class="pagination-container flex justify-center mt-8 mb-4">

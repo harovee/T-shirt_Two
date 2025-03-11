@@ -66,6 +66,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTienGiam(request.getTienGiam());
         hoaDon.setTienShip(request.getTienShip());
         hoaDon.setTongTien(request.getTongTien());
+        hoaDon.setPhuongThucNhan("Giao hàng");
 
         adminBillRepository.save(hoaDon);
         if (request.getIdPhieuGiamGia() != null) {
