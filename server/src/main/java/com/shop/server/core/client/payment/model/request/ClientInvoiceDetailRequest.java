@@ -13,6 +13,4 @@ public class ClientInvoiceDetailRequest {
     Long soLuong;
 
     BigDecimal gia;
-
-    String userEmail;
 }

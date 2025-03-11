@@ -21,4 +21,6 @@ public class AdminPaymentMethodDetailRequest {
     private BigDecimal tienChuyenKhoan;
 
     private String maGiaoDich;
+
+    private String moTa;
 }

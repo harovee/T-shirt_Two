@@ -8,10 +8,7 @@ import com.shop.server.infrastructure.constants.module.MappingConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin("*")
@@ -21,9 +18,9 @@ public class VNPayController {
 
     private final VNPayService paymentService;
 
-    @GetMapping("/vn-pay")
-    public ResponseObject<VNPayResponse> pay(HttpServletRequest request) {
-        return new ResponseObject<>(paymentService.createVnPayPayment(request),HttpStatus.OK, "Success");
+    @GetMapping("/vn-pay/{idHoaDon}")
+    public ResponseObject<VNPayResponse> pay(HttpServletRequest request, @PathVariable("idHoaDon") String idHoaDon) {
+        return new ResponseObject<>(paymentService.createVnPayPayment(request, idHoaDon),HttpStatus.OK, "Success");
     }
 
     @GetMapping("/vn-pay-callback")

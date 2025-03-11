@@ -46,6 +46,15 @@ export type BillDetailResponse = ResponseList & {
     tenPhieuGiam: string | null;
 }
 
+export type BillDetailByMaHDResponse = ResponseList & {
+    id: string | null;
+    tenSanPham: string | null;
+    anhSanPhamChiTiet: string | null;
+    soLuong: number | 0;
+    gia: number | null;
+    thanhTien: number;
+}
+
 export const getBillDetailsByIdHoaDon = async (params: Ref<FindBillDetailRequest>) => {
     const res = (await request ({
         url: `${API_ADMIN_BILL_DETAIL}`,
@@ -55,6 +64,16 @@ export const getBillDetailsByIdHoaDon = async (params: Ref<FindBillDetailRequest
         DefaultResponse<PaginationResponse<Array<BillDetailResponse>>>
     >;
 
+    return res.data;
+}
+
+export const getBillDetailsByMaHoaDon = async (billCode: string) => {
+    const res = (await request ({
+        url: `${API_ADMIN_BILL_DETAIL}/refund/${billCode}`,
+        method: 'GET',
+    })) as AxiosResponse<
+        DefaultResponse<Array<BillDetailByMaHDResponse>>
+    >;
     return res.data;
 }
 

@@ -108,6 +108,24 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.path,
+                name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name,
+                component: () => import('@/page/admin/bill/refund/AdminBillRefund.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND_DETAIL.path,
+                name: "admin-bill-refund-detail",
+                component: () => import('@/page/admin/bill/refund/RefundDetail.vue'),
+                meta: {
+                    requiresRole: ROLES.ADMIN,
+                    requiresAuth: true
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name,
                 component: () => import('@/page/admin/product/product-detail/ProductDetail.vue'),
@@ -412,6 +430,22 @@ const routes: Array<RouteRecordRaw> = [
                 path: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.name,
                 component: () => import('@/page/client/payment/Checkout.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER.name,
+                component: () => import('@/page/client/my-order/MyOrder.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER_DETAIL.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.MY_ORDER_DETAIL.name,
+                component: () => import('@/page/client/my-order/MyOrderDetail.vue'),
                 meta: {
                     requiresAuth: false
                 },

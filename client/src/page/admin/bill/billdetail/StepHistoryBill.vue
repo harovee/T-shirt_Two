@@ -95,9 +95,13 @@ import {
   IssuesCloseOutlined,
 } from "@ant-design/icons-vue";
 import { convertDateFormat } from "@/utils/common.helper";
-import { useChangeBillStatus } from "@/infrastructure/services/service/admin/bill.action";
+import { useChangeBillStatus, useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
 import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
 import { Input, Modal } from "ant-design-vue";
+import { keepPreviousData } from "@tanstack/vue-query";
+import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
+import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
+import { sum } from "lodash";
 
 interface DataSource {
   data: {
@@ -218,6 +222,40 @@ const getIdHoaDonFromUrl = () => {
 };
 
 const idBill = getIdHoaDonFromUrl();
+const billId = ref<string | null>(null);
+
+const params = ref<FindPayHistoryRequest>({
+  idHoaDon: "",
+});
+
+onMounted(() => {
+  params.value.idHoaDon = getIdHoaDonFromUrl();
+  billId.value = getIdHoaDonFromUrl();
+});
+
+//dữ liệu lshd
+const { data: PaymentData } = useGetPayHistory(params, {
+  refetchOnWindowClose: false,
+  placeholderData: keepPreviousData,
+});
+
+// console.log(PaymentData);
+
+const {
+  data: billData
+} = useGetBillById(billId, {
+  refetchOnWindowFocus: false,
+  enabled: () => !!billId.value,
+});
+
+watch(
+  () => billData.value?.data?.data,
+  (newData) => {
+    // console.log(newData);
+  },
+  { immediate: true }
+);
+
 
 const confirmBill = () => {
   // Lấy trạng thái tiếp theo từ mảng steps
@@ -286,6 +324,67 @@ const confirmDelivery = () => {
 };
 
 const confirmArrived = () => {
+  // const nextStep = steps[current.value + 1];
+  // const stepTitle = nextStep.title;
+
+  // const params = {
+  //   status: stepTitle,
+  //   trangThai: "Đã giao hàng",
+  // };
+
+  // Modal.confirm({
+  //   title: "Xác nhận thay đổi trạng thái",
+  //   content: `Bạn muốn xác nhận giao hàng cho đơn này"?`,
+  //   onOk: async () => {
+  //     try {
+  //       changeStatus({ idBill, params });
+  //       successNotiSort("Cập nhật trạng thái thành công!");
+
+  //       current.value++;
+  //     } catch (error) {
+  //       console.error("Cập nhật trạng thái thất bại:", error);
+  //       errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+  //     }
+  //   },
+  //   onCancel: () => {
+  //     console.log("Thao tác đã bị hủy.");
+  //   },
+  // });
+  const tienKhachDua = PaymentData.value?.data?.reduce((sum, payment) => sum + payment.tienKhachDua, 0) || 0;
+  // console.log(tienKhachDua);
+  
+  const tongTienHD = billData?.value?.data?.data.tongTien;
+  // console.log(tongTienHD);
+  if (tongTienHD && tienKhachDua >= tongTienHD) {
+    // Nếu khách đã thanh toán đủ -> Chuyển trực tiếp sang trạng thái "Đã thanh toán"
+    const nextStep = steps[4]; // "Đã thanh toán"
+    const stepTitle = nextStep.title;
+
+    const params = {
+      status: stepTitle,
+      trangThai: "Đã thanh toán",
+    };
+
+
+    Modal.confirm({
+      title: "Xác nhận đơn hàng đã thanh toán",
+      content: `Khách đã thanh toán đủ ${tienKhachDua.toLocaleString()} VND. Chuyển trạng thái sang "${stepTitle}"?`,
+      onOk: async () => {
+        try {
+          changeStatus({ idBill, params });
+          successNotiSort("Đơn hàng đã chuyển sang trạng thái 'Đã thanh toán'!");
+          current.value = 4; // Cập nhật trạng thái về 'Đã thanh toán'
+        } catch (error) {
+          console.error("Cập nhật trạng thái thất bại:", error);
+          errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+        }
+      },
+    });
+
+    return;
+  }
+
+  // Nếu chưa đủ tiền, chỉ chuyển sang trạng thái tiếp theo bình thường
   const nextStep = steps[current.value + 1];
   const stepTitle = nextStep.title;
 
@@ -295,21 +394,17 @@ const confirmArrived = () => {
   };
 
   Modal.confirm({
-    title: "Xác nhận thay đổi trạng thái",
-    content: `Bạn muốn xác nhận giao hàng cho đơn này"?`,
+    title: "Xác nhận giao hàng",
+    content: `Bạn có muốn xác nhận giao hàng cho đơn này không?`,
     onOk: async () => {
       try {
         changeStatus({ idBill, params });
         successNotiSort("Cập nhật trạng thái thành công!");
-
         current.value++;
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
       }
-    },
-    onCancel: () => {
-      console.log("Thao tác đã bị hủy.");
     },
   });
 };

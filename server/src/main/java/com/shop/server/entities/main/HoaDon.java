@@ -35,6 +35,9 @@ public class HoaDon extends PrimaryEntity implements Serializable {
     @Column(name = "loai_hoa_don")
     private String loaiHD;
 
+    @Column(name = "phuong_thuc_nhan")
+    private String phuongThucNhan;
+
     @Column(name = "ten_nguoi_nhan")
     private String tenNguoiNhan;
 

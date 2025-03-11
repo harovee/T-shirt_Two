@@ -115,7 +115,7 @@ export const ROUTES_CONSTANTS = {
                 name: "admin-staff-detail",
             },
             BILL: {
-                path: "/bill",
+                path: "bill",
                 name: "admin-bill",
                 children: {
                     BILL_MANAGEMENT: {
@@ -126,7 +126,14 @@ export const ROUTES_CONSTANTS = {
                         path: "bill-detail",
                         name: "admin-bill-detail",
                     },
-
+                    BILL_REFUND: {
+                        path: "refund",
+                        name: "admin-bill-refund",
+                    },
+                    BILL_REFUND_DETAIL: {
+                        path: "refund/:maHoaDon",
+                        name: "admin-bill-refund-detail",
+                    },
                 }
             },
             PAYMENT: {
@@ -222,7 +229,15 @@ export const ROUTES_CONSTANTS = {
             CHECKOUT: {
                 path: "check-out",
                 name: "client-check-out"
-            }
+            },
+            MY_ORDER: {
+                path:"my-order",
+                name: "client-my-order"
+            },
+            MY_ORDER_DETAIL: {
+                path: "my-order-detail",
+                name: "client-my-order-detail",
+            },
         },
     },
     NOT_FOUND: {

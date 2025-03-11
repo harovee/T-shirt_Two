@@ -13,6 +13,8 @@ public interface AdminPayHistoryResponse extends BaseResponse {
 
     BigDecimal getTongTienHD();
 
+    BigDecimal getTienKhachDua();
+
     String getNguoiTao();
 
     Long getNgayTao();

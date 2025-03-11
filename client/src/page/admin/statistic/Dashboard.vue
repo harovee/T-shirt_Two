@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, h, onMounted, onUnmounted } from "vue";
+import { ref, h, onMounted, onUnmounted, computed } from "vue";
 import { Card, Row, Col, Table, Tooltip } from "ant-design-vue";
 import { ShoppingCartOutlined, DollarOutlined, UserAddOutlined } from "@ant-design/icons-vue";
 import VChart from "vue-echarts";
@@ -9,6 +9,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { TitleComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import axios from "axios";
 import { PREFIX_API_ADMIN_STATISTIC } from "@/infrastructure/constants/url";
+import OutStockProductTable from "./OutStockProductTable.vue";
 
 // Đăng ký ECharts
 use([PieChart, CanvasRenderer, TitleComponent, TooltipComponent, LegendComponent]);
@@ -62,7 +63,7 @@ const fetchTodayStats = async () => {
   try {
     const response = await axios.get(`${PREFIX_API_ADMIN_STATISTIC}/today`);
     const data = response.data.data;
-    console.log(data);
+    // console.log(data);
     // Cập nhật todayStats
     const revenueData = data.revenues.data[0] || {};
     todayStats.value = {
@@ -178,15 +179,7 @@ onUnmounted(() => {
     <Row :gutter="16" class="chart-table-row">
       <Col :span="12">
         <Card title="Sản phẩm sắp hết hàng">
-          <Table :dataSource="sometings" :columns="[
-            {
-              title: 'Sản phẩm',
-              dataIndex: 'objectValue',
-              key: 'objectValue',
-              customRender: ({ text }) => h(Tooltip, { title: text }, () => h('span', { class: 'ellipsis' }, text)),
-            },
-            { title: 'SL tồn', dataIndex: 'numberProductSold', key: 'numberProductSold' },
-          ]" bordered />
+          <OutStockProductTable ></OutStockProductTable>
         </Card>
       </Col>
     </Row>
