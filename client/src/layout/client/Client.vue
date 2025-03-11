@@ -73,7 +73,11 @@
                   <a-menu-item key="logout" @click="handleLogout">
                     Đăng xuất
                   </a-menu-item>
+                  <a-menu-item @click="handleBought">
+                    Đơn hàng đã mua
+                  </a-menu-item>
                 </a-menu>
+                
               </template>
             </a-dropdown>
           </div>
@@ -117,6 +121,10 @@ const router = useRouter();
 const handleLogout = () => {
   auth.logout();
   router.push(ROUTES_CONSTANTS.AUTHENTICATION.path);
+};
+
+const handleBought = () => {
+  router.push(ROUTES_CONSTANTS.CLIENT.children.MY_ORDER.path);
 };
 
 const redirectCart = () => {

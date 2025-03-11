@@ -269,29 +269,29 @@ const handlePayment = () => {
       try {
         await validate();
 
-        // if (props.totalPrice === 0) {
-        //   warningNotiSort(
-        //     "Bạn đã thanh toán đủ số tiền cần thanh toán !"
-        //   );
-        //   return;
-        // }
-        // if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < props.totalPrice) {
-        //   warningNotiSort("Tiền khách đưa chưa đủ!");
-        //   return;
-        // }
-        // if (params.value.tienKhachDua > props.totalPrice) {
-        //   params.value.tienKhachDua = props.totalPrice
-        // }
-        // createPaymentMethodDetail(params.value, {
-        //   onSuccess: (result) => {
-        //     successNotiSort(result?.message);
-        //     handleClose();
-        //   },
-        //   onError: (error: any) => {
-        //     errorNotiSort(error?.response?.data?.message);
-        //   },
-        // });
-        console.log(params.value);
+        if (props.totalPrice === 0) {
+          warningNotiSort(
+            "Bạn đã thanh toán đủ số tiền cần thanh toán !"
+          );
+          return;
+        }
+        if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < props.totalPrice) {
+          warningNotiSort("Tiền khách đưa chưa đủ!");
+          return;
+        }
+        if (params.value.tienKhachDua > props.totalPrice) {
+          params.value.tienKhachDua = props.totalPrice
+        }
+        createPaymentMethodDetail(params.value, {
+          onSuccess: (result) => {
+            successNotiSort(result?.message);
+            handleClose();
+          },
+          onError: (error: any) => {
+            errorNotiSort(error?.response?.data?.message);
+          },
+        });
+        // console.log(params.value);
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {

@@ -55,6 +55,7 @@ const cartStore = useCartStore();
 
 const listProducts = ref([
   {
+    id: "3b511629-f0b8-4df2-951c-7b20b99ae6c6",
     tenHang: 'Sản phẩm 1',
     anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740921453/t%E1%BA%A3i_xu%E1%BB%91ng_clpitw.jpg',
     gia: 250000,
@@ -62,6 +63,7 @@ const listProducts = ref([
     tongTien: 500000,
   },
   {
+    id: "e550b1ca-a519-433c-9ee3-c8a2caf0a058",
     tenHang: 'Sản phẩm 2',
     anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740922472/images_1_jarwau.jpg',
     gia: 200000,
@@ -69,6 +71,7 @@ const listProducts = ref([
     tongTien: 600000,
   },
   {
+    id: "85c04ead-c674-4870-9110-57b015cf99e1",
     tenHang: 'Sản phẩm 3',
     anh: 'http://res.cloudinary.com/tshirtstwo/image/upload/v1740921453/t%E1%BA%A3i_xu%E1%BB%91ng_3_vwlnzd.jpg',
     gia: 100000,

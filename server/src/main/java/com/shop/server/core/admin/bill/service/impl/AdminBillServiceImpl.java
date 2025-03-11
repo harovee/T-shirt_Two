@@ -296,11 +296,11 @@ public class AdminBillServiceImpl implements AdminBillService {
         hoaDon.setTienShip(request.getTienShip() != null ? request.getTienShip() : BigDecimal.valueOf(0));
         hoaDon.setTongTien(request.getTongTien() != null ? request.getTongTien() : BigDecimal.valueOf(0));
         hoaDon.setTrangThai(request.getTrangThai());
+
+        HoaDon hd1 = adminBillRepository.save(hoaDon);
         if (request.getIdPhieuGiamGia() != null) {
             adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
         }
-        HoaDon hd1 = adminBillRepository.save(hoaDon);
-
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);
         ls.setHanhDong("Cập nhật hóa đơn");

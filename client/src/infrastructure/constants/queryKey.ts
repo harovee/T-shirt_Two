@@ -129,6 +129,12 @@ export const queryKey = {
             kieuDangList: "kieuDangListKey",
             chatLieuList: "chatLieuListKey"
         },
+        payment: {
+            invoiceOnline: "clientInvoiceOnlineKey"
+        },
+        myOrder: {
+            clientBill: "clientBillList"
+        }
     },
     user: {
         another: {},
