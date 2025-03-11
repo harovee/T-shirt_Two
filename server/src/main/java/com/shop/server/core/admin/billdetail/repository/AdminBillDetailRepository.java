@@ -23,6 +23,7 @@ import java.util.Optional;
 
 @Repository
 public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
+
     @Query(value = """
         SELECT
             DISTINCT 

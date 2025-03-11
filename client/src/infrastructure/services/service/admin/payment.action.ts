@@ -21,8 +21,6 @@ import {
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
 import {Ref} from "vue";
-import { log } from "console";
-
 
 export const useGetListVoucher = (
     params: Ref<FindVoucherRequest>, options?: any
@@ -51,7 +49,16 @@ export const useCreatePaymentMethodDetail = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [queryKey.admin.payment.paymentMethodDetail],
-            })
+            });
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.payment.payHistory],
+            });
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.bill.billHistory],
+            });
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.admin.bill.billById],
+            });
         },
         onError: (error: any) => {
             console.log(queryKey.admin.payment.paymentMethodDetail, "🚀 ~ paymentMethodDetailCreate ~ error:", error);

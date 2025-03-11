@@ -55,11 +55,19 @@ const sendMessage = async () => {
       {
         text: "Dự án được thiết kế và phát triển bởi team DATN K19 FPL, do Bùi Minh Hiếu làm Leader",
       },
+      //tổng quan
       {
         text: "Đây là 1 hệ thống quản lý bán hàng, có thiết kế gọn gàng với các biểu đồ và bảng thống kê.\nCác ô thông tin chính:\n\nTổng đơn thành công (hiển thị số lượng đơn hàng thành công, hiện tại).\nTổng doanh thu (hiển thị tổng số tiền thu được).\nKhách hàng mới (số lượng khách hàng mới).\n\n\nBiểu đồ trạng thái đơn hàng hôm nay: Dạng vòng tròn với 4 trạng thái: Thành công (xanh lá), Chờ xử lý (vàng), Đang giao (xanh dương), Hủy bỏ (đỏ)\nBảng top 5 sản phẩm bán chạy\nMục sản phẩm sắp hết hàng: Có thể hiển thị danh sách các sản phẩm gần hết trong kho.",
       },
       {
+        text: "Thanh bên trái (Sidebar):\nChứa các mục điều hướng chính, bao gồm:\nTổng quan\nThống kê\nBán tại quầy\nHóa đơn (có menu con: Quản lý hóa đơn, Trả hàng)\nSản phẩm (đang được chọn, có menu con như Danh mục, Thương hiệu, Chất liệu, Cổ áo, Tay áo, Kích cỡ, Màu sắc, Tính năng, Kiểu dáng, Họa tiết)\nĐợt giảm giá, Phiếu giảm giá\nNhân viên, Khách hàng\nKhi một danh mục con được chọn, nó sẽ hiển thị dưới dạng mở rộng trong menu"
+      },
+      //hóa đơn
+      {
         text: 'Để kiểm tra đơn hàng trong hệ thống này, bạn cần vào mục "Hóa đơn" -> "Quản lý hóa đơn" ở thanh menu bên trái.\nSau khi vào trang Quản lý hóa đơn, bạn có thể:\nLọc đơn hàng theo mã, thông tin khách hàng dựa vào ô tìm kiếm\nLọc đơn hàng loại hóa đơn dựa vào nút radio Loại hóa đơn\nLọc đơn hàng theo ngày dựa vào bộ lọc khoảng ngày\nXem danh sách hóa đơn, bao gồm thông tin như mã hóa đơn, nhân viên phụ trách, khách hàng, tổng tiền, ngày tạo và trạng thái đơn.\nNhấn vào biểu tượng con mắt ở cột cuối cùng để xem chi tiết hóa đơn.',
+      },
+      {
+        text: 'Màn chi tiết hóa đơn sau khi nhấn vào biểu tượng "Mắt": Hiển thị tiến trình của đơn hàng với các trạng thái:\nChờ xác nhận\nChờ giao hàng\nĐang vận chuyển\nĐã giao hàng\nĐã thanh toán\nThành công\nCác nút thao tác chính:\nChuyển trạng thái đơn hàng\nQuay lại trạng thái trước: Quay về trạng thái trước đó trong quy trình xử lý đơn hàng.\nHủy đơn: Hủy bỏ đơn hàng.Thông tin đơn hàng:Mã đơn hàng,Số điện thoại người nhận, Địa chỉ người nhận, Tên khách hàng, Trạng thái, Tên người nhận, Có nút Chi tiết ở góc phải. Lịch sử thanh toán: Bảng chứa các thông tin: Số tiền khách đưa, Thời gian giao dịch, Mã giao dịch, Phương thức thanh toán, Nhân viên xác nhận: Hiển thị mã nhân viên. Danh sách sản phẩm trong đơn hàng: Bảng hiển thị danh sách sản phẩm đã mua, gồm các cột: Ảnh sản phẩm,Tên sản phẩm, Giá sản phẩm, Số lượng, Thành tiền, Hành động: Nút hoàn hàng nếu trong quá trình chuẩn bị đơn hàng, cửa hàng hoặc shipper muốn hoàn lại, Có nút Thêm sản phẩm'
       },
       { text: `input: ${inputText}`},
     ];
@@ -93,7 +101,7 @@ const sendMessage = async () => {
     const response = await result.response.text();
 
     // Thêm câu trả lời vào danh sách chat
-    messages.value.push({ text: response, sender: "bot" });
+    messages.value.push({ text: response.replace(/\n/g, "<br>"), sender: "bot" });
   } catch (error) {
     console.error("Lỗi chatbot:", error);
     messages.value.push({
@@ -119,9 +127,8 @@ const sendMessage = async () => {
       <button @click="toggleChat">✖</button>
     </div>
     <div class="chat-box">
-      <div v-for="(msg, index) in messages" :key="index" :class="msg.sender">
-        {{ msg.text }}
-      </div>
+        <div v-for="(msg, index) in messages" :key="index" :class="msg.sender" v-html="msg.text"></div>
+
       <div v-if="isLoading" class="loading">Đang trả lời...</div>
     </div>
     <div class="chat-input">

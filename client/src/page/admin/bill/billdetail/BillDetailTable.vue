@@ -69,7 +69,7 @@
     <div class="flex justify-between items-center mb-2">
       <h3 class="text-lg font-bold">Lịch sử thanh toán</h3>
       <a-button
-        v-if="billData?.trangThai === 'Đã giao hàng' && (!PaymentData || PaymentData.length === 0)"
+        v-if="billData?.trangThai === 'Đã giao hàng' && (!PaymentData || PaymentData.data.length === 0)"
         class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
         @click="handleOpenModalGetPay"
       >
