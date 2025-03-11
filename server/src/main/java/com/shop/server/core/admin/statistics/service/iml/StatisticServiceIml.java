@@ -33,19 +33,19 @@ public class StatisticServiceIml implements StatisticService {
         Map<String, Object> statisticData = new HashMap<>();
         switch (type) {
             case "category":
-                statisticData.put("revenues", getRevenuesByCategory(request));
+                statisticData.put("revenuesType", getRevenuesByCategory(request));
                 break;
             case "employee":
-                statisticData.put("revenues", getRevenuesByEmployee(request));
+                statisticData.put("revenuesType", getRevenuesByEmployee(request));
                 break;
-            case "order-type":
-                statisticData.put("revenues", getRevenuesByOrderType(request));
+            case "order_type":
+                statisticData.put("revenuesType", getRevenuesByOrderType(request));
                 break;
             default:
-                System.out.println(request);
-                statisticData.put("revenues", getRevenues(request));
+                statisticData.put("revenuesType", null);
 
         }
+        statisticData.put("revenues", getRevenues(request));
         statisticData.put("numberOrderByStatus", getOrderQuantityByStatus(request));
         statisticData.put("numberNewCustomers", getNumberNewCustomers(request));
         statisticData.put("top10ProductBestSaleByRangeTime", getTop10BestSaleByRangeTime(request));
@@ -62,10 +62,11 @@ public class StatisticServiceIml implements StatisticService {
     }
 
     @Override
-    public ResponseObject<?> getRevenuesPage(RevenuesRequest request, int currentPage) {
-        Pageable pageable = PageRequest.of((currentPage-1), 5);
-        return ResponseObject.successForward(
-                statisticRepository.getRevenueStatistics(pageable, request),
+    public ResponseObject<?> getRevenuesPage(RevenuesRequest request) {
+        Pageable pageable = PageRequest.of((request.getPage()-1), 5);
+        return new ResponseObject<>(
+                PageableObject.of(statisticRepository.getRevenueStatistics(pageable, request)),
+                HttpStatus.OK,
                 Message.Success.GET_SUCCESS
         );
     }

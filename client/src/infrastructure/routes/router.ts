@@ -395,6 +395,14 @@ const routes: Array<RouteRecordRaw> = [
                 },
             },
             {
+                path: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.CHECKOUT.name,
+                component: () => import('@/page/client/payment/Checkout.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
+            {
                 path: ROUTES_CONSTANTS.CLIENT.children.ABOUT.path,
                 name: ROUTES_CONSTANTS.CLIENT.children.ABOUT.name,
                 component: () => import('@/page/client/menu/About.vue'),

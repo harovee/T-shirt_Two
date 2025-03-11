@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { Radio, Table, Card , Row, Col, Statistic } from "ant-design-vue";
 import * as echarts from "echarts";
-import axios from "axios";
-import dayjs from "dayjs";
+import dayjs, { Dayjs, OpUnitType } from "dayjs";
 import VChart from "vue-echarts";
 import { use } from "echarts/core";
 import { PieChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import { TitleComponent, TooltipComponent, LegendComponent } from "echarts/components";
+import { NumberOrderByStatusResponse, RevenueRequest, RevenueResponse } from "@/infrastructure/services/api/admin/statistic.api";
+import { useGetStatisticData } from "@/infrastructure/services/service/admin/statistic.action";
+import { keepPreviousData } from "@tanstack/vue-query";
+import { upperCase } from "lodash";
 
 use([PieChart, CanvasRenderer, TitleComponent, TooltipComponent, LegendComponent]);
 
+type RangeValue = [Dayjs, Dayjs] | null;
 
 const timeUnitOptions = [
   { label: "Ngày", value: "day" },
@@ -22,24 +26,36 @@ const timeUnitOptions = [
 
 
 const statisticTypeOptions = [
-  { label: "Loại sản phẩm", value: "category" },
-  { label: "Thương hiệu", value: "brand" },
-  { label: "Loại hóa đơn", value: "orderType" },
+  // { label: "Loại sản phẩm", value: "category" },
+  // { label: "Thương hiệu", value: "brand" },
+  { label: "Loại hóa đơn", value: "order_type" },
   { label: "Nhân viên", value: "employee" },
 ];
 
 
-const dateRange = ref([null, null]); // Mặc định không có ngày
+const dateRange = ref<RangeValue>(null); // Mặc định không có ngày
+const placeholderDateRangePicker = ref(['Ngày bắt đầu', 'Ngày kết thúc']);
 const timeUnit = ref("day");
 const statisticType = ref("employee");
 const revenueData = ref([]);
 const top5Products = ref([]);
-const orderStatusData = ref([]);
-const employeeStatistics = ref([]);
-const categoryStatistics = ref([]);
-const orderTypeStatistics = ref([]);
+const statisticByTypeData = ref([]);
+const statisticByTypeTableColums = ref([
+              { title: 'Nhân viên', dataIndex: 'objectValue' },
+              { title: 'Số hóa đơn', dataIndex: 'numberOrder' },
+              { title: 'Doanh thu', dataIndex: 'totalRevenue' }
+            ])
 const summary = ref({ totalRevenue: 0, numberOrder: 0, numberProductSold: 0 });
 
+
+const revenueParams = ref<RevenueRequest>({
+  page: 1,
+  size: 5,
+  statisticType: "ALL",
+  timeUnit: "DAY",
+  startTime: null,
+  endTime: null
+});
 
 const disabledDate = (current) => {
   return current && current.isAfter(dayjs(), 'day');
@@ -53,78 +69,50 @@ const disabledMonth = (current) => {
 const disabledYear = (current) => {
   return current && current.isAfter(dayjs(), 'year');
 };
+const onRangeChange = (dates: RangeValue, dateStrings: string[]) => {
+  if (!dates) {
+    revenueParams.value['startTime'] = null;
+    revenueParams.value['endTime'] = null;
+    dateRange.value = null;
+    return;
+  }
 
-const fetchRevenueData = async () => {
-  // if (!dateRange.value.length) return;
-
-  // const [start, end] = dateRange.value;
-  // const { data } = await axios.post("/api/revenue", {
-  //   statisticType: "REVENUE",
-  //   timeUnit: timeUnit.value,
-  //   startTime: start.valueOf(),
-  //   endTime: end.valueOf()
-  // });
-
-  // revenueData.value = data;
-  // summary.value = {
-  //   totalRevenue: data.reduce((sum, d) => sum + d.totalRevenue, 0),
-  //   numberOrder: data.reduce((sum, d) => sum + d.numberOrder, 0),
-  //   numberProductSold: data.reduce((sum, d) => sum + d.numberProductSold, 0)
-  // };
-
-  // renderChart();
-  // fetchAdditionalStats();
+  dateRange.value = dates;
+  revenueParams.value["startTime"] = dates[0].valueOf();
+  revenueParams.value["endTime"] = dayjs(dates[1]).endOf(timeUnit.value as OpUnitType).valueOf();
 };
 
-// const fetchAdditionalStats = async () => {
-//   const [start, end] = dateRange.value;
-//   const { data: products } = await axios.post("/api/top-products", { startTime: start.valueOf(), endTime: end.valueOf() });
-//   top5Products.value = products;
+interface ChartData {
+  categories: string[];
+  values: number[];
+}
 
-//   const { data: orders } = await axios.post("/api/order-status", { startTime: start.valueOf(), endTime: end.valueOf() });
-//   orderStatusData.value = orders;
-
-//   const { data: employees } = await axios.post("/api/employee-statistics", { startTime: start.valueOf(), endTime: end.valueOf() });
-//   employeeStatistics.value = employees;
-// };
-
-// const renderChart = () => {
-//   const chartDom = document.getElementById("revenueChart");
-//   if (!chartDom) return;
-//   const chart = echarts.init(chartDom);
-//   // chart.setOption({
-//   //   title: { text: "Biểu đồ doanh thu" },
-//   //   tooltip: { trigger: "axis" },
-//   //   xAxis: { type: "category", data: revenueData.value.map(d => d.timeDisplay) },
-//   //   yAxis: { type: "value" },
-//   //   series: [{ name: "Doanh thu", type: "line", data: revenueData.value.map(d => d.totalRevenue) }]
-//   // });
-
-//   chart.setOption({
-//     title: { text: 'Doanh thu theo thời gian' },
-//     xAxis: { type: 'category', data: ['01/03', '02/03', '03/03', '04/03'] },
-//     yAxis: { type: 'value' },
-//     series: [{ data: [10000000, 12000000, 9000000, 15000000], type: 'line' }]
-//   });
-// };
-
-// onMounted(fetchRevenueData);
-// watch(revenueData, renderChart);
-
-
-
-// Tham chiếu đến DOM để vẽ biểu đồ
-const chartRef = ref(null);
-
-const chartData = ref({
-  categories: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5"],
-  values: [120, 200, 150, 80, 70], // Dữ liệu giả lập
+const chartRef = ref<HTMLDivElement | null>(null); // Định nghĩa kiểu dữ liệu cho chartRef
+const chartInstance = ref<echarts.ECharts | null>(null); // Định nghĩa kiểu dữ liệu cho ECharts instance
+const chartData = ref<ChartData>({
+  categories: ["Tháng 1", "Tháng 2", "Tháng 3"],
+  values: [100, 200, 150],
 });
 
 onMounted(() => {
-  const chartInstance = echarts.init(chartRef.value);
+  if (!chartRef.value) return; // Đảm bảo chartRef không null
+  chartInstance.value = echarts.init(chartRef.value);
+  updateChart(); // Khởi tạo biểu đồ với dữ liệu ban đầu
 
-  const options = {
+  const resizeObserver = new ResizeObserver(() => {
+    if (chartInstance.value) {
+      chartInstance.value.resize();
+    }
+  });
+
+  resizeObserver.observe(chartRef.value);
+});
+
+// Hàm cập nhật biểu đồ
+const updateChart = () => {
+  if (!chartInstance.value) return;
+
+  const options: echarts.EChartsOption = {
     title: {
       text: "Doanh thu theo ???",
       left: "center",
@@ -139,11 +127,18 @@ onMounted(() => {
     yAxis: {
       type: "value",
     },
+    grid: {
+      left: "10%",  // Canh trái
+      right: "10%", // Canh phải
+      bottom: "15%", // Canh dưới
+      containLabel: true, // Giữ nhãn không bị tràn
+    },
     series: [
       {
         name: "Doanh thu",
         type: "bar",
         data: chartData.value.values,
+        barWidth: "40%",
         itemStyle: {
           color: "#1890ff",
         },
@@ -151,11 +146,13 @@ onMounted(() => {
     ],
   };
 
-  chartInstance.setOption(options);
+  chartInstance.value.setOption(options);
+};
 
-  // Xử lý tự động resize khi thay đổi kích thước màn hình
-  window.addEventListener("resize", () => chartInstance.resize());
-});
+watch(chartData, () => {
+  nextTick(updateChart); // Cập nhật chart sau khi DOM cập nhật
+}, { deep: true });
+
 
 
 
@@ -180,42 +177,142 @@ const pieChartOptions = ref({
   ],
 });
 
+const {data, isLoading, isFetching} = useGetStatisticData(revenueParams, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+//map chart
+
+function mapStatisticData(data : Array<RevenueResponse> | undefined){
+  if (data) {
+      let totalRevenue = 0;
+      let totalProductSold = 0;
+      let totalOrderCount = 0;
+
+      let chartCategories = [];
+      let chartValue = [];
+
+      data.forEach((e) => {
+        totalRevenue += e.totalRevenue || 0;
+        totalProductSold += e.numberProductSold || 0;
+        totalOrderCount += e.numberOrder || 0;
+        chartCategories.push(e.timeDisplay as never);
+        chartValue.push(e.totalRevenue as never);
+      });
+
+      summary.value.totalRevenue = totalRevenue;
+      summary.value.numberProductSold = totalProductSold;
+      summary.value.numberOrder = totalOrderCount;
+
+      chartData.value.categories = chartCategories;
+      chartData.value.values = chartValue;
+
+  }
+  
+}
+
+watch(
+  () => statisticType.value,
+    (newStatisticType) => {
+      if (newStatisticType) {
+          // console.log(newStatisticType)
+          statisticByTypeTableColums.value[0].title =
+          statisticTypeOptions.find(e => e.value === newStatisticType)?.label as string;
+          revenueParams.value.statisticType = newStatisticType;
+      }
+    },
+    {immediate: true}
+);
+
+watch(
+  () => timeUnit.value,
+    (newTimeUnitValue) => {
+      if (newTimeUnitValue) {
+          // console.log(newTimeUnitValue)
+          placeholderDateRangePicker.value = 
+              newTimeUnitValue === 'day' ? ['Ngày bắt đầu', 'Ngày kết thúc'] :
+              newTimeUnitValue === 'week' ? ['Tuần bắt đầu', 'Tuần kết thúc'] :
+              newTimeUnitValue === 'month' ? ['Tháng bắt đầu', 'Tháng kết thúc'] : ['Năm bắt đầu', 'Năm kết thúc'] ;
+          revenueParams.value.timeUnit = upperCase(newTimeUnitValue);
+      }
+    },
+    {immediate: true}
+);
+
+watch(
+  () => data.value,
+    (newStatisticData) => {
+      if (newStatisticData) {
+          // console.log(newStatisticData)
+
+          mapStatisticData(newStatisticData.data.revenues?.data);
+
+          revenueData.value = newStatisticData.data.revenues?.data as never[];
+          statisticByTypeData.value = newStatisticData.data.revenuesType?.data as never[];
+          top5Products.value = newStatisticData.data.top10ProductBestSaleByRangeTime?.data as never[];
+          
+          const orderStatus = newStatisticData.data.numberOrderByStatus?.data as NumberOrderByStatusResponse;
+          pieChartOptions.value.series[0].data = [
+              { value: orderStatus.numberSuccessOrder, name: orderStatus.numberSuccessOrder + " Thành công", itemStyle: { color: "#28a745" } },
+              { value: orderStatus.numberWaitingOrder, name: orderStatus.numberWaitingOrder + " Chờ xử lý", itemStyle: { color: "#ffc107" } },
+              { value: orderStatus.numberShippingOrder, name: orderStatus.numberShippingOrder + " Đang giao", itemStyle: { color: "#007bff" } },
+              { value: orderStatus.numberCancelOrder, name:  orderStatus.numberCancelOrder + " Hủy bỏ", itemStyle: { color: "#dc3545" } },
+            ];
+          
+      }
+    },
+    { deep: true }
+);
+
+
+
+
 
 </script>
 
 <template>
   <div class="dashboard-container">
-    <div class="filter-section sticky-filter mt-2">
-    <div class="text-lg">Thống kê theo thời gian tùy chỉnh:</div>
-    <!-- Bộ lọc thời gian -->
-    <a-range-picker 
-      size="large"
-      style="width: 100%;" 
-      :disabled-date="disabledDate"
-      :disabled-week="disabledWeek"
-      :disabled-month="disabledMonth"
-      :disabled-year="disabledYear"
-      :picker="timeUnit"
-      v-model:value="dateRange"
-      :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
-      @change="fetchRevenueData"
-    />
+      <div class="filter-section sticky-filter mt-2">
+          <Row :gutter="6">
+              <!-- Bộ lọc thời gian -->
+              <Col :span="11">
+                  <div class="text-lg">Thống kê theo thời gian tùy chỉnh:</div>
+                  <a-range-picker 
+                    size="large"
+                    style="width: 100%;" 
+                    :disabled-date="disabledDate"
+                    :disabled-week="disabledWeek"
+                    :disabled-month="disabledMonth"
+                    :disabled-year="disabledYear"
+                    :picker="timeUnit"
+                    v-model:value="dateRange"
+                    :placeholder="placeholderDateRangePicker"
+                    @change="onRangeChange"
+                  />
 
-    <!-- Chọn đơn vị thời gian -->
-    <Radio.Group v-model:value="timeUnit" @change="fetchRevenueData" class="mt-2">
-      <Radio v-for="option in timeUnitOptions" :key="option.value" :value="option.value">
-        {{ option.label }}
-      </Radio>
-    </Radio.Group>
-  </div>
-    
-    <div class="summary-cards mb-4  ">
-      <Card><Statistic title="Tổng doanh thu" :value="summary.totalRevenue" suffix="VND" /></Card>
-      <Card><Statistic title="Số đơn hàng" :value="summary.numberOrder" /></Card>
-      <Card><Statistic title="Số sản phẩm bán ra" :value="summary.numberProductSold" /></Card>
+                  <!-- Chọn đơn vị thời gian -->
+                  <Radio.Group v-model:value="timeUnit" class="mt-2">
+                    <Radio v-for="option in timeUnitOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </Radio>
+                  </Radio.Group>
+              </Col>
+
+              <Col :span="13">
+                <div class="summary-cards">
+                  <Card><Statistic title="Tổng doanh thu" :value="summary.totalRevenue" suffix="đ" /></Card>
+                  <Card><Statistic title="Số đơn hàng" :value="summary.numberOrder" /></Card>
+                  <Card><Statistic title="Số sản phẩm bán ra" :value="summary.numberProductSold" /></Card>
+                </div>
+              </Col>
+            </Row>
+          
     </div>
+    
+    
 
-    <Row :gutter="16" class="chart-table-row mb-4">
+    <Row :gutter="16" class="chart-table-row my-4">
       <Col :span="14">
         <Card title="Thống kê doanh thu">
           <div id="revenueChart" style="width: 800px; height: 400px;">
@@ -226,7 +323,7 @@ const pieChartOptions = ref({
       <Col :span="10">
         <Card title="Bảng dữ liệu">
           <Table :dataSource="revenueData" :columns="[
-          { title: 'STT', dataIndex: 'timeDisplay' },
+          { title: 'STT', dataIndex: 'index', customRender: ({ index }) => index + 1},
           { title: 'Thời gian', dataIndex: 'timeDisplay' },
           { title: 'Doanh thu', dataIndex: 'totalRevenue' },
           { title: 'Số đơn hàng', dataIndex: 'numberOrder' },
@@ -239,16 +336,16 @@ const pieChartOptions = ref({
 
     <Row :gutter="16" class="chart-table-row mb-4">
       <Col :span="12">
-        <Card title="Trạng thái hóa đơn">
-          <VChart :option="pieChartOptions" style="height: 300px" />
+        <Card title="Trạng thái hóa đơn"  style="height: 500px;">
+          <VChart :option="pieChartOptions" style="height: 400px" />
         </Card>
       </Col>
       <Col :span="12">
-        <Card title="Top 5 sản phẩm bán chạy">
-          <Table :dataSource="top5Products" :columns="[
-              { title: 'Sản phẩm', dataIndex: 'productName' },
-              { title: 'Số lượng bán', dataIndex: 'quantitySold' },
-              { title: 'Doanh thu', dataIndex: 'quantitySold' }
+        <Card title="Top 5 sản phẩm bán chạy"  style="height: 500px;">
+          <Table :dataSource="top5Products" :pagination="false" :columns="[
+              { title: 'Sản phẩm', dataIndex: 'objectValue' },
+              { title: 'Số lượng bán', dataIndex: 'numberProductSold' },
+              { title: 'Doanh thu', dataIndex: 'totalRevenue' }
             ]" />
         </Card>
       </Col>
@@ -259,7 +356,7 @@ const pieChartOptions = ref({
 
     <div>
         <h3 class="">Thống kê doanh thu theo: </h3>
-        <Radio.Group v-model:value="statisticType" @change="fetchRevenueData">
+        <Radio.Group v-model:value="statisticType" >
             <Radio v-for="option in statisticTypeOptions" :key="option.value" :value="option.value">
               {{ option.label }}
         </Radio>
@@ -272,12 +369,8 @@ const pieChartOptions = ref({
         </Card>
       </Col>
       <Col :span="12">
-        <Card :title="''">
-          <Table :dataSource="employeeStatistics" :columns="[
-              { title: 'Nhân viên', dataIndex: 'employeeName' },
-              { title: 'Số hóa đơn', dataIndex: 'orderCount' },
-              { title: 'Doanh thu', dataIndex: 'revenue' }
-            ]" />
+        <Card :title="''"  style="height: 400px;">
+          <Table :dataSource="statisticByTypeData" :pagination="false" :columns="statisticByTypeTableColums" />
         </Card>
       </Col>
     </Row>
@@ -301,5 +394,6 @@ const pieChartOptions = ref({
   gap: 10px;
   margin-top: 20px;
   flex-wrap: wrap;
+  justify-content: end;
 }
 </style>

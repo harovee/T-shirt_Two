@@ -28,12 +28,13 @@ public class StatisticController {
 
     @GetMapping("/statistic-data")
     public ResponseEntity<?> getStatisticData(final RevenuesRequest request) {
+        System.out.println(request);
         return Helper.createResponseEntity(statisticService.getStatisticData(request));
     }
 
-    @GetMapping("/statistic-data/page")
-    public ResponseEntity<?> getRevenuePage(final RevenuesRequest request, @RequestParam int currentPage) {
-        return Helper.createResponseEntity(statisticService.getRevenuesPage(request, currentPage));
+    @GetMapping("/revenue-page")
+    public ResponseEntity<?> getRevenuePage(final RevenuesRequest request) {
+        return Helper.createResponseEntity(statisticService.getRevenuesPage(request));
     }
 
     @GetMapping("/top-10-products-best-sale")
@@ -42,9 +43,9 @@ public class StatisticController {
     }
 
     @GetMapping("/out-stock-products")
-    public ResponseEntity<?> getOutStockProducts(@RequestParam String key,
-                                                 @RequestParam int currentPage) {
-        return Helper.createResponseEntity(statisticService.getProductsOutStock(key, currentPage));
+    public ResponseEntity<?> getOutStockProducts(@RequestParam(required = false) String key,
+                                                 @RequestParam int page) {
+        return Helper.createResponseEntity(statisticService.getProductsOutStock(key, page));
     }
 
     @GetMapping("/today")

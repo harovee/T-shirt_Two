@@ -41,15 +41,16 @@ public interface StatisticRepository extends HoaDonRepository {
     @Query(value = """
                 select ROW_NUMBER() OVER(ORDER BY sum(spct.so_luong)) AS catalog,
                  sp.id, sp.ma_san_pham, sp.ten as ten_san_pham,
-                 dm.ten as ten_danh_muc, sum(spct.so_luong) as so_luong
+                 dm.ten as ten_danh_muc, sum(spct.so_luong) as soLuong
                 from san_pham sp
                 join danh_muc dm on dm.id = sp.id_danh_muc
                 left join san_pham_chi_tiet spct on sp.id = spct.id_san_pham
-                where (sp.deleted is null or sp.deleted != 1) and so_luong <= 10
+                where (sp.deleted is null or sp.deleted != 1)
                 and (?1 is null
                 or (sp.ten LIKE CONCAT('%', ?1, '%'))
                 or (sp.ma_san_pham LIKE CONCAT('%', ?1, '%')))
                 group by sp.id, sp.ma_san_pham, sp.ten, dm.ten
+                having soLuong <= 10
             """, nativeQuery = true)
     Page<StatisticProductResponse> getProductsOutStock(String key, Pageable pageable);
 
@@ -103,53 +104,64 @@ public interface StatisticRepository extends HoaDonRepository {
 
     @Query(value = """
                 SELECT
-                   CONCAT(dm.ma_danh_muc, ' - ', dm.ten) AS object_value,
-                   COALESCE(SUM(hd.tong_tien), 0) AS total_revenue,
-                   COALESCE(COUNT(DISTINCT hd.id), 0) AS number_order,
-                   COALESCE(SUM(hdct.so_luong), 0) AS number_product_sold
-               FROM danh_muc dm
-               LEFT JOIN san_pham sp ON dm.id = sp.id_danh_muc
-               LEFT JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham
-               LEFT JOIN hoa_don_chi_tiet hdct ON spct.id = hdct.id_san_pham_chi_tiet
-               LEFT JOIN hoa_don hd ON hdct.id_hoa_don = hd.id
-                   AND (hd.deleted is null or hd.deleted != 1)
-                   AND hd.trang_thai = 'Thành công'
-                   AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
-               GROUP BY dm.ma_danh_muc, dm.ten
-               ORDER BY total_revenue DESC
+                    CONCAT(dm.ma_danh_muc, ' - ', dm.ten) AS object_value,
+                    COALESCE(SUM(hdct.thanh_tien), 0) AS total_revenue,
+                    COALESCE(COUNT(DISTINCT hd.id), 0) AS number_order,
+                    COALESCE(SUM(hdct.so_luong), 0) AS number_product_sold
+                FROM danh_muc dm
+                LEFT JOIN san_pham sp ON dm.id = sp.id_danh_muc
+                LEFT JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham
+                LEFT JOIN hoa_don_chi_tiet hdct ON spct.id = hdct.id_san_pham_chi_tiet
+                LEFT JOIN (
+                    SELECT id, tong_tien, deleted, trang_thai, ngay_tao
+                    FROM hoa_don
+                    WHERE (deleted IS NULL OR deleted != 1)
+                        AND trang_thai = 'Thành công'
+                        AND ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
+                ) hd ON hdct.id_hoa_don = hd.id
+                WHERE dm.deleted IS NULL OR dm.deleted != 1
+                GROUP BY dm.ma_danh_muc, dm.ten
+                ORDER BY total_revenue DESC;
             """, nativeQuery = true)
     List<RevenueResponse> getRevenuesByCategory(RevenuesRequest req);
 
     @Query(value = """
                 SELECT
-                     CONCAT(nv.ma_nhan_vien, ' - ', nv.ho_va_ten) AS object_value,
-                     COALESCE(SUM(hd.tong_tien), 0) AS total_revenue,
-                     COALESCE(COUNT(hd.id), 0) AS number_order,
-                     COALESCE(SUM(hdct.so_luong), 0) AS number_product_sold
-                FROM nhan_vien nv
-                LEFT JOIN hoa_don hd ON hd.id_nhan_vien = nv.id
-                    AND (hd.deleted is null or hd.deleted != 1)
+                      CONCAT(nv.ma_nhan_vien, ' - ', nv.ho_va_ten) as object_value,
+                      COALESCE(SUM(hd.tong_tien), 0) AS total_revenue,
+                      COALESCE(COUNT(hd.id), 0) AS number_order,
+                      SUM((SELECT SUM(hdct.so_luong) FROM hoa_don_chi_tiet hdct WHERE hdct.id_hoa_don = hd.id)) AS number_product_sold
+                  FROM nhan_vien nv
+                           LEFT JOIN hoa_don hd on nv.id = hd.nguoi_tao
+                  WHERE (hd.deleted IS NULL OR hd.deleted != true)
                     AND hd.trang_thai = 'Thành công'
                     AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
-                LEFT JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
-                GROUP BY nv.ma_nhan_vien, nv.ho_va_ten
+                  group by nv.ma_nhan_vien, nv.ho_va_ten
                 ORDER BY total_revenue DESC
             """, nativeQuery = true)
     List<RevenueResponse> getRevenuesByEmployee(RevenuesRequest req);
 
     @Query(value = """
-                SELECT
-                     hd.loai_hoa_don AS object_value,
-                     COALESCE(SUM(hd.tong_tien), 0) AS total_revenue,
-                     COALESCE(COUNT(hd.id), 0) AS number_order,
-                     COALESCE(SUM(hdct.so_luong), 0) AS number_product_sold
-                FROM hoa_don hd
-                JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
-                WHERE (hd.deleted is null or hd.deleted != 1)
-                    AND hd.trang_thai = 'Thành công'
-                    AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
-                GROUP BY hd.loai_hoa_don
-                ORDER BY total_revenue DESC
+                WITH revenue_data AS (
+                     SELECT
+                         hd.id as id_hoa_don,
+                         hd.loai_hoa_don AS loaiHoaDon,
+                         hd.tong_tien AS totalRevenue,
+                         (SELECT SUM(hdct.so_luong) FROM hoa_don_chi_tiet hdct WHERE hdct.id_hoa_don = hd.id) AS numberProductSold
+                     FROM hoa_don hd
+                     WHERE (hd.deleted IS NULL OR hd.deleted != 1)
+                       AND hd.trang_thai = 'Thành công'
+                       AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
+                 )
+                 SELECT
+                     '' AS timeDisplay,
+                     loaiHoaDon AS objectValue,
+                     coalesce(sum(totalRevenue), 0) AS totalRevenue,
+                     coalesce(count(id_hoa_don), 0) AS numberOrder,
+                     coalesce(sum(numberProductSold), 0) AS numberProductSold
+                 FROM revenue_data
+                 group by timeDisplay, objectValue
+                 order by numberOrder desc
             """, nativeQuery = true)
     List<RevenueResponse> getRevenuesByOrderType(RevenuesRequest req);
 
@@ -163,7 +175,7 @@ public interface StatisticRepository extends HoaDonRepository {
             FROM hoa_don hd
             JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
             JOIN san_pham_chi_tiet spct ON hdct.id_san_pham_chi_tiet = spct.id
-            JOIN san_pham sp ON spct.id_san_pham = sp.id
+            RIGHT JOIN san_pham sp ON spct.id_san_pham = sp.id
             WHERE (hd.deleted is null or hd.deleted != 1) AND hd.trang_thai = 'Thành công'
             AND hd.ngay_tao BETWEEN :#{#req.startTime} AND :#{#req.endTime}
             GROUP BY sp.ma_san_pham, sp.ten
