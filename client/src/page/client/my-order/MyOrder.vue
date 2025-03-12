@@ -1,6 +1,6 @@
 <template>
   <div class="p-10">
-    <h1>ĐƠN MUA CỦA TÔI</h1>
+    <h1 class="flex justify-center items-center mx-auto text-center text-2xl">ĐƠN MUA CỦA TÔI</h1>
     <div class="w-full mx-auto p-6">
       <div class="flex space-x-4 border-b pb-2">
         <button

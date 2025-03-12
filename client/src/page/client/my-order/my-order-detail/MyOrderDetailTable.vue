@@ -1,5 +1,106 @@
 <template>
   <a-row :gutter="[8, 24]">
+    <a-col :span="8">
+      <div class="p-4 bg-white rounded-lg border border-gray-300 p-5 me-3">
+        <h3 class="text-lg font-bold">
+          Thông tin đơn hàng - Đơn hàng {{ copiedBillData?.loaiHD }}
+        </h3>
+        <div>
+          <div class="flex items-center">
+            <p class="font-medium">Mã đơn hàng:</p>
+            <p class="ml-2">{{ copiedBillData?.ma }}</p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Hình thức đặt hàng:</p>
+            <p class="ml-2">{{ copiedBillData?.loaiHD }}</p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Trạng thái:</p>
+            <a-tag class="ml-2" color="orange">{{
+              copiedBillData?.trangThai
+            }}</a-tag>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Khách hàng:</p>
+            <p class="ml-2">
+              {{ copiedBillData?.tenKhachHang || "Khách lẻ" }}
+            </p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">Tên người nhận:</p>
+            <p class="ml-2">{{ copiedBillData?.tenNguoiNhan || "" }}</p>
+          </div>
+          <div class="flex items-center">
+            <p class="font-medium">SĐT người nhận:</p>
+            <p class="ml-2">{{ copiedBillData?.soDienThoai }}</p>
+          </div>
+
+          <div class="flex items-center">
+            <p class="font-medium">Địa chỉ người nhận:</p>
+            <p class="ml-2" color="blue">
+              {{ copiedBillData?.diaChiNguoiNhan || "" }}
+            </p>
+          </div>
+
+          <div class="flex items-center">
+            <p class="font-medium">Ghi chú:</p>
+            <p class="ml-2">{{ copiedBillData?.ghiChu || "" }}</p>
+          </div>
+        </div>
+        <div class="flex justify-end mt-4">
+          <a-button
+            class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
+            @click="handleOpenModalUpdateBill"
+            :disabled="
+              [
+                'Chờ giao hàng',
+                'Đang vận chuyển',
+                'Đã giao hàng',
+                'Đã thanh toán',
+                'Thành công',
+                'Đã hủy',
+              ].includes(billData?.trangThai)
+            "
+          >
+            Cập nhật
+          </a-button>
+        </div>
+      </div>
+      <div
+        class="mp-4 bg-white rounded-lg border border-gray-300 p-5 mt-5 me-3"
+      >
+        <div class="flex flex justify-between block mb-4">
+          <span class="text-lg">Tiền hàng:</span>
+          <span v-if="copiedDataSource" class="text-lg">{{
+            formatCurrencyVND(totalPrice)
+          }}</span>
+        </div>
+        <div class="flex flex justify-between block mb-4">
+          <span class="text-lg">Giảm giá:</span>
+          <span v-if="copiedDataSource" class="text-lg text-green-500">{{
+            copiedDataSource && copiedDataSource.length > 0
+              ? `- ${formatCurrencyVND(copiedDataSource[0].tienGiamHD)}`
+              : "0 VND"
+          }}</span>
+        </div>
+        <div class="flex flex justify-between block mb-4">
+          <span class="text-lg">Phí vận chuyển:</span>
+          <span v-if="copiedDataSource" class="text-lg">{{
+            copiedDataSource && copiedDataSource.length > 0
+              ? `${formatCurrencyVND(copiedDataSource[0].tienShip)}`
+              : "0 VND"
+          }}</span>
+        </div>
+        <div class="flex flex justify-between block font-semibold text-xl">
+          <span>Tổng tiền:</span>
+          <span v-if="copiedDataSource">{{
+            copiedDataSource && copiedDataSource.length > 0
+              ? formatCurrencyVND(copiedDataSource[0].tongTienHD)
+              : "0 VND"
+          }}</span>
+        </div>
+      </div>
+    </a-col>
     <a-col :span="16">
       <div class="p-4 bg-white rounded-lg border border-gray-300">
         <div class="flex justify-end mb-4">
@@ -11,10 +112,11 @@
       </div>
       <div class="p-4 bg-white rounded-lg border border-gray-300 mt-5">
         <!-- Nút thêm sản phẩm -->
-        
+
         <div class="flex justify-between mb-4">
           <div class="flex items-center">
-            <h3 class="text-xl mt-2">Sản phẩm đã mua</h3> <span class="ms-3">({{dataSources.length}} sản phẩm)</span>
+            <h3 class="text-xl mt-2">Sản phẩm đã mua</h3>
+            <span class="ms-3">({{ dataSources.length }} sản phẩm)</span>
           </div>
           <a-button
             class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
@@ -129,73 +231,6 @@
         </table-example>
       </div>
     </a-col>
-    <a-col :span="8">
-      <div class="p-4 bg-white rounded-lg border border-gray-300 p-5 ms-3">
-        <h3 class="text-lg font-bold">
-          Thông tin đơn hàng - Đơn hàng {{ copiedBillData?.loaiHD }}
-        </h3>
-        <div>
-          <div class="flex items-center">
-            <p class="font-medium">Mã đơn hàng:</p>
-            <p class="ml-2">{{ copiedBillData?.ma }}</p>
-          </div>
-          <div class="flex items-center">
-            <p class="font-medium">Hình thức đặt hàng:</p>
-            <p class="ml-2">{{ copiedBillData?.loaiHD }}</p>
-          </div>
-          <div class="flex items-center">
-            <p class="font-medium">Trạng thái:</p>
-            <a-tag class="ml-2" color="orange">{{
-              copiedBillData?.trangThai
-            }}</a-tag>
-          </div>
-          <div class="flex items-center">
-            <p class="font-medium">Khách hàng:</p>
-            <p class="ml-2">
-              {{ copiedBillData?.tenKhachHang || "Khách lẻ" }}
-            </p>
-          </div>
-          <div class="flex items-center">
-            <p class="font-medium">Tên người nhận:</p>
-            <p class="ml-2">{{ copiedBillData?.tenNguoiNhan || "" }}</p>
-          </div>
-          <div class="flex items-center">
-            <p class="font-medium">SĐT người nhận:</p>
-            <p class="ml-2">{{ copiedBillData?.soDienThoai }}</p>
-          </div>
-
-          <div class="flex items-center">
-            <p class="font-medium">Địa chỉ người nhận:</p>
-            <p class="ml-2" color="blue">
-              {{ copiedBillData?.diaChiNguoiNhan || "" }}
-            </p>
-          </div>
-
-          <div class="flex items-center">
-            <p class="font-medium">Ghi chú:</p>
-            <p class="ml-2">{{ copiedBillData?.ghiChu || "" }}</p>
-          </div>
-        </div>
-        <div class="flex justify-end mt-4">
-          <a-button
-            class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
-            @click="handleOpenModalUpdateBill"
-            :disabled="
-              [
-                'Chờ giao hàng',
-                'Đang vận chuyển',
-                'Đã giao hàng',
-                'Đã thanh toán',
-                'Thành công',
-                'Đã hủy',
-              ].includes(billData?.trangThai)
-            "
-          >
-            Cập nhật
-          </a-button>
-        </div>
-      </div>
-    </a-col>
   </a-row>
   <my-order-update-modal
     :open="isOpenModalUpdateBill"
@@ -209,9 +244,15 @@
 </template>
 
 <script lang="ts" setup>
+import type { UnwrapRef } from "vue";
 import TableExample from "@/components/ui/TableExample.vue";
+import {
+  defaultVoucherDatePickerRules,
+  defaultVoucherRequest,
+  FormState,
+} from "@/page/admin/voucher/base/DefaultConfig";
 import { ColumnType } from "ant-design-vue/es/table";
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, watch, computed, onMounted, reactive } from "vue";
 import MyOrderUpdateModal from "./MyOrderUpdateModal.vue";
 import MyOrderAddProductModal from "./MyOrderAddProductModal.vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
@@ -222,6 +263,18 @@ import MyOrderStepHistory from "./MyOrderStepHistory.vue";
 import { FindBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
 import { useGetBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
 import { keepPreviousData } from "@tanstack/vue-query";
+import {
+  FindKhachHangRequest,
+  VoucherAndCustomerVoucherRequest,
+  PhieuGiamGiaRequest,
+} from "@/infrastructure/services/api/admin/voucher/voucher.api";
+import {
+  useUpdateVoucher,
+  useUpdateCustomerVoucher,
+  useGetListKhachHang,
+  useGetVoucherById,
+  useGetCusTomerByIdPhieuGiamGia,
+} from "@/infrastructure/services/service/admin/voucher/voucher.action";
 
 const props = defineProps({
   wrapperClassName: {
@@ -282,22 +335,62 @@ const {
 
 const dataHistory = computed(() => historyData?.value);
 
+const voucherId = ref(null);
+
+const {
+  data: dataDetail,
+  isLoading,
+  isFetching,
+  refetch,
+} = useGetVoucherById(voucherId, {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+  enabled: false,
+});
+
+const formState: UnwrapRef<FormState> = reactive({
+  ten: "",
+  loaiGiam: false,
+  giaTriGiam: "",
+  giamToiDa: "",
+  soLuong: 0,
+  dieuKienGiam: "",
+  ngayBatDauVaKetThuc: [],
+  kieu: false,
+});
+
+const detail = ref(null);
+
+watch(
+  () => voucherId.value,
+  (newValue) => {
+    if (newValue) {
+      refetch().then(() => {
+        detail.value = dataDetail?.value?.data?.data;
+      });
+    }
+  },
+  { immediate: true }
+);
+
 watch(
   () => props?.billData,
   (result) => {
     if (result) {
-      // console.log("bill data: ", result);
+      console.log("bill data: ", result);
     }
   }
 );
 
 const copiedBillData = ref<BillResponse | null>(null);
 
+const copiedDataSource = ref(null);
+
 watch(
   () => props?.billData,
   (newBillData) => {
     copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
-    console.log(copiedBillData.value);
+    voucherId.value = newBillData.idPhieuGiamGia;
   }
 );
 
@@ -368,16 +461,54 @@ const dataSources: BillDetailResponse[] | any = computed(() => {
   );
 });
 
+const totalProductPrice = ref(0);
+
 watch(
   () => dataSources.value,
   (newData) => {
     if (newData) {
       // console.log(newData);
+      copiedDataSource.value = JSON.parse(JSON.stringify(newData));
+      // console.log(copiedBillData.value);
+      
+
+      // const parts = copiedBillData.value.diaChiNguoiNhan.split(", ").reverse();
+      // province.value = parts[0];
+      // district.value = parts[1];
+      // ward.value = parts[2];
+
+      // console.log(province.value);
+      // console.log(district.value);
+      // console.log(ward.value);
+
+      totalProductPrice.value = newData.reduce(
+        (total, item) => total + item.thanhTien,
+        0
+      );
+
+      if (detail.value && detail.value.loaiGiam) {
+        // Loại giảm = true (tiền mặt)
+        copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+        copiedDataSource.value[0].tongTienHD =
+          totalProductPrice.value +
+          copiedDataSource.value[0].tienShip -
+          copiedDataSource.value[0].tienGiamHD;
+      } else {
+        // Loại giảm = flase (%)
+        copiedDataSource.value[0].tienGiamHD =
+          (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+        copiedDataSource.value[0].tongTienHD =
+          totalProductPrice.value +
+          copiedDataSource.value[0].tienShip -
+          copiedDataSource.value[0].tienGiamHD;
+      }
     }
   }
 );
 
-const totalPrice = computed(() => props.billData?.tongTien);
+const loadTotalPrice = () => {};
+
+const totalPrice = computed(() => totalProductPrice.value);
 // console.log(totalPrice.value);
 
 const handleChangeQuantity = async (record: any) => {

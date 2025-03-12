@@ -14,8 +14,8 @@
     />
   </div>
 
-  <div class="mt-6 me-10">
-    <div class="mt-4 max-w-lg ml-auto">
+  <!-- <div class="mt-6 me-10">
+    <div class="mt-4 max-w-lg ms-10">
       <div class="flex flex justify-between block mb-4">
         <span class="text-lg">Tiền hàng:</span>
         <span v-if="detailDataSources" class="text-lg">{{
@@ -47,7 +47,7 @@
         }}</span>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script lang="ts" setup>

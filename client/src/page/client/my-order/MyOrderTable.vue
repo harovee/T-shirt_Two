@@ -60,7 +60,9 @@
           <a-tag v-else-if="record.trangThai === 'Trả hàng'" color="error"
             >Trả hàng</a-tag
           >
-
+        <a-tag v-else-if="record.trangThai === 'Đã hủy'" class="text-red-500 border-red-500"
+            >Đã hủy</a-tag
+          >
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
 

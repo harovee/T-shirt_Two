@@ -265,7 +265,7 @@ const updateStepTimes = (dataSource: DataSource) => {
 watch(
   () => props.dataSource,
   (newValue) => {
-    console.log("📊 dataSource updated:", newValue);
+    // console.log("📊 dataSource updated:", newValue);
     updateCurrentStep(newValue);
     updateStepTimes(newValue);
   },

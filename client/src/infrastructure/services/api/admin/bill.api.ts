@@ -70,6 +70,11 @@ export type BillResponse = ResponseList & {
     diaChiNguoiNhan: string | null;
     tenNguoiNhan: string | null;
     ghiChu: string | null;
+    idPhieuGiamGia: string | null;
+    phuongThucNhan: string | null;
+    tinh: string | null;
+    huyen: string | null;
+    xa: string | null;
 }
 
 export type BillRefundResponse = ResponseList & {

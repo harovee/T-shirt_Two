@@ -31,6 +31,12 @@ public class ClientPaymentRequest {
 
     String paymentMethod;
 
+    String tinh;
+
+    String huyen;
+
+    String xa;
+
     List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
 
 }

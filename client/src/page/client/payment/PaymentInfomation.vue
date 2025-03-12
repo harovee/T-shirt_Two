@@ -582,10 +582,13 @@ const handlePayment = () => {
       idPhieuGiamGia: paymentInfo.value.voucherId || null,
       listSanPhamChiTiets: listSanPhamChiTiets || null,
       paymentMethod: paymentInfo.value.method,
+      tinh: props.dataAddress.province,
+      huyen: props.dataAddress.district,
+      xa: props.dataAddress.ward,
       amount: paymentInfo.value.total || null,
       bankCode: "VCB"
     };
-    console.log(payload);
+    // console.log(payload);
     if (paymentInfo.value.method === "cod") {
       Modal.confirm({
         content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
