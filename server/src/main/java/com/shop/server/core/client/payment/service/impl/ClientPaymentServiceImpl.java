@@ -5,6 +5,7 @@ import com.shop.server.core.client.payment.model.request.ClientInvoiceDetailRequ
 import com.shop.server.core.client.payment.model.request.ClientPaymentRequest;
 import com.shop.server.core.client.payment.repository.ClientPaymentRepository;
 import com.shop.server.core.client.payment.service.ClientPaymentService;
+import com.shop.server.core.client.vnpay.model.VNPayRequest;
 import com.shop.server.core.client.vnpay.model.VNPayResponse;
 import com.shop.server.core.client.vnpay.service.VNPayService;
 import com.shop.server.core.common.base.ResponseObject;
@@ -14,6 +15,7 @@ import com.shop.server.repositories.KhachHangRepository;
 import com.shop.server.repositories.LichSuHoaDonRepository;
 import com.shop.server.repositories.NhanVienRepository;
 import com.shop.server.repositories.PhieuGiamGiaRepository;
+import com.shop.server.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -145,7 +147,10 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
 
         if (request.getPaymentMethod().equals("vnpay")) {
-            VNPayResponse vnPayResponse = paymentService.createVnPayPayment(httpRequest, hoaDon.getId());
+            VNPayRequest vnPayRequest = new VNPayRequest();
+            vnPayRequest.setAmount(String.valueOf(request.getTongTien().add(request.getTienShip().subtract(request.getTienShip()))));
+            vnPayRequest.setBankCode(request.getBankCode());
+            VNPayResponse vnPayResponse = paymentService.createVnPayPayment(vnPayRequest, VNPayUtil.getIpAddress(httpRequest), hoaDon.getId());
             return new ResponseObject<>(vnPayResponse, HttpStatus.OK, "Redirect to VNPay");
         }
 

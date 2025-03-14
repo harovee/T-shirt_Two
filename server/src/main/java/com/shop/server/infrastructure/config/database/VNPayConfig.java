@@ -37,7 +37,7 @@ public class VNPayConfig {
     private String orderType;
 
     public Map<String, String> getVNPayConfig(String idHoaDon) {
-        Map<String, String> vnpParamsMap = new HashMap<>();
+        Map<String, String> vnpParamsMap = new HashMap<>(); 
         vnpParamsMap.put("vnp_Version", this.vnp_Version);
         vnpParamsMap.put("vnp_Command", this.vnp_Command);
         vnpParamsMap.put("vnp_TmnCode", this.vnp_TmnCode);

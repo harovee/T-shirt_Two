@@ -1,5 +1,6 @@
 package com.shop.server.core.client.payment.model.request;
 
+import com.shop.server.core.client.vnpay.model.VNPayRequest;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +9,7 @@ import java.util.List;
 
 @Setter
 @Getter
-public class ClientPaymentRequest {
+public class ClientPaymentRequest extends VNPayRequest {
     String diaChiNguoiNhan;
 
     String ghiChu;
