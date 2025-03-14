@@ -154,7 +154,7 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         }
 
         // Cập nhật tổng tiền hóa đơn
-        updateBillTotalAmount(hoaDon);
+//        updateBillTotalAmount(hoaDon);
 
         return ResponseObject.successForward(
                 HttpStatus.OK,

@@ -24,6 +24,13 @@ export interface BillRequest {
     // idKhachHang: String | null;
     tenNguoiNhan: String | null;
     ghiChu: String | null;
+    tinh: string | null;
+    huyen: string | null;
+    xa: string | null;
+    idPhieuGiamGia: string | null;
+    tienGiam: number | null;
+    tienShip: string | null;
+    tongTien: number | null;
 }
 
 export interface BillWaitRequest {

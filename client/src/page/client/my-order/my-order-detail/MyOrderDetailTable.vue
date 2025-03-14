@@ -238,6 +238,7 @@
     @handleClose="handleCloseModalUpdateBill"
     @onCancel="isOpenModalUpdateBill = false"
     @updated="updateBillData"
+    @update:bill="handleUpdateBill"
   />
 
   <!-- danh sách sản phẩm chi tiết -->
@@ -252,7 +253,15 @@ import {
   FormState,
 } from "@/page/admin/voucher/base/DefaultConfig";
 import { ColumnType } from "ant-design-vue/es/table";
-import { ref, watch, computed, onMounted, reactive } from "vue";
+import {
+  ref,
+  watch,
+  computed,
+  onMounted,
+  reactive,
+  createVNode,
+  nextTick,
+} from "vue";
 import MyOrderUpdateModal from "./MyOrderUpdateModal.vue";
 import MyOrderAddProductModal from "./MyOrderAddProductModal.vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
@@ -268,6 +277,13 @@ import {
   VoucherAndCustomerVoucherRequest,
   PhieuGiamGiaRequest,
 } from "@/infrastructure/services/api/admin/voucher/voucher.api";
+import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.action";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import {
+  errorNotiSort,
+  successNotiSort,
+  warningNotiSort,
+} from "@/utils/notification.config";
 import {
   useUpdateVoucher,
   useUpdateCustomerVoucher,
@@ -275,6 +291,24 @@ import {
   useGetVoucherById,
   useGetCusTomerByIdPhieuGiamGia,
 } from "@/infrastructure/services/service/admin/voucher/voucher.action";
+import {
+  VoucherResponse,
+  FindVoucherRequest,
+  nextVoucherRequest,
+  ShippingFeeRequest,
+  getWardByCode,
+  getDistrictById,
+  getProvinceById,
+  ServiceIdRequest,
+  createInvoicePdf,
+} from "@/infrastructure/services/api/admin/payment.api";
+import {
+  useGetListVoucher,
+  useGetPriceNextVoucher,
+  useGetShippingFee,
+  useGetServiceId,
+} from "@/infrastructure/services/service/admin/payment.action";
+import { ok } from "assert";
 
 const props = defineProps({
   wrapperClassName: {
@@ -287,7 +321,11 @@ const props = defineProps({
     required: true,
   },
   class: String,
-  dataSource: Array,
+  // dataSource: Array,
+  dataSource: {
+    type: Array as () => BillDetailResponse[], // ✅ Định rõ kiểu mảng chứa các sản phẩm
+    required: true,
+  },
   billData: Object,
   loading: {
     type: Boolean,
@@ -309,21 +347,81 @@ const props = defineProps({
 
 const emit = defineEmits(["update:paginationParams", "update-quantity"]);
 
+// Lấy id hóa đơn trên path
+const getIdHoaDonFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("idHoaDon") || "";
+};
+
+const billId = getIdHoaDonFromUrl();
+
 const paramsHistory = ref<FindBillHistoryRequest>({
   page: 1,
   size: 10,
   idHoaDon: "",
 });
 
-const getIdHoaDonFromUrl = () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get("idHoaDon") || "";
-};
-
 onMounted(() => {
   paramsHistory.value.idHoaDon = getIdHoaDonFromUrl();
 });
 
+// Hàm tính cân nặng và chiều dài của đơn hàng
+const calculateProductDimensions = () => {
+  const totalWeight = props.dataSource.reduce((sum: any, product: any) => {
+    return sum + (Number(product.soLuong) || 0) * 200;
+  }, 0);
+  const totalHeight = props.dataSource.reduce((sum: any, product: any) => {
+    return sum + (Number(product.soLuong) || 0) * 3;
+  }, 0);
+  return {
+    weight: totalWeight,
+    length: 30,
+    width: 20,
+    height: totalHeight,
+  };
+};
+
+// Param tính phí ship
+const shippingParams = computed<ShippingFeeRequest>(() => ({
+  fromDistrictId: 3440,
+  fromWardCode: "13007",
+  toDistrictId: "",
+  toWardCode: "",
+  serviceId: 0,
+  ...calculateProductDimensions(),
+}));
+
+// Param tìm serviceId để tính phí ship liên tỉnh
+const serviceIdParams = ref<ServiceIdRequest>({
+  formDistrict: 0,
+  toDistrict: 0,
+  shopId: 2509559,
+});
+
+// API lấy serviceID để dùng cho shipping param
+const { data: service, refetch: refetchService } = useGetServiceId(
+  serviceIdParams,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled:
+      !!serviceIdParams.value.formDistrict &&
+      !!serviceIdParams.value.toDistrict,
+  }
+);
+
+// API tính số tiền ship
+const { data: shipping, refetch: refetchShipping } = useGetShippingFee(
+  shippingParams,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled:
+      !!shippingParams.value.toDistrictId && !!shippingParams.value.toWardCode,
+  }
+);
+
+// Hàm gọi api lấy lịch sử hóa đơn
 const {
   data: historyData,
   isLoading: isHistoryLoading,
@@ -332,6 +430,15 @@ const {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
+
+watch(
+  () => props.dataSource,
+  (newData) => {
+    if (newData) {
+      serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
+    }
+  }
+);
 
 const dataHistory = computed(() => historyData?.value);
 
@@ -367,6 +474,30 @@ watch(
     if (newValue) {
       refetch().then(() => {
         detail.value = dataDetail?.value?.data?.data;
+        if (detail.value.loaiGiam) {
+          // Loại giảm = true (tiền mặt)
+          copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+          copiedDataSource.value[0].tongTienHD =
+            totalProductPrice.value +
+            copiedDataSource.value[0].tienShip -
+            copiedDataSource.value[0].tienGiamHD;
+          copiedBillData.value.tienGiam = copiedDataSource.value[0].tienGiamHD;
+          copiedBillData.value.tongTien = copiedDataSource.value[0].tongTienHD;
+        } else {
+          // Loại giảm = flase (%)
+          copiedDataSource.value[0].tienGiamHD =
+            (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          // if (copiedBillData.value) {
+          //   copiedBillData.value.tienGiam = copiedDataSource.value[0].tienGiamHD;
+          //   copiedBillData.value.tongTien = copiedDataSource.value[0].tongTienHD;
+          // }
+
+          copiedDataSource.value[0].tongTienHD =
+            totalProductPrice.value +
+            copiedDataSource.value[0].tienShip -
+            copiedDataSource.value[0].tienGiamHD;
+          // console.log(copiedBillData.value);
+        }
       });
     }
   },
@@ -377,7 +508,7 @@ watch(
   () => props?.billData,
   (result) => {
     if (result) {
-      console.log("bill data: ", result);
+      // console.log("bill data: ", result);
     }
   }
 );
@@ -391,11 +522,30 @@ watch(
   (newBillData) => {
     copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
     voucherId.value = newBillData.idPhieuGiamGia;
+    if (copiedBillData.value && copiedBillData.value.huyen) {
+      serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+      if (serviceIdParams.value.toDistrict !== 0) {
+        refetchService().then(() => {
+          shippingParams.value.serviceId = service?.value?.data[0].service_id;
+          // console.log(shippingParams.value);
+          shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+          shippingParams.value.toWardCode = copiedBillData.value.xa;
+          if (shippingParams.value.toWardCode) {
+            refetchShipping().then(() => {
+              copiedDataSource.value[0].tienShip = shipping?.value?.data.total;
+              copiedBillData.value.tienShip =
+                copiedDataSource.value[0].tienShip;
+            });
+          }
+        });
+      } else {
+        copiedDataSource.value[0].tienShip = 0;
+      }
+    }
   }
 );
 
 const updateBillData = (updatedBill) => {
-  // console.log("Dữ liệu cập nhật từ API:", updatedBill);
   copiedBillData.value = updatedBill; // Cập nhật dữ liệu mới từ API
 };
 
@@ -467,24 +617,34 @@ watch(
   () => dataSources.value,
   (newData) => {
     if (newData) {
-      // console.log(newData);
       copiedDataSource.value = JSON.parse(JSON.stringify(newData));
-      // console.log(copiedBillData.value);
-      
-
-      // const parts = copiedBillData.value.diaChiNguoiNhan.split(", ").reverse();
-      // province.value = parts[0];
-      // district.value = parts[1];
-      // ward.value = parts[2];
-
-      // console.log(province.value);
-      // console.log(district.value);
-      // console.log(ward.value);
 
       totalProductPrice.value = newData.reduce(
         (total, item) => total + item.thanhTien,
         0
       );
+
+      // Tính phí ship
+      if (copiedBillData.value && copiedBillData.value.huyen) {
+        serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+        if (serviceIdParams.value.toDistrict !== 0) {
+          refetchService().then(() => {
+            shippingParams.value.serviceId = service?.value?.data[0].service_id;
+            shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+            shippingParams.value.toWardCode = copiedBillData.value.xa;
+            if (shippingParams.value.toWardCode) {
+              refetchShipping().then(() => {
+                copiedDataSource.value[0].tienShip =
+                  shipping?.value?.data.total;
+                copiedBillData.value.tienShip =
+                  copiedDataSource.value[0].tienShip;
+              });
+            }
+          });
+        } else {
+          copiedDataSource.value[0].tienShip = 0;
+        }
+      }
 
       if (detail.value && detail.value.loaiGiam) {
         // Loại giảm = true (tiền mặt)
@@ -493,10 +653,14 @@ watch(
           totalProductPrice.value +
           copiedDataSource.value[0].tienShip -
           copiedDataSource.value[0].tienGiamHD;
+        copiedBillData.value.tienGiam = copiedDataSource.value[0].tienGiamHD;
+        copiedBillData.value.tongTien = copiedDataSource.value[0].tongTienHD;
       } else {
         // Loại giảm = flase (%)
-        copiedDataSource.value[0].tienGiamHD =
-          (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+        if (detail.value && detail.value.giaTriGiam) {
+          copiedDataSource.value[0].tienGiamHD =
+            (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+        }
         copiedDataSource.value[0].tongTienHD =
           totalProductPrice.value +
           copiedDataSource.value[0].tienShip -
@@ -506,10 +670,64 @@ watch(
   }
 );
 
+const { mutate: update } = useUpdateBill();
+
+const modelRefTmp = ref(null);
+
+const handleUpdateBill = async (modelRef: any) => {
+  modelRefTmp.value = modelRef;
+
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn sửa?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        await nextTick();
+        const payload = {
+          soDienThoai: modelRef.soDienThoai,
+          diaChiNguoiNhan: modelRef.diaChiNguoiNhan,
+          tenNguoiNhan: modelRef.tenNguoiNhan,
+          ghiChu: modelRef.ghiChu,
+          tinh: modelRef.tinh,
+          huyen: modelRef.huyen,
+          xa: modelRef.xa,
+          idPhieuGiamGia: detail.value ? detail.value.id : null,
+          tienShip: copiedDataSource.value[0].tienShip,
+          tienGiam: copiedDataSource.value[0].tienGiamHD,
+          tongTien: copiedDataSource.value[0].tongTienHD,
+        };
+        update(
+          { idBill: billId, params: payload },
+          {
+            onSuccess: (result) => {
+              successNotiSort("Cập nhật thông tin thành công");
+              isOpenModalUpdateBill.value = false;
+            },
+            onError: (error: any) => {
+              errorNotiSort("Cập nhật thông tin thất bại");
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error("🚀 ~ handleUpdate ~ error:", error);
+        if (error?.response) {
+          warningNotiSort(error?.response?.data?.message);
+        } else if (error?.errorFields) {
+          warningNotiSort("Vui lòng nhập đúng các trường dữ liệu");
+        }
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
+};
+
 const loadTotalPrice = () => {};
 
 const totalPrice = computed(() => totalProductPrice.value);
-// console.log(totalPrice.value);
 
 const handleChangeQuantity = async (record: any) => {
   if (!record.previousQuantity && record.soLuong !== 0) {
@@ -539,7 +757,43 @@ const handleChangeQuantity = async (record: any) => {
     emit("update-quantity", record);
     record.previousQuantity = record.soLuong; // Cập nhật lại giá trị trước đó
   }
-};
+  await nextTick();
+
+  setTimeout(() => {
+    const payload = {
+      soDienThoai: copiedBillData.value.soDienThoai,
+      diaChiNguoiNhan: copiedBillData.value.diaChiNguoiNhan,
+      tenNguoiNhan: copiedBillData.value.tenNguoiNhan,
+      ghiChu: copiedBillData.value.ghiChu,
+      tinh: copiedBillData.value.tinh,
+      huyen: copiedBillData.value.huyen,
+      xa: copiedBillData.value.xa,
+      idPhieuGiamGia: detail.value ? detail.value.id : null,
+      tienShip: copiedDataSource.value[0]?.tienShip || 0,
+      tienGiam: copiedDataSource.value[0]?.tienGiamHD || 0,
+      tongTien: copiedDataSource.value[0]?.tongTienHD || 0,
+    };
+    try {
+      // await validate();
+      update(
+        { idBill: billId, params: payload },
+        {
+          onSuccess: (result) => {
+            successNotiSort("Cập nhật thông tin thành công");
+          },
+          onError: (error: any) => {
+            errorNotiSort("Cập nhật thông tin thất bại");
+          },
+        }
+      );
+    } catch (error: any) {
+      console.error("🚀 ~ handleUpdate ~ error:", error);
+      if (error?.response) {
+        warningNotiSort(error?.response?.data?.message);
+      }
+    }
+  }, 1000);
+}
 </script>
 
 <style scoped>

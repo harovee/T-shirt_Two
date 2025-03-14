@@ -417,7 +417,7 @@ const handleUpdateBill = async () => {
   try {
     await validate(); // Chờ validate hoàn tất
     const fullAddress = modelRef.line + ', ' + fullAddressRef.value;
-    emit("handleGetAddress", fullAddress);
+    emit("handleGetAddress", fullAddress, modelRef);
     handleClose();
   } catch (error) {
     console.error("Validation failed:", error);

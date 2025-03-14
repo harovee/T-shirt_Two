@@ -13,41 +13,6 @@
       :loadingValue="refereshAllProduct"
     />
   </div>
-
-  <!-- <div class="mt-6 me-10">
-    <div class="mt-4 max-w-lg ms-10">
-      <div class="flex flex justify-between block mb-4">
-        <span class="text-lg">Tiền hàng:</span>
-        <span v-if="detailDataSources" class="text-lg">{{
-          formatCurrencyVND(totalPrice)
-        }}</span>
-      </div>
-      <div class="flex flex justify-between block mb-4">
-        <span class="text-lg">Giảm giá:</span>
-        <span v-if="detailDataSources" class="text-lg text-green-500">{{
-          detailDataSources && detailDataSources.length > 0
-            ? `- ${formatCurrencyVND(detailDataSources[0].tienGiamHD)}`
-            : "0 VND"
-        }}</span>
-      </div>
-      <div class="flex flex justify-between block mb-4">
-        <span class="text-lg">Phí vận chuyển:</span>
-        <span v-if="detailDataSources" class="text-lg">{{
-          detailDataSources && detailDataSources.length > 0
-            ? `${formatCurrencyVND(detailDataSources[0].tienShip)}`
-            : "0 VND"
-        }}</span>
-      </div>
-      <div class="flex flex justify-between block font-semibold text-xl">
-        <span>Tổng tiền:</span>
-        <span v-if="detailDataSources">{{
-          detailDataSources && detailDataSources.length > 0
-            ? formatCurrencyVND(detailDataSources[0].tongTienHD)
-            : "0 VND"
-        }}</span>
-      </div>
-    </div>
-  </div> -->
 </template>
 
 <script lang="ts" setup>
@@ -63,7 +28,6 @@ import {
 } from "@/infrastructure/services/service/admin/bill-detail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { computed, onMounted, ref, watch } from "vue";
-// import AdminBillHistory from "./AdminBillHistory.vue";
 import MyOrderDetailTable from "./my-order-detail/MyOrderDetailTable.vue";
 import { ColumnType } from "ant-design-vue/es/table";
 import { useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
@@ -93,7 +57,6 @@ const getIdHoaDonFromUrl = () => {
 onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
   billId.value = getIdHoaDonFromUrl();
-  // console.log(billId.value);
 });
 
 const {
@@ -104,7 +67,6 @@ const {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
-// console.log(detailData);
 
 const {
   data: billData,
@@ -139,7 +101,6 @@ watch(
 
 // Tính toán totalPages
 const totalPage = computed(() => detailData?.value?.data?.totalPages || 1);
-// console.log(detailData);
 
 const totalPrice = computed(() => {
   return detailDataSources.value.reduce((sum, item) => sum + item.thanhTien, 0);
@@ -237,6 +198,5 @@ const columnsBill: ColumnType[] = [
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  /* margin-bottom: 16px; Khoảng cách giữa các component */
 }
 </style>

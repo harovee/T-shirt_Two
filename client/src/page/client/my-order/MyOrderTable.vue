@@ -1,7 +1,7 @@
 <template>
   <div>
     <table-example
-      wrapperClassName="min-h-[410px]"
+      class="min-h-[5rem]"
       :columns="columnsBill"
       :data-source="props.dataSource?.data"
       :loading="loading"
@@ -123,7 +123,6 @@ const handleRedirectBillDetail = (idHoaDon: string) => {
       ROUTES_CONSTANTS.CLIENT.children.MY_ORDER_DETAIL.path,
     query: { idHoaDon },
   };
-  // console.log(detailBillPath)
   router.push(detailBillPath);
 };
 

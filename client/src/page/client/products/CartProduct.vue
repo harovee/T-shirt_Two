@@ -4,12 +4,12 @@
       <div class="flex items-center">
         <p class="mr-8 mt-4 text-base">Sắp xếp theo</p>
         <a-select class="w-64" v-model:value="selectedArrange">
-          <a-select-option
+          <!-- <a-select-option
             v-for="arrange in arrangesData"
             :key="arrange.value"
             :value="arrange.value"
             >{{ arrange.name }}</a-select-option
-          >
+          > -->
         </a-select>
       </div>
       <a-row>
