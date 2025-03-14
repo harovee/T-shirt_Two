@@ -6,6 +6,7 @@ import com.shop.server.core.client.payment.model.request.ClientPaymentRequest;
 import com.shop.server.repositories.HoaDonChiTietRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface ClientPaymentRepository extends HoaDonChiTietRepository {
@@ -22,8 +23,8 @@ public interface ClientPaymentRepository extends HoaDonChiTietRepository {
            UNIX_TIMESTAMP()*1000,
            false,
            UNIX_TIMESTAMP()*1000,
-           :#{#req.userEmail},
-           :#{#req.userEmail},
+           :idNhanVien,
+           :idNhanVien,
            :#{#req.gia},
            :#{#req.soLuong},
            :#{#req.gia} * :#{#req.soLuong},
@@ -33,11 +34,16 @@ public interface ClientPaymentRepository extends HoaDonChiTietRepository {
     FROM san_pham_chi_tiet spct
     WHERE spct.id = :#{#req.idSanPhamChiTiet}
           AND spct.so_luong >= :#{#req.soLuong};
-
-    UPDATE san_pham_chi_tiet spct
-    SET spct.so_luong = spct.so_luong - :#{#req.soLuong}
-    WHERE spct.id = :#{#req.idSanPhamChiTiet}
-          AND spct.so_luong >= :#{#req.soLuong};
 """, nativeQuery = true)
-    void saveProductDetailsToInvoice(ClientInvoiceDetailRequest req, String idHoaDon);
+    void saveProductDetailsToInvoice(ClientInvoiceDetailRequest req, String idHoaDon, String idNhanVien);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+    UPDATE san_pham_chi_tiet
+    SET so_luong = so_luong - :#{#req.soLuong}
+    WHERE id = :#{#req.idSanPhamChiTiet}
+          AND so_luong >= :#{#req.soLuong};
+""", nativeQuery = true)
+    void updateSoLuong(@Param("req") ClientInvoiceDetailRequest req);
 }

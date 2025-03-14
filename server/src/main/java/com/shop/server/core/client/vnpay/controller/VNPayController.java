@@ -10,11 +10,7 @@ import com.shop.server.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin("*")
@@ -24,10 +20,10 @@ public class VNPayController {
 
     private final VNPayService paymentService;
 
-    @GetMapping("/vn-pay")
-    public ResponseObject<VNPayResponse> pay(@RequestBody VNPayRequest vnPayRequest, HttpServletRequest request) {
+    @GetMapping("/vn-pay/{idHoaDon}")
+    public ResponseObject<VNPayResponse> pay(@RequestBody VNPayRequest vnPayRequest,HttpServletRequest request, @PathVariable("idHoaDon") String idHoaDon) {
         String ipAddress = VNPayUtil.getIpAddress(request);
-        return new ResponseObject<>(paymentService.createVnPayPayment(vnPayRequest,ipAddress),HttpStatus.OK, "Success");
+        return new ResponseObject<>(paymentService.createVnPayPayment(vnPayRequest,ipAddress, idHoaDon),HttpStatus.OK, "Success");
     }
 
     @GetMapping("/vn-pay-callback")

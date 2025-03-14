@@ -140,6 +140,9 @@ import { useRouter, useRoute } from 'vue-router';
 import { keepPreviousData } from '@tanstack/vue-query';
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import ProductDetail from '@/page/admin/product/product-detail/ProductDetail.vue';
+import { useCartStorageBL } from './business.logic/useCartLocalStorageBL';
+
+const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } = useCartStorageBL();
 
 const productId = ref<string | null>("");
 
@@ -297,13 +300,24 @@ const getAttributeName = (attribute) => {
 const addToCart = () => {
   if (!product.value) return;
 
-  console.log('Adding to cart:', {
-    ProductDetail: dataDetail?.value?.data?.data,
+  // console.log('Adding to cart:', {
+  //   ProductDetail: dataDetail?.value?.data?.data,
+  //   size: selectedSize.value,
+  //   color: selectedColor.value,
+  //   quantity: quantity.value,
+  //   price: displayedDiscount.value && displayedDiscount.value.length > 0 ? displayedDiscount.value[0] : displayedPrice.value[0]
+  // });
+
+  // Thao
+  addProduct({
+    id: dataDetail?.value?.data?.data?.id,
     size: selectedSize.value,
     color: selectedColor.value,
     quantity: quantity.value,
     price: displayedDiscount.value && displayedDiscount.value.length > 0 ? displayedDiscount.value[0] : displayedPrice.value[0]
-  });
+  })
+  console.log(cart);
+  
 };
 
 const buyNow = () => {

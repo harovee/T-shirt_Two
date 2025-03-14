@@ -8,8 +8,8 @@
         :scroll="{ x: 'max-content' }"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'tongTienHD'">
-            <span v-if="record?.tongTienHD">{{ formatCurrencyVND(record.tongTienHD) }}</span>
+          <template v-if="column.key === 'tienKhachDua'">
+            <span v-if="record?.tongTienHD">{{ formatCurrencyVND(record.tienKhachDua) }}</span>
           </template>
           <template v-else-if="column.key === 'ngayTao'">
             <span v-if="record?.ngayTao">{{ convertDateFormat(record.ngayTao) }}</span>
@@ -34,6 +34,10 @@ import { onMounted, ref, watch } from "vue";
 import { formatCurrencyVND } from "@/utils/common.helper";
 import { convertDateFormat } from "@/utils/common.helper";
 
+const props= defineProps ({
+  isPaymented: Boolean
+})
+
 interface ColumnType {
   title: string;
   dataIndex: string | number;
@@ -56,7 +60,7 @@ onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
 });
 
-const { data, isLoading, isFetching } = useGetPayHistory(params, {
+const { data, isLoading, isFetching, refetch } = useGetPayHistory(params, {
   refetchOnWindowClose: false,
   placeholderData: keepPreviousData,
 });
@@ -71,11 +75,18 @@ watch(
   { immediate: true }
 );
 
+watch(
+  () => props.isPaymented,
+  (newData) => {
+    refetch();
+  }
+);
+
 const columnsBill: ColumnType[] = [
   {
     title: "Số tiền",
-    dataIndex: "tongTienHD",
-    key: "tongTienHD",
+    dataIndex: "tienKhachDua",
+    key: "tienKhachDua",
     ellipsis: true,
     align: "center",
   },

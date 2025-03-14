@@ -20,26 +20,10 @@
             >
               ÁP DỤNG
             </a-button>
-            
           </div>
-          <div class="text-xs border border-black-500 rounded-lg p-3 mt-3" v-if="voucher">
-              <div class="flex items-center">
-                <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
-                <span
-                >Bạn đang sử dụng: {{ voucher.ten }} - Số lượng:
-                {{ voucher.soLuong }} - Giá trị giảm ({{
-                  voucher.loaiGiam ? "Tiền mặt" : "%"
-                }}):
-                {{
-                  voucher.loaiGiam
-                    ? formatCurrencyVND(voucher.giaTri)
-                    : voucher.giaTri + "%"
-                }}</span>
-              </div>
-            </div>
-          <!-- <div
+          <div
+            class="text-xs border border-black-500 rounded-lg p-3 mt-3"
             v-if="voucher"
-            class="text-red-500 text-xs border border-red-400 rounded-lg p-3 mt-3"
           >
             <div class="flex items-center">
               <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
@@ -55,27 +39,7 @@
                 }}</span
               >
             </div>
-            <span class="ms-8"  v-if="dataNextPriceVouchers > 0"
-              >Mua thêm
-              {{ formatCurrencyVND(dataNextPriceVouchers - totalAmount) }} để có
-              thể sử dụng phiếu giảm giá tốt hơn.</span
-            >
-            
-            <span class="ms-8"  v-if="dataNextPriceVouchers.length === 0"
-              >Không còn phiếu nào phù hợp hơn nữa.</span
-            >
           </div>
-          <div
-            v-if="!voucher && dataNextPriceVouchers.length > 0"
-            class="mt-3 text-red-500 text-xs border border-red-400 rounded-lg p-3 flex items-center"
-          >
-            <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
-            <span
-              >Không có phiếu giảm giá nào phù hợp, mua thêm
-              {{ formatCurrencyVND(dataNextPriceVouchers - totalAmount) }} để có
-              thể sử dụng phiếu giảm giá tốt hơn.</span
-            >
-          </div> -->
         </a-form-item>
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <div class="flex justify-between items-center w-[300px]">
@@ -107,8 +71,8 @@
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <a-form-item label="PHƯƠNG THỨC THANH TOÁN" class="text-l mt-8">
           <a-radio-group v-model:value="paymentInfo.method">
-            <a-radio value="cash">Thanh toán khi nhận hàng (COD)</a-radio>
-            <a-radio value="bank">Thanh toán qua VN Pay</a-radio>
+            <a-radio value="cod">Thanh toán khi nhận hàng (COD)</a-radio>
+            <a-radio value="vnpay">Thanh toán qua VN Pay</a-radio>
           </a-radio-group>
         </a-form-item>
         <hr class="border-t border-gray-400 border-dashed mb-5" />
@@ -168,7 +132,8 @@ import {
   useGetServiceId,
   useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
-import { useUpdateBillWait } from "@/infrastructure/services/service/admin/bill.action";
+import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
+
 import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
@@ -181,6 +146,10 @@ import {
   POSProductDetailResponse,
   POSUpdateCartRequest,
 } from "@/infrastructure/services/api/admin/point-of-sale.api";
+import {
+  clientPaymentRequest,
+  invoiceDetailRequest,
+} from "@/infrastructure/services/api/client/clientpayment.api";
 import {
   useGetOrderDetails,
   useUpdateQuantityOrderDetails,
@@ -212,6 +181,7 @@ import {
   useUpdateClientAddress,
 } from "@/infrastructure/services/service/admin/client.action";
 import { log } from "console";
+import { useCartStore } from "@/infrastructure/stores/cart";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
 
@@ -226,9 +196,14 @@ const props = defineProps({
   isRefresh: Boolean,
   fullAddressCustomer: String,
   validateAddress: Boolean,
+  memo: String,
 });
 
-const emit = defineEmits(["handlePaymentInfo"]);
+const cartStore = useCartStore();
+
+const listProducts = computed(() => cartStore.checkoutData);
+
+// const emit = defineEmits(["handlePaymentInfo"]);
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -267,7 +242,7 @@ const paramsNextPriceVoucher = ref<nextVoucherRequest>({
 });
 
 const paymentInfo = ref({
-  method: "cash",
+  method: "cod",
   bankAccount: formatCurrencyVND(""),
   voucherCode: "",
   voucherId: null,
@@ -400,12 +375,12 @@ const getVoucher = () => {
 //   { deep: true }
 // );
 
-const changeShippingOption = (option: string) => {
-  paymentInfo.value.shippingOption = option;
-  emit("handlePaymentInfo", paymentInfo.value);
-};
+// const changeShippingOption = (option: string) => {
+//   paymentInfo.value.shippingOption = option;
+//   emit("handlePaymentInfo", paymentInfo.value);
+// };
 
-const { mutate: updateBillWait } = useUpdateBillWait();
+// const { mutate: updateBillWait } = useUpdateBillWait();
 
 // const handleUpdateBill = () => {
 //   const pdfParams = {
@@ -574,15 +549,87 @@ const { mutate: updateBillWait } = useUpdateBillWait();
 //   }
 // );
 
+const { mutate: createInvoice } = useCreateInvoiceOnline();
+const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
+
 const handlePayment = () => {
   if (!props.validateAddress) {
     warningNotiSort("Vui lòng nhập đủ thông tin giao hàng.");
   } else {
-    console.log(paymentInfo.value);
+    const listSanPhamChiTiets: invoiceDetailRequest[] = listProducts.value.map(
+      (product) => ({
+        idSanPhamChiTiet: product.id || null,
+        soLuong: product.soLuong || null,
+        gia: product.tongTien || null,
+      })
+    );
+
+    const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
+
+    const payload = {
+      diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
+      ghiChu: props.memo || null,
+      soDienThoai: paymentInfo.value.phoneNumber || null,
+      tenNguoiNhan: paymentInfo.value.name || null,
+      tienGiam: paymentInfo.value.discount || null,
+      tienShip: paymentInfo.value.shippingFee || null,
+      tongTien: paymentInfo.value.total || null,
+      idKhachHang: useAuthStore().user?.id || null,
+      idNhanVien: null,
+      idPhieuGiamGia: paymentInfo.value.voucherId || null,
+      listSanPhamChiTiets: listSanPhamChiTiets || null,
+      paymentMethod: paymentInfo.value.method,
+      amount: paymentInfo.value.total || null,
+      bankCode: "VCB"
+    };
+    console.log(payload);
+    if (paymentInfo.value.method === "cod") {
+      Modal.confirm({
+        content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
+        icon: createVNode(ExclamationCircleOutlined),
+        centered: true,
+
+        async onOk() {
+          try {
+            await createInvoice(payload);
+            successNotiSort("Hoàn thành đơn hàng!");
+          } catch (error: any) {
+            console.error("🚀 ~ handleCreate ~ error:", error);
+            if (error?.response) {
+              errorNotiSort(error?.response?.data?.message);
+            }
+          }
+        },
+        cancelText: "Huỷ",
+        onCancel() {
+          Modal.destroyAll();
+        },
+      });
+    } else {
+      Modal.confirm({
+        content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
+        icon: createVNode(ExclamationCircleOutlined),
+        centered: true,
+
+        async onOk() {
+          try {
+            const response = await createInvoiceMutation.mutateAsync(payload);
+            console.log(response);
+          } catch (error: any) {
+            console.error("🚀 ~ handleCreate ~ error:", error);
+            if (error?.response) {
+              errorNotiSort(error?.response?.data?.message);
+            }
+          }
+        },
+        cancelText: "Huỷ",
+        onCancel() {
+          Modal.destroyAll();
+        },
+      });
+    }
   }
 };
-
-console.log(props.fullAddressCustomer);
 
 watch(
   [() => props.dataAddress, () => props.shippingFee],

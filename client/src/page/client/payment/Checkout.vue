@@ -20,13 +20,14 @@
             />
           </div>
         </a-col>
-        <a-col :span="8" class="">
+        <a-col :span="8">
           <payment-infomation
           :dataAddress="info"
           :totalPrice="paymentInfo.totalProductPrice"
           :shippingFee="paymentInfo.shippingFee"
           :fullAddressCustomer="fullAddress"
           :validateAddress="validateAddress"
+          :memo="ghiChu"
           />
         </a-col>
       </a-row>
@@ -73,6 +74,8 @@ const fullAddress = ref(null);
 
 const info = ref(null);
 
+const ghiChu = ref("")
+
 const validateAddress = ref(false)
 
 const paymentInfo = ref({
@@ -91,9 +94,8 @@ const paymentInfo = ref({
 
 const handleGetAddressCustomer = (modelRef: any, fullAddressRef: string, check: boolean) => {
   fullAddress.value = fullAddressRef;
-  console.log(fullAddress.value);
-  
   info.value = modelRef;
+  ghiChu.value = modelRef.ghiChu;
   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
   serviceIdParams.value.toDistrict = Number(modelRef.district);
   if(check) {

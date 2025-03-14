@@ -24,7 +24,7 @@ public interface StatisticService {
 
     ResponseObject<?> getRevenues(RevenuesRequest request);
 
-    ResponseObject<?> getRevenuesPage(RevenuesRequest request, int currentPage);
+    ResponseObject<?> getRevenuesPage(RevenuesRequest request);
 
     ResponseObject<?> getRevenuesByCategory(RevenuesRequest request);
 

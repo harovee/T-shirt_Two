@@ -15,10 +15,10 @@ import java.util.*;
 public class VNPayService {
     private final VNPayConfig vnPayConfig;
 
-    public VNPayResponse createVnPayPayment(VNPayRequest request, String ipAddress) {
+    public VNPayResponse createVnPayPayment(VNPayRequest request, String ipAddress, String idHoaDon) {
         long amount = Integer.parseInt(request.getAmount()) * 100L;
         String bankCode = request.getBankCode();
-        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig();
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(idHoaDon);
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);

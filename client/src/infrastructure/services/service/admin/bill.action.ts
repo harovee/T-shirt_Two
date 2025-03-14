@@ -1,5 +1,5 @@
 import { Ref } from "vue";
-import { BillRequest, FindBillRequest, getBillById, getBills, updateBill, getBillsWait, BillCreateRequest, createBillsWait,BillWaitRequest, BillWaitResponse,removeBillWait, updateBillWait, ChangeStatusBillRequest, changeBillStatus } from "../../api/admin/bill.api";
+import { BillRequest, FindBillRequest, getBillById, getBills, updateBill, getBillsWait, BillCreateRequest, createBillsWait,BillWaitRequest, BillWaitResponse,removeBillWait, updateBillWait, ChangeStatusBillRequest, changeBillStatus, getBillRefundByMaHD } from "../../api/admin/bill.api";
 import { useMutation, useQuery, useQueryClient, UseQueryReturnType } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey";
 
@@ -26,6 +26,16 @@ export const useGetBillById = (
     return useQuery({
         queryKey: [queryKey.admin.bill.billById, billId,],
         queryFn: () => getBillById(billId.value),
+        ...options,
+    });
+};
+
+export const useGetBillRefundByMaHD = (
+    billCode: string, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getBillRefundByMaHD>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.bill.billRefund, billCode,],
+        queryFn: () => getBillRefundByMaHD(billCode),
         ...options,
     });
 };

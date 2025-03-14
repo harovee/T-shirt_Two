@@ -17,6 +17,7 @@ export type PayHistoryResponse = ResponseList & {
     tenPhuongThuc: string | null;
     ghiChu  : string | null;
     tongTienHD: number | null;
+    tienKhachDua: number | null;
     ngayTao: number | null;
     nguoiTao: string | null;
 }

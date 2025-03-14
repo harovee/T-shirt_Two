@@ -29,6 +29,8 @@ public class ClientPaymentRequest {
 
     String idPhieuGiamGia;
 
+    String paymentMethod;
+
     List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
 
 }
