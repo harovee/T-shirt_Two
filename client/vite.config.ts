@@ -34,6 +34,12 @@ export default defineConfig(({command, mode}: ConfigEnv) => {
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/api/, ''),
         },
+        '/other-api': {
+        target: 'http://localhost:3000',  // Backend 2
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path: string) => path.replace(/^\/other-api/, '')
+      },
       }
     },
   };

@@ -1,22 +1,19 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useAuthStore } from "./infrastructure/stores/auth";
-import {
-  GoogleGenerativeAI,
-  HarmCategory,
-  HarmBlockThreshold,
-} from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import axios from "axios";
+import { formatCurrencyVND } from "./utils/common.helper";
 
-//kiểm tra role người dùng
+// Kiểm tra role người dùng
 const authStore = useAuthStore();
 const userRole = computed(() => authStore.user.roleName);
 const isAdmin = computed(() => userRole.value === "ADMIN");
 const isUser = computed(() => userRole.value === "USER");
 const isClient = computed(() => userRole.value === "CLIENT");
 
-
 // 🔹 Khai báo API Key
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; // Thay bằng API Key của bạn
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
@@ -24,7 +21,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const isOpen = ref(false);
 const messages = ref([
   {
-    text: "Xin chào! Tôi là TsTalk 🤖, tôi có thể giúp gì cho bạn",
+    text: "Xin chào! Tôi là TsTalk 🤖, tôi có thể giúp gì cho bạn?",
     sender: "bot",
   },
 ]);
@@ -40,7 +37,7 @@ const toggleChat = () => {
 const sendMessage = async () => {
   if (!userInput.value.trim()) return;
 
-  // Thêm tin nhắn của user vào danh sách
+  // Thêm tin nhắn của người dùng vào danh sách
   messages.value.push({ text: userInput.value, sender: "user" });
 
   isLoading.value = true;
@@ -48,45 +45,61 @@ const sendMessage = async () => {
   userInput.value = "";
 
   try {
-    // 🔹 Tạo context hội thoại theo script của bạn
+    // Tạo context hội thoại dựa trên vai trò của người dùng
     const parts = [
       { text: `Vai trò của người dùng hiện tại là: ${userRole.value}` },
       { text: "Tôi là TsTalk - chatbot của TsT website" },
       {
-        text: "Dự án được thiết kế và phát triển bởi team DATN K19 FPL, do Bùi Minh Hiếu làm Leader",
+        text: "Dự án trang web bán hàng Tshirt-Two được thiết kế và phát triển bởi team DATN K19 FPL, do Bùi Minh Hiếu làm Leader",
       },
       //tổng quan
       {
-        text: "Đây là 1 hệ thống quản lý bán hàng, có thiết kế gọn gàng với các biểu đồ và bảng thống kê.\nCác ô thông tin chính:\n\nTổng đơn thành công (hiển thị số lượng đơn hàng thành công, hiện tại).\nTổng doanh thu (hiển thị tổng số tiền thu được).\nKhách hàng mới (số lượng khách hàng mới).\n\n\nBiểu đồ trạng thái đơn hàng hôm nay: Dạng vòng tròn với 4 trạng thái: Thành công (xanh lá), Chờ xử lý (vàng), Đang giao (xanh dương), Hủy bỏ (đỏ)\nBảng top 5 sản phẩm bán chạy\nMục sản phẩm sắp hết hàng: Có thể hiển thị danh sách các sản phẩm gần hết trong kho.",
+        text: "(Đây là hệ thống quản lý dành cho admin và user) Đây là 1 hệ thống quản lý bán hàng, có thiết kế gọn gàng với các biểu đồ và bảng thống kê.\nCác ô thông tin chính:\n\nTổng đơn thành công (hiển thị số lượng đơn hàng thành công, hiện tại).\nTổng doanh thu (hiển thị tổng số tiền thu được).\nKhách hàng mới (số lượng khách hàng mới).\n\n\nBiểu đồ trạng thái đơn hàng hôm nay: Dạng vòng tròn với 4 trạng thái: Thành công (xanh lá), Chờ xử lý (vàng), Đang giao (xanh dương), Hủy bỏ (đỏ)\nBảng top 5 sản phẩm bán chạy\nMục sản phẩm sắp hết hàng: Có thể hiển thị danh sách các sản phẩm gần hết trong kho.",
       },
       {
-        text: "Thanh bên trái (Sidebar):\nChứa các mục điều hướng chính, bao gồm:\nTổng quan\nThống kê\nBán tại quầy\nHóa đơn (có menu con: Quản lý hóa đơn, Trả hàng)\nSản phẩm (đang được chọn, có menu con như Danh mục, Thương hiệu, Chất liệu, Cổ áo, Tay áo, Kích cỡ, Màu sắc, Tính năng, Kiểu dáng, Họa tiết)\nĐợt giảm giá, Phiếu giảm giá\nNhân viên, Khách hàng\nKhi một danh mục con được chọn, nó sẽ hiển thị dưới dạng mở rộng trong menu"
+        text: "(Đây là hệ thống quản lý dành cho admin và user) Thanh bên trái (Sidebar):\nChứa các mục điều hướng chính, bao gồm:\nTổng quan\nThống kê\nBán tại quầy\nHóa đơn (có menu con: Quản lý hóa đơn, Trả hàng)\nSản phẩm (đang được chọn, có menu con như Danh mục, Thương hiệu, Chất liệu, Cổ áo, Tay áo, Kích cỡ, Màu sắc, Tính năng, Kiểu dáng, Họa tiết)\nĐợt giảm giá, Phiếu giảm giá\nNhân viên, Khách hàng\nKhi một danh mục con được chọn, nó sẽ hiển thị dưới dạng mở rộng trong menu"
       },
       //hóa đơn
       {
-        text: 'Để kiểm tra đơn hàng trong hệ thống này, bạn cần vào mục "Hóa đơn" -> "Quản lý hóa đơn" ở thanh menu bên trái.\nSau khi vào trang Quản lý hóa đơn, bạn có thể:\nLọc đơn hàng theo mã, thông tin khách hàng dựa vào ô tìm kiếm\nLọc đơn hàng loại hóa đơn dựa vào nút radio Loại hóa đơn\nLọc đơn hàng theo ngày dựa vào bộ lọc khoảng ngày\nXem danh sách hóa đơn, bao gồm thông tin như mã hóa đơn, nhân viên phụ trách, khách hàng, tổng tiền, ngày tạo và trạng thái đơn.\nNhấn vào biểu tượng con mắt ở cột cuối cùng để xem chi tiết hóa đơn.',
+        text: '(Đây là hệ thống quản lý dành cho admin và user)Để kiểm tra đơn hàng trong hệ thống này, bạn cần vào mục "Hóa đơn" -> "Quản lý hóa đơn" ở thanh menu bên trái.\nSau khi vào trang Quản lý hóa đơn, bạn có thể:\nLọc đơn hàng theo mã, thông tin khách hàng dựa vào ô tìm kiếm\nLọc đơn hàng loại hóa đơn dựa vào nút radio Loại hóa đơn\nLọc đơn hàng theo ngày dựa vào bộ lọc khoảng ngày\nXem danh sách hóa đơn, bao gồm thông tin như mã hóa đơn, nhân viên phụ trách, khách hàng, tổng tiền, ngày tạo và trạng thái đơn.\nNhấn vào biểu tượng con mắt ở cột cuối cùng để xem chi tiết hóa đơn.',
       },
       {
-        text: 'Màn chi tiết hóa đơn sau khi nhấn vào biểu tượng "Mắt": Hiển thị tiến trình của đơn hàng với các trạng thái:\nChờ xác nhận\nChờ giao hàng\nĐang vận chuyển\nĐã giao hàng\nĐã thanh toán\nThành công\nCác nút thao tác chính:\nChuyển trạng thái đơn hàng\nQuay lại trạng thái trước: Quay về trạng thái trước đó trong quy trình xử lý đơn hàng.\nHủy đơn: Hủy bỏ đơn hàng.Thông tin đơn hàng:Mã đơn hàng,Số điện thoại người nhận, Địa chỉ người nhận, Tên khách hàng, Trạng thái, Tên người nhận, Có nút Chi tiết ở góc phải. Lịch sử thanh toán: Bảng chứa các thông tin: Số tiền khách đưa, Thời gian giao dịch, Mã giao dịch, Phương thức thanh toán, Nhân viên xác nhận: Hiển thị mã nhân viên. Danh sách sản phẩm trong đơn hàng: Bảng hiển thị danh sách sản phẩm đã mua, gồm các cột: Ảnh sản phẩm,Tên sản phẩm, Giá sản phẩm, Số lượng, Thành tiền, Hành động: Nút hoàn hàng nếu trong quá trình chuẩn bị đơn hàng, cửa hàng hoặc shipper muốn hoàn lại, Có nút Thêm sản phẩm'
+        text: '(Đây là hệ thống quản lý dành cho admin và user)Màn chi tiết hóa đơn sau khi nhấn vào biểu tượng "Mắt": Hiển thị tiến trình của đơn hàng với các trạng thái:\nChờ xác nhận\nChờ giao hàng\nĐang vận chuyển\nĐã giao hàng\nĐã thanh toán\nThành công\nCác nút thao tác chính:\nChuyển trạng thái đơn hàng\nQuay lại trạng thái trước: Quay về trạng thái trước đó trong quy trình xử lý đơn hàng.\nHủy đơn: Hủy bỏ đơn hàng.Thông tin đơn hàng:Mã đơn hàng,Số điện thoại người nhận, Địa chỉ người nhận, Tên khách hàng, Trạng thái, Tên người nhận, Có nút Chi tiết ở góc phải. Lịch sử thanh toán: Bảng chứa các thông tin: Số tiền khách đưa, Thời gian giao dịch, Mã giao dịch, Phương thức thanh toán, Nhân viên xác nhận: Hiển thị mã nhân viên. Danh sách sản phẩm trong đơn hàng: Bảng hiển thị danh sách sản phẩm đã mua, gồm các cột: Ảnh sản phẩm,Tên sản phẩm, Giá sản phẩm, Số lượng, Thành tiền, Hành động: Nút hoàn hàng nếu trong quá trình chuẩn bị đơn hàng, cửa hàng hoặc shipper muốn hoàn lại, Có nút Thêm sản phẩm'
       },
-      { text: `input: ${inputText}`},
+      {
+        text: `(Đây là trang mua hàng dành cho CLIENT)
+            Tiêu đề Trang:
+                Các menu như "Trang chủ", "Sản phẩm", "Giới thiệu", "Liên hệ" ở phần trên của trang.
+                Thanh Tìm Kiếm: Ở trên cùng, có một thanh tìm kiếm giúp người dùng tìm sản phẩm trên trang.
+                Biểu tượng giỏ hàng: Ở trên cùng bên phải, có thể tra cứu thông tin sản phẩm có trong giỏ hàng, thanh toán giỏ hàng.
+                Biểu tượng trang cá nhân: Ở góc bên phải trên cùng, có thể tìm kiếm thông tin những đơn hàng đã mua bằng bộ lọc nhập mã đơn hàng hoặc các tab của trạng thái đơn hàng và trạng thái đơn hàng đó.
+                Thông tin sản phẩm: Tên sản phẩm: "Áo phông" (đây là tên của sản phẩm được hiển thị lớn).
+                Giá sản phẩm: hiển thị phạm vi giá của sản phẩm
+                Kích cỡ: hiển thị kích cỡ hiện có của sản phẩm
+                Màu sắc:người dùng sẽ chọn màu từ danh sách màu.
+                Nút hành động:
+                  Thêm vào giỏ: Người dùng có thể thêm sản phẩm vào giỏ hàng.
+                  Xem chi tiết: Cho phép người dùng xem thêm chi tiết về sản phẩm.`
+      },
+      { text: `input: ${inputText} `},
     ];
 
     if (isAdmin.value) {
       parts.push({
-        text: "Bạn là ADMIN, tôi sẽ trả lời những thông tin về hệ thống bán hàng",
+        text: "Người dùng là ADMIN, tôi sẽ trả lời những thông tin về hệ thống bán hàng và sản phẩm",
       });
-    } else if(isClient.value){
+    } else if (isClient.value) {
       parts.push({
-        text: "Bạn là khách hàng, tôi sẽ chỉ được trả lời những thông tin về trang mua hàng",
+        text: `Người dùng là Khách hàng
+              - Chỉ cung cấp thông tin về các sản phẩm áo đang được bày bán, nghĩa là tồn tại trong cơ sở dữ liệu của trang Tshirt-Two.`
       });
     } else {
-        parts.push({
-        text: "Bạn là nhân viên (user), tôi sẽ trả lời những thông tin về hệ thống bán hàng.",
+      parts.push({
+        text: "Người dùng là nhân viên (USER), tôi sẽ trả lời những thông tin về hệ thống bán hàng và sản phẩm.",
       });
     }
 
-    // 🔹 Gọi API
+    // Gọi API chatbot để lấy kết quả trả lời
     const result = await model.generateContent({
       contents: [{ role: "user", parts }],
       generationConfig: {
@@ -100,8 +113,105 @@ const sendMessage = async () => {
 
     const response = await result.response.text();
 
-    // Thêm câu trả lời vào danh sách chat
-    messages.value.push({ text: response.replace(/\n/g, "<br>"), sender: "bot" });
+    // Gọi API lấy sản phẩm nếu có yêu cầu liên quan đến sản phẩm
+    if (
+      inputText.toLowerCase().includes("mua") ||
+      inputText.toLowerCase().includes("tìm sản phẩm")
+    ) {
+      // Tách từ khóa (tên sản phẩm)
+      const keywordMatch = inputText.match(/mua\s+([^\s,]+)/i);
+      const keyword = keywordMatch ? keywordMatch[1].trim() : null;
+
+      const colorMatch = inputText.match(/màu\s+([a-zA-Zà-ỹ\s,]+)/i);
+      const color = colorMatch
+        ? colorMatch[1]
+            .trim()
+            .toLowerCase()
+            .replace(/\s*(và|hoặc| )\s*/g, ",") // Thay thế "và" hoặc "hoặc" hoặc dấu cách bằng dấu phẩy
+            .split(/\s*,\s*/) // Tách theo dấu phẩy
+        : [];
+
+      // Tách giá tối đa
+      const priceMatch = inputText.match(/giá dưới (\d+)/i);
+      const maxPrice = priceMatch ? parseInt(priceMatch[1]) : 100000000;
+
+      // Tìm kiếm kiểu dáng
+      const kieuDangMatch = inputText.match(/kiểu dáng\s+([a-zA-Zà-ỹ\s]+)/i);
+      const kieuDang = kieuDangMatch
+        ? kieuDangMatch[1].trim().toLowerCase()
+        : null;
+
+      // Tìm kiếm thương hiệu
+      const thuongHieuMatch = inputText.match(/hiệu\s+([a-zA-Zà-ỹ\s]+)/i);
+      const thuongHieu = thuongHieuMatch
+        ? thuongHieuMatch[1].trim().toLowerCase()
+        : null;
+
+      // Tìm kiếm tính năng
+      const tinhNangMatch = inputText.match(/tính năng\s+([a-zA-Zà-ỹ\s]+)/i);
+      const tinhNang = tinhNangMatch
+        ? tinhNangMatch[1].trim().toLowerCase()
+        : null;
+
+      // Tìm kiếm kiểu dáng tay áo (cộc tay hoặc dài tay)
+      const tayAoMatch = inputText.match(/(cộc tay|dài tay)/i);
+      const tayAo = tayAoMatch ? tayAoMatch[0].toLowerCase() : null;
+
+      // Tìm kiếm kiểu cổ áo (ví dụ: "cổ tròn", "cổ V", "cổ áo sơ mi")
+      const coAoMatch = inputText.match(/cổ áo\s+([a-zA-Zà-ỹ\s]+)/i);
+      const coAo = coAoMatch ? coAoMatch[1].trim().toLowerCase() : null;
+
+      // Tìm kiếm kích cỡ (ví dụ: "S", "M", "L", "XL")
+      const kichCoMatch = inputText.match(/kích cỡ\s+([a-zA-Z0-9\s]+)/i);
+      const kichCo = kichCoMatch ? kichCoMatch[1].trim().toLowerCase() : null;
+
+      // Gọi API để tìm sản phẩm theo từ khóa (tên sản phẩm hoặc màu sắc)
+      const res = await axios.get("http://localhost:3000/other-api/products", {
+        params: {
+          sanPham: keyword,
+          mauSac: color,
+          maxPrice: maxPrice,
+          tayAo: tayAo,
+          coAo: coAo,
+          tinhNang: tinhNang,
+          thuongHieu: thuongHieu,
+          kichCo: kichCo,
+          kieuDang: kieuDang,
+        }, // Truyền từ khóa vào API tìm kiếm sản phẩm
+      });
+      // console.log(keyword);
+      // console.log(thuongHieu);
+      // console.log(color);
+
+      console.log("Kết quả từ API:", res.data);
+      if (res.data && res.data.length > 0) {
+        const limitedProducts = res.data.slice(0, 5); // giới hạn gợi ý sản phẩm
+        const productsList = limitedProducts
+          .map(
+            (product) =>
+              `<li><strong><a href="http://localhost:8888/products/${product.id}" target="_blank">${product.sanPham}</a></strong>- ${product.mauSac}</span><br>
+                - Giá: <span style="color: green;">${formatCurrencyVND(product.gia)}</span><br>
+                </li>`
+          )
+          .join("");
+
+        messages.value.push({
+          text: `Tôi tìm thấy các sản phẩm có thể bạn quan tâm: <ul>${productsList}</ul><br>Bạn có thể nhấp vào sản phẩm để đến trang sản phẩm mong muốn`,
+          sender: "bot",
+        });
+      } else {
+        messages.value.push({
+          text: "Không tìm thấy sản phẩm nào phù hợp.",
+          sender: "bot",
+        });
+      }
+    }
+
+    // Thêm câu trả lời từ bot vào danh sách tin nhắn
+    messages.value.push({
+      text: response.replace(/\n/g, "<br>"),
+      sender: "bot",
+    });
   } catch (error) {
     console.error("Lỗi chatbot:", error);
     messages.value.push({
@@ -111,6 +221,7 @@ const sendMessage = async () => {
   }
 
   isLoading.value = false;
+  localStorage.setItem("chatMessages", JSON.stringify(messages.value));
 };
 </script>
 
@@ -127,8 +238,12 @@ const sendMessage = async () => {
       <button @click="toggleChat">✖</button>
     </div>
     <div class="chat-box">
-        <div v-for="(msg, index) in messages" :key="index" :class="msg.sender" v-html="msg.text"></div>
-
+      <div
+        v-for="(msg, index) in messages"
+        :key="index"
+        :class="msg.sender"
+        v-html="msg.text"
+      ></div>
       <div v-if="isLoading" class="loading">Đang trả lời...</div>
     </div>
     <div class="chat-input">
