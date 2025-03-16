@@ -35,3 +35,8 @@ API_SECRET=aNoZXhjJGhHnYSkpohBuAxESm3I
 # GOOGLE
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+
+# How to run FE with chatbot
+- Filling DB_PASSWORD in '#server2 config' at dotenv
+- Running with '**npm run dev**' in a terminal
+- Running with '**node ./src/productAPI.js**' in another terminal at the same time

@@ -2,6 +2,8 @@ package com.shop.server.core.admin.san_pham_chi_tiet.controller;
 
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
+import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
 import com.shop.server.core.admin.san_pham_chi_tiet.service.AdSanPhamChiTietService;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
@@ -10,12 +12,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController()
 @RequestMapping(MappingConstant.API_ADMIN_PRODUCT_DETAIL)
 @RequiredArgsConstructor
 public class AdSanPhamChiTietController {
 
     private final AdSanPhamChiTietService adSanPhamChiTietService;
+    private final AdSanPhamChiTietRepository adSanPhamChiTietRepository;
 
     @GetMapping()
     public ResponseEntity<?> getSanPhamChiTiet(@Valid final AdFindSpctRequest request) {
