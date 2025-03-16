@@ -9,29 +9,29 @@ import java.util.List;
 
 @Setter
 @Getter
-public class ClientPaymentRequest extends VNPayRequest {
-    String diaChiNguoiNhan;
+    public class ClientPaymentRequest extends VNPayRequest {
+        String diaChiNguoiNhan;
 
-    String ghiChu;
+        String ghiChu;
 
-    String soDienThoai;
+        String soDienThoai;
 
-    String tenNguoiNhan;
+        String tenNguoiNhan;
 
-    BigDecimal tienGiam;
+        BigDecimal tienGiam;
 
-    BigDecimal tienShip;
+        BigDecimal tienShip;
 
-    BigDecimal tongTien;
+        BigDecimal tongTien;
 
-    String idKhachHang;
+        String idKhachHang;
 
-    String idNhanVien;
+        String idNhanVien;
 
-    String idPhieuGiamGia;
+        String idPhieuGiamGia;
 
-    String paymentMethod;
+        String paymentMethod;
 
-    List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
+        List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
 
-}
+    }

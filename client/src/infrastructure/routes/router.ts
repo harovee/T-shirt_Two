@@ -472,6 +472,12 @@ const routes: Array<RouteRecordRaw> = [
             requiresAuth: false
         },
     },
+    {
+        path: ROUTES_CONSTANTS.PAYMENT.children.path,
+        name: ROUTES_CONSTANTS.PAYMENT.children.name,
+        component: () => import('@/page/client/payment/PaymentReturnUrl.vue'),
+        meta: {requiresAuth: false},
+    },
 ];
 
 const route = createRouter({

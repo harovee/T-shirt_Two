@@ -21,11 +21,11 @@ export const useCreateInvoiceOnline = () => {
 export const useCreateInvoiceOnlineWithVnPay = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: vnPayRequest) => createInvoiceOnlineWithVnPay(data),
+        mutationFn: (data: clientPaymentRequest) => createInvoiceOnlineWithVnPay(data),
         onSuccess: (response) => {
             console.log(response);
             queryClient.invalidateQueries({
-                queryKey: [queryKey.client.payment.invoiceOnline],
+                queryKey: [queryKey.client.payment.invoiceOnlineVNPay],
             })
         },
         onError: (error: any) => {

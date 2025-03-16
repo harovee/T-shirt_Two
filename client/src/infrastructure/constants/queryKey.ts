@@ -137,7 +137,8 @@ export const queryKey = {
             chatLieuList: "chatLieuListKey"
         },
         payment: {
-            invoiceOnline: "clientInvoiceOnlineKey"
+            invoiceOnline: "clientInvoiceOnlineKey",
+            invoiceOnlineVNPay:"clientInvoiceOnlineVNpayKey"
         },
         myOrder: {
             clientBill: "clientBillList"

@@ -256,4 +256,10 @@ export const ROUTES_CONSTANTS = {
             },
         }
     },
+    PAYMENT: {
+        children: {
+                path:"/payment/vn-pay-callback",
+                name: "payment-vnpay"
+        }
+    }
 };

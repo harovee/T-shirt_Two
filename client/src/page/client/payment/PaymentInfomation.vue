@@ -552,6 +552,8 @@ const getVoucher = () => {
 const { mutate: createInvoice } = useCreateInvoiceOnline();
 const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
 
+const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
+
 const handlePayment = () => {
   if (!props.validateAddress) {
     warningNotiSort("Vui lòng nhập đủ thông tin giao hàng.");
@@ -564,7 +566,7 @@ const handlePayment = () => {
       })
     );
 
-    const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
+  
 
     const payload = {
       diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
@@ -580,7 +582,7 @@ const handlePayment = () => {
       listSanPhamChiTiets: listSanPhamChiTiets || null,
       paymentMethod: paymentInfo.value.method,
       amount: paymentInfo.value.total || null,
-      bankCode: "VCB"
+      bankCode: ""
     };
     console.log(payload);
     if (paymentInfo.value.method === "cod") {
@@ -607,13 +609,16 @@ const handlePayment = () => {
       });
     } else {
       Modal.confirm({
-        content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
+        content: "Bạn chắc chắn muốn thanh toán qua VNPay?",
         icon: createVNode(ExclamationCircleOutlined),
         centered: true,
-
         async onOk() {
           try {
             const response = await createInvoiceMutation.mutateAsync(payload);
+            
+            if (response?.data?.paymentUrl) {
+            window.open(response?.data?.paymentUrl, "_blank");
+          }
             console.log(response);
           } catch (error: any) {
             console.error("🚀 ~ handleCreate ~ error:", error);
