@@ -133,4 +133,6 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
                     where spct.id = :idSanPhamChiTiet;
             """, nativeQuery = true)
     void decreaseStockInAdd(@Param("idSanPhamChiTiet") String idSanPhamChiTiet,@Param("soLuong") int soLuong);
+
+    List<HoaDonChiTiet> findByHoaDon(HoaDon hoaDon);
 }

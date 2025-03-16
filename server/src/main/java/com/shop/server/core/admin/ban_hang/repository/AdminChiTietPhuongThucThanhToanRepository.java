@@ -2,6 +2,8 @@ package com.shop.server.core.admin.ban_hang.repository;
 
 import com.shop.server.core.admin.ban_hang.model.request.AdminPaymentMethodDetailRequest;
 import com.shop.server.core.admin.ban_hang.model.response.AdminPhuongThucThanhToanResponse;
+import com.shop.server.entities.main.ChiTietPhuongThucThanhToan;
+import com.shop.server.entities.main.HoaDon;
 import com.shop.server.repositories.ChiTietPhuongThucThanhToanRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,4 +39,5 @@ public interface AdminChiTietPhuongThucThanhToanRepository extends ChiTietPhuong
     """, nativeQuery = true)
 List<AdminPhuongThucThanhToanResponse> getAllPhuongThucThanhToan(AdminPaymentMethodDetailRequest request);
 
+    ChiTietPhuongThucThanhToan findByHoaDon(HoaDon hoaDon);
 }

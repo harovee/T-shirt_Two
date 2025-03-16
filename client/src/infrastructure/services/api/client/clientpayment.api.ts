@@ -1,3 +1,4 @@
+import { vnPayRequest } from './clientpayment.api';
 import {
   useMutation,
   useQuery,
@@ -16,7 +17,7 @@ export interface invoiceDetailRequest {
   gia: number | null;
 }
 
-export interface clientPaymentRequest {
+export interface clientPaymentRequest extends vnPayRequest{
   diaChiNguoiNhan: string | null;
   ghiChu: string | null;
   soDienThoai: string | null;
@@ -31,7 +32,7 @@ export interface clientPaymentRequest {
   listSanPhamChiTiets: invoiceDetailRequest[] | null;
 }
 
-export interface vnPayRequest extends clientPaymentRequest {
+export interface vnPayRequest  {
   amount: number | null;
   bankCode: string | null;
 }
@@ -51,7 +52,7 @@ export const createInvoiceOnline = async (data: clientPaymentRequest) => {
   return res.data;
 };
 
-export const createInvoiceOnlineWithVnPay = async (data: vnPayRequest) => {
+export const createInvoiceOnlineWithVnPay = async (data: clientPaymentRequest) => {
     const res = await request({
       url: `${API_CLIENT_PAYMENT}/vnpay`,
       method: "POST",

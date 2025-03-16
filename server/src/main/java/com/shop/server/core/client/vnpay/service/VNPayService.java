@@ -1,5 +1,6 @@
 package com.shop.server.core.client.vnpay.service;
 
+import com.shop.server.core.client.vnpay.model.VNPayRequest;
 import com.shop.server.core.client.vnpay.model.VNPayResponse;
 import com.shop.server.infrastructure.config.database.VNPayConfig;
 import com.shop.server.utils.VNPayUtil;
@@ -13,15 +14,16 @@ import java.util.*;
 @RequiredArgsConstructor
 public class VNPayService {
     private final VNPayConfig vnPayConfig;
-    public VNPayResponse createVnPayPayment(HttpServletRequest request, String idHoaDon) {
-        long amount = Integer.parseInt(request.getParameter("amount")) * 100L;
-        String bankCode = request.getParameter("bankCode");
+
+    public VNPayResponse createVnPayPayment(VNPayRequest request, String ipAddress, String idHoaDon) {
+        long amount = Integer.parseInt(request.getAmount()) * 100L;
+        String bankCode = request.getBankCode();
         Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(idHoaDon);
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);
         }
-        vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
+        vnpParamsMap.put("vnp_IpAddr", ipAddress);
         //build query url
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
         String hashData = VNPayUtil.getPaymentURL(vnpParamsMap, false);

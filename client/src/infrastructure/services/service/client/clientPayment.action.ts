@@ -18,18 +18,18 @@ export const useCreateInvoiceOnline = () => {
     });
 };
 
-// export const useCreateInvoiceOnlineWithVnPay = () => {
-//     const queryClient = useQueryClient();
-//     return useMutation({
-//         mutationFn: (data: vnPayRequest) => createInvoiceOnlineWithVnPay(data),
-//         onSuccess: (response) => {
-//             console.log(response);
-//             queryClient.invalidateQueries({
-//                 queryKey: [queryKey.client.payment.invoiceOnline],
-//             })
-//         },
-//         onError: (error: any) => {
-//             console.log(queryKey.client.payment.invoiceOnline, "🚀 ~ createInvoiceOnline ~ error:", error);
-//         },
-//     });
-// };
+export const useCreateInvoiceOnlineWithVnPay = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: clientPaymentRequest) => createInvoiceOnlineWithVnPay(data),
+        onSuccess: (response) => {
+            console.log(response);
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.client.payment.invoiceOnlineVNPay],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.client.payment.invoiceOnline, "🚀 ~ createInvoiceOnline ~ error:", error);
+        },
+    });
+};

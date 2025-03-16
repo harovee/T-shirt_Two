@@ -182,7 +182,7 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
 
     @Override
     public ResponseObject<?> getDistrictById(String id) {
-        return new ResponseObject<>(adminClientDistrictRepository.getDistrictsById(id), HttpStatus.OK, "Lấy huyện theo code thành công");
+            return new ResponseObject<>(adminClientDistrictRepository.getDistrictsById(id), HttpStatus.OK, "Lấy huyện theo code thành công");
     }
 
     @Override
