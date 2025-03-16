@@ -23,6 +23,12 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        // Cập nhật lên phiên bản mới hơn tương thích với Spring Boot 3.4.x
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.0"
+    }
+}
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -54,6 +60,7 @@ dependencies {
     implementation 'com.cloudinary:cloudinary-http44:1.33.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'com.itextpdf:itext7-core:7.1.16'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 }
 
 tasks.named('test') {
