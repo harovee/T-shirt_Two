@@ -57,6 +57,7 @@ public class MappingConstant {
     public static final String API_CLIENT_PRODUCT = API_CLIENT_PREFIX + "/products";
     public static final String API_CLIENT_PAYMENT = API_CLIENT_PREFIX + "/payment";
     public static final String API_CLIENT_MY_ORDER = API_CLIENT_PREFIX + "/my-order";
+    public static final String API_CLIENT_RECOMMENDER = API_CLIENT_PREFIX + "/recommender";
     public static final String API_COMMON_ANOTHER = API_COMMON + "/another";
 
     /* AUTHENTICATION */

@@ -141,6 +141,7 @@ import { keepPreviousData } from '@tanstack/vue-query';
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import ProductDetail from '@/page/admin/product/product-detail/ProductDetail.vue';
 import { useCartStorageBL } from './business.logic/useCartLocalStorageBL';
+import { successNotiSort } from '@/utils/notification.config';
 
 const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } = useCartStorageBL();
 
@@ -249,6 +250,9 @@ watch(product, (newProduct) => {
   }
 }, { immediate: true });
 
+
+
+
 const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   productId,
   paramsDetail,
@@ -310,14 +314,17 @@ const addToCart = () => {
 
   // Thao
   addProduct({
-    id: dataDetail?.value?.data?.data?.id,
+    id: dataDetail?.value?.data?.data?.maSPCTs[0],
+    name: dataDetail?.value?.data?.data?.ten,
+    anh: dataDetail?.value?.data?.data?.anh.length > 0 ? dataDetail?.value?.data?.data?.anh[0].url : "/default-product-image.jpg",
+    sizeName: dataDetail?.value?.data?.data?.kichCo[0].ten,
+    colorName: dataDetail?.value?.data?.data?.color[0].name,
     size: selectedSize.value,
     color: selectedColor.value,
     quantity: quantity.value,
     price: displayedDiscount.value && displayedDiscount.value.length > 0 ? displayedDiscount.value[0] : displayedPrice.value[0]
   })
-  console.log(cart);
-  
+  successNotiSort("Thêm vào giỏ thành công.");
 };
 
 const buyNow = () => {

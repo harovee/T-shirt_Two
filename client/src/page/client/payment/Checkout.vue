@@ -180,11 +180,6 @@ watch(
   }, {deep: true}
 );
 
-// watch(() => totalPrice.value , (newData) => {
-//   paymentInfo.value.totalProductPrice = newData
-//   console.log(paymentInfo.value);
-// }) 
-
 </script>
 
 <style scoped>

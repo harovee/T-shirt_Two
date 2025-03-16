@@ -1,7 +1,7 @@
 <template>
   <div>
     <table-example
-      wrapperClassName="min-h-[410px]"
+      class="min-h-[5rem]"
       :columns="columnsBill"
       :data-source="props.dataSource?.data"
       :loading="loading"
@@ -60,7 +60,9 @@
           <a-tag v-else-if="record.trangThai === 'Trả hàng'" color="error"
             >Trả hàng</a-tag
           >
-
+        <a-tag v-else-if="record.trangThai === 'Đã hủy'" class="text-red-500 border-red-500"
+            >Đã hủy</a-tag
+          >
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
 
@@ -121,7 +123,6 @@ const handleRedirectBillDetail = (idHoaDon: string) => {
       ROUTES_CONSTANTS.CLIENT.children.MY_ORDER_DETAIL.path,
     query: { idHoaDon },
   };
-  // console.log(detailBillPath)
   router.push(detailBillPath);
 };
 

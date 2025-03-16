@@ -1,0 +1,8 @@
+Flask
+requests
+python-dotenv
+pandas
+numpy
+scikit-learn
+# tensorflow
+# Các thư viện khác bạn cần

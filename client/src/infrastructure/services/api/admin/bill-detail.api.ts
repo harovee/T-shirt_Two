@@ -1,7 +1,7 @@
 import { Ref } from 'vue';
 import { DefaultResponse, PaginationParams, PaginationResponse, ResponseList } from "@/infrastructure/types/api.common";
 import request from "@/infrastructure/services/request.ts";
-import { API_ADMIN_BILL_DETAIL } from '@/infrastructure/constants/url';
+import { API_ADMIN_BILL_DETAIL, API_ADMIN_BILL_DETAIL_REFUND } from '@/infrastructure/constants/url';
 import {  AxiosResponse } from 'axios';
 
 export interface BillDetailPropsParams {
@@ -69,7 +69,7 @@ export const getBillDetailsByIdHoaDon = async (params: Ref<FindBillDetailRequest
 
 export const getBillDetailsByMaHoaDon = async (billCode: string) => {
     const res = (await request ({
-        url: `${API_ADMIN_BILL_DETAIL}/refund/${billCode}`,
+        url: `${API_ADMIN_BILL_DETAIL_REFUND}/${billCode}`,
         method: 'GET',
     })) as AxiosResponse<
         DefaultResponse<Array<BillDetailByMaHDResponse>>

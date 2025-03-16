@@ -12,7 +12,8 @@
       >
         <div class="search-container flex items-center gap-4 w-full">
           <a-input
-            v-model:value="searchQuery"
+            v-bind:value="searchQuery"
+            @update:value="searchQuery = $event"
             placeholder="Nhập mã đơn hàng..."
             class="search-input flex-1"
             style="height: 40px; width: auto; min-width: 500px"
@@ -23,7 +24,7 @@
               <a-button
                 class="bg-purple-300 flex justify-between items-center gap-2"
                 size="large"
-                @click="handleRedirectToRefundDetail()"
+                @click="handleSearch()"
               >
                 <FileSearchOutlined />
               </a-button>
@@ -59,34 +60,40 @@ import { ref, watch } from "vue";
 import { FileSearchOutlined, QrcodeOutlined } from "@ant-design/icons-vue";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import router from "@/infrastructure/routes/router";
-import { warningNotiSort } from "@/utils/notification.config";
-import { useGetBillRefundByMaHD } from "@/infrastructure/services/service/admin/bill.action";
+import { successNotiSort, warningNotiSort } from "@/utils/notification.config";
+import { getBillRefundByMaHD } from "@/infrastructure/services/api/admin/bill.api";
 
+// Tạo searchQuery và function handleSearch trong setup()
 const searchQuery = ref("");
-// const { data } = useGetBillRefundByMaHD(searchQuery.value);
 
-const handleRedirectToRefundDetail = () => {
+const handleSearch = async () => {
+  // console.log("Giá trị của searchQuery:", searchQuery.value);
+
   if (!searchQuery.value.trim()) {
     warningNotiSort("Vui lòng nhập mã đơn hàng");
     return;
   }
+  const res = await getBillRefundByMaHD(searchQuery.value);
+  // console.log(res.data);
 
-  // if (!data.value?.data) {
-  //   console.log(searchQuery.value);
-  //   console.log(data);
-    
-  //   warningNotiSort("Không tồn tại mã đơn hàng");
-  //   return;
-  // }
+  if (!res.data) {
+    warningNotiSort("Không tồn tại đơn hàng");
+    return;
+  }
 
-  const detailBillPath = {
-    path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND_DETAIL.path.replace(
-      ":maHoaDon",
-      searchQuery.value
-    ),
-  };
-  router.push(detailBillPath);
-  // console.log(detailBillPath);
+  try {
+    const detailBillPath = {
+      path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND_DETAIL.path.replace(
+        ":maHoaDon",
+        searchQuery.value
+      ),
+    };
+    router.push(detailBillPath);
+    successNotiSort("Tìm đơn hàng thành công");
+  } catch (error) {
+    warningNotiSort("Lỗi khi lấy dữ liệu từ API");
+    console.error(error);
+  }
 };
 </script>
 

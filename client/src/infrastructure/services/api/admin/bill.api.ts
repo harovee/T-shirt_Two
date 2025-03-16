@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { API_ADMIN_BILL, API_ADMIN_COUNT_BILL } from '@/infrastructure/constants/url';
+import { API_ADMIN_BILL, API_ADMIN_BILL_REFUND, API_ADMIN_COUNT_BILL } from '@/infrastructure/constants/url';
 import { DefaultResponse, PaginationParams, PaginationResponse, ResponseList } from '@/infrastructure/types/api.common';
 import { Ref } from 'vue';
 import request from "@/infrastructure/services/request.ts";
@@ -24,6 +24,13 @@ export interface BillRequest {
     // idKhachHang: String | null;
     tenNguoiNhan: String | null;
     ghiChu: String | null;
+    tinh: string | null;
+    huyen: string | null;
+    xa: string | null;
+    idPhieuGiamGia: string | null;
+    tienGiam: number | null;
+    tienShip: string | null;
+    tongTien: number | null;
 }
 
 export interface BillWaitRequest {
@@ -70,6 +77,11 @@ export type BillResponse = ResponseList & {
     diaChiNguoiNhan: string | null;
     tenNguoiNhan: string | null;
     ghiChu: string | null;
+    idPhieuGiamGia: string | null;
+    phuongThucNhan: string | null;
+    tinh: string | null;
+    huyen: string | null;
+    xa: string | null;
 }
 
 export type BillRefundResponse = ResponseList & {
@@ -140,7 +152,7 @@ export const getBillById = async (billId: string | null) => {
 
 export const getBillRefundByMaHD = async (billCode: string) => {
     const res = (await request ({
-        url: `${API_ADMIN_BILL}/refund/${billCode}`,
+        url: `${API_ADMIN_BILL_REFUND}/${billCode}`,
         method: 'GET',
     })) as AxiosResponse<
         DefaultResponse<BillRefundResponse>

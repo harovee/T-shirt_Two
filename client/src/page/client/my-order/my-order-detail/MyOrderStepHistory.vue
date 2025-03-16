@@ -257,7 +257,6 @@ const updateStepTimes = (dataSource: DataSource) => {
     } else {
       step.time = "Chưa có thông tin";
     }
-    // console.log(`🕒 Updated ${step.title}:`, step.time); // Kiểm tra giá trị log
   });
 };
 
@@ -265,7 +264,6 @@ const updateStepTimes = (dataSource: DataSource) => {
 watch(
   () => props.dataSource,
   (newValue) => {
-    console.log("📊 dataSource updated:", newValue);
     updateCurrentStep(newValue);
     updateStepTimes(newValue);
   },

@@ -33,4 +33,14 @@ public interface AdminBillResponse extends BaseResponse {
     String getTenKhachHang();
 
     String getDiaChiNguoiNhan();
+
+    String getPhuongthucNhan();
+
+    String getIdPhieuGiamGia();
+
+    String getTinh();
+
+    String getHuyen();
+
+    String getXa();
 }

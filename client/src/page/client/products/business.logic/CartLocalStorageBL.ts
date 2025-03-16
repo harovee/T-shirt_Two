@@ -19,9 +19,10 @@ export const addToCart = (product: any) => {
 
   if (existingProduct) {
     existingProduct.quantity += product.quantity;
+    console.log(existingProduct);
   } else {
     cart.push(product);
-
+    console.log(product);
   }
 
   saveCartToLocalStorage(cart);
@@ -34,6 +35,11 @@ export const removeFromCart = (productId: string) => {
   cart = cart.filter((item: any) => item.id !== productId);
   saveCartToLocalStorage(cart);
   return cart;
+};
+
+// Xóa localStorage
+export const clearCart = () => {
+  localStorage.removeItem(CART_STORAGE_KEY);
 };
 
 // 🛒 Cập nhật số lượng sản phẩm

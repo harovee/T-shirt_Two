@@ -31,7 +31,13 @@ import java.util.List;
         String idPhieuGiamGia;
 
         String paymentMethod;
+      
+    String tinh;
 
-        List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
+    String huyen;
+
+    String xa;
+
+    List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
 
     }

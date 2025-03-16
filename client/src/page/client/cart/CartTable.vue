@@ -73,7 +73,7 @@
                 class="!bg-transparent !border-none !shadow-none !text-gray-500 hover:!text-red-700"
                 size="middle"
                 shape="round"
-                @click="handleDelete(record.key)"
+                @click="handleDelete(record)"
               >
                 <v-icon name="fa-trash-alt" />
               </a-button>
@@ -86,7 +86,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { TableProps, TableColumnType} from "ant-design-vue";
+import type { TableColumnType} from "ant-design-vue";
 import {
   POSProductDetailResponse,
   POSUpdateCartRequest,
@@ -95,6 +95,9 @@ import {
   defaultProductImageSaleUrl,
   formatCurrency,
 } from "@/utils/common.helper";
+import { useCartStorageBL } from '@/page/client/products/business.logic/useCartLocalStorageBL';
+
+const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } = useCartStorageBL();
 
 const props = defineProps({
     dataSource: {
@@ -102,15 +105,27 @@ const props = defineProps({
     }
 })
 
+const emit = defineEmits(["updateCart"]);
+
 interface DataType extends POSProductDetailResponse {
   key: string;
+}
+
+const handleQuantityChange = (record: any) => {
+  updateProductQuantity (record.id, record.soLuong);
+  emit("updateCart");
+}
+
+const handleDelete = (record: any) => {
+  removeProduct(record.id);
+  emit("updateCart");
 }
 
 const columns: TableColumnType<DataType>[] = [
   {
     title: "Ảnh",
     dataIndex: "anh",
-    width: 100,
+    width:80,
     align: "center",
   },
   {
@@ -135,13 +150,13 @@ const columns: TableColumnType<DataType>[] = [
   {
     title: "Tổng tiền",
     dataIndex: "tongTien",
-    width: 100,
+    width: 150,
     align: "center",
   },
   {
     title: "Xóa",
     dataIndex: "hanhDong",
-    width: 100,
+    width: 50,
     align: "center",
   },
 ];

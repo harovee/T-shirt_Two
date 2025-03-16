@@ -450,6 +450,14 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: false
                 },
             },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.COMPLETE_PAYMENT.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.COMPLETE_PAYMENT.name,
+                component: () => import('@/page/client/payment/CompletePayment.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
         ],
     },
     {

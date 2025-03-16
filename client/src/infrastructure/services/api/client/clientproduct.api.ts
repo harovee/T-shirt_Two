@@ -100,6 +100,8 @@ export type ClientProductResponse = ResponseList & {
 
     maSanPham: string ;
 
+    maSPCTs: List<String>;
+
     ten: string ;
 
     danhMuc: DanhMucResponse;

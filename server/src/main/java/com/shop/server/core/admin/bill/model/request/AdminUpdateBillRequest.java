@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -34,4 +36,15 @@ public class AdminUpdateBillRequest {
 
     private Long ngayTao;
 
+    private String tinh;
+
+    private String huyen;
+
+    private BigDecimal tienShip;
+
+    private BigDecimal tienGiam;
+
+    private String xa;
+
+    private BigDecimal tongTien;
 }

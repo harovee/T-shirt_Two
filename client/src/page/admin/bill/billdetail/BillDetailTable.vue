@@ -118,7 +118,7 @@
 
     <!-- Bảng sản phẩm -->
     <table-example
-      class="min-h-[15rem]"
+      class="min-h-[5rem]"
       v-if="props"
       :wrapperClassName="props.wrapperClassName"
       :columns="props.columns"

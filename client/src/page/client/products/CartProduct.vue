@@ -4,12 +4,12 @@
       <div class="flex items-center">
         <p class="mr-8 mt-4 text-base">Sắp xếp theo</p>
         <a-select class="w-64" v-model:value="selectedArrange">
-          <a-select-option
+          <!-- <a-select-option
             v-for="arrange in arrangesData"
             :key="arrange.value"
             :value="arrange.value"
             >{{ arrange.name }}</a-select-option
-          >
+          > -->
         </a-select>
       </div>
       <a-row>
@@ -20,7 +20,8 @@
           :key="product.id"
           class="p-3"
         >
-          <a-card hoverable class="w-full">
+          <div @click="handleRedirectProductDetail(product)">
+            <a-card hoverable class="w-full">
             <template #cover>
               <div class="product-image-container">
                 <img
@@ -79,11 +80,12 @@
                 </div>
               </template>
             </a-card-meta>
-            <div class="flex justify-evenly">
+            <!-- <div class="flex justify-evenly">
               <a-button type="primary">Thêm vào giỏ</a-button>
               <a-button type="primary" @click="handleRedirectProductDetail(product)">Xem chi tiết</a-button>
-            </div>
+            </div> -->
           </a-card>
+          </div>
         </a-col>
       </a-row>
       </div>

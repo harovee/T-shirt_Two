@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface AdminClientDistrictRepository extends DistrictRepository {
     @Query("SELECT d.name FROM District d WHERE d.id = :id")
     String getDistrictsById(String id);
+
+
 }

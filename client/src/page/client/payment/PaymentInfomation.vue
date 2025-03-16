@@ -121,7 +121,7 @@ import {
   errorNotiSort,
 } from "@/utils/notification.config";
 import { keepPreviousData } from "@tanstack/vue-query";
-import PayMentAddress from "./PayMentAddress.vue";
+// import PayMentAddress from "./PayMentAddress.vue";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import { useRouter } from "vue-router";
 import {
@@ -132,7 +132,7 @@ import {
   useGetServiceId,
   useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
-import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
+import { useCreateInvoiceOnline } from "@/infrastructure/services/service/client/clientPayment.action";
 
 import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
@@ -155,6 +155,9 @@ import {
   useUpdateQuantityOrderDetails,
   useDeleteCartById,
 } from "@/infrastructure/services/service/admin/point-of-sale";
+import {
+  clearCart
+} from "@/page/client/products/business.logic/CartLocalStorageBL";
 import {
   VoucherResponse,
   FindVoucherRequest,
@@ -358,199 +361,10 @@ const getVoucher = () => {
     });
 };
 
-// watch(
-//   () => paymentInfo.value,
-//   (newData) => {
-//     if (dataListVoucher.value) {
-//       console.log("ok");
 
-//       voucher.value =
-//         dataListVoucher.value.find(
-//           (voucherSelected) =>
-//             voucherSelected.id === paymentInfo.value.voucherId
-//         ) || null;
-//       console.log(voucher.value);
-//     }
-//   },
-//   { deep: true }
-// );
-
-// const changeShippingOption = (option: string) => {
-//   paymentInfo.value.shippingOption = option;
-//   emit("handlePaymentInfo", paymentInfo.value);
-// };
-
-// const { mutate: updateBillWait } = useUpdateBillWait();
-
-// const handleUpdateBill = () => {
-//   const pdfParams = {
-//     idKhachHang: props.selectedCustomerInfo
-//       ? props.selectedCustomerInfo.id
-//       : null,
-
-//     idNhanVien: null,
-
-//     idHoaDon: props.dataSourceInfor.id,
-
-//     products: dataSourcePro.value,
-
-//     tongTien: paymentInfo.value.totalProductPrice,
-
-//     phiVanChuyen: paymentInfo.value.shippingFee,
-
-//     giamGia: paymentInfo.value.discount,
-//   };
-//   const payload = {
-//     trangThai:
-//       paymentInfo.value.shippingOption === "true"
-//         ? "Chờ giao hàng"
-//         : "Thành công",
-//     idKhachHang: props.selectedCustomerInfo
-//       ? props.selectedCustomerInfo.id
-//       : null,
-//     idPhieuGiamGia: paymentInfo.value.voucherId || null,
-//     idNhanVien: null,
-//     diaChiNguoiNhan:
-//       paymentInfo.value.shippingOption === "true"
-//         ? paymentInfo.value.fullAddress
-//         : null,
-//     tenNguoiNhan:
-//       paymentInfo.value.shippingOption === "true"
-//         ? paymentInfo.value.name
-//         : null,
-//     soDienThoai:
-//       paymentInfo.value.shippingOption === "true"
-//         ? paymentInfo.value.phoneNumber
-//         : null,
-//     ngayShip: null,
-//     ghiChu: null,
-//     tienGiam: paymentInfo.value.discount || null,
-//     tienShip:
-//       paymentInfo.value.shippingOption === "true"
-//         ? paymentInfo.value.shippingFee
-//         : null,
-//     tongTien: paymentInfo.value.totalProductPrice || null,
-//   };
-//   if (
-//     paymentInfo.value.shippingOption === "true" &&
-//     (!paymentInfo.value.name ||
-//       !paymentInfo.value.phoneNumber ||
-//       !paymentInfo.value.fullAddress)
-//   ) {
-//     warningNotiSort("Vui lòng điền thông tin người nhận!");
-//     return;
-//   }
-//   if (paymentedValue.value === 0) {
-//     warningNotiSort(
-//       "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"
-//     );
-//     return;
-//   }
-//   Modal.confirm({
-//     content: "Bạn chắc chắn muốn hoàn thành thanh toán?",
-//     icon: createVNode(ExclamationCircleOutlined),
-//     centered: true,
-
-//     async onOk() {
-//       try {
-//         await updateBillWait({
-//           idBill: props.dataSourceInfor.id,
-//           params: payload,
-//         });
-//         await createInvoicePdf(pdfParams);
-//         successNotiSort("Thanh toán thành công!");
-//         router.push(
-//           ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-//         );
-//       } catch (error: any) {
-//         console.error("🚀 ~ handleCreate ~ error:", error);
-//         if (error?.response) {
-//           errorNotiSort(error?.response?.data?.message);
-//         }
-//       }
-//     },
-//     cancelText: "Huỷ",
-//     onCancel() {
-//       Modal.destroyAll();
-//     },
-//   });
-// };
-
-// const getCustomerAddress = ref(null);
-
-// const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
-//   getCustomerAddress.value = modelRef;
-//   paymentInfo.value.name = modelRef.name;
-//   paymentInfo.value.phoneNumber = modelRef.phoneNumber;
-//   const wardInfo = ref(null);
-//   const districtInfo = ref(null);
-//   const provinceInfo = ref(null);
-
-//   if (modelRef.ward || modelRef.district || modelRef.province) {
-//     try {
-//       const response = await getWardByCode(modelRef.ward);
-//       wardInfo.value = response.data.data;
-
-//       const responseDis = await getDistrictById(modelRef.district);
-//       districtInfo.value = responseDis.data.data;
-
-//       const responsePro = await getProvinceById(modelRef.province);
-//       provinceInfo.value = responsePro.data.data;
-//       paymentInfo.value.fullAddress =
-//         modelRef.line +
-//         ", " +
-//         wardInfo.value +
-//         ", " +
-//         districtInfo.value +
-//         ", " +
-//         provinceInfo.value;
-//     } catch (error) {
-//       console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
-//     }
-//   }
-
-//   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
-//   serviceIdParams.value.toDistrict = Number(modelRef.district);
-
-//   if (serviceIdParams.value.toDistrict !== 0) {
-//     refetchService().then(() => {
-//       shippingParams.value.serviceId = service?.value?.data[0].service_id;
-
-//       shippingParams.value.toDistrictId = modelRef.district;
-//       shippingParams.value.toWardCode = modelRef.ward;
-
-//       if (shippingParams.value.toWardCode) {
-//         refetchShipping().then(() => {
-//           paymentInfo.value.shippingFee = shipping?.value?.data.total;
-//         });
-//       }
-//     });
-//   } else {
-//     paymentInfo.value.shippingFee = 0;
-//   }
-//   console.log(paymentInfo.value);
-// };
-
-// watch(totalAmount, (newTotal) => {
-//   if (newTotal !== 0) {
-//     paymentInfo.value.totalProductPrice = newTotal;
-//   }
-// });
-
-// watch(
-//   () => paymentInfo.value.shippingFee,
-//   (newTotal) => {
-//     if (newTotal && newTotal !== 0) {
-//       paymentInfo.value.totalProductPrice =
-//         totalAmount.value + newTotal - paymentInfo.value.discount;
-//     } else {
-//       paymentInfo.value.totalProductPrice = 0;
-//     }
-//   }
-// );
 
 const { mutate: createInvoice } = useCreateInvoiceOnline();
-const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
+// const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
 
 const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
 
@@ -562,11 +376,9 @@ const handlePayment = () => {
       (product) => ({
         idSanPhamChiTiet: product.id || null,
         soLuong: product.soLuong || null,
-        gia: product.tongTien || null,
+        gia: product.gia || null,
       })
     );
-
-  
 
     const payload = {
       diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
@@ -581,10 +393,13 @@ const handlePayment = () => {
       idPhieuGiamGia: paymentInfo.value.voucherId || null,
       listSanPhamChiTiets: listSanPhamChiTiets || null,
       paymentMethod: paymentInfo.value.method,
+      tinh: props.dataAddress.province,
+      huyen: props.dataAddress.district,
+      xa: props.dataAddress.ward,
       amount: paymentInfo.value.total || null,
       bankCode: ""
     };
-    console.log(payload);
+    // console.log(payload);
     if (paymentInfo.value.method === "cod") {
       Modal.confirm({
         content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
@@ -594,7 +409,9 @@ const handlePayment = () => {
         async onOk() {
           try {
             await createInvoice(payload);
+            clearCart();
             successNotiSort("Hoàn thành đơn hàng!");
+            router.push({ name: "client-complete-payment" });
           } catch (error: any) {
             console.error("🚀 ~ handleCreate ~ error:", error);
             if (error?.response) {

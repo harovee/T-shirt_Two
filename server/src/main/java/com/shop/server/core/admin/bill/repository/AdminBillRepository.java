@@ -132,7 +132,12 @@ public interface AdminBillRepository extends HoaDonRepository {
             hd.trang_thai AS trangThai,
             nv.ma_nhan_vien AS maNhanVien,
             kh.ho_va_ten AS tenKhachHang,
-            pg.ten AS tenPhieuGiamGia
+            pg.ten AS tenPhieuGiamGia,
+            hd.id_phieu_giam_gia AS idPhieuGiamGia,
+            hd.phuong_thuc_nhan AS phuongThucNhan,
+            hd.tinh AS tinh,
+            hd.huyen AS huyen,
+            hd.xa AS xa
         FROM hoa_don hd
         LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id

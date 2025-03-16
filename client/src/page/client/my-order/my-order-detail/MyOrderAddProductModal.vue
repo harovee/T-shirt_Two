@@ -150,9 +150,6 @@ const handleAddProducts = () => {
       idSanPhamChiTiet: product.id, // Đảm bảo lấy đúng ID sản phẩm
       soLuong: 1, // Mặc định số lượng là 1
     };
-
-    // console.log("📤 Dữ liệu gửi đi API:", requestData); // Log dữ liệu trước khi gửi
-
     createBillDetail(requestData, {
       onSuccess: () => {
         // console.log(`✅ Thêm sản phẩm ${product.maSanPhamChiTiet} thành công`);
@@ -296,7 +293,6 @@ const listSleeve = computed(() => {
     })) || []
   );
 });
-// console.log(listSleeve);
 
 
 // lấy danh sách kiểu dáng

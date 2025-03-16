@@ -9,15 +9,18 @@
       <a-row :gutter="[24, 24]">
         <!-- Danh sách sản phẩm -->
         <a-col :span="16">
-          <a-card class="shadow-lg rounded-2xl">
-            <cart-table :dataSource="listProducts" />
+          <a-card class="bg-gray-100">
+            <cart-table :dataSource="listProducts"
+            @updateCart="reloadCart"
+          />
           </a-card>
+          
         </a-col>
 
         <!-- Tổng tiền & Thanh toán -->
         <a-col :span="8">
-          <a-card class="shadow-lg rounded-2xl p-5">
-            <h2 class="text-2xl font-bold mb-4">ĐƠN HÀNG</h2>
+          <a-card class="bg-gray-100 p-5">
+            <h2 class="text-2xl font-bold mb-4 mt-5">ĐƠN HÀNG</h2>
             <div class="flex justify-between items-center text-lg">
               <span>Tổng cộng:</span>
               <span class="text-2xl font-bold text-red-700">
@@ -46,7 +49,7 @@
       <img src="/src/assets/image/images/empty-cart.webp" width="400" />
       <h4 class="text-lg mt-3">Bạn chưa có sản phẩm nào trong giỏ hàng.</h4>
       <router-link to="/home">
-        <a-button class="mt-5 px-6 py-2 text-lg" type="primary" danger>
+        <a-button class="mt-5 px-6 py-2 text-lg h-12" type="primary" danger>
           TIẾP TỤC MUA SẮM
         </a-button>
       </router-link>
@@ -61,6 +64,7 @@ import { useCartStore } from "@/infrastructure/stores/cart";
 import { formatCurrencyVND } from "@/utils/common.helper";
 import CartTable from "./CartTable.vue";
 import { useCartStorageBL } from "../products/business.logic/useCartLocalStorageBL";
+import { getCartFromLocalStorage } from "../products/business.logic/CartLocalStorageBL";
 
 const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } = useCartStorageBL();
 
@@ -70,13 +74,20 @@ const cartStore = useCartStore();
 // Danh sách sản phẩm đã được map lại
 const listProducts = computed(() =>
   cart.value.map((item) => ({
-    tenHang: `Sản phẩm ${item.id?.slice(0, 5) || "?"}`, // Giả sử không có tên sản phẩm, đặt tạm ID, gọi API lấy thông tin ra nhé
-    anh: "https://via.placeholder.com/150", // Chưa có ảnh, dùng ảnh placeholder
+    id: item.id,
+    // tenHang: `Sản phẩm ${item.id?.slice(0, 5) || "?"}`, // Giả sử không có tên sản phẩm, đặt tạm ID, gọi API lấy thông tin ra nhé
+    tenHang: `${item.name} [ ${item.colorName} - ${item.sizeName} ]`,
+    anh: `${item.anh}`, // Chưa có ảnh, dùng ảnh placeholder
     gia: item.price || 0,
     soLuong: item.quantity || 1,
     tongTien: (item.price || 0) * (item.quantity || 1),
   }))
 );
+
+// Load lấy lại cart từ local
+const reloadCart = () => {
+   cart.value = [...getCartFromLocalStorage()];
+};
 
 const tongTien = computed(() => {
   return listProducts.value.reduce(
