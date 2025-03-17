@@ -53,8 +53,8 @@ public class SecurityConfig {
     @Value("${frontend.url}")
     private String vueOrigin;
 
-    @Value("${python.url}")
-    private String pythonOrigin;
+//    @Value("${python.url}")
+//    private String pythonOrigin;
 
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
@@ -95,7 +95,8 @@ public class SecurityConfig {
         source.registerCorsConfiguration(MappingConstant.API_EMBED_PREFIX + "/**", publicApiConfig);
 
         CorsConfiguration defaultConfig = new CorsConfiguration();
-        defaultConfig.setAllowedOrigins(List.of(vueOrigin, pythonOrigin));
+//        defaultConfig.setAllowedOrigins(List.of(vueOrigin, pythonOrigin));
+        defaultConfig.setAllowedOrigins(List.of(vueOrigin));
         defaultConfig.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "*"));
         defaultConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         defaultConfig.setAllowCredentials(true);

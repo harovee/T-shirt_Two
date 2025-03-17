@@ -482,6 +482,8 @@ watch(
   () => dataSourcePro.value,
   (newData) => {
     if (newData) {
+      console.log(newData);
+      
       paramsVoucher.value.tongTien = totalAmount.value;
       paramsNextPriceVoucher.value.tongTien = totalAmount.value;
       if (serviceIdParams.value.toDistrict !== 0) {
@@ -645,9 +647,10 @@ const formatter = (value: any) => {
 };
 
 const totalAmount = computed(() => {
+  // console.log(dataSourcePro.value);
   const total =
     dataSourcePro.value.reduce((total, e) => {
-      return total + (e.gia * e.soLuong || 0);
+      return total + (e.giaHienTai * e.soLuong || 0);
     }, 0) || 0;
   paramsVoucher.value.tongTien = total;
   return total;
@@ -729,8 +732,6 @@ watch(
   () => paymentInfo.value,
   (newData) => {
     if (dataListVoucher.value) {
-      console.log("ok");
-
       voucher.value =
         dataListVoucher.value.find(
           (voucherSelected) => voucherSelected.id === paymentInfo.value.voucherId

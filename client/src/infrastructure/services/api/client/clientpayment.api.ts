@@ -33,7 +33,7 @@ export interface clientPaymentRequest extends vnPayRequest{
 }
 
 export interface vnPayRequest  {
-  amount: number | null;
+  amount: string | null;
   bankCode: string | null;
 }
 

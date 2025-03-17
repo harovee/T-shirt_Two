@@ -132,7 +132,7 @@ import {
   useGetServiceId,
   useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
-import { useCreateInvoiceOnline } from "@/infrastructure/services/service/client/clientPayment.action";
+import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
 
 import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
@@ -396,7 +396,7 @@ const handlePayment = () => {
       tinh: props.dataAddress.province,
       huyen: props.dataAddress.district,
       xa: props.dataAddress.ward,
-      amount: paymentInfo.value.total || null,
+      amount: paymentInfo.value.total + "" || null,
       bankCode: ""
     };
     // console.log(payload);
@@ -438,7 +438,7 @@ const handlePayment = () => {
           }
             console.log(response);
           } catch (error: any) {
-            console.error("🚀 ~ handleCreate ~ error:", error);
+            console.error("🚀 ~ handleCreate ~ error:", error); 
             if (error?.response) {
               errorNotiSort(error?.response?.data?.message);
             }

@@ -15,8 +15,8 @@ import java.util.List;
 @Slf4j
 public class RecommenderWebClientServiceImpl implements RecommenderWebClientService {
 
-    @Value("${python.url}")
-    private String api;
+//    @Value("${python.url}")
+//    private String api;
 
     private final WebClient webClient;
 
@@ -26,20 +26,20 @@ public class RecommenderWebClientServiceImpl implements RecommenderWebClientServ
 
     @Override
     public List<String> callApiGetProductIdsRecommendation(String userId) {
-        String url = api + "recommendations/" + userId;
-        try {
-            return webClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .bodyToMono(RecommenderProductIdsResponse.class)
-                    .map(RecommenderProductIdsResponse::getRecommendedProductIds)
-                    .defaultIfEmpty(Collections.emptyList())
-                    .block();
-        } catch (WebClientResponseException e) {
-            log.error("API error: {} - {}", e.getRawStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (Exception e) {
-            log.error("Unexpected error when calling API: {}", e.getMessage(), e);
-        }
+//        String url = api + "recommendations/" + userId;
+//        try {
+//            return webClient.get()
+//                    .uri(url)
+//                    .retrieve()
+//                    .bodyToMono(RecommenderProductIdsResponse.class)
+//                    .map(RecommenderProductIdsResponse::getRecommendedProductIds)
+//                    .defaultIfEmpty(Collections.emptyList())
+//                    .block();
+//        } catch (WebClientResponseException e) {
+//            log.error("API error: {} - {}", e.getRawStatusCode(), e.getResponseBodyAsString(), e);
+//        } catch (Exception e) {
+//            log.error("Unexpected error when calling API: {}", e.getMessage(), e);
+//        }
         return Collections.emptyList();
     }
 }

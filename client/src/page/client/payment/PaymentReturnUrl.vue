@@ -84,6 +84,7 @@ onMounted(async () => {
       if (response.data.message && response.data.message.includes('thành công')) {
         status.value = 'success';
         antMessage.success('Thanh toán thành công!');
+        clearCart();
         showCountdown.value = true;
         startCountdown(() => {
           if (window.opener) {

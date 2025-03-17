@@ -16,7 +16,8 @@ public class VNPayService {
     private final VNPayConfig vnPayConfig;
 
     public VNPayResponse createVnPayPayment(VNPayRequest request, String ipAddress, String idHoaDon) {
-        long amount = Integer.parseInt(request.getAmount()) * 100L;
+//        long amount = Long.valueOf(request.getAmount()) * 100L;
+        long amount = (long) (Double.parseDouble(request.getAmount()) * 100);
         String bankCode = request.getBankCode();
         Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(idHoaDon);
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));

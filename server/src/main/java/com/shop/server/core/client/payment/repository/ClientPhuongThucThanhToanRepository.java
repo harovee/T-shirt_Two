@@ -13,6 +13,6 @@ public interface ClientPhuongThucThanhToanRepository extends PhuongThucThanhToan
             FROM phuong_thuc_thanh_toan pttt
             WHERE pttt.ten_phuong_thuc LIKE :#{#name}
 """
- ,nativeQuery = true   )
+            ,nativeQuery = true   )
     PhuongThucThanhToan findPhuongThucThanhToanByName(String name);
 }
