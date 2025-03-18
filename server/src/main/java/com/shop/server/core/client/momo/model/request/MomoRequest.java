@@ -1,4 +1,4 @@
-package com.shop.server.core.client.momo.model;
+package com.shop.server.core.client.momo.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
