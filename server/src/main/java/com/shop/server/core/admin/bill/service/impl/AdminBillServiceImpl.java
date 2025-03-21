@@ -6,6 +6,7 @@ import com.shop.server.core.admin.bill.model.request.AdminUpdateBillRequest;
 import com.shop.server.core.admin.bill.model.request.AdminUpdateBillWaitRequest;
 import com.shop.server.core.admin.bill.repository.AdminBillRepository;
 import com.shop.server.core.admin.bill.service.AdminBillService;
+import com.shop.server.core.admin.point_of_sale.repository.POSOrderDetailRepository;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.*;
@@ -35,19 +36,21 @@ public class AdminBillServiceImpl implements AdminBillService {
     private final PhieuGiamGiaRepository phieuGiamGiaRepository;
     private final LichSuHoaDonRepository lichSuHoaDonRepository;
     private final AddressRepository addressRepository;
+    private final POSOrderDetailRepository posOrderDetailRepository;
 
     public AdminBillServiceImpl(AdminBillRepository adminBillRepository,
                                 KhachHangRepository khachHangRepository,
                                 NhanVienRepository nhanVienRepository,
                                 PhieuGiamGiaRepository phieuGiamGiaRepository,
                                 LichSuHoaDonRepository lichSuHoaDonRepository,
-                                InfoUserTShirt infoUserTShirt, AddressRepository addressRepository) {
+                                InfoUserTShirt infoUserTShirt, AddressRepository addressRepository, POSOrderDetailRepository posOrderDetailRepository) {
         this.adminBillRepository = adminBillRepository;
         this.khachHangRepository = khachHangRepository;
         this.nhanVienRepository = nhanVienRepository;
         this.phieuGiamGiaRepository = phieuGiamGiaRepository;
         this.lichSuHoaDonRepository = lichSuHoaDonRepository;
         this.addressRepository = addressRepository;
+        this.posOrderDetailRepository = posOrderDetailRepository;
     }
 
     @Override
@@ -149,11 +152,12 @@ public class AdminBillServiceImpl implements AdminBillService {
         HoaDon hoaDon = new HoaDon();
         hoaDon.setMa(maHD);
         hoaDon.setLoaiHD(request.getLoaiHD());
-        if (hoaDon.getLoaiHD().equalsIgnoreCase("Online")) {
-            hoaDon.setTrangThai("Chờ xác nhận");
-        }else {
-            hoaDon.setTrangThai("Hóa đơn chờ");
-        }
+        hoaDon.setTrangThai("Chờ xác nhận");
+//        if (hoaDon.getLoaiHD().equalsIgnoreCase("Online")) {
+//            hoaDon.setTrangThai("Chờ xác nhận");
+//        }else {
+//            hoaDon.setTrangThai("Chờ xác nhận");
+//        }
 
         KhachHang kh = request.getIdKhachHang() != null ? khachHangRepository.findById(request.getIdKhachHang())
                 .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại")) : null;
@@ -272,8 +276,15 @@ public class AdminBillServiceImpl implements AdminBillService {
     @Transactional
     @Override
     public ResponseObject<?> removeBillWait(String id) {
+        List<String> listIdProductDetail = adminBillRepository.getListIdProductDetail(id);
         Optional<HoaDon> bill = adminBillRepository.findById(id);
         if (bill.isPresent()) {
+            // Trả lại số lượng sản phẩm khi hủy đơn
+            if (!listIdProductDetail.isEmpty()) {
+                for (String idODetail : listIdProductDetail) {
+                    posOrderDetailRepository.updateProductQuantityAfterDelete(idODetail);
+                }
+            }
             adminBillRepository.deleteByIdHoaDon(id);
             adminBillRepository.deleteLichSuByIdHoaDon(id);
             adminBillRepository.deletePMDByIdHoaDon(id);
@@ -298,6 +309,7 @@ public class AdminBillServiceImpl implements AdminBillService {
         }
 
         hoaDon.setPhieuGiamGia(request.getIdPhieuGiamGia() != null ? phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia()).orElse(null) : null);
+        hoaDon.setNhanVien(request.getIdNhanVien() != null ? nhanVienRepository.findById(request.getIdNhanVien()).orElse(null) : null);
 
         hoaDon.setDiaChiNguoiNhan(request.getDiaChiNguoiNhan());
         hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());

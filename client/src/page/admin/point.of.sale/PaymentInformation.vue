@@ -215,6 +215,7 @@ import {
 import { useUpdateBillWait } from "@/infrastructure/services/service/admin/bill.action";
 import VoucherPaymentTable from "./voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "./payment-method/PaymentMethod.vue";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   formatCurrencyVND,
   getDateFormat,
@@ -524,90 +525,7 @@ const dataNextPriceVouchers = computed(
   () => dataNextPriceVoucher?.value?.data || []
 );
 
-// Lấy địa chỉ theo xã huyện tỉnh
 
-// const provincesOptions = ref<{ label: string; value: string }[]>([]);
-// const districtsOptions = ref<{ label: string; value: string }[]>([]);
-// const wardsOptions = ref<{ label: string; value: string }[]>([]);
-
-// const { data: provinces, refetch: refetchProvinces } = useGetProvinces({
-//   refetchOnWindowFocus: false,
-//   placeholderData: keepPreviousData,
-//   enabled: false,
-// });
-
-// const { data: districts, refetch: refetchDistricts } =
-//   useGetDistrictsByProvinceIdQuery(props?.selectedCustomerAddress?.province, {
-//     refetchOnWindowFocus: false,
-//     placeholderData: keepPreviousData,
-//     enabled: false,
-//   });
-
-// const { data: wards, refetch: refetchWards } = useGetWardsByDistrictIdQuery(
-//   props?.selectedCustomerAddress?.district,
-//   {
-//     refetchOnWindowFocus: false,
-//     placeholderData: keepPreviousData,
-//     enabled: false,
-//   }
-// );
-
-// watch(
-//   () => props.selectedCustomerAddress,
-//   async (newDataSource) => {
-//     if (newDataSource && paymentInfo.value.shippingOption === "true") {
-//       paymentInfo.value.name = newDataSource.name;
-//       paymentInfo.value.phoneNumber = newDataSource.phoneNumber;
-
-//       const wardInfo = ref(null);
-//       const districtInfo = ref(null);
-//       const provinceInfo = ref(null);
-//       try {
-//         const response = await getWardByCode(newDataSource.ward);
-//         wardInfo.value = response.data.data;
-
-//         const responseDis = await getDistrictById(newDataSource.district);
-//         districtInfo.value = responseDis.data.data;
-
-//         const responsePro = await getProvinceById(newDataSource.province);
-//         provinceInfo.value = responsePro.data.data;
-//         paymentInfo.value.fullAddress =
-//           newDataSource.line +
-//           ", " +
-//           wardInfo.value +
-//           ", " +
-//           districtInfo.value +
-//           ", " +
-//           provinceInfo.value;
-//       } catch (error) {
-//         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
-//       }
-//     }
-//   },
-//   { immediate: true, deep: true }
-// );
-
-// // Cập nhật danh sách quận/huyện
-// watch(districts, (newDistricts) => {
-//   districtsOptions.value =
-//     newDistricts?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
-//       label: address.name,
-//       value: address.id,
-//     })) || [];
-//   console.log(districtsOptions.value);
-// });
-
-// // Cập nhật danh sách phường/xã
-// watch(wards, (newWards) => {
-//   wardsOptions.value =
-//     newWards?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
-//       label: address.name,
-//       value: address.id,
-//     })) || [];
-//   console.log(wardsOptions.value);
-// });
-
-//---------------------------------------------
 const voucher = ref(null);
 
 watch(
@@ -632,13 +550,6 @@ watch(
     }
   }
 );
-
-// watch(
-//   () => dataNextPriceVouchers.value,
-//   (newData) => {
-//     console.log(newData);
-//   }
-// );
 
 // Hàm format tiền sang VNĐ
 const formatter = (value: any) => {
@@ -755,17 +666,19 @@ const changeShippingOption = (option: string) => {
 
 const { mutate: updateBillWait } = useUpdateBillWait();
 
+
+
 const handleUpdateBill = () => {
   const pdfParams = {
     idKhachHang: props.selectedCustomerInfo ? props.selectedCustomerInfo.id : null,
 
-    idNhanVien: null,
+    idNhanVien: useAuthStore().user?.id || null,
 
     idHoaDon: props.dataSourceInfor.id,
 
     products: dataSourcePro.value,
 
-    tongTien: paymentInfo.value.totalProductPrice,
+    tongTien: totalAmount.value,
 
     phiVanChuyen: paymentInfo.value.shippingFee,
 
@@ -780,7 +693,7 @@ const handleUpdateBill = () => {
       ? props.selectedCustomerInfo.id
       : null,
     idPhieuGiamGia: paymentInfo.value.voucherId || null,
-    idNhanVien: null,
+    idNhanVien: useAuthStore().user?.id || null,
     diaChiNguoiNhan:
       paymentInfo.value.shippingOption === "true"
         ? paymentInfo.value.fullAddress
@@ -821,6 +734,7 @@ const handleUpdateBill = () => {
     centered: true,
 
     async onOk() {
+      
       try {
         await updateBillWait({
           idBill: props.dataSourceInfor.id,
@@ -837,6 +751,7 @@ const handleUpdateBill = () => {
           errorNotiSort(error?.response?.data?.message);
         }
       }
+      
       
     },
     cancelText: "Huỷ",

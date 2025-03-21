@@ -38,6 +38,8 @@ const props= defineProps ({
   isPaymented: Boolean
 })
 
+const emit = defineEmits(["get:total-amount"])
+
 interface ColumnType {
   title: string;
   dataIndex: string | number;
@@ -65,11 +67,17 @@ const { data, isLoading, isFetching, refetch } = useGetPayHistory(params, {
   placeholderData: keepPreviousData,
 });
 
+const totalAmountPaid = (listPay: any) => {
+  return listPay.reduce((total,item) => total + (item.tienKhachDua || 0), 0);
+}
+
 watch(
-  () => data.value,
+  () => data?.value?.data,
   (newData) => {
     if (newData) {
       // console.log(newData);
+      console.log(newData);
+      emit("get:total-amount", totalAmountPaid(newData));
     }
   },
   { immediate: true }

@@ -38,53 +38,81 @@
       :total-pages="totalPage"
       @update:paginationParams="handlePaginationChange"
       @update-quantity="handleChangeTotalPrice"
+      @get:total-amount="getTotalAmountPaid"
       :loadingValue="refereshAllProduct"
     />
   </div>
 
-  <div class="shadow p-4 rounded-lg bg-white mt-6">
-    <div class="mt-4 max-w-lg ml-auto">
-      <!-- <div class="flex justify-between mb-4">
-        <span class="text-lg">Mã giảm giá:</span>
-        <span class="text-lg">{{ detailData?.data?.data?.[0]. || 'Chưa có mã giảm giá' }}</span>
-      </div> -->
-      <div class="flex flex justify-between block mb-4">
-        <span class="text-lg">Tiền hàng:</span>
-        <span v-if="detailDataSources" class="text-lg">{{
-          formatCurrencyVND(totalPrice)
-        }}</span>
-      </div>
-      <div class="flex flex justify-between block mb-4">
-        <span class="text-lg">Giảm giá:</span>
-        <span v-if="detailDataSources" class="text-lg text-green-500">{{
-          detailDataSources && detailDataSources.length > 0
-            ? `- ${formatCurrencyVND(detailDataSources[0].tienGiamHD)}`
-            : "0 VND"
-        }}</span>
-      </div>
-      <div class="flex flex justify-between block mb-4">
-        <span class="text-lg">Phí vận chuyển:</span>
-        <span v-if="detailDataSources" class="text-lg">{{
-          detailDataSources && detailDataSources.length > 0
-            ? `${formatCurrencyVND(detailDataSources[0].tienShip)}`
-            : "0 VND"
-        }}</span>
-      </div>
-      <div class="flex flex justify-between block font-semibold text-xl">
-        <span>Tổng tiền:</span>
-        <span v-if="detailDataSources">{{
-          detailDataSources && detailDataSources.length > 0
-            ? formatCurrencyVND(detailDataSources[0].tongTienHD)
-            : "0 VND"
-        }}</span>
-      </div>
+  <div class="shadow p-6 rounded-lg bg-white mt-6 grid grid-cols-2 gap-48">
+  <!-- Cột 1 -->
+  <div class="space-y-4">
+    <div class="flex justify-between">
+      <span class="text-lg">Tiền hàng:</span>
+      <span v-if="detailDataSources" class="text-lg">{{
+        formatCurrencyVND(totalPrice)
+      }}</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-lg">Giảm giá:</span>
+      <span v-if="detailDataSources" class="text-lg text-green-500">{{
+        detailDataSources.length > 0 ? `- ${formatCurrencyVND(detailDataSources[0].tienGiamHD)}` : "0 VND"
+      }}</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-lg">Phí vận chuyển:</span>
+      <span v-if="detailDataSources" class="text-lg">{{
+        detailDataSources.length > 0 ? formatCurrencyVND(detailDataSources[0].tienShip) : "0 VND"
+      }}</span>
+    </div>
+    <div class="flex justify-between font-semibold text-xl">
+      <span>Tổng tiền:</span>
+      <span v-if="detailDataSources">{{
+        detailDataSources.length > 0 ? formatCurrencyVND(detailDataSources[0].tongTienHD) : "0 VND"
+      }}</span>
     </div>
   </div>
+
+  <!-- Cột 2 -->
+  <div class="space-y-4">
+    <div class="flex justify-between">
+      <span class="text-lg">Đã thanh toán:</span>
+      <span v-if="detailDataSources" class="text-lg">{{
+        detailDataSources.length > 0 ? `${formatCurrencyVND(paid)}` : "0 VND"
+      }}</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-lg">Cần thanh toán:</span>
+      <span v-if="detailDataSources" class="text-lg text-red-500">{{
+        detailDataSources.length > 0 ? formatCurrencyVND(amountPayable) : "0 VND"
+      }}</span>
+    </div>
+    <div class="flex justify-between text-lg">
+      <span>(Phụ phí)</span>
+      <span v-if="detailDataSources">{{
+        detailDataSources.length > 0 ? formatCurrencyVND(detailDataSources[0].tongTienHD) : "0 VND"
+      }}</span>
+    </div>
+    <div class="flex justify-between text-lg">
+      <span>(Hoàn trả)</span>
+      <span v-if="detailDataSources">{{
+        detailDataSources.length > 0 ? formatCurrencyVND(detailDataSources[0].tongTienHD) : "0 VND"
+      }}</span>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <script lang="ts" setup>
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import router from "@/infrastructure/routes/router";
+import {
+  useUpdateVoucher,
+  useUpdateCustomerVoucher,
+  useGetListKhachHang,
+  useGetVoucherById,
+  useGetCusTomerByIdPhieuGiamGia,
+} from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import {
   FindBillDetailRequest,
   BillDetailResponse,
@@ -115,6 +143,11 @@ const params = ref<FindBillDetailRequest>({
 
 const billId = ref<string | null>(null); // Tạo một ref cho billId
 
+// Tạo biến số tiền đã thanh toán
+const paid = ref(0);
+// Số tiền phải thanh toán
+const amountPayable = ref(0);
+
 const emit = defineEmits(["update:paginationParams"]);
 
 const getIdHoaDonFromUrl = () => {
@@ -127,6 +160,20 @@ onMounted(() => {
   billId.value = getIdHoaDonFromUrl();
   // console.log(billId.value);
 });
+
+// Khai báo voucherId
+const voucherId = ref(null);
+// Voucher detail
+const detail = ref(null);
+
+const { data: dataDetail, refetch: refetchVoucher } = useGetVoucherById(
+  voucherId,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled: false,
+  }
+);
 
 const {
   data: detailData,
@@ -156,6 +203,10 @@ watch(billId, (newVal) => {
   }
 });
 
+const totalPrice = computed(() => {
+  return detailDataSources.value.reduce((sum, item) => sum + item.thanhTien, 0);
+});
+
 const detailDataSources = ref<BillDetailResponse[]>([]);
 
 // Theo dõi sự thay đổi từ API và cập nhật lại `detailDataSource` khi dữ liệu thay đổi
@@ -164,18 +215,105 @@ watch(
   (newData) => {
     // Tạo bản sao dữ liệu mới từ API để tránh readonly
     detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
-    // console.log(detailDataSources.value);
+  },
+  { immediate: true }
+);
+
+watch(
+  () => detailDataSources.value,
+  (newData) => {
+    if (newData[0]) {
+      // Tính toán lại phí giảm sau khi thêm sản phẩm hoặc thay đổi số lượng
+      if (detail.value && detail.value.loaiGiam) {
+        // Loại giảm = true (tiền mặt)
+        newData[0] = detail?.value?.giaTriGiam;
+        newData[0].tongTienHD =
+          totalPrice.value +
+          newData[0].tienShip -
+          newData[0].tienGiamHD;
+        amountPayable.value = detailDataSources.value[0].tongTienHD - paid.value;
+      } else {
+        // Loại giảm = flase (%)
+        newData[0].tienGiamHD =
+          (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
+
+        newData[0].tongTienHD =
+          totalPrice.value +
+          newData[0].tienShip -
+          newData[0].tienGiamHD;
+        amountPayable.value = detailDataSources.value[0].tongTienHD - paid.value;
+      }
+      
+      
+    }
+  },
+
+  { immediate: true, deep: true }
+);
+
+watch(
+  () => billDataById.value,
+  (newBillData) => {
+    voucherId.value = newBillData.idPhieuGiamGia;
+
+    // if (copiedBillData.value && copiedBillData.value.huyen) {
+    //   serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+    //   if (serviceIdParams.value.toDistrict !== 0) {
+    //     refetchService().then(() => {
+    //       shippingParams.value.serviceId = service?.value?.data[0].service_id;
+    //       // console.log(shippingParams.value);
+    //       shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+    //       shippingParams.value.toWardCode = copiedBillData.value.xa;
+    //       if (shippingParams.value.toWardCode) {
+    //         refetchShipping().then(() => {
+    //           copiedDataSource.value[0].tienShip = shipping?.value?.data.total;
+    //           copiedBillData.value.tienShip =
+    //             copiedDataSource.value[0].tienShip;
+    //         });
+    //       }
+    //     });
+    //   } else {
+    //     copiedDataSource.value[0].tienShip = 0;
+    //   }
+    // }
+  }
+);
+
+// Theo dõi nếu hóa đơn có voucherId thì sẽ tính tiền giảm
+watch(
+  () => voucherId.value,
+  (newValue) => {
+    if (newValue) {
+      console.log(newValue);
+
+      refetchVoucher().then(() => {
+        detail.value = dataDetail?.value?.data?.data;
+
+        if (detail.value.loaiGiam) {
+          // Loại giảm = true (tiền mặt)
+          detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
+          detailDataSources.value[0].tongTienHD =
+            totalPrice.value +
+            detailDataSources.value[0].tienShip -
+            detailDataSources.value[0].tienGiamHD;
+        } else {
+          // Loại giảm = flase (%)
+          detailDataSources.value[0].tienGiamHD =
+            (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+
+          detailDataSources.value[0].tongTienHD =
+            totalPrice.value +
+            detailDataSources.value[0].tienShip -
+            detailDataSources.value[0].tienGiamHD;
+        }
+      });
+    }
   },
   { immediate: true }
 );
 
 // Tính toán totalPages
 const totalPage = computed(() => detailData?.value?.data?.totalPages || 1);
-// console.log(detailData);
-
-const totalPrice = computed(() => {
-  return detailDataSources.value.reduce((sum, item) => sum + item.thanhTien, 0);
-});
 
 const handlePaginationChange = (newParams: FindBillDetailRequest) => {
   params.value = { ...params.value, ...newParams };
@@ -183,12 +321,12 @@ const handlePaginationChange = (newParams: FindBillDetailRequest) => {
 
 const { mutate: updateQuantity } = useUpdateBillDetail();
 
-const refereshAllProduct = ref(false)
+const refereshAllProduct = ref(false);
 
 // Hàm cập nhật giá trị thanhTien
 const handleChangeTotalPrice = (record) => {
   const item = detailDataSources.value.find((item) => item.id === record.id);
-  
+
   if (item) {
     // Cập nhật số lượng và thành tiền trước khi gửi request
     item.soLuong = record.soLuong;
@@ -201,7 +339,7 @@ const handleChangeTotalPrice = (record) => {
       },
       {
         onSuccess: () => {
-          refereshAllProduct.value = !refereshAllProduct.value
+          refereshAllProduct.value = !refereshAllProduct.value;
           refetch(); // Refresh dữ liệu sau khi cập nhật thành công
         },
         onError: (error) => {
@@ -211,6 +349,12 @@ const handleChangeTotalPrice = (record) => {
     );
   }
 };
+
+// Hàm tính tiền đã thanh toán
+const getTotalAmountPaid = (totalPaid: number) => {
+  paid.value = totalPaid;
+  amountPayable.value = detailDataSources.value[0].tongTienHD - totalPaid;
+}
 
 const columnsBill: ColumnType[] = [
   {

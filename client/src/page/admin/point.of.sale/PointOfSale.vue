@@ -116,22 +116,6 @@
                       <v-icon name="md-manageaccounts-round" />
                     </a-button>
                   </a-tooltip>
-                  <!-- <a-tooltip
-                    v-if="
-                      activeTabCustomers[bill.id] &&
-                      activeTabPaymentInfo[bill.id].shippingOption === 'true'
-                    "
-                    title="Chọn địa chỉ"
-                    trigger="hover"
-                  >
-                    <a-button
-                      class="bg-purple-300 flex justify-between items-center gap-2"
-                      @click="handleOpenKhachHangAddress"
-                      size="large"
-                    >
-                      <v-icon name="fa-address-book" />
-                    </a-button>
-                  </a-tooltip> -->
                 </div>
                 <khach-hang-payment-table
                   :open="open"
@@ -264,6 +248,7 @@ const isChange = ref(0);
 const dataListProductDetail = computed(
   () => listProductDetail?.value?.data || []
 );
+
 watch(
   [() => dataSource.value, () => isChange.value],
   async ([newDataSource, newIsChange]) => {
@@ -271,8 +256,8 @@ watch(
       activeKey.value = newDataSource[0].id;
     }
 
-    if (newIsChange !== 0) {
-      activeKey.value = dataSource.value[dataSource.value.length - 1].id;
+    if (newIsChange !== 0 && newDataSource.length > 0) {
+      activeKey.value = dataSource?.value[dataSource.value.length - 1].id;
     }
   },
   { immediate: true, deep: true }
@@ -369,9 +354,10 @@ const handleQRScan = (qrCode: string) => {
 
 function handleOpenProductsModel() {
   openProductsModal.value = true;
-  if (refetchProducts.value) {
-    refetchProducts.value();
-  }
+  // if (refetchProducts.value) {
+  //   refetchProducts.value();
+  // }
+  refetchProducts.value();
 }
 
 function handleOpenQuantityModel() {
@@ -403,12 +389,6 @@ const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
       soLuong: 1,
     });
   }
-  // handleCreateQrOrderDetails({
-  //   idSanPhamChiTiets: idSanPhamChiTiets.value,
-  //   idHoaDonCho: activeKey.value,
-  //   userEmail: useAuthStore().user?.email || null,
-  //   soLuong: 1,
-  // });
 };
 
 const handleCancel = () => {

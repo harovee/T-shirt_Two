@@ -49,6 +49,7 @@
             'Đã giao hàng',
             'Đã thanh toán',
             'Thành công',
+            'Đã hủy'
           ].includes(billData?.trangThai)
         "
       >
@@ -84,6 +85,7 @@
     </div>
     <admin-pay-history 
       :isPaymented="isPaymented"
+      @get:total-amount="getTotalAmount"
     />
   </div>
 
@@ -101,6 +103,7 @@
             'Đã giao hàng',
             'Đã thanh toán',
             'Thành công',
+            'Đã hủy'
           ].includes(billData?.trangThai)
         "
       >
@@ -192,6 +195,7 @@
                 'Đã giao hàng',
                 'Đã thanh toán',
                 'Thành công',
+                'Đã hủy'
               ].includes(billData?.trangThai)
             "
           />
@@ -216,6 +220,7 @@ import { Image, Modal } from "ant-design-vue";
 import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
 import { keepPreviousData } from "@tanstack/vue-query";
+
 
 const props = defineProps({
   wrapperClassName: {
@@ -248,7 +253,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(["update:paginationParams", "update-quantity"]);
+const emit = defineEmits(["update:paginationParams", "update-quantity", "get:total-amount"]);
 
 watch(
   () => props?.billData,
@@ -366,6 +371,10 @@ watch(
 const totalPrice = computed(() => props.billData?.tongTien);
 // console.log(totalPrice.value);
 
+const getTotalAmount = (totalPaid: number) => {
+  emit("get:total-amount", totalPaid)
+}
+
 const handleChangeQuantity = async (record: any) => {
   if (!record.previousQuantity && record.soLuong !== 0) {
     record.previousQuantity = record.soLuong; // Lưu giá trị cũ nếu chưa có
@@ -395,6 +404,7 @@ const handleChangeQuantity = async (record: any) => {
     record.previousQuantity = record.soLuong; // Cập nhật lại giá trị trước đó
   }
 };
+
 
 </script>
 

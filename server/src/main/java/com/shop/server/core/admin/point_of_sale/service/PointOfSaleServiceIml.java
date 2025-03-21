@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PointOfSaleServiceIml implements PointOfSaleService {
 
@@ -114,5 +116,11 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
                 HttpStatus.OK,
                 Message.Success.GET_SUCCESS
         );
+    }
+
+    @Override
+    public ResponseObject<?> updateQuantityProductInPendingOrder(List<String> listIdProductDetails) {
+
+        return null;
     }
 }

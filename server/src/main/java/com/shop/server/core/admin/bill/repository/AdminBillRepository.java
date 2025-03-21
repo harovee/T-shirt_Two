@@ -108,7 +108,7 @@ public interface AdminBillRepository extends HoaDonRepository {
             LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
             LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
             WHERE
-                hd.trang_thai = 'Hóa đơn chờ'
+                hd.trang_thai = 'Chờ xác nhận'
             AND
                 hd.loai_hoa_don = 'Tại quầy'
             ORDER BY hd.ngay_tao ASC
@@ -176,6 +176,21 @@ public interface AdminBillRepository extends HoaDonRepository {
     @Modifying
     @Query(value = "DELETE FROM hoa_don_chi_tiet h WHERE h.id_hoa_don = :idHoaDon", nativeQuery = true)
     void deleteByIdHoaDon(@Param("idHoaDon") String idHoaDon);
+
+//    @Modifying
+//    @Transactional
+//    @Query(value = """
+//        update san_pham_chi_tiet spct
+//        set spct.so_luong = spct.so_luong + (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id_hoa_don = ?1)
+//        where spct.id in (select hdct.id_san_pham_chi_tiet from hoa_don_chi_tiet hdct where hdct.id_hoa_don = ?1);
+//        """, nativeQuery = true)
+//    void updateProductQuantityAfterDelete(String idOrderDetail);
+    @Query(value = """
+        SELECT hdct.id
+        FROM hoa_don_chi_tiet hdct
+        WHERE hdct.id_hoa_don = :idBill
+    """, nativeQuery = true)
+    List<String> getListIdProductDetail (String idBill);
 
     @Modifying
     @Query(value = "DELETE FROM chi_tiet_phuong_thuc_thanh_toan ctpttt WHERE ctpttt.id_hoa_don = :idHoaDon", nativeQuery = true)

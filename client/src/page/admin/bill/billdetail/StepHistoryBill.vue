@@ -2,7 +2,7 @@
   <div>
     <a-steps :current="current" class="step-interface">
       <a-step
-        v-for="item in steps"
+        v-for="item in selectedSteps"
         :key="item.title"
         :title="item.title"
         :icon="item.icon"
@@ -18,7 +18,11 @@
     </a-steps>
     <div class="steps-action">
       <div class="left-buttons">
-        <a-button v-if="current == 0" type="primary" @click="confirmBill()">
+        <a-button
+          v-if="current == 0 && statusIndexStart !== 'Đã hủy'"
+          type="primary"
+          @click="confirmBill()"
+        >
           Xác nhận đơn
         </a-button>
 
@@ -30,17 +34,30 @@
           Xác nhận lấy hàng
         </a-button>
 
-        <a-button v-if="current == 4" type="primary" @click="confirmCompleted()"> Hoàn thành </a-button>
+        <a-button
+          v-if="current == 4"
+          type="primary"
+          @click="confirmCompleted()"
+        >
+          Hoàn thành
+        </a-button>
 
         <a-button
-          
+          v-if="statusIndexStart !== 'Đã hủy'"
           style="margin-left: 8px"
           @click="rollBack()"
         >
           Quay lại trạng thái trước
         </a-button>
 
-        <a-button danger style="margin-left: 10px"> Hủy đơn </a-button>
+        <a-button
+          v-if="current == 0 && statusIndexStart !== 'Đã hủy'"
+          danger
+          style="margin-left: 10px"
+          @click="handleCancelBill"
+        >
+          Hủy đơn
+        </a-button>
       </div>
 
       <div class="right-buttons">
@@ -87,7 +104,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, h, onMounted } from "vue";
+import { ref, watch, h, onMounted, computed, nextTick } from "vue";
 import {
   CarOutlined,
   CheckCircleOutlined,
@@ -95,7 +112,10 @@ import {
   IssuesCloseOutlined,
 } from "@ant-design/icons-vue";
 import { convertDateFormat } from "@/utils/common.helper";
-import { useChangeBillStatus, useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
+import {
+  useChangeBillStatus,
+  useGetBillById,
+} from "@/infrastructure/services/service/admin/bill.action";
 import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
 import { Input, Modal } from "ant-design-vue";
 import { keepPreviousData } from "@tanstack/vue-query";
@@ -124,11 +144,26 @@ const props = defineProps<{
   loading: Boolean;
 }>();
 
+const selectedSteps = computed(() => {
+  return props.dataSource?.data?.[0]?.trangThai === "Đã hủy"
+    ? stepsCancel
+    : steps;
+});
+
 // Reactive state
 const current = ref<number>(0);
 const isModalVisible = ref(false);
 
 const { mutate: changeStatus } = useChangeBillStatus();
+
+// Khai báo các bước khi hủy hóa đơn thành công
+const stepsCancel: Step[] = [
+  {
+    title: "Đã hủy",
+    time: "",
+    icon: h(IssuesCloseOutlined),
+  },
+];
 
 // Khai báo các bước
 const steps: Step[] = [
@@ -171,24 +206,47 @@ onMounted(() => {
 });
 
 // Cập nhật current step dựa trên dataSource
+// const updateCurrentStep = (dataSource: DataSource) => {
+//   const status = dataSource?.data?.[0]?.trangThai;
+//   const statusMap: Record<string, number> = {
+//     "Chờ xác nhận": 0,
+//     "Chờ giao hàng": 1,
+//     "Đang vận chuyển": 2,
+//     "Đã giao hàng": 3,
+//     "Đã thanh toán": 4,
+//     "Thành công": 5,
+//   };
+//   current.value = statusMap[status] || 0;
+//   // console.log(dataSource);
+// };
+
+const statusIndexStart = ref("");
+
 const updateCurrentStep = (dataSource: DataSource) => {
   const status = dataSource?.data?.[0]?.trangThai;
-  const statusMap: Record<string, number> = {
-    "Chờ xác nhận": 0,
-    "Chờ giao hàng": 1,
-    "Đang vận chuyển": 2,
-    "Đã giao hàng": 3,
-    "Đã thanh toán": 4,
-    "Thành công": 5,
-  };
-  current.value = statusMap[status] || 0;
-  // console.log(dataSource);
+  statusIndexStart.value = dataSource?.data?.[0]?.trangThai;
+  if (status === "Đã hủy") {
+    const statusMap: Record<string, number> = {
+      "Đã hủy": 0,
+    };
+    current.value = statusMap[status] || 0;
+  } else {
+    const statusMap: Record<string, number> = {
+      "Chờ xác nhận": 0,
+      "Chờ giao hàng": 1,
+      "Đang vận chuyển": 2,
+      "Đã giao hàng": 3,
+      "Đã thanh toán": 4,
+      "Thành công": 5,
+    };
+    current.value = statusMap[status] || 0;
+  }
 };
 
 const updateStepTimes = (dataSource: DataSource) => {
   if (!dataSource?.data || dataSource.data.length === 0) return;
 
-  steps.forEach((step) => {
+  selectedSteps.value.forEach((step) => {
     const records = dataSource.data.filter(
       (item) => item.trangThai === step.title
     );
@@ -241,9 +299,7 @@ const { data: PaymentData } = useGetPayHistory(params, {
 
 // console.log(PaymentData);
 
-const {
-  data: billData
-} = useGetBillById(billId, {
+const { data: billData } = useGetBillById(billId, {
   refetchOnWindowFocus: false,
   enabled: () => !!billId.value,
 });
@@ -255,7 +311,6 @@ watch(
   },
   { immediate: true }
 );
-
 
 const confirmBill = () => {
   // Lấy trạng thái tiếp theo từ mảng steps
@@ -350,9 +405,13 @@ const confirmArrived = () => {
   //     console.log("Thao tác đã bị hủy.");
   //   },
   // });
-  const tienKhachDua = PaymentData.value?.data?.reduce((sum, payment) => sum + payment.tienKhachDua, 0) || 0;
+  const tienKhachDua =
+    PaymentData.value?.data?.reduce(
+      (sum, payment) => sum + payment.tienKhachDua,
+      0
+    ) || 0;
   // console.log(tienKhachDua);
-  
+
   const tongTienHD = billData?.value?.data?.data.tongTien;
   // console.log(tongTienHD);
   if (tongTienHD && tienKhachDua >= tongTienHD) {
@@ -365,14 +424,15 @@ const confirmArrived = () => {
       trangThai: "Đã thanh toán",
     };
 
-
     Modal.confirm({
       title: "Xác nhận đơn hàng đã thanh toán",
       content: `Khách đã thanh toán đủ ${tienKhachDua.toLocaleString()} VND. Chuyển trạng thái sang "${stepTitle}"?`,
       onOk: async () => {
         try {
           changeStatus({ idBill, params });
-          successNotiSort("Đơn hàng đã chuyển sang trạng thái 'Đã thanh toán'!");
+          successNotiSort(
+            "Đơn hàng đã chuyển sang trạng thái 'Đã thanh toán'!"
+          );
           current.value = 4; // Cập nhật trạng thái về 'Đã thanh toán'
         } catch (error) {
           console.error("Cập nhật trạng thái thất bại:", error);
@@ -439,6 +499,59 @@ const confirmCompleted = () => {
     onCancel: () => {
       console.log("Thao tác đã bị hủy.");
     },
+  });
+};
+
+// Hàm hủy đơn
+const handleCancelBill = () => {
+  const nextStep = stepsCancel[current.value];
+  const stepTitle = nextStep.title;
+  const description = ref("");
+
+  Modal.confirm({
+    title: "Xác nhận hủy đơn",
+    content: () => {
+      return h("div", [
+        h("p", `Bạn có chắc chắn muốn hủy đơn hàng này không?`),
+        h(Input.TextArea, {
+          placeholder: "Nhập lý do ...",
+          autoSize: { minRows: 2, maxRows: 4 },
+          onInput: (e) => (description.value = e.target.value),
+        }),
+      ]);
+    },
+    onOk: async () => {
+      if (!description.value || !description.value.trim()) {
+        errorNotiSort("Vui lòng nhập lý do quay lại");
+        return Promise.reject();
+      }
+
+      const params = {
+        status: stepTitle,
+        trangThai: "Đã hủy",
+        moTa: description.value,
+      };
+
+      try {
+        await changeStatus({ idBill, params });
+        successNotiSort("Đã hủy đơn thành công!");
+
+        // const stepIndex = steps.findIndex((step) => step.title === stepTitle);
+        // if (stepIndex !== -1) {
+        //   steps[stepIndex].time = new Date().toLocaleString("vi-VN", {
+        //     hour12: false,
+        //   });
+        // }
+
+        // // Quay lại trạng thái trước
+        // current.value--;
+        current.value++;
+      } catch (error) {
+        console.error("Cập nhật trạng thái thất bại:", error);
+        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+      }
+    },
+    onCancel: () => console.log("Thao tác rollback bị hủy."),
   });
 };
 
