@@ -14,6 +14,7 @@ SERVER_PORT=6868
 
 #FRONTEND INFORMATION
 FRONTEND_URL=http://localhost:8888/
+PYTHON_URL=http://localhost:8000/
 TIME_ZONE=Asia/Ho_Chi_Minh
 
 #AUTHENTICATION INFORMATION
@@ -27,10 +28,28 @@ SPRING_MAIL_PASSWORD=
 API.GHTK=https://online-gateway.ghn.vn/shiip/public-api/master-data
 API.GHTK.TOKEN=0c1a0015-d88e-11ef-98e4-42c0f54d535b
 
+#MOMO
+PARTNER_CODE=MOMOBKUN20180529
+END_POINT=https://test-payment.momo.vn/v2/gateway/api
+REDIRECT_URL=http://localhost:8888/client/payment/mono
+IPN_URL=http://localhost:8888/payment/momo-callback
+ACCESS_KEY=klm05TvNBzhg7h7j
+MOMO_SECRET_KEY=at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa
+REQUEST_TYPE=payWithATM
+
 #cloudinary
 CLOUD_NAME =diu9anzwm
 API_KEY=832697672431713
 API_SECRET=aNoZXhjJGhHnYSkpohBuAxESm3I
+
+#VNPAY
+PAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+TMN_CODE=VTADOCH9
+SECRET_KEY=K9U3NB8J8WXBHRLDF0DCVDJP8X6QJYVF
+VERSION=2.1.0
+COMMAND=pay
+ORDER_TYPE=other
+RETURN_URL=http://localhost:8888/payment/vn-pay-callback
 
 # GOOGLE
 GOOGLE_CLIENT_ID=
@@ -40,3 +59,16 @@ GOOGLE_CLIENT_SECRET=
 - Filling DB_PASSWORD in '#server2 config' at dotenv
 - Running with '**npm run dev**' in a terminal
 - Running with '**node ./src/productAPI.js**' in another terminal at the same time
+
+# TK test momo
+- Tên chủ TK: NGUYEN VAN A
+- STK: 9704 0000 0000 0018
+- Ngày PH: 03/07
+- Mã OTP: OTP
+
+# TK test VN Pay
+- Ngân hàng: NCB
+- Số thẻ: 9704198526191432198
+- Tên chủ thẻ: NGUYEN VAN A
+- Ngày phát hành: 07/15
+- Mật khẩu OTP: 123456

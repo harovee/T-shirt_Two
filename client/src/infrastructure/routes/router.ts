@@ -481,9 +481,15 @@ const routes: Array<RouteRecordRaw> = [
         },
     },
     {
-        path: ROUTES_CONSTANTS.PAYMENT.children.path,
-        name: ROUTES_CONSTANTS.PAYMENT.children.name,
-        component: () => import('@/page/client/payment/PaymentReturnUrl.vue'),
+        path: ROUTES_CONSTANTS.PAYMENT.children.VNPay.path,
+        name: ROUTES_CONSTANTS.PAYMENT.children.VNPay.name,
+        component: () => import('@/page/client/payment/PaymentReturnUrlVNPay.vue'),
+        meta: {requiresAuth: false},
+    },
+    {
+        path: ROUTES_CONSTANTS.PAYMENT.children.MoMo.path,
+        name: ROUTES_CONSTANTS.PAYMENT.children.MoMo.name,
+        component: () => import('@/page/client/payment/PaymentReturnUrlMomo.vue'),
         meta: {requiresAuth: false},
     },
 ];
