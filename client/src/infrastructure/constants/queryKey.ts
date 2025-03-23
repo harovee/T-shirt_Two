@@ -138,7 +138,8 @@ export const queryKey = {
         },
         payment: {
             invoiceOnline: "clientInvoiceOnlineKey",
-            invoiceOnlineVNPay:"clientInvoiceOnlineVNpayKey"
+            invoiceOnlineVNPay:"clientInvoiceOnlineVNpayKey",
+            invoiceOnlineMomo:"clientInvoiceOnlineMomoKey"
         },
         myOrder: {
             clientBill: "clientBillList"
