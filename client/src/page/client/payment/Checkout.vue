@@ -95,6 +95,8 @@ const paymentInfo = ref({
 const handleGetAddressCustomer = (modelRef: any, fullAddressRef: string, check: boolean) => {
   fullAddress.value = fullAddressRef;
   info.value = modelRef;
+  console.log(modelRef);
+  
   ghiChu.value = modelRef.ghiChu;
   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
   serviceIdParams.value.toDistrict = Number(modelRef.district);
@@ -169,7 +171,11 @@ watch(
           shippingParams.value.toWardCode = info.value.ward;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
+              if(totalPrice.value >= 2000000) {
+                paymentInfo.value.shippingFee = 0;
+              } else {
               paymentInfo.value.shippingFee = shipping?.value?.data.total;
+              }
             });
           }
         });

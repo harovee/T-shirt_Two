@@ -8,8 +8,9 @@
             <a-input
               v-model:value="paymentInfo.voucherCode"
               placeholder="Chọn mã giảm giá ..."
+              readonly
             />
-            <a-button
+            <!-- <a-button
               class="flex justify-between items-center"
               :style="{
                 backgroundColor: '#b91c1c',
@@ -18,8 +19,34 @@
               }"
               @click="getVoucher"
             >
-              ÁP DỤNG
-            </a-button>
+              !
+            </a-button> -->
+            <a-tooltip title="Không sử dụng phiếu" trigger="hover">
+              <a-button
+                class="flex justify-between items-center gap-2"
+                :style="{
+                  backgroundColor: '#b91c1c',
+                  borderColor: '#b91c1c',
+                  color: 'white',
+                }"
+                @click="getVoucher"
+              >
+                <v-icon name="md-donotdisturbon-round" />
+              </a-button>
+            </a-tooltip>
+            <a-tooltip trigger="hover">
+              <template #title>Chọn phiếu giảm giá</template>
+              <a-button
+                :style="{
+                  backgroundColor: '#b91c1c',
+                  borderColor: '#b91c1c',
+                  color: 'white',
+                }"
+                @click="openVoucherModal"
+              >
+                <v-icon name="ri-coupon-2-line" />
+              </a-button>
+            </a-tooltip>
           </div>
           <div
             class="text-xs border border-black-500 rounded-lg p-3 mt-3"
@@ -41,6 +68,15 @@
             </div>
           </div>
         </a-form-item>
+        <voucher-payment-modal
+          :open="open"
+          :dataCustomer="customer"
+          :totalAmount="paymentInfo.totalProductPrice"
+          @handleClose="handleClose"
+          @cancel="open = false"
+          @handleOpenKhachHang="openVoucherModal"
+          @selectVoucher="handleGetVoucher"
+        />
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <div class="flex justify-between items-center w-[300px]">
           <p>Tạm tính:</p>
@@ -62,6 +98,9 @@
             {{ formatCurrencyVND(paymentInfo.shippingFee) }}
           </p>
         </div>
+        <p v-if="paymentInfo.totalProductPrice > 2000000" class="text-red-500">
+          Free ship cho đơn hàng từ 2.000.000đ
+        </p>
         <div class="flex justify-between items-center w-[300px]">
           <p>Mã giảm giá:</p>
           <p class="text-red-500 font-bold">
@@ -151,7 +190,7 @@ import {
 } from "@/infrastructure/services/service/admin/payment.action";
 import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithMomo, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
 
-import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
+import VoucherPaymentModal from "@/page/client/payment/voucher/VoucherPaymentModal.vue";
 import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
@@ -172,9 +211,7 @@ import {
   useUpdateQuantityOrderDetails,
   useDeleteCartById,
 } from "@/infrastructure/services/service/admin/point-of-sale";
-import {
-  clearCart
-} from "@/page/client/products/business.logic/CartLocalStorageBL";
+import { clearCart } from "@/page/client/products/business.logic/CartLocalStorageBL";
 import {
   VoucherResponse,
   FindVoucherRequest,
@@ -208,7 +245,7 @@ import { useCartStore } from "@/infrastructure/stores/cart";
 const props = defineProps({
   dataAddress: {
     type: Object,
-    required: true,
+    required: false,
     default: () => ({}),
   },
   totalPrice: Number,
@@ -259,6 +296,8 @@ const selectedAddress = ref({});
 const paymentedValue = ref(0);
 
 const voucher = ref<VoucherResponse>();
+
+const customer = ref(null);
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -369,47 +408,41 @@ const handleCheckPaymented = (totalAmountAfter: number) => {
   paymentedValue.value = totalAmountAfter;
 };
 
+onMounted(() => {
+  customer.value = useAuthStore().user;
+  updateTotal();
+});
+
 const getVoucher = () => {
-  if (paymentInfo.value.voucherCode === "") {
-    warningNotiSort("Vui lòng nhập mã phiếu giảm giá!");
-    voucher.value = null;
-    return;
-  }
-  voucherRequest.value.keyword = paymentInfo.value.voucherCode;
-
-  refetch()
-    .then(() => {
-      voucher.value = dataVoucherByCode?.value?.data;
-      console.log(voucher.value);
-
-      if (!voucher.value) {
-        paymentInfo.value.voucherCode = null;
-        paymentInfo.value.voucherId = null;
-        warningNotiSort("Không tồn tại phiếu giảm giá này!");
-      } else {
-        paymentInfo.value.voucherCode = voucher.value.ma;
-        paymentInfo.value.voucherId = voucher.value.id;
-        if (voucher.value.loaiGiam) {
-          paymentInfo.value.discount = Number(voucher.value.giaTri);
-        } else {
-          paymentInfo.value.discount =
-            (paymentInfo.value.totalProductPrice *
-              Number(voucher.value.giaTri)) /
-            100;
-        }
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching voucher:", error);
-    });
+  voucher.value = null;
+  paymentInfo.value.voucherCode = null;
+  paymentInfo.value.voucherId = null;
+  paymentInfo.value.discount = 0;
 };
-
-
 
 const { mutate: createInvoice } = useCreateInvoiceOnline();
 // const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
 
 const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
+
+
+const handleGetVoucher = (voucherDetail: any) => {
+  voucher.value = voucherDetail;
+  if (!voucher.value) {
+    paymentInfo.value.voucherCode = null;
+    paymentInfo.value.voucherId = null;
+  } else {
+    paymentInfo.value.voucherCode = voucher.value.ma;
+    paymentInfo.value.voucherId = voucher.value.id;
+    if (voucher.value.loaiGiam) {
+      paymentInfo.value.discount = Number(voucher.value.giaTri);
+    } else {
+      paymentInfo.value.discount =
+        (paymentInfo.value.totalProductPrice * Number(voucher.value.giaTri)) /
+        100;
+    }
+  }
+};
 
 const createInvoiceMutationMomo = useCreateInvoiceOnlineWithMomo();
 
@@ -442,9 +475,10 @@ const handlePayment = () => {
       huyen: props.dataAddress.district,
       xa: props.dataAddress.ward,
       amount: paymentInfo.value.total + "" || null,
-      bankCode: ""
+      bankCode: "",
+      email:props.dataAddress.email
     };
-    // console.log(payload);
+    console.log(payload);
     if (paymentInfo.value.method === "cod") {
       Modal.confirm({
         content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
@@ -477,17 +511,69 @@ const handlePayment = () => {
         async onOk() {
           try {
             const response = await createInvoiceMutation.mutateAsync(payload);
-            
+
             if (response?.data?.paymentUrl) {
-            window.open(response?.data?.paymentUrl, "_blank");
-          }
+              window.open(response?.data?.paymentUrl, "_blank");
+            }
             console.log(response);
           } catch (error: any) {
-            console.error("🚀 ~ handleCreate ~ error:", error); 
+            console.error("🚀 ~ handleCreate ~ error:", error);
             if (error?.response) {
               errorNotiSort(error?.response?.data?.message);
             }
           }
+        },
+        cancelText: "Huỷ",
+        onCancel() {
+          Modal.destroyAll();
+        },
+      });
+    } else if (paymentInfo.value.method === "momo") {
+      Modal.confirm({
+        content: "Bạn chắc chắn muốn thanh toán qua ví Momo?",
+        icon: createVNode(ExclamationCircleOutlined),
+        centered: true,
+        async onOk() {
+          // try {
+          //   const response = await createInvoiceMutation.mutateAsync(payload);
+
+          //   if (response?.data?.paymentUrl) {
+          //     window.open(response?.data?.paymentUrl, "_blank");
+          //   }
+          //   console.log(response);
+          // } catch (error: any) {
+          //   console.error("🚀 ~ handleCreate ~ error:", error);
+          //   if (error?.response) {
+          //     errorNotiSort(error?.response?.data?.message);
+          //   }
+          // }
+          console.log("Thanh toán ví momo");
+        },
+        cancelText: "Huỷ",
+        onCancel() {
+          Modal.destroyAll();
+        },
+      });
+    } else {
+      Modal.confirm({
+        content: "Bạn chắc chắn muốn thanh toán qua ví Momo?",
+        icon: createVNode(ExclamationCircleOutlined),
+        centered: true,
+        async onOk() {
+          // try {
+          //   const response = await createInvoiceMutation.mutateAsync(payload);
+
+          //   if (response?.data?.paymentUrl) {
+          //     window.open(response?.data?.paymentUrl, "_blank");
+          //   }
+          //   console.log(response);
+          // } catch (error: any) {
+          //   console.error("🚀 ~ handleCreate ~ error:", error);
+          //   if (error?.response) {
+          //     errorNotiSort(error?.response?.data?.message);
+          //   }
+          // }
+          console.log("Thanh toán ví viet qr");
         },
         cancelText: "Huỷ",
         onCancel() {
@@ -548,3 +634,25 @@ watch(
   updateTotal
 );
 </script>
+
+<style scoped>
+.custom-radio-group .ant-radio-button-wrapper {
+  color: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.custom-radio-group .ant-radio-button-wrapper:hover {
+  background: #b91c1c;
+  color: white;
+}
+
+.custom-radio-group .ant-radio-button-wrapper-checked {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+  color: white !important;
+}
+
+.custom-radio-group .ant-radio-button-wrapper-checked::before {
+  background-color: #b91c1c !important;
+}
+</style>

@@ -30,6 +30,7 @@ export interface clientPaymentRequest extends vnPayRequest{
   idPhieuGiamGia: string | null;
   paymentMethod: string | null;
   listSanPhamChiTiets: invoiceDetailRequest[] | null;
+  email:string | null;
 }
 
 export interface vnPayRequest  {

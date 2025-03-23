@@ -3,7 +3,9 @@ package com.shop.server.core.client.payment.service.impl;
 import com.shop.server.core.admin.ban_hang.model.response.AdminPhuongThucThanhToanResponse;
 import com.shop.server.core.admin.ban_hang.repository.AdminChiTietPhuongThucThanhToanRepository;
 import com.shop.server.core.admin.ban_hang.repository.AdminHoaDonRepository;
+import com.shop.server.core.admin.bill.model.request.AdminSendEmailRequest;
 import com.shop.server.core.admin.bill.repository.AdminBillRepository;
+import com.shop.server.core.admin.bill.service.AdminBillSendMailService;
 import com.shop.server.core.admin.billdetail.repository.AdminBillDetailRepository;
 import com.shop.server.core.client.momo.model.request.ClientMomoRequest;
 import com.shop.server.core.client.momo.services.IMomoService;
@@ -52,6 +54,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
     private final ClientPhuongThucThanhToanRepository phuongThucThanhToanRepository;
     private final AdminBillDetailRepository hoaDonChiTietRepository;
     private final SanPhamChiTietRepository sanPhamChiTietRepository;
+    private final AdminBillSendMailService adminBillSendMailService;
     private final MomoServices momoService;
 
     @Override
@@ -91,8 +94,15 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTinh(request.getTinh());
         hoaDon.setXa(request.getXa());
         hoaDon.setHuyen(request.getHuyen());
+        hoaDon.setEmailNguoiNhan(request.getEmail());
 
         adminBillRepository.save(hoaDon);
+        AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
+        adminSendEmailRequest.setEmail(request.getEmail());
+        adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
+        adminSendEmailRequest.setTrangThai("Chờ xác nhận");
+        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
         if (request.getIdPhieuGiamGia() != null) {
             adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
         }
@@ -150,6 +160,15 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTienGiam(request.getTienGiam());
         hoaDon.setTienShip(request.getTienShip());
         hoaDon.setTongTien(request.getTongTien());
+        hoaDon.setEmailNguoiNhan(request.getEmail());
+
+        adminBillRepository.save(hoaDon);
+        AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
+        adminSendEmailRequest.setEmail(request.getEmail());
+        adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
+        adminSendEmailRequest.setTrangThai("Chờ xác nhận");
+        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
 
         adminBillRepository.save(hoaDon);
         if (request.getIdPhieuGiamGia() != null) {
@@ -171,6 +190,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
 
         if (request.getPaymentMethod().equals("vnpay")) {
             VNPayRequest vnPayRequest = new VNPayRequest();
+//             vnPayRequest.setAmount(String.valueOf(request.getTongTien()));
             vnPayRequest.setAmount(request.getAmount());
             vnPayRequest.setBankCode(request.getBankCode());
             VNPayResponse vnPayResponse = paymentService.createVnPayPayment(vnPayRequest, VNPayUtil.getIpAddress(httpRequest), hoaDon.getId());

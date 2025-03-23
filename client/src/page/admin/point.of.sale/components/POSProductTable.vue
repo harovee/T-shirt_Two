@@ -339,6 +339,7 @@ const { data, isLoading, refetch } = useGetProductDetailsInPOS(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
+
 emit("update:refetch", refetch);
 
 const dataSource: DataType[] | any = computed(() => {
@@ -393,10 +394,20 @@ watch(current1, () => {
 watch(pageSize, () => {
   params.value.size = pageSize.value;
 });
-const rowSelection: TableProps["rowSelection"] = {
-  onChange: (selectedRowKeys: string[] | any) => {
-    emit("update:idSanPhamChiTiets", selectedRowKeys);
+
+const selectedRowKeys = ref<string[]>([]);
+
+const rowSelection = computed<TableProps["rowSelection"]>(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys: string[] | any) => {
+    selectedRowKeys.value = keys;
+    emit("update:idSanPhamChiTiets", keys);
   },
-};
+}));
+
+watch(() => dataSource.value, () => {
+  selectedRowKeys.value = [];
+})
+
 </script>
   

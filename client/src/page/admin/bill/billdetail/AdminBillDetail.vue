@@ -25,56 +25,100 @@
       </div>
     </div>
 
-    <admin-bill-history />
+    <admin-bill-history
+      :data-payment-info="paymentInfo"
+      :data-product="detailDataSources"
+      :bill-data="billDataById"
+      @update:bill="handleUpdateBill"
+    />
 
     <!-- Bill Detail Table -->
     <bill-detail-table
       class="shadow p-4 rounded-lg bg-white"
       :columns="columnsBill"
       :data-source="detailDataSources"
+      :payment-info-data="paymentInfo"
+      :billId="billId"
       :bill-data="billDataById"
-      :loading="isLoadingBillData || isFetchingBillData"
+      :loading="isLoadingDetailData || isFetchingDetailData"
       :pagination-params="params"
       :total-pages="totalPage"
+      :detail="detail"
       @update:paginationParams="handlePaginationChange"
       @update-quantity="handleChangeTotalPrice"
+      @get:total-amount="getTotalAmountPaid"
+      @refetch-data="handleRefetchData"
+      @get:payment-info="handleGetPaymentInfo"
       :loadingValue="refereshAllProduct"
     />
   </div>
 
-  <div class="shadow p-4 rounded-lg bg-white mt-6">
-    <div class="mt-4 max-w-lg ml-auto">
-      <!-- <div class="flex justify-between mb-4">
-        <span class="text-lg">Mã giảm giá:</span>
-        <span class="text-lg">{{ detailData?.data?.data?.[0]. || 'Chưa có mã giảm giá' }}</span>
-      </div> -->
-      <div class="flex flex justify-between block mb-4">
+  <div class="shadow p-6 rounded-lg bg-white mt-6 grid grid-cols-2 gap-48">
+    <!-- Cột 1 -->
+    <div class="space-y-4">
+      <div class="flex justify-between">
         <span class="text-lg">Tiền hàng:</span>
         <span v-if="detailDataSources" class="text-lg">{{
           formatCurrencyVND(totalPrice)
         }}</span>
       </div>
-      <div class="flex flex justify-between block mb-4">
+      <div class="flex justify-between">
         <span class="text-lg">Giảm giá:</span>
-        <span v-if="detailDataSources" class="text-lg text-green-500">{{
-          detailDataSources && detailDataSources.length > 0
+        <span v-if="detailDataSources" class="text-lg text-red-500">{{
+          detailDataSources.length > 0
             ? `- ${formatCurrencyVND(detailDataSources[0].tienGiamHD)}`
             : "0 VND"
         }}</span>
       </div>
-      <div class="flex flex justify-between block mb-4">
+      <div class="flex justify-between">
         <span class="text-lg">Phí vận chuyển:</span>
         <span v-if="detailDataSources" class="text-lg">{{
-          detailDataSources && detailDataSources.length > 0
-            ? `${formatCurrencyVND(detailDataSources[0].tienShip)}`
+          detailDataSources.length > 0
+            ? formatCurrencyVND(detailDataSources[0].tienShip)
             : "0 VND"
         }}</span>
       </div>
-      <div class="flex flex justify-between block font-semibold text-xl">
+      <div class="flex justify-between font-semibold text-xl">
         <span>Tổng tiền:</span>
         <span v-if="detailDataSources">{{
-          detailDataSources && detailDataSources.length > 0
+          detailDataSources.length > 0
             ? formatCurrencyVND(detailDataSources[0].tongTienHD)
+            : "0 VND"
+        }}</span>
+      </div>
+    </div>
+
+    <!-- Cột 2 -->
+    <div class="space-y-4">
+      <div class="flex justify-between">
+        <span class="text-lg">Đã thanh toán:</span>
+        <span v-if="detailDataSources" class="text-lg">{{
+          detailDataSources.length > 0
+            ? `${formatCurrencyVND(paymentInfo.paid)}`
+            : "0 VND"
+        }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-lg">Cần thanh toán:</span>
+        <span v-if="detailDataSources" class="text-lg text-red-500">{{
+          detailDataSources.length > 0
+            ? formatCurrencyVND(paymentInfo.amountPayable)
+            : "0 VND"
+        }}</span>
+      </div>
+      <div class="flex justify-between text-lg">
+        <span>(Phụ phí)</span>
+        <span v-if="detailDataSources">{{
+          detailDataSources.length > 0
+            ? formatCurrencyVND(paymentInfo.surcharge)
+            : "0 VND"
+        }}</span>
+      </div>
+      <div class="flex justify-between text-lg">
+        <span>(Hoàn trả)</span>
+        <span v-if="detailDataSources">{{
+          detailDataSources.length > 0
+            ? formatCurrencyVND(paymentInfo.refund)
             : "0 VND"
         }}</span>
       </div>
@@ -85,6 +129,13 @@
 <script lang="ts" setup>
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import router from "@/infrastructure/routes/router";
+import {
+  useUpdateVoucher,
+  useUpdateCustomerVoucher,
+  useGetListKhachHang,
+  useGetVoucherById,
+  useGetCusTomerByIdPhieuGiamGia,
+} from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import {
   FindBillDetailRequest,
   BillDetailResponse,
@@ -100,6 +151,33 @@ import BillDetailTable from "./BillDetailTable.vue";
 import { ColumnType } from "ant-design-vue/es/table";
 import { useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
 import { formatCurrencyVND } from "@/utils/common.helper";
+import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
+import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
+import { useUpdateBillConfirm } from "@/infrastructure/services/service/admin/bill.action";
+import {
+  VoucherResponse,
+  FindVoucherRequest,
+  nextVoucherRequest,
+  ShippingFeeRequest,
+  getWardByCode,
+  getDistrictById,
+  getProvinceById,
+  ServiceIdRequest,
+  createInvoicePdf,
+} from "@/infrastructure/services/api/admin/payment.api";
+import {
+  useGetListVoucher,
+  useGetPriceNextVoucher,
+  useGetShippingFee,
+  useGetServiceId,
+} from "@/infrastructure/services/service/admin/payment.action";
+import {
+  errorNotiSort,
+  successNotiSort,
+  warningNotiSort,
+} from "@/utils/notification.config";
+
+const emit = defineEmits(["update:paginationParams"]);
 
 const handleRedirectBillManager = () => {
   router.push({
@@ -113,10 +191,39 @@ const params = ref<FindBillDetailRequest>({
   idHoaDon: "",
 });
 
-const billId = ref<string | null>(null); // Tạo một ref cho billId
+// Khởi tạo id hóa đơn
+const billId = ref<string | null>(null);
 
-const emit = defineEmits(["update:paginationParams"]);
+// Tạo biến số tiền đã thanh toán
+const paid = ref(0);
+// Số tiền phải thanh toán
+const amountPayable = ref(0);
+// Phụ phí
+const surcharge = ref(0);
+// Tiền hoàn trả
+const refund = ref(0);
 
+const detailDataSources = ref<BillDetailResponse[]>([]);
+
+const copiedBillData = ref<BillResponse | null>(null);
+
+const copiedDataSource = ref(null);
+
+const refereshAllProduct = ref(false);
+
+const { mutate: update } = useUpdateBillConfirm();
+
+const { mutate: updateQuantity } = useUpdateBillDetail();
+
+// Biến object lưu giá trị tiền (đã thanh toán, cần thanh toán, phụ phí, hoàn trả)
+const paymentInfo = ref({
+  paid: 0,
+  amountPayable: 0,
+  surcharge: 0,
+  refund: 0,
+});
+
+// Hàm lấy id hóa đơn trên path
 const getIdHoaDonFromUrl = () => {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get("idHoaDon") || "";
@@ -125,19 +232,36 @@ const getIdHoaDonFromUrl = () => {
 onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
   billId.value = getIdHoaDonFromUrl();
-  // console.log(billId.value);
 });
 
+// Khai báo voucherId
+const voucherId = ref(null);
+// Voucher detail
+const detail = ref(null);
+
+// Lấy danh sách voucher
+const { data: dataDetail, refetch: refetchVoucher } = useGetVoucherById(
+  voucherId,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled: false,
+  }
+);
+
+// Lấy dữ liệu hóa đơn chi tiết
 const {
   data: detailData,
   isLoading: isLoadingDetailData,
   isFetching: isFetchingDetailData,
+  refetch: refetchData,
 } = useGetBillDetails(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
+  keepPreviousData: false,
 });
-// console.log(detailData);
 
+// Lấy dữ liệu hóa đơn theo id
 const {
   data: billData,
   isLoading: isLoadingBillData,
@@ -150,13 +274,78 @@ const {
 
 const billDataById = computed(() => billData?.value?.data?.data);
 
+// Hàm tính cân nặng và chiều dài của đơn hàng
+const calculateProductDimensions = () => {
+  const totalWeight = detailDataSources?.value.reduce(
+    (sum: any, product: any) => {
+      return sum + (Number(product.soLuong) || 0) * 200;
+    },
+    0
+  );
+  const totalHeight = detailDataSources?.value.reduce(
+    (sum: any, product: any) => {
+      return sum + (Number(product.soLuong) || 0) * 3;
+    },
+    0
+  );
+  return {
+    weight: Number(totalWeight) || 0,
+    length: 30,
+    width: 20,
+    height: Number(totalHeight) || 0,
+  };
+};
+
+// Param tính phí ship
+const shippingParams = computed<ShippingFeeRequest>(() => ({
+  fromDistrictId: 3440,
+  fromWardCode: "13007",
+  toDistrictId: "",
+  toWardCode: "",
+  serviceId: 0,
+  ...calculateProductDimensions(),
+}));
+
+// Param tìm serviceId để tính phí ship liên tỉnh
+const serviceIdParams = ref<ServiceIdRequest>({
+  formDistrict: 0,
+  toDistrict: 0,
+  shopId: 2509559,
+});
+
+// API lấy serviceID để dùng cho shipping param
+const { data: service, refetch: refetchService } = useGetServiceId(
+  serviceIdParams,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled:
+      !!serviceIdParams.value.formDistrict &&
+      !!serviceIdParams.value.toDistrict,
+  }
+);
+
+// API tính số tiền ship
+const { data: shipping, refetch: refetchShipping } = useGetShippingFee(
+  shippingParams,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled:
+      !!shippingParams.value.toDistrictId && !!shippingParams.value.toWardCode,
+  }
+);
+
 watch(billId, (newVal) => {
   if (newVal && newVal !== null) {
     refetch();
   }
 });
 
-const detailDataSources = ref<BillDetailResponse[]>([]);
+// Hàm tính tổng tiền các sản phẩm có trong giỏ
+const totalPrice = computed(() => {
+  return detailDataSources.value.reduce((sum, item) => sum + item.thanhTien, 0);
+});
 
 // Theo dõi sự thay đổi từ API và cập nhật lại `detailDataSource` khi dữ liệu thay đổi
 watch(
@@ -164,31 +353,173 @@ watch(
   (newData) => {
     // Tạo bản sao dữ liệu mới từ API để tránh readonly
     detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
-    // console.log(detailDataSources.value);
+    serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
   },
   { immediate: true }
 );
 
+// Theo dõi cái bản sao của detail data
+watch(
+  () => detailDataSources.value,
+  (newData) => {
+    if (newData[0]) {
+      // Tính toán lại phí giảm sau khi thêm sản phẩm hoặc thay đổi số lượng
+      if (detail.value) {
+        // Loại giảm = true (tiền mặt)
+        if (detail.value.loaiGiam) {
+          newData[0] = detail?.value?.giaTriGiam;
+        newData[0].tongTienHD =
+          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+        console.log(newData[0].tongTienHD);
+        } else {
+          // Loại giảm = flase (%)
+        newData[0].tienGiamHD =
+          (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
+
+        newData[0].tongTienHD =
+          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+        console.log(newData[0].tongTienHD);
+        }
+      } else {
+        newData[0].tienGiamHD = 0;
+        newData[0].tienShip = 0;
+        newData[0].tongTienHD = totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+      }
+      console.log(newData[0]);
+      
+      // Tính toán lại phụ phí/ hoàn trả
+      if (newData[0].tongTienHD > paymentInfo.value.paid) {
+        paymentInfo.value.amountPayable =
+          detailDataSources.value[0].tongTienHD - paymentInfo.value.paid;
+        paymentInfo.value.surcharge =
+          newData[0].tongTienHD - paymentInfo.value.paid;
+        paymentInfo.value.refund = 0;
+      } else {
+        paymentInfo.value.amountPayable = 0;
+        paymentInfo.value.surcharge = 0;
+        paymentInfo.value.refund =
+          paymentInfo.value.paid - newData[0].tongTienHD;
+      }
+    }
+    // voucherId.value = newBillData.idPhieuGiamGia;
+    serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
+    if (copiedBillData.value && copiedBillData.value.huyen) {
+      serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+      if (serviceIdParams.value.toDistrict !== 0) {
+        refetchService().then(() => {
+          shippingParams.value.serviceId = service?.value?.data[0].service_id;
+          shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+          shippingParams.value.toWardCode = copiedBillData.value.xa;
+          if (shippingParams.value.toWardCode) {
+            refetchShipping().then(() => {
+              // detailDataSources.value[0].tienShip = shipping?.value?.data.total;
+              if (totalPrice.value <= 2000000) {
+                detailDataSources.value[0].tienShip =
+                  shipping?.value?.data.total;
+              } else {
+                detailDataSources.value[0].tienShip = 0;
+              }
+            });
+          }
+        });
+      } else {
+        copiedDataSource.value[0].tienShip = 0;
+      }
+    }
+  },
+
+  { immediate: true, deep: true }
+);
+
+// Theo dõi nếu id hóa đơn thay đổi
+watch(
+  () => billDataById.value,
+  (newBillData) => {
+    if (newBillData) {
+      copiedBillData.value = newBillData;
+    }
+    voucherId.value = newBillData.idPhieuGiamGia;
+    serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
+    if (copiedBillData.value && copiedBillData.value.huyen) {
+      serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+      if (serviceIdParams.value.toDistrict !== 0) {
+        refetchService().then(() => {
+          shippingParams.value.serviceId = service?.value?.data[0].service_id;
+          shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+          shippingParams.value.toWardCode = copiedBillData.value.xa;
+          if (shippingParams.value.toWardCode) {
+            refetchShipping().then(() => {
+              // Miễn phí ship cho hóa đơn từ 2.000.000đ
+              if (totalPrice.value <= 2000000) {
+                detailDataSources.value[0].tienShip =
+                  shipping?.value?.data.total;
+              } else {
+                detailDataSources.value[0].tienShip = 0;
+              }
+            });
+          }
+        });
+      } else {
+        copiedDataSource.value[0].tienShip = 0;
+      }
+    }
+  }
+);
+
+// Theo dõi nếu hóa đơn có voucherId thì sẽ tính tiền giảm
+watch(
+  () => voucherId.value,
+  (newValue) => {
+    if (newValue) {
+      refetchVoucher().then(() => {
+        detail.value = dataDetail?.value?.data?.data;
+
+        if (detail.value.loaiGiam) {
+          // Loại giảm = true (tiền mặt)
+          detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
+          detailDataSources.value[0].tongTienHD =
+            totalPrice.value +
+            detailDataSources.value[0].tienShip -
+            detailDataSources.value[0].tienGiamHD;
+        } else {
+          // Loại giảm = flase (%)
+          detailDataSources.value[0].tienGiamHD =
+            (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+
+          detailDataSources.value[0].tongTienHD =
+            totalPrice.value +
+            detailDataSources.value[0].tienShip -
+            detailDataSources.value[0].tienGiamHD;
+        }
+      });
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  () => paid.value,
+  (data) => {
+    paymentInfo.value.paid = data;
+  }
+);
+
 // Tính toán totalPages
 const totalPage = computed(() => detailData?.value?.data?.totalPages || 1);
-// console.log(detailData);
 
-const totalPrice = computed(() => {
-  return detailDataSources.value.reduce((sum, item) => sum + item.thanhTien, 0);
-});
-
+// Hàm load lại table khi phân trang
 const handlePaginationChange = (newParams: FindBillDetailRequest) => {
   params.value = { ...params.value, ...newParams };
 };
 
-const { mutate: updateQuantity } = useUpdateBillDetail();
-
-const refereshAllProduct = ref(false)
+const handleGetPaymentInfo = (info) => {
+  copiedBillData.value = info;
+};
 
 // Hàm cập nhật giá trị thanhTien
 const handleChangeTotalPrice = (record) => {
   const item = detailDataSources.value.find((item) => item.id === record.id);
-  
+
   if (item) {
     // Cập nhật số lượng và thành tiền trước khi gửi request
     item.soLuong = record.soLuong;
@@ -201,14 +532,90 @@ const handleChangeTotalPrice = (record) => {
       },
       {
         onSuccess: () => {
-          refereshAllProduct.value = !refereshAllProduct.value
-          refetch(); // Refresh dữ liệu sau khi cập nhật thành công
+          refereshAllProduct.value = !refereshAllProduct.value;
+          refetch();
         },
         onError: (error) => {
           console.error("Lỗi khi cập nhật:", error);
         },
       }
     );
+  }
+};
+
+// Hàm load lại danh sách sản phẩm trong giỏ
+const handleRefetchData = (record) => {
+  const item = detailDataSources.value.find((item) => item.id === record.id);
+
+  if (item) {
+    // Cập nhật số lượng và thành tiền trước khi gửi request
+    item.soLuong = 0;
+    const params = { idHoaDonChiTiet: item.id, soLuong: item.soLuong };
+    // Gửi request cập nhật dữ liệu lên server
+    updateQuantity(
+      {
+        idBillDetail: record.id,
+        data: params,
+      },
+      {
+        onSuccess: () => {
+          refereshAllProduct.value = !refereshAllProduct.value;
+          refetch();
+        },
+        onError: (error) => {
+          console.error("Lỗi khi cập nhật:", error);
+        },
+      }
+    );
+  }
+};
+
+// const { data, isLoading, isFetching } = useGetPayHistory(params, {
+//   refetchOnWindowClose: false,
+//   placeholderData: keepPreviousData,
+//   keepPreviousData: false,
+// });
+
+// Hàm tính tổng tiền đã thanh toán
+const totalAmountPaid = (listPay: any) => {
+  return listPay.reduce((total, item) => total + (item.tienKhachDua || 0), 0);
+};
+
+// Hàm emit tính tiền đã thanh toán
+const getTotalAmountPaid = (totalPaid: number) => {
+  paid.value = totalPaid;
+  paymentInfo.value.paid = totalPaid;
+  // amountPayable.value = detailDataSources.value[0].tongTienHD - totalPaid;
+};
+
+// Cập nhật lại hóa đơn sau khi xác nhận đơn hàng
+// Ở đây chỉ cập nhật lại tiền vì trc đó đã update hết các thông tin rồi.
+const handleUpdateBill = () => {
+  try {
+    const payload = {
+      tienShip: detailDataSources.value[0].tienShip,
+      tienGiam: detailDataSources.value[0].tienGiamHD,
+      tongTien: detailDataSources.value[0].tongTienHD,
+    };
+
+    update(
+      { idBill: billId.value, params: payload },
+      {
+        onSuccess: (result) => {
+          successNotiSort("Cập nhật thông tin thành công");
+        },
+        onError: (error: any) => {
+          errorNotiSort("Cập nhật thông tin thất bại");
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error("🚀 ~ handleUpdate ~ error:", error);
+    if (error?.response) {
+      warningNotiSort(error?.response?.data?.message);
+    } else if (error?.errorFields) {
+      warningNotiSort("Vui lòng nhập đúng các trường dữ liệu");
+    }
   }
 };
 
@@ -269,6 +676,5 @@ const columnsBill: ColumnType[] = [
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  /* margin-bottom: 16px; Khoảng cách giữa các component */
 }
 </style>

@@ -91,6 +91,7 @@
               : "0 VND"
           }}</span>
         </div>
+        <p v-if="totalPrice > 2000000" class="text-red-500 text-right w-full">Free ship cho đơn hàng từ 2.000.000đ</p>
         <div class="flex flex justify-between block font-semibold text-xl">
           <span>Tổng tiền:</span>
           <span v-if="copiedDataSource">{{
@@ -323,7 +324,7 @@ const props = defineProps({
   class: String,
   // dataSource: Array,
   dataSource: {
-    type: Array as () => BillDetailResponse[], // ✅ Định rõ kiểu mảng chứa các sản phẩm
+    type: Array as () => BillDetailResponse[],
     required: true,
   },
   billData: Object,
@@ -352,6 +353,28 @@ const getIdHoaDonFromUrl = () => {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get("idHoaDon") || "";
 };
+
+const voucherId = ref(null);
+
+const detail = ref(null);
+
+const copiedBillData = ref<BillResponse | null>(null);
+
+const copiedDataSource = ref(null);
+
+//modal update thông tin hóa đơn: người nhận, sđt,. .
+const isOpenModalUpdateBill = ref(false);
+
+const isPaymented = ref(false);
+
+const totalProductPrice = ref(0);
+
+const modelRefTmp = ref(null);
+
+//modal thanh toán sau giao hàng
+const isOpenModalGetPay = ref(false);
+
+const { mutate: update } = useUpdateBill();
 
 const billId = getIdHoaDonFromUrl();
 
@@ -442,8 +465,6 @@ watch(
 
 const dataHistory = computed(() => historyData?.value);
 
-const voucherId = ref(null);
-
 const {
   data: dataDetail,
   isLoading,
@@ -465,8 +486,6 @@ const formState: UnwrapRef<FormState> = reactive({
   ngayBatDauVaKetThuc: [],
   kieu: false,
 });
-
-const detail = ref(null);
 
 watch(
   () => voucherId.value,
@@ -496,7 +515,6 @@ watch(
             totalProductPrice.value +
             copiedDataSource.value[0].tienShip -
             copiedDataSource.value[0].tienGiamHD;
-          // console.log(copiedBillData.value);
         }
       });
     }
@@ -513,10 +531,6 @@ watch(
   }
 );
 
-const copiedBillData = ref<BillResponse | null>(null);
-
-const copiedDataSource = ref(null);
-
 watch(
   () => props?.billData,
   (newBillData) => {
@@ -532,9 +546,15 @@ watch(
           shippingParams.value.toWardCode = copiedBillData.value.xa;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
-              copiedDataSource.value[0].tienShip = shipping?.value?.data.total;
-              copiedBillData.value.tienShip =
-                copiedDataSource.value[0].tienShip;
+              if (totalPrice.value > 2000000) {
+                  copiedDataSource.value[0].tienShip = 0;
+                  copiedBillData.value.tienShip = 0;
+                } else {
+                  copiedDataSource.value[0].tienShip =
+                    shipping?.value?.data.total;
+                  copiedBillData.value.tienShip =
+                    copiedDataSource.value[0].tienShip;
+                }
             });
           }
         });
@@ -548,11 +568,6 @@ watch(
 const updateBillData = (updatedBill) => {
   copiedBillData.value = updatedBill; // Cập nhật dữ liệu mới từ API
 };
-
-//modal update thông tin hóa đơn: người nhận, sđt,. .
-const isOpenModalUpdateBill = ref(false);
-
-const isPaymented = ref(false);
 
 const handleOpenModalUpdateBill = () => {
   isOpenModalUpdateBill.value = true;
@@ -572,9 +587,6 @@ const handleOpenModalAddProductToOrder = () => {
 const handleCloseModalAddProductToOrder = () => {
   isOpenModalAddProductToOrder.value = false;
 };
-
-//modal thanh toán sau giao hàng
-const isOpenModalGetPay = ref(false);
 
 const handleOpenModalGetPay = () => {
   isOpenModalGetPay.value = true;
@@ -611,8 +623,6 @@ const dataSources: BillDetailResponse[] | any = computed(() => {
   );
 });
 
-const totalProductPrice = ref(0);
-
 watch(
   () => dataSources.value,
   (newData) => {
@@ -634,10 +644,15 @@ watch(
             shippingParams.value.toWardCode = copiedBillData.value.xa;
             if (shippingParams.value.toWardCode) {
               refetchShipping().then(() => {
-                copiedDataSource.value[0].tienShip =
-                  shipping?.value?.data.total;
-                copiedBillData.value.tienShip =
-                  copiedDataSource.value[0].tienShip;
+                if (totalPrice.value > 2000000) {
+                  copiedDataSource.value[0].tienShip = 0;
+                  copiedBillData.value.tienShip = 0;
+                } else {
+                  copiedDataSource.value[0].tienShip =
+                    shipping?.value?.data.total;
+                  copiedBillData.value.tienShip =
+                    copiedDataSource.value[0].tienShip;
+                }
               });
             }
           });
@@ -669,10 +684,6 @@ watch(
     }
   }
 );
-
-const { mutate: update } = useUpdateBill();
-
-const modelRefTmp = ref(null);
 
 const handleUpdateBill = async (modelRef: any) => {
   modelRefTmp.value = modelRef;
@@ -793,7 +804,7 @@ const handleChangeQuantity = async (record: any) => {
       }
     }
   }, 1000);
-}
+};
 </script>
 
 <style scoped>

@@ -11,7 +11,9 @@
       </div>
       <div class="flex items-center">
         <span class="font-medium">Tên khách hàng:</span>
-        <span class="ml-2">{{ copiedBillData?.tenKhachHang || "Khách lẻ" }}</span>
+        <span class="ml-2">{{
+          copiedBillData?.tenKhachHang || "Khách lẻ"
+        }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">SĐT người nhận:</span>
@@ -49,6 +51,7 @@
             'Đã giao hàng',
             'Đã thanh toán',
             'Thành công',
+            'Đã hủy',
           ].includes(billData?.trangThai)
         "
       >
@@ -61,6 +64,7 @@
       @handleClose="handleCloseModalUpdateBill"
       @onCancel="isOpenModalUpdateBill = false"
       @updated="updateBillData"
+      @update:bill="handleUpdateBill"
     />
   </div>
 
@@ -69,7 +73,10 @@
     <div class="flex justify-between items-center mb-2">
       <h3 class="text-lg font-bold">Lịch sử thanh toán</h3>
       <a-button
-        v-if="billData?.trangThai === 'Đã giao hàng' && (!PaymentData || PaymentData.data.length === 0)"
+        v-if="
+          billData?.trangThai === 'Đã giao hàng' &&
+          paymentInfoData.amountPayable > 0
+        "
         class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
         @click="handleOpenModalGetPay"
       >
@@ -78,12 +85,15 @@
       <admin-get-delivery-pay-modal
         :open="isOpenModalGetPay"
         :totalPrice="totalPrice"
+        :payment-info-data="paymentInfoData"
         @handleClose="handleCloseModalGetPay"
         @onCancel="isOpenModalGetPay = false"
       />
     </div>
-    <admin-pay-history 
+    <admin-pay-history
       :isPaymented="isPaymented"
+      :billId="billId"
+      @get:total-amount="getTotalAmount"
     />
   </div>
 
@@ -101,6 +111,7 @@
             'Đã giao hàng',
             'Đã thanh toán',
             'Thành công',
+            'Đã hủy',
           ].includes(billData?.trangThai)
         "
       >
@@ -142,9 +153,24 @@
           v-else-if="column.key === 'action'"
           class="flex items-center justify-center space-x-2"
         >
-          <a-tooltip title="Hoàn hàng" trigger="hover">
-            <a-button class="bg-purple-100" size="middle" shape="round">
-              <v-icon name="fa-undo-alt" />
+          <a-tooltip title="Xóa" trigger="hover">
+            <a-button
+              :disabled="
+                [
+                  'Chờ giao hàng',
+                  'Đang vận chuyển',
+                  'Đã giao hàng',
+                  'Đã thanh toán',
+                  'Thành công',
+                  'Đã hủy',
+                ].includes(billData?.trangThai)
+              "
+              class="bg-purple-100"
+              size="middle"
+              shape="round"
+              @click="handleDelete(record)"
+            >
+              <v-icon name="fa-trash-alt" />
             </a-button>
           </a-tooltip>
         </div>
@@ -156,7 +182,7 @@
 
         <div v-else-if="column.key === 'chiTietSanPham'">
           <p>
-            {{ record.tenSanPham }} - {{ record.tenMau }} - 
+            {{ record.tenSanPham }} - {{ record.tenMau }} -
             <a-tag> {{ record.tenKichCo }}</a-tag>
           </p>
           <p style="color: red">
@@ -192,6 +218,7 @@
                 'Đã giao hàng',
                 'Đã thanh toán',
                 'Thành công',
+                'Đã hủy',
               ].includes(billData?.trangThai)
             "
           />
@@ -204,7 +231,7 @@
 <script lang="ts" setup>
 import TableExample from "@/components/ui/TableExample.vue";
 import { ColumnType } from "ant-design-vue/es/table";
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, watch, computed, onMounted, createVNode, nextTick } from "vue";
 import AdminPayHistory from "./AdminPayHistory.vue";
 import UpdateBillModal from "../bill/UpdateBillModals.vue";
 import AddProductDetailModal from "./AddProductDetailModal.vue";
@@ -215,7 +242,32 @@ import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-det
 import { Image, Modal } from "ant-design-vue";
 import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
+import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.action";
+import {
+  useGetListVoucher,
+  useGetPriceNextVoucher,
+  useGetShippingFee,
+  useGetServiceId,
+} from "@/infrastructure/services/service/admin/payment.action";
 import { keepPreviousData } from "@tanstack/vue-query";
+import {
+  VoucherResponse,
+  FindVoucherRequest,
+  nextVoucherRequest,
+  ShippingFeeRequest,
+  getWardByCode,
+  getDistrictById,
+  getProvinceById,
+  ServiceIdRequest,
+  createInvoicePdf,
+} from "@/infrastructure/services/api/admin/payment.api";
+import { useDeleteCartById } from "@/infrastructure/services/service/admin/point-of-sale";
+import {
+  warningNotiSort,
+  successNotiSort,
+  errorNotiSort,
+} from "@/utils/notification.config";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 
 const props = defineProps({
   wrapperClassName: {
@@ -245,10 +297,25 @@ const props = defineProps({
   loadingValue: {
     type: Boolean,
     required: true,
-  }
+  },
+  billId: {
+    type: String,
+  },
+  detail: {
+    type: Object,
+  },
+  paymentInfoData: {
+    type: Object,
+  },
 });
 
-const emit = defineEmits(["update:paginationParams", "update-quantity"]);
+const emit = defineEmits([
+  "update:paginationParams",
+  "get:payment-info",
+  "update-quantity",
+  "get:total-amount",
+  "refetch-data",
+]);
 
 watch(
   () => props?.billData,
@@ -281,6 +348,94 @@ const params = ref<FindPayHistoryRequest>({
 onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
 });
+
+// Hàm tính cân nặng và chiều dài của đơn hàng
+const calculateProductDimensions = () => {
+  const totalWeight = props.dataSource.reduce((sum: any, product: any) => {
+    return sum + (Number(product.soLuong) || 0) * 200;
+  }, 0);
+  const totalHeight = props.dataSource.reduce((sum: any, product: any) => {
+    return sum + (Number(product.soLuong) || 0) * 3;
+  }, 0);
+  return {
+    weight: Number(totalWeight) || 0,
+    length: 30,
+    width: 20,
+    height: Number(totalHeight) || 0,
+  };
+};
+
+// Param tính phí ship
+const shippingParams = computed<ShippingFeeRequest>(() => ({
+  fromDistrictId: 3440,
+  fromWardCode: "13007",
+  toDistrictId: "",
+  toWardCode: "",
+  serviceId: 0,
+  ...calculateProductDimensions(),
+}));
+
+// Param tìm serviceId để tính phí ship liên tỉnh
+const serviceIdParams = ref<ServiceIdRequest>({
+  formDistrict: 0,
+  toDistrict: 0,
+  shopId: 2509559,
+});
+
+// API lấy serviceID để dùng cho shipping param
+const { data: service, refetch: refetchService } = useGetServiceId(
+  serviceIdParams,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled:
+      !!serviceIdParams.value.formDistrict &&
+      !!serviceIdParams.value.toDistrict,
+  }
+);
+
+// API tính số tiền ship
+const { data: shipping, refetch: refetchShipping } = useGetShippingFee(
+  shippingParams,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled:
+      !!shippingParams.value.toDistrictId && !!shippingParams.value.toWardCode,
+  }
+);
+
+const copiedDataSource = ref(null);
+
+// watch(
+//   () => props?.billData,
+//   (newBillData) => {
+//     copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
+//     // voucherId.value = newBillData.idPhieuGiamGia;
+//     if (copiedBillData.value && copiedBillData.value.huyen) {
+//       serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+//       if (serviceIdParams.value.toDistrict !== 0) {
+//         refetchService().then(() => {
+//           shippingParams.value.serviceId = service?.value?.data[0].service_id;
+//           // console.log(shippingParams.value);
+//           shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+//           shippingParams.value.toWardCode = copiedBillData.value.xa;
+//           if (shippingParams.value.toWardCode) {
+//             refetchShipping().then(() => {
+//               copiedDataSource.value[0].tienShip = shipping?.value?.data.total;
+//               copiedBillData.value.tienShip =
+//                 copiedDataSource.value[0].tienShip;
+//             });
+//           }
+//         });
+//       } else {
+//         copiedDataSource.value[0].tienShip = 0;
+//       }
+//     }
+//   }
+// );
+
+const { mutate: deleteOrderDetails } = useDeleteCartById();
 
 const { data: PaymentData } = useGetPayHistory(params, {
   refetchOnWindowClose: false,
@@ -325,7 +480,7 @@ const handleOpenModalGetPay = () => {
 
 const handleCloseModalGetPay = () => {
   isOpenModalGetPay.value = false;
-  isPaymented.value = !isPaymented.value
+  isPaymented.value = !isPaymented.value;
 };
 
 const dataSources: BillDetailResponse[] | any = computed(() => {
@@ -359,12 +514,122 @@ watch(
   (newData) => {
     if (newData) {
       // console.log(newData);
+      copiedDataSource.value = JSON.parse(JSON.stringify(newData));
+
+      // totalProductPrice.value = newData.reduce(
+      //   (total, item) => total + item.thanhTien,
+      //   0
+      // );
+
+      // Tính phí ship
+      // if (copiedBillData.value && copiedBillData.value.huyen) {
+      //   serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+      //   if (serviceIdParams.value.toDistrict !== 0) {
+      //     refetchService().then(() => {
+      //       shippingParams.value.serviceId = service?.value?.data[0].service_id;
+      //       shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+      //       shippingParams.value.toWardCode = copiedBillData.value.xa;
+      //       if (shippingParams.value.toWardCode) {
+      //         refetchShipping().then(() => {
+      //           copiedDataSource.value[0].tienShip =
+      //             shipping?.value?.data.total;
+      //           copiedBillData.value.tienShip =
+      //             copiedDataSource.value[0].tienShip;
+      //         });
+      //       }
+      //     });
+      //   } else {
+      //     copiedDataSource.value[0].tienShip = 0;
+      //   }
+      // }
+
+      // if (detail.value && detail.value.loaiGiam) {
+      //   // Loại giảm = true (tiền mặt)
+      //   copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+      //   copiedDataSource.value[0].tongTienHD =
+      //     totalProductPrice.value +
+      //     copiedDataSource.value[0].tienShip -
+      //     copiedDataSource.value[0].tienGiamHD;
+      //   copiedBillData.value.tienGiam = copiedDataSource.value[0].tienGiamHD;
+      //   copiedBillData.value.tongTien = copiedDataSource.value[0].tongTienHD;
+      // } else {
+      //   // Loại giảm = flase (%)
+      //   if (detail.value && detail.value.giaTriGiam) {
+      //     copiedDataSource.value[0].tienGiamHD =
+      //       (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+      //   }
+      //   copiedDataSource.value[0].tongTienHD =
+      //     totalProductPrice.value +
+      //     copiedDataSource.value[0].tienShip -
+      //     copiedDataSource.value[0].tienGiamHD;
+      // }
+      // console.log(copiedDataSource.value);
     }
   }
 );
 
 const totalPrice = computed(() => props.billData?.tongTien);
 // console.log(totalPrice.value);
+
+const { mutate: update } = useUpdateBill();
+
+const modelRefTmp = ref(null);
+
+// Hàm thay update bill khi thay đổi thông tin giao hàng
+const handleUpdateBill = async (modelRef: any) => {
+  modelRefTmp.value = modelRef;
+
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn sửa?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        await nextTick();
+        // console.log(modelRefTmp.value);
+
+        const payload = {
+          soDienThoai: modelRef.soDienThoai,
+          diaChiNguoiNhan: modelRef.diaChiNguoiNhan,
+          tenNguoiNhan: modelRef.tenNguoiNhan,
+          ghiChu: modelRef.ghiChu,
+          tinh: modelRef.tinh,
+          huyen: modelRef.huyen,
+          xa: modelRef.xa,
+          idPhieuGiamGia: props.detail ? props.detail.id : null,
+        };
+        update(
+          { idBill: params.value.idHoaDon, params: payload },
+          {
+            onSuccess: (result) => {
+              successNotiSort("Cập nhật thông tin thành công");
+              emit("get:payment-info", modelRef);
+              isOpenModalUpdateBill.value = false;
+            },
+            onError: (error: any) => {
+              errorNotiSort("Cập nhật thông tin thất bại");
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error("🚀 ~ handleUpdate ~ error:", error);
+        if (error?.response) {
+          warningNotiSort(error?.response?.data?.message);
+        } else if (error?.errorFields) {
+          warningNotiSort("Vui lòng nhập đúng các trường dữ liệu");
+        }
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
+};
+
+const getTotalAmount = (totalPaid: number) => {
+  emit("get:total-amount", totalPaid);
+};
 
 const handleChangeQuantity = async (record: any) => {
   if (!record.previousQuantity && record.soLuong !== 0) {
@@ -396,6 +661,27 @@ const handleChangeQuantity = async (record: any) => {
   }
 };
 
+// Xóa sản phẩm trong giỏ hàng
+const handleDelete = (productDetail: any) => {
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn xóa sản phẩm này ra khỏi giỏ?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        // await deleteOrderDetails(productDetail.id);
+        emit("refetch-data", productDetail);
+        successNotiSort("Xóa thành công");
+      } catch (error) {
+        errorNotiSort("Xóa thất bại");
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
+};
 </script>
 
 <style scoped>

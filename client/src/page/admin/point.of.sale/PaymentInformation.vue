@@ -79,13 +79,13 @@
                 }}</span
               >
             </div>
-            <span class="ms-8"  v-if="dataNextPriceVouchers > 0"
+            <span class="ms-8" v-if="dataNextPriceVouchers > 0"
               >Mua thêm
               {{ formatCurrencyVND(dataNextPriceVouchers - totalAmount) }} để có
               thể sử dụng phiếu giảm giá tốt hơn.</span
             >
-            
-            <span class="ms-8"  v-if="dataNextPriceVouchers.length === 0"
+
+            <span class="ms-8" v-if="dataNextPriceVouchers.length === 0"
               >Không còn phiếu nào phù hợp hơn nữa.</span
             >
           </div>
@@ -142,7 +142,11 @@
             @change="updateTotal"
             :formatter="formatter"
           />
+          
         </div>
+        <p v-if=" totalAmount >= 2000000" class="mt-1 ms-16 text-red-500">
+            (Free ship cho hóa đơn từ 2.000.000đ.)
+          </p>
         <a-form-item label="Phương thức thanh toán" class="text-xl">
           <div class="flex items-center space-x-2">
             <a-tooltip title="Chọn phương thức thanh toán" trigger="hover">
@@ -215,6 +219,7 @@ import {
 import { useUpdateBillWait } from "@/infrastructure/services/service/admin/bill.action";
 import VoucherPaymentTable from "./voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "./payment-method/PaymentMethod.vue";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   formatCurrencyVND,
   getDateFormat,
@@ -238,7 +243,7 @@ import {
   getDistrictById,
   getProvinceById,
   ServiceIdRequest,
-  createInvoicePdf
+  createInvoicePdf,
 } from "@/infrastructure/services/api/admin/payment.api";
 import {
   ClientAddressCommonOptionsResponse,
@@ -427,37 +432,6 @@ const { data: shipping, refetch: refetchShipping } = useGetShippingFee(
   }
 );
 
-// watch(
-//   () => shippingParams.value.toWardCode,
-//   (newValues, oldValues) => {
-//     console.log("Trước:", oldValues);
-//     console.log("Sau:", newValues);
-//   },
-//   { deep: true }
-// );
-
-// watch(
-//   () => props.selectedCustomerAddress,
-//   (newAddress) => {
-//     if (newAddress?.districtId && newAddress?.wardCode) {
-//       refetchShipping();
-//     }
-//   },
-//   { deep: true }
-// );
-
-// watch(
-//   () => paymentInfo.value.shippingOption,
-//   (newOption) => {
-//     if (
-//       newOption === "true" &&
-//       props.selectedCustomerAddress?.districtId &&
-//       props.selectedCustomerAddress?.wardCode
-//     ) {
-//       refetchShipping();
-//     }
-//   }
-// );
 watch(
   () => props.selectedCustomerInfo,
   (newData) => {
@@ -468,22 +442,12 @@ watch(
   }
 );
 
-// watch(
-//   () => props.dataSourceInfor,
-//   (newData) => {
-//     if (newData) {
-//       console.log(newData);
-//     }
-//   }
-// );
-console.log(props.dataSourceInfor);
-
 watch(
   () => dataSourcePro.value,
   (newData) => {
     if (newData) {
       console.log(newData);
-      
+
       paramsVoucher.value.tongTien = totalAmount.value;
       paramsNextPriceVoucher.value.tongTien = totalAmount.value;
       if (serviceIdParams.value.toDistrict !== 0) {
@@ -494,7 +458,11 @@ watch(
           shippingParams.value.toWardCode = getCustomerAddress.value.ward;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
-              paymentInfo.value.shippingFee = shipping?.value?.data.total;
+              if (totalAmount.value <= 2000000) {
+                paymentInfo.value.shippingFee = shipping?.value?.data.total;
+              } else {
+                paymentInfo.value.shippingFee = 0;
+              }
             });
           }
         });
@@ -524,90 +492,6 @@ const dataNextPriceVouchers = computed(
   () => dataNextPriceVoucher?.value?.data || []
 );
 
-// Lấy địa chỉ theo xã huyện tỉnh
-
-// const provincesOptions = ref<{ label: string; value: string }[]>([]);
-// const districtsOptions = ref<{ label: string; value: string }[]>([]);
-// const wardsOptions = ref<{ label: string; value: string }[]>([]);
-
-// const { data: provinces, refetch: refetchProvinces } = useGetProvinces({
-//   refetchOnWindowFocus: false,
-//   placeholderData: keepPreviousData,
-//   enabled: false,
-// });
-
-// const { data: districts, refetch: refetchDistricts } =
-//   useGetDistrictsByProvinceIdQuery(props?.selectedCustomerAddress?.province, {
-//     refetchOnWindowFocus: false,
-//     placeholderData: keepPreviousData,
-//     enabled: false,
-//   });
-
-// const { data: wards, refetch: refetchWards } = useGetWardsByDistrictIdQuery(
-//   props?.selectedCustomerAddress?.district,
-//   {
-//     refetchOnWindowFocus: false,
-//     placeholderData: keepPreviousData,
-//     enabled: false,
-//   }
-// );
-
-// watch(
-//   () => props.selectedCustomerAddress,
-//   async (newDataSource) => {
-//     if (newDataSource && paymentInfo.value.shippingOption === "true") {
-//       paymentInfo.value.name = newDataSource.name;
-//       paymentInfo.value.phoneNumber = newDataSource.phoneNumber;
-
-//       const wardInfo = ref(null);
-//       const districtInfo = ref(null);
-//       const provinceInfo = ref(null);
-//       try {
-//         const response = await getWardByCode(newDataSource.ward);
-//         wardInfo.value = response.data.data;
-
-//         const responseDis = await getDistrictById(newDataSource.district);
-//         districtInfo.value = responseDis.data.data;
-
-//         const responsePro = await getProvinceById(newDataSource.province);
-//         provinceInfo.value = responsePro.data.data;
-//         paymentInfo.value.fullAddress =
-//           newDataSource.line +
-//           ", " +
-//           wardInfo.value +
-//           ", " +
-//           districtInfo.value +
-//           ", " +
-//           provinceInfo.value;
-//       } catch (error) {
-//         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
-//       }
-//     }
-//   },
-//   { immediate: true, deep: true }
-// );
-
-// // Cập nhật danh sách quận/huyện
-// watch(districts, (newDistricts) => {
-//   districtsOptions.value =
-//     newDistricts?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
-//       label: address.name,
-//       value: address.id,
-//     })) || [];
-//   console.log(districtsOptions.value);
-// });
-
-// // Cập nhật danh sách phường/xã
-// watch(wards, (newWards) => {
-//   wardsOptions.value =
-//     newWards?.data?.map((address: ClientAddressCommonOptionsResponse) => ({
-//       label: address.name,
-//       value: address.id,
-//     })) || [];
-//   console.log(wardsOptions.value);
-// });
-
-//---------------------------------------------
 const voucher = ref(null);
 
 watch(
@@ -632,13 +516,6 @@ watch(
     }
   }
 );
-
-// watch(
-//   () => dataNextPriceVouchers.value,
-//   (newData) => {
-//     console.log(newData);
-//   }
-// );
 
 // Hàm format tiền sang VNĐ
 const formatter = (value: any) => {
@@ -696,8 +573,8 @@ const updateTotal = () => {
 };
 
 const handleCheckPaymented = (totalAmountAfter: number) => {
-  paymentedValue.value = totalAmountAfter
-}
+  paymentedValue.value = totalAmountAfter;
+};
 
 const handleVoucherSelected = (voucher) => {
   if (paymentedValue.value !== 0) {
@@ -715,17 +592,6 @@ const handleVoucherSelected = (voucher) => {
     paymentInfo.value.totalProductPrice =
       totalAmount.value - paymentInfo.value.discount;
   }
-  // console.log(dataListVoucher.value);
-
-  // if (dataListVoucher.value) {
-  //   console.log("ok");
-
-  //   voucher =
-  //     dataListVoucher.value.find(
-  //       (voucherSelected) => voucherSelected.id === voucher.id
-  //     ) || null;
-  //   console.log(voucher);
-  // }
 };
 
 watch(
@@ -734,11 +600,13 @@ watch(
     if (dataListVoucher.value) {
       voucher.value =
         dataListVoucher.value.find(
-          (voucherSelected) => voucherSelected.id === paymentInfo.value.voucherId
+          (voucherSelected) =>
+            voucherSelected.id === paymentInfo.value.voucherId
         ) || null;
-      console.log(voucher.value);
+      // console.log(voucher.value);
     }
-  }, {deep: true}
+  },
+  { deep: true }
 );
 
 const handleNotVoucher = () => {
@@ -757,20 +625,22 @@ const { mutate: updateBillWait } = useUpdateBillWait();
 
 const handleUpdateBill = () => {
   const pdfParams = {
-    idKhachHang: props.selectedCustomerInfo ? props.selectedCustomerInfo.id : null,
+    idKhachHang: props.selectedCustomerInfo
+      ? props.selectedCustomerInfo.id
+      : null,
 
-    idNhanVien: null,
+    idNhanVien: useAuthStore().user?.id || null,
 
     idHoaDon: props.dataSourceInfor.id,
 
     products: dataSourcePro.value,
 
-    tongTien: paymentInfo.value.totalProductPrice,
+    tongTien: totalAmount.value,
 
     phiVanChuyen: paymentInfo.value.shippingFee,
 
-    giamGia: paymentInfo.value.discount
-  }
+    giamGia: paymentInfo.value.discount,
+  };
   const payload = {
     trangThai:
       paymentInfo.value.shippingOption === "true"
@@ -780,7 +650,7 @@ const handleUpdateBill = () => {
       ? props.selectedCustomerInfo.id
       : null,
     idPhieuGiamGia: paymentInfo.value.voucherId || null,
-    idNhanVien: null,
+    idNhanVien: useAuthStore().user?.id || null,
     diaChiNguoiNhan:
       paymentInfo.value.shippingOption === "true"
         ? paymentInfo.value.fullAddress
@@ -801,6 +671,9 @@ const handleUpdateBill = () => {
         ? paymentInfo.value.shippingFee
         : null,
     tongTien: paymentInfo.value.totalProductPrice || null,
+    xa: getCustomerAddress?.value?.ward || null,
+    huyen: getCustomerAddress?.value?.district || null,
+    tinh: getCustomerAddress?.value?.province || null,
   };
   if (
     paymentInfo.value.shippingOption === "true" &&
@@ -812,7 +685,9 @@ const handleUpdateBill = () => {
     return;
   }
   if (paymentedValue.value === 0) {
-    warningNotiSort("Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!");
+    warningNotiSort(
+      "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"
+    );
     return;
   }
   Modal.confirm({
@@ -826,7 +701,7 @@ const handleUpdateBill = () => {
           idBill: props.dataSourceInfor.id,
           params: payload,
         });
-        await createInvoicePdf(pdfParams)
+        await createInvoicePdf(pdfParams);
         successNotiSort("Thanh toán thành công!");
         router.push(
           ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
@@ -837,7 +712,6 @@ const handleUpdateBill = () => {
           errorNotiSort(error?.response?.data?.message);
         }
       }
-      
     },
     cancelText: "Huỷ",
     onCancel() {
@@ -891,7 +765,11 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 
       if (shippingParams.value.toWardCode) {
         refetchShipping().then(() => {
-          paymentInfo.value.shippingFee = shipping?.value?.data.total;
+          if (totalAmount.value <= 2000000) {
+            paymentInfo.value.shippingFee = shipping?.value?.data.total;
+          } else {
+            paymentInfo.value.shippingFee = 0;
+          }
         });
       }
     });
@@ -899,62 +777,11 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
     paymentInfo.value.shippingFee = 0;
   }
   console.log(paymentInfo.value);
-  
 };
-
-// watch(
-//   () => shippingParams.value.toWardCode,
-//   (newData) => {
-//     if (newData && newData !== "") {
-//       refetchShipping().then(() => {
-//         paymentInfo.value.shippingFee = shipping?.value?.data.total;
-//       });
-//     }
-//   },
-//   { deep: true }
-// );
-
-// watch(
-//   () => props.selectedCustomerAddress,
-//   (newData) => {
-//     if (newData) {
-//       serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
-//       serviceIdParams.value.toDistrict = Number(newData.district);
-//     }
-//     refetchService().then(() => {
-//       shippingParams.value.serviceId = service?.value?.data[0].service_id;
-//     });
-
-//     shippingParams.value.toDistrictId = newData.district;
-//     shippingParams.value.toWardCode = newData.ward;
-//     refetchShipping().then(() => {
-//       paymentInfo.value.shippingFee = shipping?.value?.data.total;
-//     });
-//   },
-//   { deep: true }
-// );
-
-// watch(
-//   () => props.selectedCustomerAddress,
-//   (newData) => {
-//     if (newData) {
-//       serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
-//       serviceIdParams.value.toDistrict = Number(newData.district);
-//       refetchService().then(() => {
-//         shippingParams.value.serviceId = service?.value?.data[0].service_id;
-//       });
-
-//       shippingParams.value.toDistrictId = newData.district;
-//       shippingParams.value.toWardCode = newData.ward;
-//       refetchShipping().then(() => {
-//         paymentInfo.value.shippingFee = shipping?.value?.data.total;
-//       });
-//     }
-//   }, { deep: true }
-// );
 
 watch(totalAmount, (newTotal) => {
   if (newTotal !== 0) {
+    console.log(newTotal);
     paymentInfo.value.totalProductPrice = newTotal;
   }
 });
@@ -962,21 +789,45 @@ watch(totalAmount, (newTotal) => {
 watch(
   () => paymentInfo.value.shippingFee,
   (newTotal) => {
-    if (newTotal && newTotal !== 0) {
+    if (
+      newTotal &&
+      newTotal !== 0 &&
+      paymentInfo.value.shippingOption === "true"
+    ) {
       paymentInfo.value.totalProductPrice =
         totalAmount.value + newTotal - paymentInfo.value.discount;
     } else {
-      paymentInfo.value.totalProductPrice = 0;
+      paymentInfo.value.totalProductPrice =
+        totalAmount.value + 0 - paymentInfo.value.discount;
     }
   }
 );
 
-// watch(() => shippingFee.value?.total, (newFee) => {
-//   if (newFee && paymentInfo.value.shippingOption === 'true') {
-//     paymentInfo.value.shippingFee = newFee;
-//     updateTotal();
-//   }
-// });
+// Theo dõi nếu thay đổi hình thức mua hàng thì sẽ thay đổi tổng tiền
+watch(
+  () => paymentInfo.value.shippingOption,
+  (newData) => {
+    if (newData) {
+      if (
+        paymentInfo.value.shippingFee &&
+        paymentInfo.value.shippingFee !== 0 &&
+        paymentInfo.value.shippingOption === "true"
+      ) {
+        paymentInfo.value.totalProductPrice =
+          totalAmount.value +
+          paymentInfo.value.shippingFee -
+          paymentInfo.value.discount;
+      } else {
+        paymentInfo.value.shippingFee = 0;
+        paymentInfo.value.totalProductPrice =
+          totalAmount.value +
+          paymentInfo.value.shippingFee -
+          paymentInfo.value.discount;
+      }
+    }
+  }
+);
+
 // Theo dõi thay đổi và cập nhật tổng tiền
 watch(
   [() => paymentInfo.value.shippingFee, () => paymentInfo.value.discount],
