@@ -68,7 +68,15 @@ export const createInvoiceOnlineWithVnPay = async (data: clientPaymentRequest) =
     return res.data;
 };
 
-
+export const createInvoiceOnlineWithMoMo = async (data: clientPaymentRequest) => {
+  const res = await request({
+    url: `${API_CLIENT_PAYMENT}/momo-invoice`,
+    method: "POST",
+    data: data,
+  }) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  
+  return res.data;
+};
 // export const createInvoiceOnlineWithVnPay = async (data: vnPayRequest) => {
 //     const res = (await request({
 //       url: `${API_CLIENT_PAYMENT}/vnpay`,

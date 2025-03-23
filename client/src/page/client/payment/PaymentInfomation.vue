@@ -70,11 +70,28 @@
         </div>
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <a-form-item label="PHƯƠNG THỨC THANH TOÁN" class="text-l mt-8">
-          <a-radio-group v-model:value="paymentInfo.method">
-            <a-radio value="cod">Thanh toán khi nhận hàng (COD)</a-radio>
-            <a-radio value="vnpay">Thanh toán qua VN Pay</a-radio>
-          </a-radio-group>
-        </a-form-item>
+        <div class="payment-methods">
+          <div 
+            v-for="method in paymentMethods" 
+            :key="method.value"
+            :class="['payment-method-item', { 'active': paymentInfo.method === method.value }]"
+            @click="paymentInfo.method = method.value"
+          >
+            <div class="flex items-center p-3 border rounded-md hover:border-red-700 cursor-pointer">
+              <div class="flex-shrink-0 mr-3 text-xl text-red-700">
+                <v-icon :name="method.icon" />
+              </div>
+              <div class="flex-grow">
+                <div class="font-medium">{{ method.label }}</div>
+                <div class="text-xs text-gray-500">{{ method.description }}</div>
+              </div>
+              <div class="flex-shrink-0 ml-3">
+                <a-radio :checked="paymentInfo.method === method.value" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </a-form-item>
         <hr class="border-t border-gray-400 border-dashed mb-5" />
         <div
           class="flex justify-between items-center w-[300px] text-xxl font-bold"
@@ -132,7 +149,7 @@ import {
   useGetServiceId,
   useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
-import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
+import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithMomo, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
 
 import VoucherPaymentTable from "@/page/admin/point.of.sale/voucher/VoucherPaymentTable.vue";
 import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
@@ -208,6 +225,32 @@ const listProducts = computed(() => cartStore.checkoutData);
 
 // const emit = defineEmits(["handlePaymentInfo"]);
 
+const paymentMethods = [
+  {
+    value: "cod",
+    label: "Thanh toán khi nhận hàng (COD)",
+    description: "Thanh toán bằng tiền mặt khi nhận hàng tại nhà",
+    icon: "ri-money-dollar-box-fill", // Thay thế với đường dẫn thực của bạn
+  },
+  {
+    value: "vnpay",
+    label: "Thanh toán qua VN Pay",
+    description: "Thanh toán nhanh chóng và an toàn qua cổng VN Pay",
+    icon: "ri-bank-card-fill", // Thay thế với đường dẫn thực của bạn
+  },
+  {
+    value: "momo",
+    label: "Thanh toán qua Momo",
+    description: "Thanh toán dễ dàng qua ví điện tử Momo",
+    icon: "ri-wallet-3-fill", // Thay thế với đường dẫn thực của bạn
+  },
+  {
+    value: "vietQR",
+    label: "Thanh toán qua VietQR",
+    description: "Chuyển khoản nhanh chóng bằng mã QR",
+    icon: "ri-qr-code-fill", // Thay thế với đường dẫn thực của bạn
+  },
+];
 const pageSize = ref(5);
 const current1 = ref(1);
 
@@ -368,6 +411,8 @@ const { mutate: createInvoice } = useCreateInvoiceOnline();
 
 const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
 
+const createInvoiceMutationMomo = useCreateInvoiceOnlineWithMomo();
+
 const handlePayment = () => {
   if (!props.validateAddress) {
     warningNotiSort("Vui lòng nhập đủ thông tin giao hàng.");
@@ -424,7 +469,7 @@ const handlePayment = () => {
           Modal.destroyAll();
         },
       });
-    } else {
+    } else if (paymentInfo.value.method === "vnpay") {
       Modal.confirm({
         content: "Bạn chắc chắn muốn thanh toán qua VNPay?",
         icon: createVNode(ExclamationCircleOutlined),
@@ -437,6 +482,32 @@ const handlePayment = () => {
             window.open(response?.data?.paymentUrl, "_blank");
           }
             console.log(response);
+          } catch (error: any) {
+            console.error("🚀 ~ handleCreate ~ error:", error); 
+            if (error?.response) {
+              errorNotiSort(error?.response?.data?.message);
+            }
+          }
+        },
+        cancelText: "Huỷ",
+        onCancel() {
+          Modal.destroyAll();
+        },
+      });
+    }
+    else{
+      Modal.confirm({
+        content: "Bạn chắc chắn muốn thanh toán qua MoMo?",
+        icon: createVNode(ExclamationCircleOutlined),
+        centered: true,
+        async onOk() {
+          try {
+            const response = await createInvoiceMutationMomo.mutateAsync(payload);
+            console.log(response);
+            
+            if (response?.data?.payUrl) {
+            window.open(response?.data?.payUrl, "_blank");
+          } 
           } catch (error: any) {
             console.error("🚀 ~ handleCreate ~ error:", error); 
             if (error?.response) {
