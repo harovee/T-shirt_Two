@@ -190,8 +190,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
 
         if (request.getPaymentMethod().equals("vnpay")) {
             VNPayRequest vnPayRequest = new VNPayRequest();
-//             vnPayRequest.setAmount(String.valueOf(request.getTongTien()));
-            vnPayRequest.setAmount(request.getAmount());
+            vnPayRequest.setAmount(String.valueOf(request.getTongTien()));
             vnPayRequest.setBankCode(request.getBankCode());
             VNPayResponse vnPayResponse = paymentService.createVnPayPayment(vnPayRequest, VNPayUtil.getIpAddress(httpRequest), hoaDon.getId());
             return new ResponseObject<>(vnPayResponse, HttpStatus.OK, "Redirect to VNPay");
@@ -240,6 +239,14 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTongTien(request.getTongTien());
 
         adminBillRepository.save(hoaDon);
+
+        adminBillRepository.save(hoaDon);
+        AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
+        adminSendEmailRequest.setEmail(request.getEmail());
+        adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
+        adminSendEmailRequest.setTrangThai("Chờ xác nhận");
+        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
         if (request.getIdPhieuGiamGia() != null) {
             adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
         }
@@ -258,7 +265,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
         if (request.getPaymentMethod().equals("momo")){
             ClientMomoRequest momoRequest = new ClientMomoRequest();
-            momoRequest.setAmount(Long.valueOf(request.getAmount()));
+            momoRequest.setAmount(request.getTongTien().longValue());
             momoRequest.setOrderId(hoaDon.getId());
             return new ResponseObject<>(momoService.createMomo(momoRequest),HttpStatus.OK, "Redirect to Momo");
         }
