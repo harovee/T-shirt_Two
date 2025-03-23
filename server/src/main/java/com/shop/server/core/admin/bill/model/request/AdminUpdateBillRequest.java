@@ -19,6 +19,8 @@ public class AdminUpdateBillRequest {
 
     private String idPhieuGiamGia;
 
+    private String nhanVien;
+
     private String diaChiNguoiNhan;
 
     private String tenNguoiNhan;
@@ -40,11 +42,13 @@ public class AdminUpdateBillRequest {
 
     private String huyen;
 
+    private String xa;
+
     private BigDecimal tienShip;
 
     private BigDecimal tienGiam;
 
-    private String xa;
-
     private BigDecimal tongTien;
+
+    private String email;
 }

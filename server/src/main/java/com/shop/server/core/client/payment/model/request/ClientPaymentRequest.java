@@ -32,12 +32,14 @@ import java.util.List;
 
         String paymentMethod;
       
-    String tinh;
+        String tinh;
 
-    String huyen;
+        String huyen;
 
-    String xa;
+        String xa;
 
-    List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
+        String email;
+
+        List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
 
     }

@@ -9,10 +9,14 @@
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'tienKhachDua'">
-            <span v-if="record?.tongTienHD">{{ formatCurrencyVND(record.tienKhachDua) }}</span>
+            <span v-if="record?.tongTienHD">{{
+              formatCurrencyVND(record.tienKhachDua)
+            }}</span>
           </template>
           <template v-else-if="column.key === 'ngayTao'">
-            <span v-if="record?.ngayTao">{{ convertDateFormat(record.ngayTao) }}</span>
+            <span v-if="record?.ngayTao">{{
+              convertDateFormat(record.ngayTao)
+            }}</span>
           </template>
         </template>
       </a-table>
@@ -30,15 +34,16 @@
 import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { onMounted, ref, watch } from "vue";
-import { formatCurrencyVND } from "@/utils/common.helper";
-import { convertDateFormat } from "@/utils/common.helper";
+import { onMounted, ref, watch, watchEffect } from "vue";
+import { formatCurrencyVND, convertDateFormat } from "@/utils/common.helper";
+import { useRoute } from "vue-router";
 
-const props= defineProps ({
-  isPaymented: Boolean
-})
+const props = defineProps({
+  isPaymented: Boolean,
+  billId: String,
+});
 
-const emit = defineEmits(["get:total-amount"])
+const emit = defineEmits(["get:total-amount"]);
 
 interface ColumnType {
   title: string;
@@ -50,38 +55,28 @@ interface ColumnType {
 }
 
 const params = ref<FindPayHistoryRequest>({
-  idHoaDon: "",
-});
-
-const getIdHoaDonFromUrl = () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get("idHoaDon") || "";
-};
-
-onMounted(() => {
-  params.value.idHoaDon = getIdHoaDonFromUrl();
+  idHoaDon: props.billId || "",
 });
 
 const { data, isLoading, isFetching, refetch } = useGetPayHistory(params, {
   refetchOnWindowClose: false,
   placeholderData: keepPreviousData,
+  keepPreviousData: false,
 });
 
-const totalAmountPaid = (listPay: any) => {
-  return listPay.reduce((total,item) => total + (item.tienKhachDua || 0), 0);
-}
-
 watch(
-  () => data?.value?.data,
-  (newData) => {
-    if (newData) {
-      // console.log(newData);
-      console.log(newData);
-      emit("get:total-amount", totalAmountPaid(newData));
-    }
-  },
-  { immediate: true }
+  () => props.billId,
+  (newId) => {
+    params.value.idHoaDon = newId || "";
+    refetch().then(() => {
+      emit("get:total-amount", totalAmountPaid(data?.value?.data));
+    });
+  }
 );
+
+const totalAmountPaid = (listPay: any) => {
+  return listPay.reduce((total, item) => total + (item.tienKhachDua || 0), 0);
+};
 
 watch(
   () => props.isPaymented,

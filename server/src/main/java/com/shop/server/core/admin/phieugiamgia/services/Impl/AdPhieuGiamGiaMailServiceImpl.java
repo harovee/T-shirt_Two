@@ -24,10 +24,6 @@ public class AdPhieuGiamGiaMailServiceImpl implements AdPhieuGiamGiaMailService 
     @Override
     public void sendMailCreateKhachHangVoucher(KhachHang khachHang, PhieuGiamGia phieuGiamGia) {
         try {
-            // Tạo barcode cho mã voucher
-            // byte[] barcodeBase64 = GenBarcode.generateBarcode(phieuGiamGia.getMa());
-            // String barcodeBase64Str = Base64.getEncoder().encodeToString(barcodeBase64);
-            //  String barcodeImgTag = "<img src='data:image/png;base64," + barcodeBase64Str + "' style='display:block; margin:auto;'/>";
             String barCodeUrl = genBarcode.generateBarcodeImage(phieuGiamGia.getMa());
             String giaTriGiam = phieuGiamGia.getLoaiGiam() ? phieuGiamGia.getGiaTriGiam() + " đ" : phieuGiamGia.getGiaTriGiam() + "%";
             String emailContent = String.format("""

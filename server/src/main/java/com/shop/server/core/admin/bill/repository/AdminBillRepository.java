@@ -108,7 +108,7 @@ public interface AdminBillRepository extends HoaDonRepository {
             LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id
             LEFT JOIN phieu_giam_gia pg ON hd.id_phieu_giam_gia = pg.id
             WHERE
-                hd.trang_thai = 'Chờ xác nhận'
+                hd.trang_thai = 'Hóa đơn chờ'
             AND
                 hd.loai_hoa_don = 'Tại quầy'
             ORDER BY hd.ngay_tao ASC
@@ -137,7 +137,8 @@ public interface AdminBillRepository extends HoaDonRepository {
             hd.phuong_thuc_nhan AS phuongThucNhan,
             hd.tinh AS tinh,
             hd.huyen AS huyen,
-            hd.xa AS xa
+            hd.xa AS xa,
+            hd.email_nguoi_nhan AS emailNguoiNhan
         FROM hoa_don hd
         LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
         LEFT JOIN nhan_vien nv ON hd.id_nhan_vien = nv.id

@@ -50,6 +50,8 @@ const props = defineProps({
   paginationParams: Object,
 });
 
+console.log(props.dataSource);
+
 // Cấu hình cột cho bảng
 const columns: ColumnType[] = [
   {

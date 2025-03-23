@@ -43,4 +43,6 @@ public interface AdminBillResponse extends BaseResponse {
     String getHuyen();
 
     String getXa();
+
+    String getEmailNguoiNhan();
 }

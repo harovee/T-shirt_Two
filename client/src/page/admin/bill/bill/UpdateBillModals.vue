@@ -94,7 +94,7 @@ const handleCloseModalAddress = () => {
   isOpenModalAddress.value = false;
 };
 
-const emit = defineEmits(["handleClose", "updated"]);
+const emit = defineEmits(["handleClose", "updated", "update:bill"]);
 
 const { mutate: update } = useUpdateBill();
 
@@ -104,6 +104,13 @@ const modelRef = reactive<BillRequest>({
   // idKhachHang: null,
   tenNguoiNhan: null,
   ghiChu: null,
+  tinh: null,
+  huyen: null,
+  xa: null,
+  idPhieuGiamGia: null,
+  tienGiam: null,
+  tienShip: null,
+  tongTien: null
 });
 
 const rulesRef = reactive({
@@ -130,9 +137,12 @@ watch(
       // modelRef.idKhachHang = newBillData.idKhachHang || null;
       modelRef.tenNguoiNhan = newBillData.tenNguoiNhan || null;
       modelRef.ghiChu = newBillData.ghiChu || null;
+      modelRef.tinh = newBillData.tinh || null;
+      modelRef.huyen = newBillData.huyen || null;
+      modelRef.xa = newBillData.xa || null;
     }
   },
-  { immediate: true } // Theo dõi ngay khi component mount
+  // { immediate: true } // Theo dõi ngay khi component mount
 );
 
 const formFields = computed(() => [
@@ -167,58 +177,64 @@ const getIdHoaDonFromUrl = () => {
   return urlParams.get("idHoaDon") || "";
 };
 
-const handleChangeAddress = (fullAddress: string) => {
+const handleChangeAddress = (fullAddress: string, modelRefAdd: any) => {
     modelRef.diaChiNguoiNhan = fullAddress;
+    modelRef.tinh = modelRefAdd.province;
+    modelRef.huyen = modelRefAdd.district;
+    modelRef.xa = modelRefAdd.ward;
 }
 
 const billId = getIdHoaDonFromUrl();
 // console.log(billId);
 
 const handleUpdateBill = () => {
-  const payload = {
-    // idKhachHang: modelRef.idKhachHang,
-    soDienThoai: modelRef.soDienThoai,
-    diaChiNguoiNhan: modelRef.diaChiNguoiNhan,
-    tenNguoiNhan: modelRef.tenNguoiNhan,
-    ghiChu: modelRef.ghiChu,
-  };
 
-  console.log(payload);
+  emit("update:bill", modelRef);
 
-  Modal.confirm({
-    content: "Bạn chắc chắn muốn sửa?",
-    icon: createVNode(ExclamationCircleOutlined),
-    centered: true,
-    async onOk() {
-      try {
-        await validate();
-        update(
-          { idBill: billId, params: payload },
-          {
-            onSuccess: (result) => {
-              successNotiSort("Cập nhật hóa đơn thành công");
-              emit("updated", result.data);
-              handleClose();
-            },
-            onError: (error: any) => {
-              errorNotiSort("Cập nhật hóa đơn thất bại");
-            },
-          }
-        );
-      } catch (error: any) {
-        console.error("🚀 ~ handleUpdate ~ error:", error);
-        if (error?.response) {
-          warningNotiSort(error?.response?.data?.message);
-        } else if (error?.errorFields) {
-          warningNotiSort("Vui lòng nhập đúng các trường dữ liệu");
-        }
-      }
-    },
-    cancelText: "Huỷ",
-    onCancel() {
-      Modal.destroyAll();
-    },
-  });
+  // const payload = {
+  //   // idKhachHang: modelRef.idKhachHang,
+  //   soDienThoai: modelRef.soDienThoai,
+  //   diaChiNguoiNhan: modelRef.diaChiNguoiNhan,
+  //   tenNguoiNhan: modelRef.tenNguoiNhan,
+  //   ghiChu: modelRef.ghiChu,
+  // };
+
+  // console.log(payload);
+
+  // Modal.confirm({
+  //   content: "Bạn chắc chắn muốn sửa?",
+  //   icon: createVNode(ExclamationCircleOutlined),
+  //   centered: true,
+  //   async onOk() {
+  //     try {
+  //       await validate();
+  //       update(
+  //         { idBill: billId, params: payload },
+  //         {
+  //           onSuccess: (result) => {
+  //             successNotiSort("Cập nhật hóa đơn thành công");
+  //             emit("updated", result.data);
+  //             handleClose();
+  //           },
+  //           onError: (error: any) => {
+  //             errorNotiSort("Cập nhật hóa đơn thất bại");
+  //           },
+  //         }
+  //       );
+  //     } catch (error: any) {
+  //       console.error("🚀 ~ handleUpdate ~ error:", error);
+  //       if (error?.response) {
+  //         warningNotiSort(error?.response?.data?.message);
+  //       } else if (error?.errorFields) {
+  //         warningNotiSort("Vui lòng nhập đúng các trường dữ liệu");
+  //       }
+  //     }
+  //   },
+  //   cancelText: "Huỷ",
+  //   onCancel() {
+  //     Modal.destroyAll();
+  //   },
+  // });
 };
 
 const handleClose = () => {

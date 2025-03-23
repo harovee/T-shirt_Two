@@ -37,5 +37,9 @@ public class AdminUpdateBillWaitRequest {
 
     private BigDecimal tongTien;
 
+    private String tinh;
 
+    private String huyen;
+
+    private String xa;
 }
