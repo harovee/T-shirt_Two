@@ -43,6 +43,16 @@ export const useGetAllProductDetail = (
     });
 };
 
+export const useGetAllProductDetailOverZero = (
+    paramsAll: Ref<FindAllProductDetailRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getAllProductDetails>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.productDetail.allProductDetailOverZero, paramsAll],
+        queryFn: () => getAllProductDetails(paramsAll),
+        ...options,
+    });
+};
+
 export const useCreateProductDetail = () => {
     const queryClient = useQueryClient();
     return useMutation({

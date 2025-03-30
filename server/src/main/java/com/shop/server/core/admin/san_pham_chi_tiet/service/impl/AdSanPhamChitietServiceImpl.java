@@ -81,6 +81,16 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
     }
 
     @Override
+    public ResponseObject<?> getALlSanPhamChiTietOverZero(AdFindSpctRequest request) {
+        Pageable pageable = Helper.createPageable(request);
+        return new ResponseObject<>(
+                PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTietOverZero(pageable, request)),
+                HttpStatus.OK,
+                "Lấy dữ liệu thành công."
+        );
+    }
+
+    @Override
     public ResponseObject<?> getListSanPhamChitiet() {
         return new ResponseObject<>(
                 adSanPhamChiTietRepository.getListSanPhamChiTiets(),
