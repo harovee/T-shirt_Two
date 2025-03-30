@@ -182,6 +182,11 @@ const props = defineProps<{
   billData: Object;
 }>();
 
+watch(() => props.dataSource, (newData) => {
+  console.log(newData);
+  
+})
+
 const emit = defineEmits(["update:bill"]);
 
 const selectedSteps = computed(() => {

@@ -10,37 +10,36 @@
     centered
   >
     <a-form layout="vertical" class="grid grid-cols-2 gap-4" :key="refreshKey">
-    <template
-      v-for="field in formFields"
-      class="col-span-1 md:col-span-1 lg:col-span-1"
-    >
-      <a-form-item
-        :label="field.label"
-        :name="field.name"
-        v-bind="validateInfos[field.name]"
-        class="m-0"
+      <template
+        v-for="field in formFields"
+        class="col-span-1 md:col-span-1 lg:col-span-1"
       >
-        <a-input
-          v-if="field.component === 'a-input'"
-          v-model:value="modelRef[field.name]"
-          :placeholder="field.placeholder"
-          :type="field.type"
-        ></a-input>
-
-        <a-select
-          v-else-if="field.component === 'a-select'"
-          v-model:value="modelRef[field.name]"
-          :placeholder="field.placeholder"
-          :options="field.options"
-          show-search
-          :filter-option="filterOption"
-          @change="handleChangeOptions(field.name, $event)"
+        <a-form-item
+          :label="field.label"
+          :name="field.name"
+          v-bind="validateInfos[field.name]"
+          class="m-0"
         >
-        
-        </a-select>
-      </a-form-item>
-    </template>
-  </a-form>
+          <a-input
+            v-if="field.component === 'a-input'"
+            v-model:value="modelRef[field.name]"
+            :placeholder="field.placeholder"
+            :type="field.type"
+          ></a-input>
+
+          <a-select
+            v-else-if="field.component === 'a-select'"
+            v-model:value="modelRef[field.name]"
+            :placeholder="field.placeholder"
+            :options="field.options"
+            show-search
+            :filter-option="filterOption"
+            @change="handleChangeOptions(field.name, $event)"
+          >
+          </a-select>
+        </a-form-item>
+      </template>
+    </a-form>
   </a-modal>
 </template>
 
@@ -48,8 +47,20 @@
 import { BillRequest } from "@/infrastructure/services/api/admin/bill.api";
 import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.action";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { errorNotiSort, successNotiSort, warningNotiSort } from "@/utils/notification.config";
-import { computed, createVNode, defineEmits, reactive, ref, watch } from "vue";
+import {
+  errorNotiSort,
+  successNotiSort,
+  warningNotiSort,
+} from "@/utils/notification.config";
+import {
+  computed,
+  createVNode,
+  defineEmits,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+} from "vue";
 import { Form, Modal, notification } from "ant-design-vue";
 import {
   ClientAddressCommonOptionsResponse,
@@ -78,11 +89,11 @@ import {
 } from "@/infrastructure/services/api/admin/payment.api";
 
 const props = defineProps({
-  open: Boolean
+  open: Boolean,
+  dataBill: Object,
 });
 
-const emit = defineEmits(["handleClose",
-  "handleGetAddress"]);
+const emit = defineEmits(["handleClose", "handleGetAddress"]);
 
 const address = ref(null);
 const isRefetch = ref<boolean>(false);
@@ -95,6 +106,26 @@ const openCustomerAddress = ref(false);
 const addressSelected = ref(null);
 const defaultCustomerAddress = ref(null);
 
+// Hàm lấy ra được line từ địa chỉ nhận hàng
+const getLine = function (fullAddress: string) {
+  const index = fullAddress.indexOf(",");
+  return fullAddress.substring(0, index);
+};
+
+const modelRef = reactive<any>({
+  line: null,
+  ward: null,
+  district: null,
+  province: null,
+});
+
+onMounted(() => {
+  address.value = props.dataBill;
+  modelRef.line = getLine(address?.value?.diaChiNguoiNhan) || null;
+  modelRef.ward = address?.value?.xa.toString() || null,
+  modelRef.district = address?.value?.huyen.toString() || null,
+  modelRef.province = address?.value?.tinh.toString() || null
+});
 
 watch(
   () => addressSelected.value,
@@ -103,7 +134,7 @@ watch(
       const wardInfo = ref(null);
       const districtInfo = ref(null);
       const provinceInfo = ref(null);
-      const fullAddress = ref('');
+      const fullAddress = ref("");
       try {
         const response = await getWardByCode(newDataSource.ward);
         wardInfo.value = response.data.data;
@@ -121,7 +152,6 @@ watch(
           districtInfo.value +
           ", " +
           provinceInfo.value;
-          
       } catch (error) {
         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
       }
@@ -137,7 +167,7 @@ watch(
       const wardInfo = ref(null);
       const districtInfo = ref(null);
       const provinceInfo = ref(null);
-      const fullAddress = ref('');
+      const fullAddress = ref("");
       try {
         const response = await getWardByCode(newDataSource.ward);
         wardInfo.value = response.data.data;
@@ -163,10 +193,8 @@ watch(
   { immediate: true, deep: true }
 );
 
-
-
 const handleCustomerAddressSelected = (selectedAddress: any) => {
-  addressSelected.value = selectedAddress
+  addressSelected.value = selectedAddress;
   address.value = selectedAddress;
 };
 
@@ -247,12 +275,16 @@ const filterOption = (input: string, option: any) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
 
-const modelRef = reactive<any>({
-  line: address?.value?.line || null,
-  ward: address?.value?.ward.toString() || null,
-  district: address?.value?.district.toString() || null,
-  province: address?.value?.province.toString() || null
-});
+
+
+
+
+// const modelRef = reactive<any>({
+//   line: getLine(address?.value?.diaChiNguoiNhan) || null,
+//   ward: address?.value?.xa.toString() || null,
+//   district: address?.value?.huyen.toString() || null,
+//   province: address?.value?.tinh.toString() || null
+// });
 
 const refreshKey = ref(0);
 
@@ -282,7 +314,10 @@ const rulesRef = reactive({
   ],
 });
 
-const { validate, validateInfos, resetFields } = Form.useForm(modelRef, rulesRef);
+const { validate, validateInfos, resetFields } = Form.useForm(
+  modelRef,
+  rulesRef
+);
 
 const formFields = computed(() => [
   {
@@ -312,7 +347,7 @@ const formFields = computed(() => [
     component: "a-input",
     placeholder: "Nhập số nhà/ngõ/đường",
     type: "string",
-  }
+  },
 ]);
 
 const fullAddressRef = ref("");
@@ -394,19 +429,15 @@ watch(
   () => address.value,
   (newDataSource) => {
     if (newDataSource) {
-      if (newDataSource?.province && newDataSource?.district) {
-        handleChangeOptions("province", newDataSource?.province);
-        handleChangeOptions("district", newDataSource?.district);
+      if (newDataSource?.tinh && newDataSource?.huyen) {
+        handleChangeOptions("province", newDataSource?.tinh);
+        handleChangeOptions("district", newDataSource?.huyen);
       }
       Object.assign(modelRef, {
-        name: newDataSource.name || "",
-        phoneNumber: newDataSource.phoneNumber || "",
-        line: newDataSource.line || "",
-        ward: newDataSource.ward || "",
-        district: newDataSource.district?.toString() || "",
-        province: newDataSource.province?.toString() || "",
-        isDefault: newDataSource.isDefault ?? false,
-        clientId: newDataSource.clientId || "",
+        line: getLine(address?.value?.diaChiNguoiNhan) || null,
+        ward: address?.value?.xa.toString() || null,
+        district: address?.value?.huyen.toString() || null,
+        province: address?.value?.tinh.toString() || null,
       });
     }
   },
@@ -416,7 +447,7 @@ watch(
 const handleUpdateBill = async () => {
   try {
     await validate(); // Chờ validate hoàn tất
-    const fullAddress = modelRef.line + ', ' + fullAddressRef.value;
+    const fullAddress = modelRef.line + ", " + fullAddressRef.value;
     emit("handleGetAddress", fullAddress, modelRef);
     handleClose();
   } catch (error) {
@@ -428,6 +459,21 @@ const handleUpdateBill = async () => {
 const handleClose = () => {
   emit("handleClose");
 };
+
+// watch(
+//   () => modelRef,
+//   (newDataSource) => {
+//     if (newDataSource) {
+//       console.log(newDataSource);
+
+//       if (newDataSource?.province && newDataSource?.district) {
+//         handleChangeOptions("province", newDataSource?.province);
+//         handleChangeOptions("district", newDataSource?.district);
+//       }
+//     }
+//   },
+//   { immediate: true, deep: true }
+// );
 </script>
 
 

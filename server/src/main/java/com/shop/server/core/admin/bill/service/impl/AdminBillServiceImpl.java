@@ -211,16 +211,10 @@ public class AdminBillServiceImpl implements AdminBillService {
         if (request.getSoDienThoai() != null) {
             hoaDon.setSoDienThoai(request.getSoDienThoai());
         }
-//        else {
-//            hoaDon.setSoDienThoai(khachHangRepository.findById(request.getIdKhachHang()).get().getPhoneNumber());
-//        }
         hoaDon.setGhiChu(request.getGhiChu());
         hoaDon.setTinh(request.getTinh());
         hoaDon.setHuyen(request.getHuyen());
         hoaDon.setXa(request.getXa());
-//        hoaDon.setTienShip(request.getTienShip());
-//        hoaDon.setTienGiam(request.getTienGiam());
-//        hoaDon.setTongTien(request.getTongTien());
         HoaDon hd1 = adminBillRepository.save(hoaDon);
 
 //        LichSuHoaDon ls = new LichSuHoaDon();

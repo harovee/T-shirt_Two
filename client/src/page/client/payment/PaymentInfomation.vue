@@ -460,7 +460,7 @@ const handlePayment = () => {
 
     const payload = {
       diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
-      ghiChu: props.memo || null,
+      ghiChu: props.memo || "",
       soDienThoai: paymentInfo.value.phoneNumber || null,
       tenNguoiNhan: paymentInfo.value.name || null,
       tienGiam: paymentInfo.value.discount || null,

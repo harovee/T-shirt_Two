@@ -17,6 +17,7 @@ import com.shop.server.repositories.SanPhamChiTietRepository;
 import com.shop.server.utils.Helper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -144,17 +145,15 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             adminBillDetailRepository.delete(billDetail);
         } else {
             // Cập nhật chi tiết hóa đơn
-            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
+            if (hoaDon.getLoaiHD().equals("Tại quầy")) {
+                adminBillDetailRepository.updateQuantityProductDetailInBill(request);
+            }
             BigDecimal currentPrice = billDetail.getGia();
             BigDecimal newAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
-
             billDetail.setSoLuong(request.getSoLuong());
             billDetail.setThanhTien(newAmount);
             adminBillDetailRepository.save(billDetail);
         }
-
-        // Cập nhật tổng tiền hóa đơn
-//        updateBillTotalAmount(hoaDon);
 
         return ResponseObject.successForward(
                 HttpStatus.OK,

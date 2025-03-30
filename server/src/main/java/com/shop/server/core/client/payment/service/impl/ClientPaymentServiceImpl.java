@@ -160,7 +160,9 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTienGiam(request.getTienGiam());
         hoaDon.setTienShip(request.getTienShip());
         hoaDon.setTongTien(request.getTongTien());
+        hoaDon.setPhuongThucNhan("Giao hàng");
         hoaDon.setEmailNguoiNhan(request.getEmail());
+
 
         adminBillRepository.save(hoaDon);
         AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
@@ -236,6 +238,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());
         hoaDon.setTienGiam(request.getTienGiam());
         hoaDon.setTienShip(request.getTienShip());
+        hoaDon.setPhuongThucNhan("Giao hàng");
         hoaDon.setTongTien(request.getTongTien());
 
         adminBillRepository.save(hoaDon);
@@ -289,13 +292,11 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
             ChiTietPhuongThucThanhToan chiTietPTTT = new ChiTietPhuongThucThanhToan();
             chiTietPTTT.setHoaDon(hoaDon);
             chiTietPTTT.setMaGiaoDich(transactionNo);
-            chiTietPTTT.setTienKhachDua(paymentAmount);
+            chiTietPTTT.setTienKhachDua(paymentAmount.divide(new BigDecimal(100)));
             chiTietPTTT.setGhiChu("VNPay Payment - Transaction");
             PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
             chiTietPTTT.setPhuongThucThanhToan(pttt);
             chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
-//            hoaDon.setTrangThai("Chờ xác nhận"); // Assuming 2 means "Paid"
-//            hoaDonRepository.save(hoaDon);
             log.info("VNPay payment processed successfully: Invoice {}, Amount {}, Transaction {}",
                     invoiceId, paymentAmount, transactionNo);
         } catch (Exception e) {

@@ -35,6 +35,7 @@
           </div>
           <customer-address-modal
             :open="isOpenModalAddress"
+            :dataBill="modelRef"
             @onCancel="isOpenModalAddress = false"
             @handleClose="handleCloseModalAddress"
             @handleGetAddress="handleChangeAddress"
@@ -107,10 +108,7 @@ const modelRef = reactive<BillRequest>({
   tinh: null,
   huyen: null,
   xa: null,
-  idPhieuGiamGia: null,
-  tienGiam: null,
-  tienShip: null,
-  tongTien: null
+  idPhieuGiamGia: null
 });
 
 const rulesRef = reactive({
@@ -141,6 +139,9 @@ watch(
       modelRef.huyen = newBillData.huyen || null;
       modelRef.xa = newBillData.xa || null;
     }
+
+    console.log(modelRef);
+    
   },
   // { immediate: true } // Theo dõi ngay khi component mount
 );

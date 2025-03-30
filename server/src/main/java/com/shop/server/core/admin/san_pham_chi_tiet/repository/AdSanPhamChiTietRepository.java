@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.repository;
 
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
 import com.shop.server.repositories.SanPhamChiTietRepository;
@@ -299,4 +300,20 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
     List<AdSanPhamChiTietResponse> getListSanPhamChiTiets ();
 
     Boolean existsSanPhamChiTietByMaSPCT(String maSPCT);
+
+    @Query(value = """
+    SELECT CAST(CASE WHEN spct.so_luong < (:#{#request.quantity} - (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = :#{#request.id})) THEN 1 ELSE 0 END AS SIGNED)
+    FROM hoa_don_chi_tiet hdct
+    INNER JOIN san_pham_chi_tiet spct ON hdct.id_san_pham_chi_tiet = spct.id
+    WHERE hdct.id = :#{#request.id}
+""", nativeQuery = true)
+    Long checkQuantity(AdCheckQuantityRequest request);
+
+//    @Query(value = """
+//    SELECT CAST(CASE WHEN spct.so_luong < (spct.so_luong + (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = :#{#request.id}) - :#{#request.quantity}) THEN 1 ELSE 0 END AS SIGNED)
+//    FROM hoa_don_chi_tiet hdct\s
+//    INNER JOIN san_pham_chi_tiet spct ON hdct.id_san_pham_chi_tiet = spct.id
+//    WHERE hdct.id = :#{#request.id}
+//""", nativeQuery = true)
+//    Long checkQuantity(AdCheckQuantityRequest request);
 }
