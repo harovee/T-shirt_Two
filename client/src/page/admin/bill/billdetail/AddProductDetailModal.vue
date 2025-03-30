@@ -41,7 +41,7 @@ import {
 } from "vue";
 import ProductDetailTableToOrder from "./ProductDetailTableToOrder.vue";
 import FilterProductToOrder from "./FilterProductToOrder.vue";
-import { useGetAllProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
+import { useGetAllProductDetail, useGetAllProductDetailOverZero } from "@/infrastructure/services/service/admin/productdetail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { FindProductDetailRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useCreateBillDetail } from "@/infrastructure/services/service/admin/bill-detail.action";
@@ -178,7 +178,7 @@ const {
   isLoading,
   isFetching,
   refetch
-} = useGetAllProductDetail(paramsAll, {
+} = useGetAllProductDetailOverZero(paramsAll, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });

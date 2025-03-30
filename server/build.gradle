@@ -60,6 +60,7 @@ dependencies {
     implementation 'com.cloudinary:cloudinary-http44:1.33.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'com.itextpdf:itext7-core:7.1.16'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation("vn.payos:payos-java:1.0.3")
 //    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'

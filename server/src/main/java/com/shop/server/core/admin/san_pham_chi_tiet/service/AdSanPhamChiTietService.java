@@ -14,6 +14,8 @@ public interface AdSanPhamChiTietService {
 
     ResponseObject<?> getALlSanPhamChiTiets(AdFindSpctRequest request);
 
+    ResponseObject<?> getALlSanPhamChiTietOverZero(AdFindSpctRequest request);
+
     ResponseObject<?> getListSanPhamChitiet();
 
     ResponseObject<?> getSanPhamChiTietById(String id);

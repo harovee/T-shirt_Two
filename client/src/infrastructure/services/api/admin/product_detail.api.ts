@@ -220,6 +220,18 @@ export const getAllProductDetails = async (paramsAll: Ref<FindAllProductDetailRe
     return res.data;
 };
 
+export const getAllProductDetailOverZero = async (paramsAll: Ref<FindAllProductDetailRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-product-detail-over-zero`,
+        method: "GET",
+        params: paramsAll.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ProductDetailResponse>>>
+    >;
+
+    return res.data;
+};
+
 export const getListProductDetails = async (paramsAll: Ref<FindAllProductDetailRequest>) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-product-detail`,
