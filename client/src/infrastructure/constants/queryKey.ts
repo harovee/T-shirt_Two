@@ -62,6 +62,7 @@ export const queryKey = {
             productDetailList: "adProdcutDetailListKey",
             allProductDetails: "adAllProdcutDetailListKey",
             productDetailListNoPage: "adProdcutDetailListNoPageKey",
+            checkQuantity: "adCheckQuantity"
         },
         category: {
             categoryList: "adCategoryListKey",

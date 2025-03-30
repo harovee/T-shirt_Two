@@ -354,9 +354,6 @@ const handleQRScan = (qrCode: string) => {
 
 function handleOpenProductsModel() {
   openProductsModal.value = true;
-  // if (refetchProducts.value) {
-  //   refetchProducts.value();
-  // }
   refetchProducts.value();
 }
 

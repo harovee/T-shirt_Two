@@ -74,7 +74,7 @@
       <h3 class="text-lg font-bold">Lịch sử thanh toán</h3>
       <a-button
         v-if="
-          billData?.trangThai === 'Đã giao hàng' &&
+          billData?.trangThai === 'Đang vận chuyển' &&
           paymentInfoData.amountPayable > 0
         "
         class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"

@@ -9,6 +9,7 @@ import com.shop.server.core.admin.kich_co.repository.AdKichCoRepository;
 import com.shop.server.core.admin.kieu_dang.repository.AdKieuDangRepository;
 import com.shop.server.core.admin.mau_sac.repository.AdMauSacRepository;
 import com.shop.server.core.admin.product.repositories.AdminProductRepository;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
@@ -199,5 +200,14 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                         "Xóa sản phẩm chi tiết thành công."))
                 .orElseGet(() -> new ResponseObject<>(null, HttpStatus.NOT_FOUND,
                         "Sản phẩm chi tiết không tồn tại."));
+    }
+
+    @Override
+    public ResponseObject<?> checkQuantity(AdCheckQuantityRequest request) {
+        if (adSanPhamChiTietRepository.checkQuantity(request) == 0) {
+            return new ResponseObject<>(true, HttpStatus.OK, "Số lượng trong kho đủ!");
+        } else {
+            return new ResponseObject<>(false, HttpStatus.OK, "Số lượng trong kho không đủ!");
+        }
     }
 }

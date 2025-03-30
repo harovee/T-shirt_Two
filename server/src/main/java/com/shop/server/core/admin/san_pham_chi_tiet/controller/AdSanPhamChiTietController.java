@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.controller;
 
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
@@ -36,6 +37,13 @@ public class AdSanPhamChiTietController {
     @GetMapping("/list-product-detail")
     public ResponseEntity<?> getListSanPhamChiTiet() {
         return Helper.createResponseEntity(adSanPhamChiTietService.getListSanPhamChitiet());
+    }
+
+
+    // Check số lượng sản phẩm trong kho
+    @GetMapping("/check-quantity")
+    public ResponseEntity<?> checkQuantity(AdCheckQuantityRequest request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantity(request));
     }
 
     @GetMapping("/{id}")

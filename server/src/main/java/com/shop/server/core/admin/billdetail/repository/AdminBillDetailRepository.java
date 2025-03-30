@@ -1,11 +1,9 @@
 package com.shop.server.core.admin.billdetail.repository;
 
-import com.shop.server.core.admin.billdetail.model.request.AdminCreateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminFindBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminUpdateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailRefundResponse;
 import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailResponse;
-import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.entities.main.HoaDon;
 import com.shop.server.entities.main.HoaDonChiTiet;
 import com.shop.server.entities.main.SanPhamChiTiet;
@@ -135,4 +133,13 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
     void decreaseStockInAdd(@Param("idSanPhamChiTiet") String idSanPhamChiTiet,@Param("soLuong") int soLuong);
 
     List<HoaDonChiTiet> findByHoaDon(HoaDon hoaDon);
+
+    @Query(value = """
+    SELECT CAST(CASE WHEN spct.so_luong < ?2 THEN 1 ELSE 0 END AS SIGNED)
+    FROM hoa_don_chi_tiet hdct 
+    LEFT JOIN san_pham_chi_tiet spct ON hdct.id_san_pham_chi_tiet = spct.id
+    WHERE hdct.id = ?1
+""", nativeQuery = true)
+    Integer checkQuantityInStock(String id, Long quantity);
+
 }

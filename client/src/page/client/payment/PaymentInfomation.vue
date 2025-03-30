@@ -460,7 +460,7 @@ const handlePayment = () => {
 
     const payload = {
       diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
-      ghiChu: props.memo || null,
+      ghiChu: props.memo || "",
       soDienThoai: paymentInfo.value.phoneNumber || null,
       tenNguoiNhan: paymentInfo.value.name || null,
       tienGiam: paymentInfo.value.discount || null,
@@ -528,59 +528,7 @@ const handlePayment = () => {
           Modal.destroyAll();
         },
       });
-    } else if (paymentInfo.value.method === "momo") {
-      Modal.confirm({
-        content: "Bạn chắc chắn muốn thanh toán qua ví Momo?",
-        icon: createVNode(ExclamationCircleOutlined),
-        centered: true,
-        async onOk() {
-          // try {
-          //   const response = await createInvoiceMutation.mutateAsync(payload);
-
-          //   if (response?.data?.paymentUrl) {
-          //     window.open(response?.data?.paymentUrl, "_blank");
-          //   }
-          //   console.log(response);
-          // } catch (error: any) {
-          //   console.error("🚀 ~ handleCreate ~ error:", error);
-          //   if (error?.response) {
-          //     errorNotiSort(error?.response?.data?.message);
-          //   }
-          // }
-          console.log("Thanh toán ví momo");
-        },
-        cancelText: "Huỷ",
-        onCancel() {
-          Modal.destroyAll();
-        },
-      });
-    } else {
-      Modal.confirm({
-        content: "Bạn chắc chắn muốn thanh toán qua ví Momo?",
-        icon: createVNode(ExclamationCircleOutlined),
-        centered: true,
-        async onOk() {
-          // try {
-          //   const response = await createInvoiceMutation.mutateAsync(payload);
-
-          //   if (response?.data?.paymentUrl) {
-          //     window.open(response?.data?.paymentUrl, "_blank");
-          //   }
-          //   console.log(response);
-          // } catch (error: any) {
-          //   console.error("🚀 ~ handleCreate ~ error:", error);
-          //   if (error?.response) {
-          //     errorNotiSort(error?.response?.data?.message);
-          //   }
-          // }
-          console.log("Thanh toán ví viet qr");
-        },
-        cancelText: "Huỷ",
-        onCancel() {
-          Modal.destroyAll();
-        },
-      });
-    }
+    } 
     else{
       Modal.confirm({
         content: "Bạn chắc chắn muốn thanh toán qua MoMo?",

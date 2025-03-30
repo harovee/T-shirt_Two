@@ -71,13 +71,15 @@
       >
         <div class="flex flex justify-between block mb-4">
           <span class="text-lg">Tiền hàng:</span>
-          <span v-if="copiedDataSource" class="text-lg">{{
-            formatCurrencyVND(totalPrice)
+          <span class="text-lg">{{
+            copiedDataSource && copiedDataSource.length > 0
+              ? `- ${formatCurrencyVND(totalPrice)}`
+              : "0 VND"
           }}</span>
         </div>
         <div class="flex flex justify-between block mb-4">
           <span class="text-lg">Giảm giá:</span>
-          <span v-if="copiedDataSource" class="text-lg text-green-500">{{
+          <span class="text-lg text-red-500">{{
             copiedDataSource && copiedDataSource.length > 0
               ? `- ${formatCurrencyVND(copiedDataSource[0].tienGiamHD)}`
               : "0 VND"
@@ -85,16 +87,18 @@
         </div>
         <div class="flex flex justify-between block mb-4">
           <span class="text-lg">Phí vận chuyển:</span>
-          <span v-if="copiedDataSource" class="text-lg">{{
+          <span class="text-lg">{{
             copiedDataSource && copiedDataSource.length > 0
               ? `${formatCurrencyVND(copiedDataSource[0].tienShip)}`
               : "0 VND"
           }}</span>
         </div>
-        <p v-if="totalPrice > 2000000" class="text-red-500 text-right w-full">Free ship cho đơn hàng từ 2.000.000đ</p>
+        <p v-if="totalPrice > 2000000" class="text-red-500 text-right w-full">
+          Free ship cho đơn hàng từ 2.000.000đ
+        </p>
         <div class="flex flex justify-between block font-semibold text-xl">
           <span>Tổng tiền:</span>
-          <span v-if="copiedDataSource">{{
+          <span>{{
             copiedDataSource && copiedDataSource.length > 0
               ? formatCurrencyVND(copiedDataSource[0].tongTienHD)
               : "0 VND"
@@ -151,6 +155,7 @@
           v-if="props"
           :wrapperClassName="props.wrapperClassName"
           :columns="props.columns"
+          :key="tableKey"
           :data-source="dataSources"
           :loading="props.loading"
           :pagination-params="props.paginationParams"
@@ -171,9 +176,24 @@
               v-else-if="column.key === 'action'"
               class="flex items-center justify-center space-x-2"
             >
-              <a-tooltip title="Hoàn trả" trigger="hover">
-                <a-button class="bg-purple-100" size="middle" shape="round">
-                  <v-icon name="fa-undo-alt" />
+              <a-tooltip title="Xóa" trigger="hover">
+                <a-button
+                  :disabled="
+                    [
+                      'Chờ giao hàng',
+                      'Đang vận chuyển',
+                      'Đã giao hàng',
+                      'Đã thanh toán',
+                      'Thành công',
+                      'Đã hủy',
+                    ].includes(billData?.trangThai)
+                  "
+                  class="bg-purple-100"
+                  size="middle"
+                  shape="round"
+                  @click="handleDelete(record)"
+                >
+                  <v-icon name="fa-trash-alt" />
                 </a-button>
               </a-tooltip>
             </div>
@@ -214,7 +234,7 @@
                 type="number"
                 min="0"
                 v-model="record.soLuong"
-                @change="handleChangeQuantity(record)"
+                @blur="handleChangeQuantity(record)"
                 class="w-16 text-center border rounded"
                 :disabled="
                   [
@@ -270,8 +290,14 @@ import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
 import MyOrderStepHistory from "./MyOrderStepHistory.vue";
-import { FindBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
-import { useGetBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
+import {
+  FindBillHistoryRequest,
+  createUpdateBillHistoryRequest,
+} from "@/infrastructure/services/api/admin/billhistory.api";
+import {
+  useGetBillHistory,
+  useCreateBillHistory,
+} from "@/infrastructure/services/service/admin/billhistory.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
   FindKhachHangRequest,
@@ -285,6 +311,8 @@ import {
   successNotiSort,
   warningNotiSort,
 } from "@/utils/notification.config";
+import { useCheckQuantityInStock } from "@/infrastructure/services/service/admin/productdetail.action";
+import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import {
   useUpdateVoucher,
   useUpdateCustomerVoucher,
@@ -310,6 +338,7 @@ import {
   useGetServiceId,
 } from "@/infrastructure/services/service/admin/payment.action";
 import { ok } from "assert";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 const props = defineProps({
   wrapperClassName: {
@@ -346,7 +375,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:paginationParams", "update-quantity"]);
+const emit = defineEmits(["update:paginationParams", "update-quantity", "refetch-data", "reload-data"]);
 
 // Lấy id hóa đơn trên path
 const getIdHoaDonFromUrl = () => {
@@ -371,10 +400,19 @@ const totalProductPrice = ref(0);
 
 const modelRefTmp = ref(null);
 
+const tableKey = ref(0);
+
 //modal thanh toán sau giao hàng
 const isOpenModalGetPay = ref(false);
 
+// param api check số lượng trong kho
+const params = ref<checkQuantityRequest>({
+  id: null,
+  quantity: null
+});
+
 const { mutate: update } = useUpdateBill();
+const { mutate: createBillHistory } = useCreateBillHistory();
 
 const billId = getIdHoaDonFromUrl();
 
@@ -465,6 +503,7 @@ watch(
 
 const dataHistory = computed(() => historyData?.value);
 
+// Lấy voucher detail
 const {
   data: dataDetail,
   isLoading,
@@ -475,6 +514,14 @@ const {
   placeholderData: keepPreviousData,
   enabled: false,
 });
+
+// Check số lượng
+const { data: checkQuantityData, refetch: checkQuantityRefetch } =
+  useCheckQuantityInStock(params, {
+    refetchOnWindowFocus: false,
+    keepPreviousData: false,
+    enabled: false,
+  });
 
 const formState: UnwrapRef<FormState> = reactive({
   ten: "",
@@ -547,14 +594,14 @@ watch(
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
               if (totalPrice.value > 2000000) {
-                  copiedDataSource.value[0].tienShip = 0;
-                  copiedBillData.value.tienShip = 0;
-                } else {
-                  copiedDataSource.value[0].tienShip =
-                    shipping?.value?.data.total;
-                  copiedBillData.value.tienShip =
-                    copiedDataSource.value[0].tienShip;
-                }
+                copiedDataSource.value[0].tienShip = 0;
+                copiedBillData.value.tienShip = 0;
+              } else {
+                copiedDataSource.value[0].tienShip =
+                  shipping?.value?.data.total;
+                copiedBillData.value.tienShip =
+                  copiedDataSource.value[0].tienShip;
+              }
             });
           }
         });
@@ -626,7 +673,9 @@ const dataSources: BillDetailResponse[] | any = computed(() => {
 watch(
   () => dataSources.value,
   (newData) => {
-    if (newData) {
+    
+    
+    if (newData.length) {
       copiedDataSource.value = JSON.parse(JSON.stringify(newData));
 
       totalProductPrice.value = newData.reduce(
@@ -708,6 +757,13 @@ const handleUpdateBill = async (modelRef: any) => {
           tienGiam: copiedDataSource.value[0].tienGiamHD,
           tongTien: copiedDataSource.value[0].tongTienHD,
         };
+        const billHistoryParams = {
+          idHoaDon: billId,
+          hanhDong: `Thay đổi thông tin`,
+          moTa: `Khách hàng thay đổi thông tin giao hàng`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null,
+        };
         update(
           { idBill: billId, params: payload },
           {
@@ -720,6 +776,8 @@ const handleUpdateBill = async (modelRef: any) => {
             },
           }
         );
+        // Cập nhật lịch sử hóa đơn khách hàng thay đổi trạng thái đơn hàng
+        createBillHistory(billHistoryParams);
       } catch (error: any) {
         console.error("🚀 ~ handleUpdate ~ error:", error);
         if (error?.response) {
@@ -741,6 +799,9 @@ const loadTotalPrice = () => {};
 const totalPrice = computed(() => totalProductPrice.value);
 
 const handleChangeQuantity = async (record: any) => {
+  params.value.id = record.id;
+  params.value.quantity = record.soLuong;
+
   if (!record.previousQuantity && record.soLuong !== 0) {
     record.previousQuantity = record.soLuong; // Lưu giá trị cũ nếu chưa có
   }
@@ -764,47 +825,84 @@ const handleChangeQuantity = async (record: any) => {
       },
     });
   } else {
-    record.thanhTien = record.soLuong * record.gia;
-    emit("update-quantity", record);
-    record.previousQuantity = record.soLuong; // Cập nhật lại giá trị trước đó
-  }
-  await nextTick();
+    // Chờ check số lượng xong trước khi tiếp tục
+    
+    await checkQuantityRefetch();
+    const checkValue = checkQuantityData?.value?.data;
 
-  setTimeout(() => {
-    const payload = {
-      soDienThoai: copiedBillData.value.soDienThoai,
-      diaChiNguoiNhan: copiedBillData.value.diaChiNguoiNhan,
-      tenNguoiNhan: copiedBillData.value.tenNguoiNhan,
-      ghiChu: copiedBillData.value.ghiChu,
-      tinh: copiedBillData.value.tinh,
-      huyen: copiedBillData.value.huyen,
-      xa: copiedBillData.value.xa,
-      idPhieuGiamGia: detail.value ? detail.value.id : null,
-      tienShip: copiedDataSource.value[0]?.tienShip || 0,
-      tienGiam: copiedDataSource.value[0]?.tienGiamHD || 0,
-      tongTien: copiedDataSource.value[0]?.tongTienHD || 0,
-    };
-    try {
-      // await validate();
-      update(
-        { idBill: billId, params: payload },
-        {
-          onSuccess: (result) => {
-            successNotiSort("Cập nhật thông tin thành công");
-          },
-          onError: (error: any) => {
-            errorNotiSort("Cập nhật thông tin thất bại");
-          },
-        }
-      );
-    } catch (error: any) {
-      console.error("🚀 ~ handleUpdate ~ error:", error);
-      if (error?.response) {
-        warningNotiSort(error?.response?.data?.message);
-      }
+    if (!checkValue) {
+      warningNotiSort("Số lượng trong kho không đủ!");
+      emit("reload-data");
+      tableKey.value++;
+      // reloadData();
+      return;
+    } else {
+      emit("update-quantity", record);
     }
-  }, 1000);
+    // record.thanhTien = record.soLuong * record.gia;
+    
+     // Cập nhật lại giá trị trước đó
+  }
+  // await nextTick();
+
+  // setTimeout(() => {
+  //   const payload = {
+  //     soDienThoai: copiedBillData.value.soDienThoai,
+  //     diaChiNguoiNhan: copiedBillData.value.diaChiNguoiNhan,
+  //     tenNguoiNhan: copiedBillData.value.tenNguoiNhan,
+  //     ghiChu: copiedBillData.value.ghiChu,
+  //     tinh: copiedBillData.value.tinh,
+  //     huyen: copiedBillData.value.huyen,
+  //     xa: copiedBillData.value.xa,
+  //     idPhieuGiamGia: detail.value ? detail.value.id : null,
+  //     tienShip: copiedDataSource.value[0]?.tienShip || 0,
+  //     tienGiam: copiedDataSource.value[0]?.tienGiamHD || 0,
+  //     tongTien: copiedDataSource.value[0]?.tongTienHD || 0,
+  //   };
+  //   try {
+  //     // await validate();
+  //     update(
+  //       { idBill: billId, params: payload },
+  //       {
+  //         onSuccess: (result) => {
+  //           // successNotiSort("Cập nhật thông tin thành công");
+  //         },
+  //         onError: (error: any) => {
+  //           // errorNotiSort("Cập nhật thông tin thất bại");
+  //         },
+  //       }
+  //     );
+  //   } catch (error: any) {
+  //     console.error("🚀 ~ handleUpdate ~ error:", error);
+  //     if (error?.response) {
+  //       warningNotiSort(error?.response?.data?.message);
+  //     }
+  //   }
+  // }, 1000);
 };
+
+// Xóa sản phẩm trong giỏ hàng
+const handleDelete = (productDetail: any) => {
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn xóa sản phẩm này ra khỏi giỏ?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        // await deleteOrderDetails(productDetail.id);
+        emit("refetch-data", productDetail);
+        successNotiSort("Xóa thành công");
+      } catch (error) {
+        errorNotiSort("Xóa thất bại");
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
+};
+
 </script>
 
 <style scoped>
