@@ -35,7 +35,7 @@
     :columns="columns"
     :data-source="dataSource"
     :pagination="false"
-    :scroll="{ x: 300, y: 300 }"
+    :scroll="{ x: 1000, y: 1000 }"
   >
     <template #bodyCell="{ column, record, index }">
       <div v-if="column.key === 'stt'" class="text-center">
@@ -85,7 +85,7 @@
       </div>
       <!-- Upload ảnh -->
       <div v-if="column.key === 'anh'" class="text-center">
-        <template v-if="getRowSpan(record) > 1 && isFirstInGroup(record)">
+        <template v-if="getRowSpan(record) >= 1 && isFirstInGroup(record)">
           <div style="display: flex; align-items: center; gap: 10px">
             <a-button
               @click="openWidget(record)"
@@ -448,20 +448,22 @@ const getRowSpan = (record) => {
 };
 
 // Kiểm tra nếu dòng hiện tại là dòng đầu tiên trong nhóm có cùng idMauSac
+// const isFirstInGroup = (record) => {
+//   // const index = dataSource.value.findIndex((item) => item.id === record.id);
+//   // const firstInGroup = dataSource.value.findIndex(
+//   //   (item) => item.idMauSac === record.idMauSac
+//   // );
+//   // return index === firstInGroup;
+//   const group = dataSource.value.filter((item) => item.idMauSac === record.idMauSac);
+//   if (group.length === 1) {
+//     console.log(group);
+//   } else {
+//     return group[0].id === record.id;
+//   }
+// };
 const isFirstInGroup = (record) => {
-  // const index = dataSource.value.findIndex((item) => item.id === record.id);
-  // const firstInGroup = dataSource.value.findIndex(
-  //   (item) => item.idMauSac === record.idMauSac
-  // );
-  // return index === firstInGroup;
   const group = dataSource.value.filter((item) => item.idMauSac === record.idMauSac);
-  if (group.length === 1) {
-    console.log(group);
-  } else {
-    return group[0].id === record.id;
-  }
-  // console.log(group.length);
-  
+  return group.length === 1 || group[0].id === record.id;
 };
 
 // watch(

@@ -89,9 +89,6 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
         """, nativeQuery = true)
     void updateProductQuantityAfterDelete(String idOrderDetail);
 
-
-
-
     @Modifying
     @Transactional
     @Query(value = """

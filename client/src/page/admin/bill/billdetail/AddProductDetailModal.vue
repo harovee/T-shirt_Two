@@ -162,6 +162,7 @@ const handleAddProducts = () => {
       },
     });
   });
+  // console.log(selectedProducts.value);
 
   handleClose(); // Đóng modal sau khi thêm
 };

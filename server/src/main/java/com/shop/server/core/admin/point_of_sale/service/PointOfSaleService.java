@@ -5,6 +5,8 @@ import com.shop.server.core.admin.point_of_sale.model.request.AdPOSFindProductRe
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.core.common.base.ResponseObject;
 
+import java.util.List;
+
 public interface PointOfSaleService {
 
     ResponseObject<?> getProductsInPOS(AdPOSFindProductRequest request);
@@ -22,5 +24,7 @@ public interface PointOfSaleService {
     ResponseObject<?> getTotalAmount(String idHoaDon);
 
     ResponseObject<?> getListProducts(String idHoaDon);
+
+    ResponseObject<?> updateQuantityProductInPendingOrder(List<String> listIdProductDetails);
 
 }

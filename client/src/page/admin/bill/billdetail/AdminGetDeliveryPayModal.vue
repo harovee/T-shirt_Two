@@ -11,7 +11,7 @@
     <h1 class="text-xl">Thanh toán</h1>
     <div class="flex justify-between">
       <p>Số tiền phải thanh toán:</p>
-      <p class="text-lg">{{ formatCurrencyVND(totalPrice) }}</p>
+      <p class="text-lg">{{ formatCurrencyVND(paymentInfoData.amountPayable) }}</p>
       <!-- <p v-if="dataPaymentMethodDetails && dataPaymentMethodDetails.length && (totalAmountAfter >= totalAmount)" class="text-lg">{{ formatCurrencyVND(0) }}</p> -->
     </div>
     <a-form :model="params" :rules="rulesRef" layout="vertical">
@@ -138,6 +138,7 @@ const props = defineProps({
     required: true,
   },
   totalPrice: Number,
+  paymentInfoData: Object
 });
 
 const emit = defineEmits(["handleClose", "handlePaymented"]);
@@ -236,16 +237,16 @@ watch(
     }
     if (params.value.idPhuongThucThanhToan === "tienmat") {
       if (params.value.tienKhachDua > 0) {
-        params.value.soTienDu = params.value.tienKhachDua - props.totalPrice;
+        params.value.soTienDu = params.value.tienKhachDua - props.paymentInfoData.amountPayable;
       }
     } else if (params.value.idPhuongThucThanhToan === "chuyenkhoan") {
-      params.value.tienKhachDua = props.totalPrice;
+      params.value.tienKhachDua = props.paymentInfoData.amountPayable;
     } else {
       if (params.value.tienKhachDua > 0 && params.value.tienChuyenKhoan === 0) {
-        params.value.soTienDu = params.value.tienKhachDua - props.totalPrice;
+        params.value.soTienDu = params.value.tienKhachDua - props.paymentInfoData.amountPayable;
       }
       params.value.tienChuyenKhoan =
-        props.totalPrice - params.value.tienKhachDua;
+        props.paymentInfoData.amountPayable - params.value.tienKhachDua;
       if (params.value.tienChuyenKhoan < 0) {
         params.value.tienChuyenKhoan = 0;
       }
@@ -268,18 +269,18 @@ const handlePayment = () => {
       try {
         await validate();
 
-        if (props.totalPrice === 0) {
+        if (props.paymentInfoData.amountPayable === 0) {
           warningNotiSort(
             "Bạn đã thanh toán đủ số tiền cần thanh toán !"
           );
           return;
         }
-        if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < props.totalPrice) {
+        if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < props.paymentInfoData.amountPayable) {
           warningNotiSort("Tiền khách đưa chưa đủ!");
           return;
         }
-        if (params.value.tienKhachDua > props.totalPrice) {
-          params.value.tienKhachDua = props.totalPrice
+        if (params.value.tienKhachDua > props.paymentInfoData.amountPayable) {
+          params.value.tienKhachDua = props.paymentInfoData.amountPayable
         }
         createPaymentMethodDetail(params.value, {
           onSuccess: (result) => {

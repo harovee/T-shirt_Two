@@ -23,6 +23,12 @@ export interface FindProductDetailRequest extends PropertyProductDetailParams, P
     idSanPham?: string;
 }
 
+// Request lấy ra boolean có đủ sản phẩm trong kho k
+export interface checkQuantityRequest {
+    id: string | null,
+    quantity: number | null
+}
+
 export interface FindAllProductDetailRequest extends PropertyProductDetailParams, PaginationParams {
 }
 
@@ -177,6 +183,18 @@ export const getProductDetails = async (params: Ref<FindProductDetailRequest>) =
         DefaultResponse<PaginationResponse<Array<ProductDetailResponse>>>
     >;
 
+    return res.data;
+};
+
+// Check số lượng sản phẩm trong kho - Hiếu
+export const checkQuantityInStock = async (params: Ref<checkQuantityRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/check-quantity`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<Boolean>
+    >;
     return res.data;
 };
 

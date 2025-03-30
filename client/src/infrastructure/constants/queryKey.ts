@@ -63,6 +63,7 @@ export const queryKey = {
             allProductDetails: "adAllProdcutDetailListKey",
             allProductDetailOverZero: "adAllProdcutDetailOverZeroKey",
             productDetailListNoPage: "adProdcutDetailListNoPageKey",
+            checkQuantity: "adCheckQuantity"
         },
         category: {
             categoryList: "adCategoryListKey",
@@ -139,7 +140,8 @@ export const queryKey = {
         },
         payment: {
             invoiceOnline: "clientInvoiceOnlineKey",
-            invoiceOnlineVNPay:"clientInvoiceOnlineVNpayKey"
+            invoiceOnlineVNPay:"clientInvoiceOnlineVNpayKey",
+            invoiceOnlineMomo:"clientInvoiceOnlineMomoKey"
         },
         myOrder: {
             clientBill: "clientBillList"

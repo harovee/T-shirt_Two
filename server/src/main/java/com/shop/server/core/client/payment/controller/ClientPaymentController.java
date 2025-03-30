@@ -26,4 +26,9 @@ public class ClientPaymentController {
     public ResponseEntity<?> createInvoiceWithVnPay(@RequestBody ClientPaymentRequest request, HttpServletRequest requestVnPay) {
         return Helper.createResponseEntity(clientPaymentService.createInvoiceWithVnPay(request, requestVnPay));
     }
+
+    @PostMapping("/momo-invoice")
+    public ResponseEntity<?> createInvoiceWithMomo(@RequestBody ClientPaymentRequest request) {
+        return Helper.createResponseEntity(clientPaymentService.createInvoiceWithMomo(request));
+    }
 }

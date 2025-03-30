@@ -1,9 +1,6 @@
 package com.shop.server.core.admin.bill.service;
 
-import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
-import com.shop.server.core.admin.bill.model.request.AdminSaveBillRequest;
-import com.shop.server.core.admin.bill.model.request.AdminUpdateBillRequest;
-import com.shop.server.core.admin.bill.model.request.AdminUpdateBillWaitRequest;
+import com.shop.server.core.admin.bill.model.request.*;
 import com.shop.server.core.common.base.ResponseObject;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
@@ -26,6 +23,8 @@ public interface AdminBillService {
 
     ResponseObject<?> updateBill(String id, @Valid AdminUpdateBillRequest request, BindingResult bindingResult);
 
+    ResponseObject<?> updateBillConfirm(String id, @Valid AdminUpdateBillConfirmRequest request);
+
     ResponseObject<?> changeStatusBill(String id, AdminUpdateBillRequest request);
 
     Map<String, Integer> getBillCountsByStatus();
@@ -33,6 +32,4 @@ public interface AdminBillService {
     ResponseObject<?> removeBillWait(String id);
 
     ResponseObject<?> updateBillWait(String id, AdminUpdateBillWaitRequest request);
-
-
 }

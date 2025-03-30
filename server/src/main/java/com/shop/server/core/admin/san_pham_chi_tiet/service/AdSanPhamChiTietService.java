@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.service;
 
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
 import com.shop.server.core.common.base.ResponseObject;
@@ -25,5 +26,5 @@ public interface AdSanPhamChiTietService {
 
     ResponseObject<?> deleted(String id);
 
-
+    ResponseObject<?> checkQuantity (AdCheckQuantityRequest request);
 }

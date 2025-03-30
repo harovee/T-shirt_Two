@@ -1,22 +1,6 @@
 <template>
   <div class="w-full m-5">
     <a-steps :current="current" class="step-interface">
-      <!-- <template v-if="dataSource?.data[0].trangThai === 'Đã hủy'">
-        <a-step
-          v-for="item in stepsCancel"
-          :key="item.title"
-          :title="item.title"
-          :icon="item.icon"
-          :loading="loading"
-        >
-          <template #title>
-            <div class="step-title">{{ item.title }}</div>
-          </template>
-          <template #description>
-            <div class="step-time">{{ item.time || "Chưa có thông tin" }}</div>
-          </template>
-        </a-step>
-      </template> -->
       <a-step
         v-for="item in selectedSteps"
         :key="item.title"
@@ -32,7 +16,7 @@
         </template>
       </a-step>
     </a-steps>
-    <div v-if="cucurent !== 'Đã hủy'" class="mt-5">
+    <div v-if="cucurent === 'Chờ xác nhận'" class="mt-5">
       <a-radio-group v-model:value="reason">
         <a-radio :style="radioStyle" value="Tôi thay đổi ý"
           >Tôi thay đổi ý</a-radio
@@ -52,7 +36,7 @@
       </a-radio-group>
     </div>
     <div class="steps-action">
-      <div class="left-buttons" v-if="cucurent !== 'Đã hủy'">
+      <div class="left-buttons" v-if="cucurent === 'Chờ xác nhận'">
         <a-button danger style="margin-left: 10px" @click="handleCancelBill">
           Hủy đơn
         </a-button>
@@ -280,8 +264,6 @@ const getIdHoaDonFromUrl = () => {
 const idBill = getIdHoaDonFromUrl();
 
 const handleCancelBill = () => {
-  console.log(reason.value);
-  console.log(reasonInput.value);
   const nextStep = stepsCancel[current.value + 1];
   const stepTitle = nextStep.title;
 

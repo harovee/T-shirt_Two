@@ -1,9 +1,6 @@
 package com.shop.server.core.admin.bill.controller;
 
-import com.shop.server.core.admin.bill.model.request.AdminFindBillRequest;
-import com.shop.server.core.admin.bill.model.request.AdminSaveBillRequest;
-import com.shop.server.core.admin.bill.model.request.AdminUpdateBillRequest;
-import com.shop.server.core.admin.bill.model.request.AdminUpdateBillWaitRequest;
+import com.shop.server.core.admin.bill.model.request.*;
 import com.shop.server.core.admin.bill.service.AdminBillService;
 import com.shop.server.core.admin.bill.service.impl.AdminBillServiceImpl;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
@@ -62,6 +59,12 @@ public class AdminBillController {
                                               @Valid @RequestBody final AdminUpdateBillRequest request,
                                               BindingResult result) {
         return Helper.createResponseEntity(adminBillService.updateBill(id, request, result));
+    }
+
+    @PutMapping("/bill-confirm/{id}")
+    public ResponseEntity<?> updateBillConfirm(@PathVariable String id,
+                                              @Valid @RequestBody final AdminUpdateBillConfirmRequest request) {
+        return Helper.createResponseEntity(adminBillService.updateBillConfirm(id, request));
     }
 
     @PutMapping("/status-bill/{id}")

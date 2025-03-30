@@ -137,6 +137,7 @@ const statusOptions = ref([
   { label: "Đã giao hàng", value: "Đã giao hàng" },
   { label: "Đã thanh toán", value: "Đã thanh toán" },
   { label: "Trả hàng", value: "Trả hàng" },
+  { label: "Đã hủy", value: "Đã hủy" },
 ]);
 
 // Hàm lấy số lượng đơn hàng theo trạng thái

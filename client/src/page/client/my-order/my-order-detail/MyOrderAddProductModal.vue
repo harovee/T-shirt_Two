@@ -55,6 +55,9 @@ import { useGetListSize } from "@/infrastructure/services/service/admin/size.act
 import { useGetListSleeve } from "@/infrastructure/services/service/admin/sleeve.action";
 import { useGetListStyle } from "@/infrastructure/services/service/admin/style.action";
 import { useGetListTrademark } from "@/infrastructure/services/service/admin/trademark.action";
+import { createUpdateBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
+import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 // Định nghĩa Props
 const props = defineProps({
@@ -68,6 +71,16 @@ const props = defineProps({
 
 // Định nghĩa Emits
 const emit = defineEmits(["handleClose"]);
+
+const { mutate: createBillDetail } = useCreateBillDetail();
+
+const { mutate: createBillHistory } = useCreateBillHistory();
+
+const modelRef = reactive<CreateBillDetailRequest>({
+  idHoaDon: null,
+  idSanPhamChiTiet: null,
+  soLuong: null,
+});
 
 // Trong component Modal
 const handleClose = () => {
@@ -93,14 +106,7 @@ const handleSelectProduct = (product: any) => {
   console.log("Danh sách sản phẩm đã chọn:", selectedProducts.value);
 };
 
-const { mutate: createBillDetail } = useCreateBillDetail();
-
-const modelRef = reactive<CreateBillDetailRequest>({
-  idHoaDon: null,
-  idSanPhamChiTiet: null,
-  soLuong: null,
-});
-
+// Lấy id hóa đơn từ path
 const getIdHoaDonFromUrl = () => {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get("idHoaDon") || "";
@@ -115,11 +121,12 @@ onMounted(() => {
   }
 });
 
+// Theo dõi khi modal mở
 watch(
   () => props.open,
   (newVal) => {
     if (newVal) {
-      refetch(); // Gọi lại API khi mở modal
+      refetch();
     }
   }
 );
@@ -128,10 +135,11 @@ watch(
   () => props.loadingValue,
   (newVal) => {
     if (newVal) {
-      refetch(); // Gọi lại API khi mở modal
+      refetch();
     }
   }
 );
+//--------------------------
 
 const handleAddProducts = () => {
   if (selectedProducts.value.length === 0) {
@@ -146,21 +154,29 @@ const handleAddProducts = () => {
 
   selectedProducts.value.forEach((product) => {
     const requestData = {
-      idHoaDon: modelRef.idHoaDon, // ID hóa đơn từ URL
-      idSanPhamChiTiet: product.id, // Đảm bảo lấy đúng ID sản phẩm
-      soLuong: 1, // Mặc định số lượng là 1
+      idHoaDon: modelRef.idHoaDon,
+      idSanPhamChiTiet: product.id,
+      soLuong: 1,
     };
+    const billHistoryParams = {
+          idHoaDon: modelRef.idHoaDon,
+          hanhDong: `Thêm sản phẩm`,
+          moTa: `Khách hàng đã thêm sản phẩm vào đơn`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null
+        }
     createBillDetail(requestData, {
       onSuccess: () => {
-        // console.log(`✅ Thêm sản phẩm ${product.maSanPhamChiTiet} thành công`);
       },
       onError: (error) => {
         console.error("❌ Lỗi khi thêm sản phẩm:", error);
-      },
+      }
     });
+    // Thêm lịch sử hóa đơn (Khi khách thêm sản phẩm vào đơn)
+    createBillHistory(billHistoryParams);
   });
 
-  handleClose(); // Đóng modal sau khi thêm
+  handleClose();
 };
 
 // Định nghĩa kiểu dữ liệu cho sản phẩm chi tiết

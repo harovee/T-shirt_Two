@@ -262,8 +262,14 @@ export const ROUTES_CONSTANTS = {
     },
     PAYMENT: {
         children: {
+            VNPay: {    
                 path:"/payment/vn-pay-callback",
                 name: "payment-vnpay"
-        }
+            },
+            MoMo: {    
+                path:"/payment/momo-callback",
+                name: "payment-momo"
+            },
+    }
     }
 };

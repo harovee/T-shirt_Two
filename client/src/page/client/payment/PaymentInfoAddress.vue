@@ -180,6 +180,8 @@ const paramsCutomer = ref<{
   profilePicture: useAuthStore().user?.profilePicture,
 });
 
+
+
 const emit = defineEmits([
   "handleResetActiveKey",
   "handleGetAddress",
@@ -202,6 +204,19 @@ const ward = ref<string>("");
 const openCustomerAddress = ref(false);
 const addressSelected = ref(null);
 const defaultCustomerAddress = ref(null);
+
+const modelRef = reactive<ClientAddressPaymentRequest>({
+  name: address?.value?.name,
+  email: address?.value?.email,
+  phoneNumber: address?.value?.phoneNumber,
+  line: address?.value?.line || null,
+  ward: address?.value?.ward.toString() || null,
+  district: address?.value?.district.toString() || null,
+  province: address?.value?.province.toString() || null,
+  isDefault: address?.value?.isDefault || false,
+  clientId: address?.value?.clientId,
+  ghiChu: address?.value?.ghiChu,
+});
 
 watch(
   () => addressSelected.value,
@@ -231,6 +246,7 @@ watch(
       } catch (error) {
         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
       }
+      modelRef.email = useAuthStore().user?.email || "";
       emit("handleGetAddress", newDataSource, fullAddress.value, false);
     }
   },
@@ -238,6 +254,8 @@ watch(
 );
 
 const handleSelectedDefaultAddress = (defaultAddress: any) => {
+  console.log(defaultAddress);
+  
   defaultCustomerAddress.value = defaultAddress;
   address.value = defaultAddress;
 };
@@ -270,6 +288,7 @@ watch(
       } catch (error) {
         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
       }
+      modelRef.email = useAuthStore().user.email || "";
       emit("handleGetAddress", newDataSource, fullAddress.value, false);
     }
   },
@@ -358,18 +377,7 @@ const filterOption = (input: string, option: any) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
 
-const modelRef = reactive<ClientAddressPaymentRequest>({
-  name: address?.value?.name,
-  email: address?.value?.name,
-  phoneNumber: address?.value?.phoneNumber,
-  line: address?.value?.line || null,
-  ward: address?.value?.ward.toString() || null,
-  district: address?.value?.district.toString() || null,
-  province: address?.value?.province.toString() || null,
-  isDefault: address?.value?.isDefault || false,
-  clientId: address?.value?.clientId,
-  ghiChu: address?.value?.ghiChu,
-});
+
 
 const refreshKey = ref(0);
 

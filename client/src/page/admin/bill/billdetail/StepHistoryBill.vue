@@ -2,7 +2,7 @@
   <div>
     <a-steps :current="current" class="step-interface">
       <a-step
-        v-for="item in steps"
+        v-for="item in selectedSteps"
         :key="item.title"
         :title="item.title"
         :icon="item.icon"
@@ -18,29 +18,73 @@
     </a-steps>
     <div class="steps-action">
       <div class="left-buttons">
-        <a-button v-if="current == 0" type="primary" @click="confirmBill()">
+        <a-button
+          v-if="
+            current == 0 &&
+            statusIndexStart !== 'Đã hủy' &&
+            dataPaymentInfo.refund > 0
+          "
+          type="primary"
+          @click="confirmBillRefund()"
+        >
+          Xác nhận đơn và hoàn lại tiền
+        </a-button>
+        <a-button
+          v-else-if="current == 0 && statusIndexStart !== 'Đã hủy'"
+          type="primary"
+          @click="confirmBill()"
+        >
           Xác nhận đơn
         </a-button>
 
         <a-button v-if="current == 1" type="primary" @click="confirmDelivery()">
-          Xác nhận giao hàng
-        </a-button>
-
-        <a-button v-if="current == 2" type="primary" @click="confirmArrived()">
           Xác nhận lấy hàng
         </a-button>
 
-        <a-button v-if="current == 4" type="primary" @click="confirmCompleted()"> Hoàn thành </a-button>
+        <a-button v-if="current == 2" type="primary" @click="confirmArrived()">
+          Xác nhận đã giao hàng
+        </a-button>
 
         <a-button
-          
+          v-if="current == 4"
+          type="primary"
+          @click="confirmCompleted()"
+        >
+          Hoàn thành
+        </a-button>
+
+        <a-button
+          v-if="
+            statusIndexStart !== 'Đã hủy' &&
+            statusIndexStart !== 'Chờ xác nhận' &&
+            statusIndexStart !== 'Thành công'
+          "
           style="margin-left: 8px"
           @click="rollBack()"
         >
           Quay lại trạng thái trước
         </a-button>
 
-        <a-button danger style="margin-left: 10px"> Hủy đơn </a-button>
+        <a-button
+          v-if="
+            current == 0 &&
+            statusIndexStart !== 'Đã hủy' &&
+            dataPaymentInfo.paid > 0
+          "
+          danger
+          style="margin-left: 10px"
+          @click="handleCancelBillPaid"
+        >
+          Hủy đơn và hoàn lại tiền
+        </a-button>
+        <a-button
+          v-else-if="current == 0 && statusIndexStart !== 'Đã hủy'"
+          danger
+          style="margin-left: 10px"
+          @click="handleCancelBill"
+        >
+          Hủy đơn
+        </a-button>
       </div>
 
       <div class="right-buttons">
@@ -87,16 +131,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, h, onMounted } from "vue";
+import { ref, watch, h, onMounted, computed, nextTick } from "vue";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   CarOutlined,
   CheckCircleOutlined,
   FileTextOutlined,
   IssuesCloseOutlined,
 } from "@ant-design/icons-vue";
-import { convertDateFormat } from "@/utils/common.helper";
-import { useChangeBillStatus, useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
-import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
+import { convertDateFormat, formatCurrencyVND } from "@/utils/common.helper";
+import {
+  useChangeBillStatus,
+  useGetBillById,
+} from "@/infrastructure/services/service/admin/bill.action";
+import {
+  errorNotiSort,
+  successNotiSort,
+  warningNotiSort,
+} from "@/utils/notification.config";
 import { Input, Modal } from "ant-design-vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
@@ -122,13 +174,41 @@ interface Step {
 const props = defineProps<{
   dataSource: DataSource;
   loading: Boolean;
+  dataPaymentInfo: Object;
+  dataProduct: {
+    type: Array<any>;
+    required: true;
+  };
+  billData: Object;
 }>();
+
+watch(() => props.dataSource, (newData) => {
+  console.log(newData);
+  
+})
+
+const emit = defineEmits(["update:bill"]);
+
+const selectedSteps = computed(() => {
+  return props.dataSource?.data?.[0]?.trangThai === "Đã hủy"
+    ? stepsCancel
+    : steps;
+});
 
 // Reactive state
 const current = ref<number>(0);
 const isModalVisible = ref(false);
 
 const { mutate: changeStatus } = useChangeBillStatus();
+
+// Khai báo các bước khi hủy hóa đơn thành công
+const stepsCancel: Step[] = [
+  {
+    title: "Đã hủy",
+    time: "",
+    icon: h(IssuesCloseOutlined),
+  },
+];
 
 // Khai báo các bước
 const steps: Step[] = [
@@ -170,25 +250,33 @@ onMounted(() => {
   }
 });
 
-// Cập nhật current step dựa trên dataSource
+const statusIndexStart = ref("");
+
 const updateCurrentStep = (dataSource: DataSource) => {
   const status = dataSource?.data?.[0]?.trangThai;
-  const statusMap: Record<string, number> = {
-    "Chờ xác nhận": 0,
-    "Chờ giao hàng": 1,
-    "Đang vận chuyển": 2,
-    "Đã giao hàng": 3,
-    "Đã thanh toán": 4,
-    "Thành công": 5,
-  };
-  current.value = statusMap[status] || 0;
-  // console.log(dataSource);
+  statusIndexStart.value = dataSource?.data?.[0]?.trangThai;
+  if (status === "Đã hủy") {
+    const statusMap: Record<string, number> = {
+      "Đã hủy": 0,
+    };
+    current.value = statusMap[status] || 0;
+  } else {
+    const statusMap: Record<string, number> = {
+      "Chờ xác nhận": 0,
+      "Chờ giao hàng": 1,
+      "Đang vận chuyển": 2,
+      "Đã giao hàng": 3,
+      "Đã thanh toán": 4,
+      "Thành công": 5,
+    };
+    current.value = statusMap[status] || 0;
+  }
 };
 
 const updateStepTimes = (dataSource: DataSource) => {
   if (!dataSource?.data || dataSource.data.length === 0) return;
 
-  steps.forEach((step) => {
+  selectedSteps.value.forEach((step) => {
     const records = dataSource.data.filter(
       (item) => item.trangThai === step.title
     );
@@ -199,7 +287,6 @@ const updateStepTimes = (dataSource: DataSource) => {
     } else {
       step.time = "Chưa có thông tin";
     }
-    // console.log(`🕒 Updated ${step.title}:`, step.time); // Kiểm tra giá trị log
   });
 };
 
@@ -241,9 +328,7 @@ const { data: PaymentData } = useGetPayHistory(params, {
 
 // console.log(PaymentData);
 
-const {
-  data: billData
-} = useGetBillById(billId, {
+const { data: billData } = useGetBillById(billId, {
   refetchOnWindowFocus: false,
   enabled: () => !!billId.value,
 });
@@ -256,7 +341,7 @@ watch(
   { immediate: true }
 );
 
-
+// hàm xác nhận không hoàn tiền
 const confirmBill = () => {
   // Lấy trạng thái tiếp theo từ mảng steps
   const nextStep = steps[current.value + 1];
@@ -266,6 +351,10 @@ const confirmBill = () => {
   const params = {
     status: stepTitle, // Trạng thái mới từ bước tiếp theo
     trangThai: "Chờ giao hàng",
+    email: props.billData.emailNguoiNhan || null,
+    idHoaDon: idBill,
+    nhanVien: useAuthStore().user?.email || null,
+    ghiChu: "Xác nhận trạng thái đơn hàng -> Chờ giao hàng",
   };
 
   Modal.confirm({
@@ -273,10 +362,74 @@ const confirmBill = () => {
     content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
     onOk: async () => {
       try {
+        if (props.dataProduct.length === 0) {
+          warningNotiSort(
+            "Đơn hàng đang trống, xin vui lòng thêm sản phẩm vào giỏ hoặc hủy đơn hàng!"
+          );
+          return;
+        }
+        // Gọi API để thay đổi trạng thái đơn hàng
+        changeStatus({ idBill, params });
+        emit("update:bill");
+        successNotiSort("Cập nhật trạng thái thành công!");
+
+        // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+        current.value++;
+      } catch (error) {
+        console.error("Cập nhật trạng thái thất bại:", error);
+        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+      }
+    },
+    onCancel: () => {
+      console.log("Thao tác đã bị hủy.");
+    },
+  });
+};
+
+// hàm xác nhận và hoàn lại tiền
+const confirmBillRefund = () => {
+  // Lấy trạng thái tiếp theo từ mảng steps
+  const nextStep = steps[current.value + 1];
+  const stepTitle = nextStep.title;
+  const description = ref("");
+  // API tạo lịch sử hóa đơn
+
+  Modal.confirm({
+    title: "Xác nhận hoàn tiền",
+    content: () => {
+      return h("div", [
+        h(
+          "p",
+          `Số tiền cần trả lại: ${formatCurrencyVND(
+            props.dataPaymentInfo.refund
+          )}`
+        ),
+        h(Input, {
+          placeholder: "Nhập mã giao dịch ...",
+          autoSize: { minRows: 2, maxRows: 4 },
+          onInput: (e) => (description.value = e.target.value),
+        }),
+      ]);
+    },
+    onOk: async () => {
+      const params = {
+        status: stepTitle,
+        trangThai: "Chờ giao hàng",
+        moTa: `Hoàn trả: ${formatCurrencyVND(
+          props.dataPaymentInfo.refund
+        )} - Mã giao dịch: ${description.value}`,
+        email: props.billData.emailNguoiNhan || null,
+        idHoaDon: idBill,
+        nhanVien: useAuthStore().user?.email || null,
+        ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
+          props.dataPaymentInfo.refund
+        )}`,
+      };
+      try {
         // Gọi API để thay đổi trạng thái đơn hàng
         changeStatus({ idBill, params });
         successNotiSort("Cập nhật trạng thái thành công!");
-
+        emit("update:bill");
         // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
         current.value++;
       } catch (error) {
@@ -299,6 +452,10 @@ const confirmDelivery = () => {
   const params = {
     status: stepTitle, // Trạng thái mới từ bước tiếp theo
     trangThai: "Đang vận chuyển",
+    email: props.billData.emailNguoiNhan || null,
+    idHoaDon: idBill,
+    nhanVien: useAuthStore().user?.email || null,
+    ghiChu: "Xác nhận trạng thái đơn hàng -> Đang vận chuyển",
   };
 
   Modal.confirm({
@@ -324,38 +481,16 @@ const confirmDelivery = () => {
 };
 
 const confirmArrived = () => {
-  // const nextStep = steps[current.value + 1];
-  // const stepTitle = nextStep.title;
-
-  // const params = {
-  //   status: stepTitle,
-  //   trangThai: "Đã giao hàng",
-  // };
-
-  // Modal.confirm({
-  //   title: "Xác nhận thay đổi trạng thái",
-  //   content: `Bạn muốn xác nhận giao hàng cho đơn này"?`,
-  //   onOk: async () => {
-  //     try {
-  //       changeStatus({ idBill, params });
-  //       successNotiSort("Cập nhật trạng thái thành công!");
-
-  //       current.value++;
-  //     } catch (error) {
-  //       console.error("Cập nhật trạng thái thất bại:", error);
-  //       errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
-  //     }
-  //   },
-  //   onCancel: () => {
-  //     console.log("Thao tác đã bị hủy.");
-  //   },
-  // });
-  const tienKhachDua = PaymentData.value?.data?.reduce((sum, payment) => sum + payment.tienKhachDua, 0) || 0;
+  const tienKhachDua =
+    PaymentData.value?.data?.reduce(
+      (sum, payment) => sum + payment.tienKhachDua,
+      0
+    ) || 0;
   // console.log(tienKhachDua);
-  
-  const tongTienHD = billData?.value?.data?.data.tongTien;
+
+  // const tongTienHD =
   // console.log(tongTienHD);
-  if (tongTienHD && tienKhachDua >= tongTienHD) {
+  if (props.dataPaymentInfo.amountPayable == 0) {
     // Nếu khách đã thanh toán đủ -> Chuyển trực tiếp sang trạng thái "Đã thanh toán"
     const nextStep = steps[4]; // "Đã thanh toán"
     const stepTitle = nextStep.title;
@@ -363,8 +498,11 @@ const confirmArrived = () => {
     const params = {
       status: stepTitle,
       trangThai: "Đã thanh toán",
+      email: props.billData.emailNguoiNhan || null,
+      idHoaDon: idBill,
+      nhanVien: useAuthStore().user?.email || null,
+      ghiChu: "Xác nhận trạng thái đơn hàng -> Đã thanh toán",
     };
-
 
     Modal.confirm({
       title: "Xác nhận đơn hàng đã thanh toán",
@@ -372,7 +510,9 @@ const confirmArrived = () => {
       onOk: async () => {
         try {
           changeStatus({ idBill, params });
-          successNotiSort("Đơn hàng đã chuyển sang trạng thái 'Đã thanh toán'!");
+          successNotiSort(
+            "Đơn hàng đã chuyển sang trạng thái 'Đã thanh toán'!"
+          );
           current.value = 4; // Cập nhật trạng thái về 'Đã thanh toán'
         } catch (error) {
           console.error("Cập nhật trạng thái thất bại:", error);
@@ -380,7 +520,12 @@ const confirmArrived = () => {
         }
       },
     });
-
+  } else {
+    warningNotiSort(
+      ` Cần thanh toán ${formatCurrencyVND(
+        props.dataPaymentInfo.amountPayable
+      )} để chuyển trạng thái hóa đơn!`
+    );
     return;
   }
 
@@ -391,6 +536,10 @@ const confirmArrived = () => {
   const params = {
     status: stepTitle,
     trangThai: "Đã giao hàng",
+    email: props.billData.emailNguoiNhan || null,
+    idHoaDon: idBill,
+    nhanVien: useAuthStore().user?.email || null,
+    ghiChu: "Xác nhận trạng thái đơn hàng -> Đã giao hàng",
   };
 
   Modal.confirm({
@@ -418,6 +567,10 @@ const confirmCompleted = () => {
   const params = {
     status: stepTitle, // Trạng thái mới từ bước tiếp theo
     trangThai: "Thành công",
+    email: props.billData.emailNguoiNhan || null,
+    idHoaDon: idBill,
+    nhanVien: useAuthStore().user?.email || null,
+    ghiChu: "Xác nhận trạng thái đơn hàng -> Thành công. Hoàn tất đơn hàng.",
   };
 
   Modal.confirm({
@@ -439,6 +592,119 @@ const confirmCompleted = () => {
     onCancel: () => {
       console.log("Thao tác đã bị hủy.");
     },
+  });
+};
+
+// Hàm hủy đơn chưa thanh toán
+const handleCancelBill = () => {
+  const nextStep = stepsCancel[current.value];
+  const stepTitle = nextStep.title;
+  const description = ref("");
+
+  Modal.confirm({
+    title: "Xác nhận hủy đơn",
+    content: () => {
+      return h("div", [
+        h("p", `Bạn có chắc chắn muốn hủy đơn hàng này không?`),
+        h(Input.TextArea, {
+          placeholder: "Nhập lý do ...",
+          autoSize: { minRows: 2, maxRows: 4 },
+          onInput: (e) => (description.value = e.target.value),
+        }),
+      ]);
+    },
+    onOk: async () => {
+      if (!description.value || !description.value.trim()) {
+        errorNotiSort("Vui lòng nhập lý do quay lại");
+        return Promise.reject();
+      }
+
+      const params = {
+        status: stepTitle,
+        trangThai: "Đã hủy",
+        moTa: description.value,
+        email: props.billData.emailNguoiNhan || null,
+        idHoaDon: idBill,
+        nhanVien: useAuthStore().user?.email || null,
+        ghiChu: "Đơn hàng đã bị hủy!",
+      };
+
+      try {
+        await changeStatus({ idBill, params });
+        successNotiSort("Đã hủy đơn thành công!");
+        current.value++;
+      } catch (error) {
+        console.error("Cập nhật trạng thái thất bại:", error);
+        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+      }
+    },
+    onCancel: () => console.log("Thao tác rollback bị hủy."),
+  });
+};
+
+// Hàm hủy đơn đã thanh toán
+const handleCancelBillPaid = () => {
+  const nextStep = stepsCancel[current.value];
+  const stepTitle = nextStep.title;
+  const description = ref("");
+
+  Modal.confirm({
+    title: "Xác nhận hoàn tiền",
+    content: () => {
+      return h("div", [
+        h(
+          "p",
+          `Số tiền cần trả lại: ${formatCurrencyVND(
+            props.dataPaymentInfo.paid
+          )}`
+        ),
+        h(Input, {
+          placeholder: "Nhập mã giao dịch ...",
+          autoSize: { minRows: 2, maxRows: 4 },
+          onInput: (e) => (description.value = e.target.value),
+        }),
+      ]);
+    },
+    onOk: async () => {
+      if (!description.value || !description.value.trim()) {
+        errorNotiSort("Vui lòng nhập mã giao dịch!");
+        return Promise.reject();
+      }
+
+      const params = {
+        status: stepTitle,
+        trangThai: "Đã hủy",
+        moTa: `Hoàn trả: ${formatCurrencyVND(
+          props.dataPaymentInfo.paid
+        )} - Mã giao dịch: ${description.value}`,
+        email: props.billData.emailNguoiNhan || null,
+        idHoaDon: idBill,
+        nhanVien: useAuthStore().user?.email || null,
+        ghiChu: `Đơn hàng đã bị hủy và hoàn trả ${formatCurrencyVND(
+          props.dataPaymentInfo.paid
+        )}`,
+      };
+
+      try {
+        await changeStatus({ idBill, params });
+        successNotiSort("Đã hủy đơn thành công!");
+
+        // const stepIndex = steps.findIndex((step) => step.title === stepTitle);
+        // if (stepIndex !== -1) {
+        //   steps[stepIndex].time = new Date().toLocaleString("vi-VN", {
+        //     hour12: false,
+        //   });
+        // }
+
+        // // Quay lại trạng thái trước
+        // current.value--;
+        current.value++;
+      } catch (error) {
+        console.error("Cập nhật trạng thái thất bại:", error);
+        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+      }
+    },
+    onCancel: () => console.log("Thao tác rollback bị hủy."),
   });
 };
 

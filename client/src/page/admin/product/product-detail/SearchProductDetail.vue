@@ -248,10 +248,17 @@
           <a-button
               class="me-3 bg-purple-300 flex justify-between items-center gap-2"
               size="large"
+              @click="openQRModal"
           >
             <v-icon name="bi-qr-code-scan"/>
           </a-button>
         </a-tooltip>
+        <scan-qr-code
+            :openModal="isModalOpen"
+            @update:open="isModalOpen = $event"
+            @update:idSanPhamChitiet="handleUpdateIdSanPhamChiTietQr"
+            @ok="handleQRScan"
+          />
       <a-tooltip title="Xuất Excel" trigger="hover">
           <a-button
             class="bg-purple-300 flex justify-between items-center gap-2"
@@ -279,6 +286,7 @@ import {
 } from "@/infrastructure/services/api/admin/product_detail.api";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { FilePdfOutlined, FileExcelOutlined } from "@ant-design/icons-vue";
+import ScanQrCode from "@/page/admin/point.of.sale/qr-code/ScanQrCode.vue";
 
 const listMaterial = inject("listMaterial");
 const listCollar = inject("listCollar");
@@ -304,7 +312,25 @@ const params = ref<PropertyProductDetailParams>({
   idTayAo: null,
   idThuongHieu: null,
   idTinhNang: null,
+  keyword: null
 });
+
+const isModalOpen = ref(false);
+
+// Mở modal quét mã QR khi nhấn nút
+const openQRModal = () => {
+  isModalOpen.value = true;
+};
+
+// Xử lý mã QR khi quét thành công
+const handleQRScan = (qrCode: string) => {
+  console.log("Mã QR quét được:", qrCode);
+};
+
+const handleUpdateIdSanPhamChiTietQr = (newId: string) => {
+  console.log(newId);
+  params.value.keyword = newId;
+};
 
 const changeProductDetail = ref(false);
 
@@ -360,6 +386,7 @@ const resetFilter = () => {
     (params.value.idThuongHieu = null),
     (params.value.idTinhNang = null),
     (params.value.gia = null);
+    (params.value.keyword = null);
 };
 
 watch(
