@@ -4,6 +4,8 @@ import { useAuthStore } from "./infrastructure/stores/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
 import { formatCurrencyVND } from "./utils/common.helper";
+import { DingtalkOutlined } from "@ant-design/icons-vue";
+
 
 // Kiểm tra role người dùng
 const authStore = useAuthStore();
@@ -21,7 +23,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const isOpen = ref(false);
 const messages = ref([
   {
-    text: "Xin chào! Tôi là TsTalk 🤖, tôi có thể giúp gì cho bạn?",
+    text: `Xin chào! Tôi là TsTalk, tôi có thể giúp gì cho bạn?`,
     sender: "bot",
   },
 ]);
@@ -280,13 +282,15 @@ const sendMessage = async () => {
 <template>
   <!-- 🔹 Nút bật chatbot -->
   <a-tooltip title="Chat bot">
-    <button class="chat-toggle" @click="toggleChat">💬</button>
+    <button class="chat-toggle" @click="toggleChat">
+      <DingtalkOutlined />
+    </button>
   </a-tooltip>
 
   <!-- 🔹 Cửa sổ chat -->
   <div v-if="isOpen" class="chat-container">
     <div class="chat-header">
-      <span>TsTalk 🤖</span>
+      <span>TsTalk <DingtalkOutlined/></span>
       <button @click="toggleChat">✖</button>
     </div>
     <div class="chat-box">
@@ -313,17 +317,17 @@ const sendMessage = async () => {
 /* 🔹 Nút bật chatbot */
 .chat-toggle {
   position: fixed;
-  bottom: 100px;
+  bottom: 80px;
   right: 10px;
   background: #6c757d; /* Xám trung tính */
   color: white;
   border: none;
-  width: 55px;
-  height: 55px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   font-size: 26px;
   cursor: pointer;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 12px rgba(251, 247, 247, 0.2);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   z-index: 9999;
 }
@@ -336,10 +340,11 @@ const sendMessage = async () => {
 /* 🔹 Cửa sổ chat */
 .chat-container {
   position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 340px;
-  height: 420px;
+  bottom: 0px;
+  right: 50px;
+  width: 350px;
+  height: 450px;
+  /* max-height: 500px; */
   background: #f8f9fa; /* Trắng xám nhạt */
   border-radius: 12px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);

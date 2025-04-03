@@ -1,6 +1,6 @@
 package com.shop.websocket.controller;
 
-import com.shop.websocket.model.ChatMessage;
+import com.shop.websocket.model.entity.ChatMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
