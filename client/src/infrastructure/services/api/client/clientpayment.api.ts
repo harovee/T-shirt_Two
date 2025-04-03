@@ -1,10 +1,3 @@
-import { vnPayRequest } from './clientpayment.api';
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  UseQueryReturnType,
-} from "@tanstack/vue-query";
 import { DefaultResponse } from "@/infrastructure/types/api.common";
 import request from "@/infrastructure/services/request.ts";
 import { API_CLIENT_PAYMENT } from "@/infrastructure/constants/url.ts";
@@ -31,6 +24,7 @@ export interface clientPaymentRequest extends vnPayRequest{
   paymentMethod: string | null;
   listSanPhamChiTiets: invoiceDetailRequest[] | null;
   email:string | null;
+  maGiaoDich: string | null;
 }
 
 export interface vnPayRequest  {
@@ -43,6 +37,16 @@ export type vnPayLinkResponse = {
   message: string | null;
   paymentUrl: string | null;
 };
+
+export interface vietQrRequest  {
+  accountNo: number | 4252420691,
+  accountName:string | "HOANG VAN THANH",
+  acqId:number | 970418,
+  amount: number,
+  addInfo: string | "VIETQR -Thanh toan online",
+  format: string | "text",
+  template: string | "compact2"
+}
 
 export const createInvoiceOnline = async (data: clientPaymentRequest) => {
   const res = (await request({
@@ -101,5 +105,33 @@ export const getVnPayLink = async (idHoaDon: string, params: Ref<vnPayRequest>) 
   })) as AxiosResponse<
     DefaultResponse<vnPayLinkResponse>
   >;
+  return res.data;
+};
+
+export const getVietQrCode = async (data: vietQrRequest) => {
+  try {
+    const res = await request({
+      url: `https://api.vietqr.io/v2/generate`,
+      method: "POST",
+      data: data,
+      headers: {
+        "x-client-id": "d36dd425-a059-4896-8397-2b52529134dc",
+        "x-api-key": "da671129-0af4-4e80-8d55-2917d2bdd183"
+      },
+    });
+    console.log(res);
+    return res.data;
+  } catch (error) {
+    console.error("VietQR API error:", error);
+    throw error;
+  }
+};
+
+export const createInvoiceOnlineWithVietQr = async (data: clientPaymentRequest) => {
+  const res = (await request({
+    url: `${API_CLIENT_PAYMENT}/vietqr`,
+    method: "POST",
+    data: data,
+  })) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
   return res.data;
 };
