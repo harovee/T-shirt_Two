@@ -343,6 +343,7 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
             		AND (:#{#req.trangThai} IS NULL OR spct.trang_thai = :#{#req.trangThai})
             		AND (:#{#req.gia} IS NULL OR spct.gia <= :#{#req.gia})
                     AND spct.deleted = 0
+                    AND spct.so_luong > 0
     """, countQuery = """
         SELECT COUNT(spct.id)
         FROM san_pham_chi_tiet spct
@@ -362,7 +363,7 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                 AND spct.so_luong > 0
     """, nativeQuery = true)
     Page<AdSanPhamChiTietResponse> getAllSanPhamChiTietOverZero(Pageable pageable, AdFindSpctRequest req);
-           
+
     @Query(value = """
     SELECT CAST(CASE WHEN spct.so_luong < (:#{#request.quantity} - (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = :#{#request.id})) THEN 1 ELSE 0 END AS SIGNED)
     FROM hoa_don_chi_tiet hdct
