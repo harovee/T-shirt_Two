@@ -10,7 +10,8 @@ import {
     FindAllProductDetailRequest,
     getListProductDetail,
     checkQuantityRequest,
-    checkQuantityInStock
+    checkQuantityInStock,
+    getAllProductDetailOverZero
 } from "@/infrastructure/services/api/admin/product_detail.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -57,10 +58,10 @@ export const useGetAllProductDetail = (
 
 export const useGetAllProductDetailOverZero = (
     paramsAll: Ref<FindAllProductDetailRequest>, options?: any
-): UseQueryReturnType<Awaited<ReturnType<typeof getAllProductDetails>>, Error> => {
+): UseQueryReturnType<Awaited<ReturnType<typeof getAllProductDetailOverZero>>, Error> => {
     return useQuery({
         queryKey: [queryKey.admin.productDetail.allProductDetailOverZero, paramsAll],
-        queryFn: () => getAllProductDetails(paramsAll),
+        queryFn: () => getAllProductDetailOverZero(paramsAll),
         ...options,
     });
 };
