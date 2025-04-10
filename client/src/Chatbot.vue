@@ -6,24 +6,21 @@ import axios from "axios";
 import { formatCurrencyVND } from "./utils/common.helper";
 import { DingtalkOutlined } from "@ant-design/icons-vue";
 
-
-// Kiểm tra role người dùng
 const authStore = useAuthStore();
 const userRole = computed(() => authStore.user.roleName);
 const isAdmin = computed(() => userRole.value === "ADMIN");
 const isUser = computed(() => userRole.value === "USER");
 const isClient = computed(() => userRole.value === "CLIENT");
 
-// 🔹 Khai báo API Key
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-// 🔹 Khai báo trạng thái chatbot
+// Chat state
 const isOpen = ref(false);
 const messages = ref([
   {
-    text: `Xin chào! Tôi là TsTalk, tôi có thể giúp gì cho bạn?`,
+    text: `Xin chào! Tôi là TsTalk - trợ lý ảo của Tshirt-Two. Tôi có thể giúp gì cho bạn?`,
     sender: "bot",
   },
 ]);
@@ -35,247 +32,343 @@ const toggleChat = () => {
   isOpen.value = !isOpen.value;
 };
 
-const normalizePrice = (priceText) => {
-  // Biểu thức chính quy để tìm các từ khóa như "k", "ngàn", "nghìn"
-  const normalizedPrice = priceText
-    .replace(/(\d+)(k|ngàn|nghìn|ka|cành)/gi, (match, p1, p2) => {
-      const multiplier = p2.toLowerCase() === 'k' ? 1000 : 1000;
-      return parseInt(p1) * multiplier;
-    });
-  
-  // Chuyển chuỗi thành số
-  return parseInt(normalizedPrice.replace(/\D/g, "")); // Loại bỏ các ký tự không phải số
+// Product knowledge base
+const productFeatures = {
+  materials: ["cotton", "polyester", "vải cá sấu", "vải jean"],
+  sizes: ["S", "M", "L", "XL", "XXL"],
+  colors: ["trắng", "đen", "xanh navy", "đỏ", "hồng", "xám", "kem"],
+  styles: ["cổ tròn", "cổ tim", "cổ V", "tay ngắn", "tay dài"],
+  brands: ["Gucci", "Dior", "Balenciaga", "Local Brand"],
+  priceRange: { min: 150000, max: 5000000 },
 };
 
-// 🔹 Hàm gửi tin nhắn
-const sendMessage = async () => {
-  if (!userInput.value.trim()) return;
+const systemInfo = {
+  storeInfo: {
+    locations: [
+      "Hà Nội: 123 Trần Duy Hưng",
+      "TP.HCM: 456 Lê Văn Việt",
+      "Đà Nẵng: 789 Ngũ Hành Sơn",
+    ],
+    openingHours: "9:00 - 21:30 hàng ngày",
+    hotline: "1900 1234",
+  },
+  policies: {
+    return: "Đổi trả trong 7 ngày nếu sản phẩm còn nguyên tag",
+    shipping: "Miễn phí vận chuyển cho đơn từ 500k",
+    payment: "Chấp nhận COD, chuyển khoản và ví điện tử",
+  },
+  promotions: [
+    "Giảm 20% cho đơn đầu tiên - mã WELCOME20",
+    "Mua 2 tặng 1 áo phông basic",
+    "Freeship toàn quốc thứ 7 hàng tuần",
+  ],
+};
 
-  // Thêm tin nhắn của người dùng vào danh sách
-  messages.value.push({ text: userInput.value, sender: "user" });
-
-  isLoading.value = true;
-  const inputText = userInput.value;
-  userInput.value = "";
-
-  try {
-    // Tạo context hội thoại dựa trên vai trò của người dùng
-    const commonQuestions = [
-      "Bạn có thể giúp tôi tìm sản phẩm?",
-      "Tôi muốn mua áo thun",
-      "Sản phẩm nào được bán chạy nhất?",
-      "Còn sản phẩm nào trong kho không?",
-      "Tôi muốn biết thêm về giá sản phẩm này",
-      "Có giảm giá gì không?",
-      "Tìm áo với màu đỏ và giá dưới 300k",
-    ];
-
-    const parts = [
-      { text: `Vai trò của người dùng hiện tại là: ${userRole.value}` },
-      { text: "Tôi là TsTalk - chatbot của TsT website" },
-      {
-        text: "Dự án trang web bán hàng Tshirt-Two được thiết kế và phát triển bởi team DATN K19 FPL, do Bùi Minh Hiếu làm Leader",
-      },
-      //tổng quan
-      {
-        text: "(Đây là hệ thống quản lý dành cho admin và user) Đây là 1 hệ thống quản lý bán hàng, có thiết kế gọn gàng với các biểu đồ và bảng thống kê.\nCác ô thông tin chính:\n\nTổng đơn thành công (hiển thị số lượng đơn hàng thành công, hiện tại).\nTổng doanh thu (hiển thị tổng số tiền thu được).\nKhách hàng mới (số lượng khách hàng mới).\n\n\nBiểu đồ trạng thái đơn hàng hôm nay: Dạng vòng tròn với 4 trạng thái: Thành công (xanh lá), Chờ xử lý (vàng), Đang giao (xanh dương), Hủy bỏ (đỏ)\nBảng top 5 sản phẩm bán chạy\nMục sản phẩm sắp hết hàng: Có thể hiển thị danh sách các sản phẩm gần hết trong kho.",
-      },
-      {
-        text: "(Đây là hệ thống quản lý dành cho admin và user) Thanh bên trái (Sidebar):\nChứa các mục điều hướng chính, bao gồm:\nTổng quan\nThống kê\nBán tại quầy\nHóa đơn (có menu con: Quản lý hóa đơn, Trả hàng)\nSản phẩm (đang được chọn, có menu con như Danh mục, Thương hiệu, Chất liệu, Cổ áo, Tay áo, Kích cỡ, Màu sắc, Tính năng, Kiểu dáng, Họa tiết)\nĐợt giảm giá, Phiếu giảm giá\nNhân viên, Khách hàng\nKhi một danh mục con được chọn, nó sẽ hiển thị dưới dạng mở rộng trong menu",
-      },
-      //hóa đơn
-      {
-        text: '(Đây là hệ thống quản lý dành cho admin và user)Để kiểm tra đơn hàng trong hệ thống này, bạn cần vào mục "Hóa đơn" -> "Quản lý hóa đơn" ở thanh menu bên trái.\nSau khi vào trang Quản lý hóa đơn, bạn có thể:\nLọc đơn hàng theo mã, thông tin khách hàng dựa vào ô tìm kiếm\nLọc đơn hàng loại hóa đơn dựa vào nút radio Loại hóa đơn\nLọc đơn hàng theo ngày dựa vào bộ lọc khoảng ngày\nXem danh sách hóa đơn, bao gồm thông tin như mã hóa đơn, nhân viên phụ trách, khách hàng, tổng tiền, ngày tạo và trạng thái đơn.\nNhấn vào biểu tượng con mắt ở cột cuối cùng để xem chi tiết hóa đơn.',
-      },
-      {
-        text: '(Đây là hệ thống quản lý dành cho admin và user)Màn chi tiết hóa đơn sau khi nhấn vào biểu tượng "Mắt": Hiển thị tiến trình của đơn hàng với các trạng thái:\nChờ xác nhận\nChờ giao hàng\nĐang vận chuyển\nĐã giao hàng\nĐã thanh toán\nThành công\nCác nút thao tác chính:\nChuyển trạng thái đơn hàng\nQuay lại trạng thái trước: Quay về trạng thái trước đó trong quy trình xử lý đơn hàng.\nHủy đơn: Hủy bỏ đơn hàng.Thông tin đơn hàng:Mã đơn hàng,Số điện thoại người nhận, Địa chỉ người nhận, Tên khách hàng, Trạng thái, Tên người nhận, Có nút Chi tiết ở góc phải. Lịch sử thanh toán: Bảng chứa các thông tin: Số tiền khách đưa, Thời gian giao dịch, Mã giao dịch, Phương thức thanh toán, Nhân viên xác nhận: Hiển thị mã nhân viên. Danh sách sản phẩm trong đơn hàng: Bảng hiển thị danh sách sản phẩm đã mua, gồm các cột: Ảnh sản phẩm,Tên sản phẩm, Giá sản phẩm, Số lượng, Thành tiền, Hành động: Nút hoàn hàng nếu trong quá trình chuẩn bị đơn hàng, cửa hàng hoặc shipper muốn hoàn lại, Có nút Thêm sản phẩm',
-      },
-      //client
-      {
-        text: `(Đây là trang mua hàng dành cho CLIENT)
-            Tiêu đề Trang:
-                Các menu như "Trang chủ", "Sản phẩm", "Giới thiệu", "Liên hệ" ở phần trên của trang.
-                Thanh Tìm Kiếm: Ở trên cùng, có một thanh tìm kiếm giúp người dùng tìm sản phẩm trên trang.
-                Biểu tượng giỏ hàng: Ở trên cùng bên phải, có thể tra cứu thông tin sản phẩm có trong giỏ hàng, thanh toán giỏ hàng.
-                Biểu tượng trang cá nhân: Ở góc bên phải trên cùng, có thể tìm kiếm thông tin những đơn hàng đã mua bằng bộ lọc nhập mã đơn hàng hoặc các tab của trạng thái đơn hàng và trạng thái đơn hàng đó.
-                Thông tin sản phẩm: Tên sản phẩm: "Áo phông" (đây là tên của sản phẩm được hiển thị lớn).
-                Giá sản phẩm: hiển thị phạm vi giá của sản phẩm
-                Kích cỡ: hiển thị kích cỡ hiện có của sản phẩm
-                Màu sắc:người dùng sẽ chọn màu từ danh sách màu.
-                Nút hành động:
-                  Thêm vào giỏ: Người dùng có thể thêm sản phẩm vào giỏ hàng.
-                  Xem chi tiết: Cho phép người dùng xem thêm chi tiết về sản phẩm.`,
-      },
-      { text: `input: ${inputText} ` },
-    ];
-
-    if (isAdmin.value) {
-      parts.push({
-        text: "Người dùng là ADMIN, tôi sẽ trả lời những thông tin về hệ thống bán hàng và sản phẩm",
-      });
-    } else if (isClient.value) {
-      parts.push({
-        text: `Người dùng là Khách hàng
-              - Chỉ cung cấp thông tin về các sản phẩm áo đang được bày bán, nghĩa là tồn tại trong cơ sở dữ liệu của trang Tshirt-Two.`,
-      });
-    } else {
-      parts.push({
-        text: "Người dùng là nhân viên (USER), tôi sẽ trả lời những thông tin về hệ thống bán hàng và sản phẩm.",
-      });
-    }
-
-    // Gọi API chatbot để lấy kết quả trả lời
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts }],
-      generationConfig: {
-        temperature: 1,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 8192,
-        responseMimeType: "text/plain",
-      },
+const normalizeText = (text) => {
+  let normalized = text
+    .toLowerCase()
+    // Xử lý dạng 1tr5 -> 1.5tr
+    .replace(/(\d+)tr(\d+)/gi, (_, p1, p2) => {
+      const main = parseInt(p1);
+      const sub = parseInt(p2) / 10; // Giả sử 1tr5 = 1.5tr
+      return `${main + sub}tr`;
+    })
+    // Xử lý dạng 1tr500 -> 1.5tr
+    .replace(/(\d+)tr(\d{3})/gi, (_, p1, p2) => {
+      return `${p1}.${p2.slice(0, 1)}tr`;
     });
 
-    const response = await result.response.text();
-
-    const priceMatch = inputText.match(/giá\s+(dưới|trên)?\s*(\d+\s*(k|ngàn|nghìn))/i);
-    let maxPrice = 100000000; // Giá trị mặc định nếu không có giá trị nào được tìm thấy
-
-    if (priceMatch) {
-      const priceText = priceMatch[2];
-      maxPrice = normalizePrice(priceText); // Chuẩn hóa giá trị tiền tệ
-    }
-
-    // Gọi API lấy sản phẩm nếu có yêu cầu liên quan đến sản phẩm
-    if (
-      inputText.toLowerCase().includes("mua") ||
-      inputText.toLowerCase().includes("gợi ý") ||
-      inputText.toLowerCase().includes("tìm") ||
-      inputText.toLowerCase().includes("tìm sản phẩm")
-    ) {
-      // Tách từ khóa (tên sản phẩm)
-      const keywordMatch = inputText.match(/mua\s+([^\s,]+)/i);
-      const keyword = keywordMatch ? keywordMatch[1].trim() : null;
-
-      const colorMatch = inputText.match(/màu\s+([a-zA-Zà-ỹ\s,]+)/i);
-      const color = colorMatch
-        ? colorMatch[1]
-            .trim()
-            .toLowerCase()
-            .replace(/\s*(và|hoặc| )\s*/g, ",") // Thay thế "và" hoặc "hoặc" hoặc dấu cách bằng dấu phẩy
-            .split(/\s*,\s*/) // Tách theo dấu phẩy
-        : [];
-
-      // Tách giá tối đa
-      const priceMatch = inputText.match(/giá\s+(dưới|trên)?\s*(\d+\s*(k|ngàn|nghìn|cành|ka))/i);
-    let maxPrice = 100000000; // Giá trị mặc định nếu không có giá trị nào được tìm thấy
-
-    if (priceMatch) {
-      const priceText = priceMatch[2];
-      maxPrice = normalizePrice(priceText); // Chuẩn hóa giá trị tiền tệ
-    }
-
-      // Tìm kiếm kiểu dáng
-      const kieuDangMatch = inputText.match(/kiểu dáng\s+([a-zA-Zà-ỹ\s]+)/i);
-      const kieuDang = kieuDangMatch
-        ? kieuDangMatch[1].trim().toLowerCase()
-        : null;
-
-      // Tìm kiếm thương hiệu
-      const thuongHieuMatch = inputText.match(/hiệu\s+([a-zA-Zà-ỹ\s]+)/i);
-      const thuongHieu = thuongHieuMatch
-        ? thuongHieuMatch[1].trim().toLowerCase()
-        : null;
-
-      // Tìm kiếm tính năng
-      const tinhNangMatch = inputText.match(/tính năng\s+([a-zA-Zà-ỹ\s]+)/i);
-      const tinhNang = tinhNangMatch
-        ? tinhNangMatch[1].trim().toLowerCase()
-        : null;
-
-      // Tìm kiếm kiểu dáng tay áo (cộc tay hoặc dài tay)
-      const tayAoMatch = inputText.match(/(cộc tay|dài tay)/i);
-      const tayAo = tayAoMatch ? tayAoMatch[0].toLowerCase() : null;
-
-      // Tìm kiếm kiểu cổ áo (ví dụ: "cổ tròn", "cổ V", "cổ áo sơ mi")
-      const coAoMatch = inputText.match(/cổ áo\s+([a-zA-Zà-ỹ\s]+)/i);
-      const coAo = coAoMatch ? coAoMatch[1].trim().toLowerCase() : null;
-
-      // Tìm kiếm kích cỡ (ví dụ: "S", "M", "L", "XL")
-      const kichCoMatch = inputText.match(/kích cỡ\s+([a-zA-Z0-9\s]+)/i);
-      const kichCo = kichCoMatch ? kichCoMatch[1].trim().toLowerCase() : null;
-
-      // Gọi API để tìm sản phẩm theo từ khóa (tên sản phẩm hoặc màu sắc)
-      const res = await axios.get("http://localhost:3000/other-api/products", {
-        params: {
-          sanPham: keyword,
-          mauSac: color,
-          maxPrice: maxPrice,
-          tayAo: tayAo,
-          coAo: coAo,
-          tinhNang: tinhNang,
-          thuongHieu: thuongHieu,
-          kichCo: kichCo,
-          kieuDang: kieuDang,
-        }, // Truyền từ khóa vào API tìm kiếm sản phẩm
-      });
-      // console.log(keyword);
-      // console.log(thuongHieu);
-      // console.log(color);
-
-      console.log("Kết quả từ API:", res.data);
-      if (res.data && res.data.length > 0) {
-        const limitedProducts = res.data.slice(0, 5); // giới hạn gợi ý sản phẩm
-        const productsList = limitedProducts
-          .map(
-            (product) =>
-              `<li><strong><a href="http://localhost:8888/products/${
-                product.id
-              }" target="_blank">${product.sanPham}</a></strong>- ${
-                product.mauSac
-              }</span><br>
-                - Giá: <span style="color: green;">${formatCurrencyVND(
-                  product.gia
-                )}</span><br>
-                </li>`
-          )
-          .join("");
-
-        messages.value.push({
-          text: `Tôi tìm thấy các sản phẩm có thể bạn quan tâm: <ul>${productsList}</ul><br>Bạn có thể nhấp vào sản phẩm để đến trang sản phẩm mong muốn`,
-          sender: "bot",
-        });
-      } else {
-        messages.value.push({
-          text: "Không tìm thấy sản phẩm nào phù hợp.",
-          sender: "bot",
-        });
+  normalized = normalized.replace(
+    /(\d+[,.]?\d*)\s*?(tr|triệu|k|ngàn|nghìn)\b/gi,
+    (match, number, unit) => {
+      const num = parseFloat(number.replace(/,/g, "."));
+      switch (unit.toLowerCase()) {
+        case "tr":
+        case "triệu":
+          return `${num * 1000000}`;
+        case "k":
+        case "ngàn":
+        case "nghìn":
+          return `${num * 1000}`;
+        default:
+          return match;
       }
-      isLoading.value = false;
-      return;
     }
+  );
 
-    // Thêm câu trả lời từ bot vào danh sách tin nhắn
-    const responseBot = "Tôi đã xử lý yêu cầu của bạn. Bạn có muốn tìm thêm thông tin?";
-    messages.value.push({
-      text: responseBot,
-      sender: "bot",
-    });
-    // Cải thiện sự tương tác
-    messages.value.push({
-      text: `Bạn có muốn tìm thêm sản phẩm nào không? Hãy cho tôi biết thêm yêu cầu của bạn!`,
-      sender: "bot",
-    });
-  } catch (error) {
-    console.error("Lỗi chatbot:", error);
-    messages.value.push({
-      text: "Xin lỗi, tôi đang gặp sự cố. Hãy thử lại sau!",
-      sender: "bot",
-    });
+  const replacements = {
+    "v[ãả]i": "vải",
+    "cot\\s*ton": "cotton",
+    "gu\\s*ci": "gucci",
+    "balen\\s*cia\\s*ga": "balenciaga",
+    "\\b(?:sp|sản phẩm)\\b": "sản phẩm",
+  };
+
+  for (const [pattern, replacement] of Object.entries(replacements)) {
+    normalized = normalized.replace(new RegExp(pattern, "gi"), replacement);
   }
 
-  isLoading.value = false;
-  localStorage.setItem("chatMessages", JSON.stringify(messages.value));
+  normalized = normalized.replace(/,/g, ".");
+
+  console.log("Normalized text:", normalized); // Debug
+  return normalized;
+};
+
+// Hàm phân tích intent
+const analyzeIntent = (text) => {
+  const normalized = normalizeText(text);
+
+  const intents = {
+    productQuery:
+      /(áo|gợi ý|sản phẩm|bán|giá|màu|size|chất liệu|cổ áo|thương hiệu|tay áo|tính năng|kiểu dáng)/i,
+    systemInfo:
+      /(chính sách|khuyến mãi|cửa hàng|đổi trả|vận chuyển|thanh toán)/i,
+    greeting: /(chào|hello|hi|xin chào)/i,
+    thanks: /(cảm ơn|thanks|thank you)/i,
+  };
+
+  for (const [intent, pattern] of Object.entries(intents)) {
+    if (pattern.test(normalized)) return intent;
+  }
+  return "other";
+};
+
+const extractProductInfo = (text) => {
+  const normalizedText = normalizeText(text);
+  console.log("Normalized text:", normalizedText); // Debug log
+
+  const patterns = {
+    keyword: /(?:sản phẩm|sp)\s*(\S+)/i,
+    mauSac: /(?:màu|sắc)\s*([^,.\d]+)/i,
+    kichCo: /(?:size|kích cỡ|kích thước)\s*(\S+)/i,
+    maxPrice:
+      /(?:giá|khoảng|dưới|trên|tầm)\s*([\d\s.,]+(?:k|ngàn|tr|triệu)?)\b/i,
+    chatLieu: new RegExp(`(${productFeatures.materials.join("|")})`, "i"),
+    kieuDang: new RegExp(`(${productFeatures.styles.join("|")})`, "i"),
+    thuongHieu: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
+    tayAo: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
+    tinhNang: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
+    thuongHieu: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
+  };
+
+  const params = {};
+
+  for (const [key, pattern] of Object.entries(patterns)) {
+    const match = normalizedText.match(pattern);
+    if (match) {
+      // Xử lý riêng cho từng loại
+      switch (key) {
+        case "color":
+          let colors = match[1]
+            .trim()
+            .split(/\s*(?:và|hoặc|,)\s*/) // Tách bằng "và", "hoặc", dấu phẩy
+            .map((color) => {
+              // Chuẩn hóa từ đồng nghĩa
+              const normalizedColor = color.toLowerCase().replace(/\.$/, "");
+
+              return normalizedColor;
+            })
+            .filter((color) => productFeatures.colors.includes(color)); // Lọc màu hợp lệ
+
+          if (colors.length > 0) {
+            params[key] = colors.length === 1 ? colors[0] : colors;
+          }
+          break;
+          
+        case "size":
+          params[key] = match[1].trim();
+          break;
+
+        case "price":
+          let priceValue = match[1];
+          // Xử lý các định dạng số
+          priceValue = priceValue
+            .replace(/\s+/g, "")
+            .replace(/,/g, ".")
+            .replace(/[^0-9.]/g, "");
+
+          if (/(k|ngàn|nghìn)$/i.test(match[0])) {
+            params.price = Math.round(parseFloat(priceValue) * 1000);
+          } else if (/(tr|triệu)$/i.test(match[0])) {
+            params.price = Math.round(parseFloat(priceValue) * 1000000);
+          } else {
+            params.price = Math.round(parseFloat(priceValue));
+          }
+          break;
+
+        default:
+          params[key] = match[1].trim();
+      }
+    }
+  }
+
+  console.log("Extracted params:", params); // Debug log
+  return params;
+};
+
+const searchProducts = async (searchParams) => {
+  try {
+    // Xóa các param undefined
+    const cleanParams = Object.fromEntries(
+      Object.entries(searchParams).filter(([_, v]) => v !== undefined)
+    );
+
+    console.log("API call params:", cleanParams); // Debug log
+
+    const res = await axios.get("http://localhost:3000/other-api/products", {
+      params: {
+        ...cleanParams,
+        _limit: 5,
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    console.error("API Error:", error.response?.data || error.message);
+    return [];
+  }
+};
+
+const sendMessage = async () => {
+  if (!userInput.value.trim() || isLoading.value) return; // ✅ Chặn click liên tục
+  if (!userInput.value.trim()) return;
+
+  const userMessage = userInput.value;
+  messages.value.push({ text: userMessage, sender: "user" });
+  userInput.value = "";
+  isLoading.value = true;
+
+  try {
+    const intent = analyzeIntent(userMessage);
+
+    // Xử lý theo intent
+    switch (intent) {
+      case "greeting":
+        messages.value.push({
+          text: "Chào bạn! Tôi có thể giúp gì cho bạn về sản phẩm hoặc thông tin cửa hàng?",
+          sender: "bot",
+        });
+        break;
+
+      case "thanks":
+        messages.value.push({
+          text: "Không có chi! Nếu cần thêm thông tin gì cứ hỏi mình nhé 😊",
+          sender: "bot",
+        });
+        break;
+
+      case "systemInfo": {
+        const systemResponse = handleSystemQuery(userMessage);
+        messages.value.push({
+          text: systemResponse,
+          sender: "bot",
+        });
+        break;
+      }
+
+      case "productQuery":
+        const searchParams = extractProductInfo(userMessage);
+
+        // Fallback nếu không có param nào
+        if (Object.keys(searchParams).length === 0) {
+          messages.value.push({
+            text: "Bạn có thể nói rõ hơn về sản phẩm cần tìm? (Ví dụ: 'Tìm áo màu đen size L giá 300k')",
+            sender: "bot",
+          });
+          break;
+        }
+
+        const products = await searchProducts(searchParams);
+        if (products.length > 0) {
+          const productList = products
+            .map(
+              (p) =>
+                `<li>
+          <a href="http://localhost:8888/products/${p.id}" target="_blank">
+            <strong>${p.sanPham}</strong> - ${p.mauSac}
+          </a><br>
+          Giá: <span style="color: green;">${formatCurrencyVND(p.gia)}</span>
+        </li>`
+            )
+            .join("");
+
+          messages.value.push({
+            text: `Tôi tìm thấy ${products.length} sản phẩm có thể phù hợp với bạn:<ul>${productList}</ul>`,
+            sender: "bot",
+          });
+        } else {
+          const fallbackResponse = await model.generateContent({
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    text: `Hệ thống không có sản phẩm phù hợp. Hãy đề xuất các tùy chọn thay thế dựa trên: 
+            - Chất liệu có sẵn: ${productFeatures.materials.join(", ")}
+            - Khoảng giá: ${formatCurrencyVND(
+              productFeatures.priceRange.min
+            )} - ${formatCurrencyVND(productFeatures.priceRange.max)}
+            - Thương hiệu: ${productFeatures.brands.join(", ")}`,
+                  },
+                ],
+              },
+            ],
+          });
+
+          messages.value.push({
+            text:
+              (await fallbackResponse.response.text()) +
+              "\n\nBạn có muốn tìm kiếm với tiêu chí khác không?",
+            sender: "bot",
+          });
+        }
+        break;
+
+      default:
+        const fallback = await model.generateContent(
+          `Hãy trả lời thân thiện: ${userMessage}`
+        );
+        messages.value.push({
+          text: await fallback.response.text(),
+          sender: "bot",
+        });
+    }
+  } catch (error) {
+    console.error("Chat error:", error);
+    messages.value.push({
+      text: "Hiện tôi đang gặp chút khó khăn. Bạn vui lòng thử lại sau nhé!",
+      sender: "bot",
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleSystemQuery = (query) => {
+  const normalized = normalizeText(query);
+  if (/thanh toán|payment/.test(normalized)) {
+    return `💳 Chính sách thanh toán: ${systemInfo.policies.payment}`;
+  }
+
+  if (/chính sách.*đổi trả/.test(normalized)) {
+    return `📜 Chính sách đổi trả: ${systemInfo.policies.return}`;
+  }
+
+  if (/khuyến mãi|ưu đãi/.test(normalized)) {
+    return `🎁 Đang có các khuyến mãi:\n${systemInfo.promotions.join("\n- ")}`;
+  }
+
+  if (/cửa hàng|địa chỉ/.test(normalized)) {
+    return `📍 Hệ thống cửa hàng:\n${systemInfo.storeInfo.locations.join(
+      "\n- "
+    )}\nGiờ mở cửa: ${systemInfo.storeInfo.openingHours}`;
+  }
+
+  if (/vận chuyển|ship/.test(normalized)) {
+    return `🚚 Chính sách vận chuyển: ${systemInfo.policies.shipping}`;
+  }
+
+  return `ℹ Thông tin hệ thống:\n- Chính sách đổi trả\n- Khuyến mãi\n- Địa chỉ cửa hàng\n- Vận chuyển\nHãy hỏi cụ thể hơn nhé!`;
 };
 </script>
 
@@ -290,7 +383,7 @@ const sendMessage = async () => {
   <!-- 🔹 Cửa sổ chat -->
   <div v-if="isOpen" class="chat-container">
     <div class="chat-header">
-      <span>TsTalk <DingtalkOutlined/></span>
+      <span>TsTalk <DingtalkOutlined /></span>
       <button @click="toggleChat">✖</button>
     </div>
     <div class="chat-box">
