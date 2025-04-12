@@ -147,23 +147,23 @@ public interface AdminBillRepository extends HoaDonRepository {
     """, nativeQuery = true)
     AdminBillResponse getDetailBillById(String id);
 
-    @Query(value = """
-        SELECT
-            hd.id AS id,
-            hd.ma_hoa_don AS ma,
-            hd.tien_giam AS tienGiam,
-            hd.tong_tien AS tongTien,
-            hd.ten_nguoi_nhan AS tenNguoiNhan,
-            hd.so_dien_thoai AS soDienThoai,
-            hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan,
-            hd.trang_thai AS trangThai,
-            kh.ho_va_ten AS tenKhachHang
-        FROM hoa_don hd
-        LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
-        LEFT JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
-        WHERE hd.ma_hoa_don = :maHoaDon
-    """, nativeQuery = true)
-    AdminBillRefundResponse getDetailBillByMaOnRefund(String maHoaDon);
+//    @Query(value = """
+//        SELECT
+//            hd.id AS id,
+//            hd.ma_hoa_don AS ma,
+//            hd.tien_giam AS tienGiam,
+//            hd.tong_tien AS tongTien,
+//            hd.ten_nguoi_nhan AS tenNguoiNhan,
+//            hd.so_dien_thoai AS soDienThoai,
+//            hd.dia_chi_nguoi_nhan AS diaChiNguoiNhan,
+//            hd.trang_thai AS trangThai,
+//            kh.ho_va_ten AS tenKhachHang
+//        FROM hoa_don hd
+//        LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id
+//        LEFT JOIN hoa_don_chi_tiet hdct ON hd.id = hdct.id_hoa_don
+//        WHERE hd.ma_hoa_don = :maHoaDon
+//    """, nativeQuery = true)
+//    AdminBillRefundResponse getDetailBillByMaOnRefund(String maHoaDon);
 
     boolean existsHoaDonByMa(String ma);
 

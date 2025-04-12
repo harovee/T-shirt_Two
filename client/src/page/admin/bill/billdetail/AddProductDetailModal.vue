@@ -99,7 +99,7 @@ const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
   idSanPhamChiTiet: null,
   soLuong: null,
-  isClient: null
+  isClient: null,
 });
 
 const getIdHoaDonFromUrl = () => {
