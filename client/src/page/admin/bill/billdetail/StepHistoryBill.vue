@@ -153,7 +153,13 @@ import { Input, Modal } from "ant-design-vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
 import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
+import {
+  useCheckQuantityInStock,
+  useCheckQuantityListProduct,
+  useDeleteQuantityListProduct,
+} from "@/infrastructure/services/service/admin/productdetail.action";
 import { sum } from "lodash";
+import { PropType } from "vue";
 
 interface DataSource {
   data: {
@@ -171,16 +177,30 @@ interface Step {
 }
 
 // Props
-const props = defineProps<{
-  dataSource: DataSource;
-  loading: Boolean;
-  dataPaymentInfo: Object;
+const props = defineProps({
+  dataSource: {
+    type: Object as PropType<DataSource>,
+  },
+  loading: Boolean,
+  dataPaymentInfo: Object,
   dataProduct: {
-    type: Array<any>;
-    required: true;
-  };
-  billData: Object;
-}>();
+    type: Array,
+    required: true,
+  },
+  billData: Object,
+});
+
+const listProduct = ref(null);
+
+watch(
+  () => props?.dataProduct,
+  (newData) => {
+    listProduct.value = newData.map((item) => ({
+      id: item.idSanPhamChiTiet,
+      quantity: item.soLuong,
+    }));
+  }
+);
 
 const emit = defineEmits(["update:bill"]);
 
@@ -195,6 +215,10 @@ const current = ref<number>(0);
 const isModalVisible = ref(false);
 
 const { mutate: changeStatus } = useChangeBillStatus();
+
+const { mutate: deleteQuantityListProduct } = useDeleteQuantityListProduct();
+
+const { mutate: checkQuantity, data, error } = useCheckQuantityListProduct();
 
 // Khai báo các bước khi hủy hóa đơn thành công
 const stepsCancel: Step[] = [
@@ -238,6 +262,7 @@ const steps: Step[] = [
     icon: h(CheckCircleOutlined),
   },
 ];
+
 onMounted(() => {
   if (props.dataSource?.data?.length > 0) {
     updateCurrentStep(props.dataSource);
@@ -337,7 +362,21 @@ watch(
 );
 
 // hàm xác nhận không hoàn tiền
-const confirmBill = () => {
+const confirmBill = async () => {
+  const payload = {
+    soDienThoai: props.billData.soDienThoai,
+    diaChiNguoiNhan: props.billData.diaChiNguoiNhan,
+    tenNguoiNhan: props.billData.tenNguoiNhan,
+    ghiChu: props.billData.ghiChu,
+    tinh: props.billData.tinh,
+    huyen: props.billData.huyen,
+    xa: props.billData.xa,
+    idPhieuGiamGia: props.billData.idPhieuGiamGia,
+    tienShip: props.dataProduct[0]?.tienShip || 0,
+    tienGiam: props.dataProduct[0]?.tienGiamHD || 0,
+    tongTien: props.dataProduct[0]?.tongTienHD || 0,
+  };
+
   // Lấy trạng thái tiếp theo từ mảng steps
   const nextStep = steps[current.value + 1];
   const stepTitle = nextStep.title;
@@ -352,10 +391,27 @@ const confirmBill = () => {
     ghiChu: "Xác nhận trạng thái đơn hàng -> Chờ giao hàng",
   };
 
+  const check = ref(null)
+
   Modal.confirm({
     title: "Xác nhận thay đổi trạng thái",
     content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
     onOk: async () => {
+      // Check số lượng
+      checkQuantity(listProduct.value, {
+        onSuccess: (result) => {
+          if (result.data) {
+            check.value = result.data;
+          }
+        },
+        onError: (error: any) => {
+          errorNotiSort(error?.response?.data?.message);
+        },
+      });
+      if (check.value) {
+        warningNotiSort("Số lượng sản phẩm trong giỏ không đủ, vui lòng kiểm tra lại!");
+        return;
+      }
       try {
         if (props.dataProduct.length === 0) {
           warningNotiSort(

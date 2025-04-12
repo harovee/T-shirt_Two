@@ -10,6 +10,8 @@
       :total-pages="totalPage"
       @update:paginationParams="handlePaginationChange"
       @update-quantity="handleChangeTotalPrice"
+      @refetch-data="handleRefetchData"
+      @reload-data="handleReloadData"
       :loadingValue="refereshAllProduct"
     />
   </div>
@@ -32,6 +34,8 @@ import MyOrderDetailTable from "./my-order-detail/MyOrderDetailTable.vue";
 import { ColumnType } from "ant-design-vue/es/table";
 import { useGetBillById } from "@/infrastructure/services/service/admin/bill.action";
 import { formatCurrencyVND } from "@/utils/common.helper";
+import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 const handleRedirectBillManager = () => {
   router.push({
@@ -63,6 +67,7 @@ const {
   data: detailData,
   isLoading: isLoadingDetailData,
   isFetching: isFetchingDetailData,
+  refetch: refetchDetailData
 } = useGetBillDetails(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
@@ -112,6 +117,8 @@ const handlePaginationChange = (newParams: FindBillDetailRequest) => {
 
 const { mutate: updateQuantity } = useUpdateBillDetail();
 
+const { mutate: createBillHistory } = useCreateBillHistory();
+
 const refereshAllProduct = ref(false)
 
 // Hàm cập nhật giá trị thanhTien
@@ -122,6 +129,14 @@ const handleChangeTotalPrice = (record) => {
     // Cập nhật số lượng và thành tiền trước khi gửi request
     item.soLuong = record.soLuong;
     const params = { idHoaDonChiTiet: item.id, soLuong: item.soLuong };
+
+    const billHistoryParams = {
+          idHoaDon: billId.value,
+          hanhDong: `Sửa số lượng`,
+          moTa: `Khách hàng đã sửa số lượng sản phẩm đơn hàng`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null
+        }
     // Gửi request cập nhật dữ liệu lên server
     updateQuantity(
       {
@@ -138,8 +153,52 @@ const handleChangeTotalPrice = (record) => {
         },
       }
     );
+    // Thêm lịch sử hóa đơn (Khi khách sửa số lượng sản phẩm trong đơn)
+    createBillHistory(billHistoryParams);
   }
 };
+
+// Hàm load lại danh sách sản phẩm trong giỏ
+const handleRefetchData = (record) => {
+  const item = detailDataSources.value.find((item) => item.id === record.id);
+
+  const billHistoryParams = {
+          idHoaDon: billId.value,
+          hanhDong: `Xóa sản phẩm`,
+          moTa: `Khách hàng đã xóa sản phẩm khỏi đơn hàng`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null
+        }
+
+  if (item) {
+    // Cập nhật số lượng và thành tiền trước khi gửi request
+    item.soLuong = 0;
+    const params = { idHoaDonChiTiet: item.id, soLuong: item.soLuong };
+    // Gửi request cập nhật dữ liệu lên server
+    updateQuantity(
+      {
+        idBillDetail: record.id,
+        data: params,
+      },
+      {
+        onSuccess: () => {
+          refereshAllProduct.value = !refereshAllProduct.value;
+          refetch();
+        },
+        onError: (error) => {
+          console.error("Lỗi khi cập nhật:", error);
+        },
+      }
+    );
+    // Thêm lịch sử hóa đơn (Khi khách xóa sản phẩm khỏi đơn)
+    createBillHistory(billHistoryParams);
+  }
+};
+
+const handleReloadData = async (done) => {
+  await refetchDetailData();
+  done();
+}
 
 const columnsBill: ColumnType[] = [
   {

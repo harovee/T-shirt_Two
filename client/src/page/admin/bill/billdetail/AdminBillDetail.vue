@@ -368,25 +368,25 @@ watch(
         // Loại giảm = true (tiền mặt)
         if (detail.value.loaiGiam) {
           newData[0] = detail?.value?.giaTriGiam;
-        newData[0].tongTienHD =
-          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
-        console.log(newData[0].tongTienHD);
+          newData[0].tongTienHD =
+            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+          console.log(newData[0].tongTienHD);
         } else {
           // Loại giảm = flase (%)
-        newData[0].tienGiamHD =
-          (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
+          newData[0].tienGiamHD =
+            (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
 
-        newData[0].tongTienHD =
-          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
-        console.log(newData[0].tongTienHD);
+          newData[0].tongTienHD =
+            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+          // console.log(newData[0].tongTienHD);
         }
       } else {
         newData[0].tienGiamHD = 0;
         newData[0].tienShip = 0;
-        newData[0].tongTienHD = totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+        newData[0].tongTienHD =
+          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
       }
-      console.log(newData[0]);
-      
+
       // Tính toán lại phụ phí/ hoàn trả
       if (newData[0].tongTienHD > paymentInfo.value.paid) {
         paymentInfo.value.amountPayable =
@@ -427,7 +427,6 @@ watch(
       }
     }
   },
-
   { immediate: true, deep: true }
 );
 
@@ -602,10 +601,10 @@ const handleUpdateBill = () => {
       { idBill: billId.value, params: payload },
       {
         onSuccess: (result) => {
-          successNotiSort("Cập nhật thông tin thành công");
+          // successNotiSort("Cập nhật thông tin thành công");
         },
         onError: (error: any) => {
-          errorNotiSort("Cập nhật thông tin thất bại");
+          // errorNotiSort("Cập nhật thông tin thất bại");
         },
       }
     );

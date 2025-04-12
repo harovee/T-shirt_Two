@@ -12,8 +12,16 @@ export interface FindBillHistoryRequest extends BillHistoryParams, PaginationPar
 
 }
 
+export interface createUpdateBillHistoryRequest {
+    idHoaDon: string | null,
+    hanhDong: string | null,
+    moTa: string | null,
+    trangThai: string | null,
+    nguoiTao: string | null
+}
+
 export type BillHistoryResponse = ResponseList & {
-    maHoaDon: string | null;
+    maHoaDon: string | null,
     hanhDong: string | null;
     trangThai: string | null;
     nguoiTao: string | null;
@@ -33,3 +41,13 @@ export const getBillHistory = async (params: Ref<FindBillHistoryRequest>) => {
     >;
     return res.data
 }
+
+export const createBillHistory = async (data: createUpdateBillHistoryRequest) => {
+    const res = (await request({
+      url: `${API_ADMIN_BILL_HISTORY}`,
+      method: "POST",
+      data: data,
+    })) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  
+    return res.data;
+  };

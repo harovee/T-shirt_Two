@@ -10,9 +10,10 @@
         <!-- Danh sách sản phẩm -->
         <a-col :span="16">
           <a-card class="bg-gray-100">
-            <cart-table :dataSource="listProducts"
-            @updateCart="reloadCart"
-          />
+            <cart-table 
+              :dataSource="listProducts"
+              @updateCart="reloadCart"
+            />
           </a-card>
           
         </a-col>
@@ -65,6 +66,7 @@ import { formatCurrencyVND } from "@/utils/common.helper";
 import CartTable from "./CartTable.vue";
 import { useCartStorageBL } from "../products/business.logic/useCartLocalStorageBL";
 import { getCartFromLocalStorage } from "../products/business.logic/CartLocalStorageBL";
+import { warningNotiSort } from "@/utils/notification.config";
 
 const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } = useCartStorageBL();
 
@@ -86,7 +88,7 @@ const listProducts = computed(() =>
 
 // Load lấy lại cart từ local
 const reloadCart = () => {
-   cart.value = [...getCartFromLocalStorage()];
+  cart.value = [...getCartFromLocalStorage()];
 };
 
 const tongTien = computed(() => {
@@ -98,7 +100,13 @@ const tongTien = computed(() => {
 
 const redirectPayment = () => {
   cartStore.setCheckoutData(listProducts);
-  router.push({ name: "client-check-out" });
+  if (tongTien.value < 0) {
+    warningNotiSort("Số tiền không được âm!");
+  } else if (tongTien.value > 100000000) {
+    warningNotiSort("Đơn hàng không được vượt quá 100.000.000đ!");
+  } else {
+    router.push({ name: "client-check-out" });
+  }
 };
 </script>
 

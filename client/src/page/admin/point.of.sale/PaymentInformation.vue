@@ -446,14 +446,14 @@ watch(
   () => dataSourcePro.value,
   (newData) => {
     if (newData) {
-      console.log(newData);
+      // console.log(newData);
 
       paramsVoucher.value.tongTien = totalAmount.value;
       paramsNextPriceVoucher.value.tongTien = totalAmount.value;
       if (serviceIdParams.value.toDistrict !== 0) {
         refetchService().then(() => {
           shippingParams.value.serviceId = service?.value?.data[0].service_id;
-          console.log(shippingParams.value);
+          // console.log(shippingParams.value);
           shippingParams.value.toDistrictId = getCustomerAddress.value.district;
           shippingParams.value.toWardCode = getCustomerAddress.value.ward;
           if (shippingParams.value.toWardCode) {
@@ -506,7 +506,7 @@ watch(
       voucher.value =
         newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
         null;
-      console.log(dataNextPriceVouchers.value);
+      // console.log(dataNextPriceVouchers.value);
     } else {
       paymentInfo.value.voucherCode = "";
       paymentInfo.value.voucherId = null;
@@ -776,12 +776,12 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
   } else {
     paymentInfo.value.shippingFee = 0;
   }
-  console.log(paymentInfo.value);
+  // console.log(paymentInfo.value);
 };
 
 watch(totalAmount, (newTotal) => {
   if (newTotal !== 0) {
-    console.log(newTotal);
+    // console.log(newTotal);
     paymentInfo.value.totalProductPrice = newTotal;
   }
 });

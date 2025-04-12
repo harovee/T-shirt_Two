@@ -41,7 +41,7 @@ import {
 } from "vue";
 import ProductDetailTableToOrder from "./ProductDetailTableToOrder.vue";
 import FilterProductToOrder from "./FilterProductToOrder.vue";
-import { useGetAllProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
+import { useGetAllProductDetail, useGetAllProductDetailOverZero } from "@/infrastructure/services/service/admin/productdetail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { FindProductDetailRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useCreateBillDetail } from "@/infrastructure/services/service/admin/bill-detail.action";
@@ -99,6 +99,7 @@ const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
   idSanPhamChiTiet: null,
   soLuong: null,
+  isClient: null
 });
 
 const getIdHoaDonFromUrl = () => {
@@ -148,7 +149,8 @@ const handleAddProducts = () => {
     const requestData = {
       idHoaDon: modelRef.idHoaDon, // ID hóa đơn từ URL
       idSanPhamChiTiet: product.id, // Đảm bảo lấy đúng ID sản phẩm
-      soLuong: 1, // Mặc định số lượng là 1
+      soLuong: 1,   // Mặc định số lượng là 1
+      isClient: false
     };
 
     // console.log("📤 Dữ liệu gửi đi API:", requestData); // Log dữ liệu trước khi gửi
@@ -178,7 +180,7 @@ const {
   isLoading,
   isFetching,
   refetch
-} = useGetAllProductDetail(paramsAll, {
+} = useGetAllProductDetailOverZero(paramsAll, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });

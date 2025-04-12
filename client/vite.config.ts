@@ -14,7 +14,8 @@ export default defineConfig(({command, mode}: ConfigEnv) => {
     plugins: [vue()],
     define: {
       __APP_ENV__: JSON.stringify(env.VITE_APP_ENV),
-      __API_URL__: JSON.stringify(env.VITE_BASE_URL_CLIENT)
+      __API_URL__: JSON.stringify(env.VITE_BASE_URL_CLIENT),
+      global: 'window',
     },
     resolve: {
       alias: {
