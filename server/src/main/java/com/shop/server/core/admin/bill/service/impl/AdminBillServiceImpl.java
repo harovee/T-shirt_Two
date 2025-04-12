@@ -81,14 +81,14 @@ public class AdminBillServiceImpl implements AdminBillService {
         );
     }
 
-    @Override
-    public ResponseObject<?> getBillRefundByMaHD(String maHoaDon) {
-        return new ResponseObject<>(
-                adminBillRepository.getDetailBillByMaOnRefund(maHoaDon),
-                HttpStatus.OK,
-                Message.Success.GET_SUCCESS
-        );
-    }
+//    @Override
+//    public ResponseObject<?> getBillRefundByMaHD(String maHoaDon) {
+//        return new ResponseObject<>(
+//                adminBillRepository.getDetailBillByMaOnRefund(maHoaDon),
+//                HttpStatus.OK,
+//                Message.Success.GET_SUCCESS
+//        );
+//    }
 
 //    @Override
 //    public ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult result) {

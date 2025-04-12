@@ -11,9 +11,11 @@ import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.HoaDon;
 import com.shop.server.entities.main.HoaDonChiTiet;
 import com.shop.server.entities.main.SanPhamChiTiet;
+import com.shop.server.entities.main.SanPhamGiamGia;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.repositories.HoaDonRepository;
 import com.shop.server.repositories.SanPhamChiTietRepository;
+import com.shop.server.repositories.SanPhamGiamGiaRepository;
 import com.shop.server.utils.Helper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -30,11 +32,13 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
     private final AdminBillDetailRepository adminBillDetailRepository;
     private final HoaDonRepository hoaDonRepository;
     private final SanPhamChiTietRepository sanPhamChiTietRepository;
+    private final SanPhamGiamGiaRepository sanPhamGiamGiaRepository;
 
-    public AdminBillDetailServiceImpl(AdminBillDetailRepository adminBillDetailRepository, HoaDonRepository hoaDonRepository, SanPhamChiTietRepository sanPhamChiTietRepository, AdminBillRepository adminBillRepository) {
+    public AdminBillDetailServiceImpl(AdminBillDetailRepository adminBillDetailRepository, HoaDonRepository hoaDonRepository, SanPhamChiTietRepository sanPhamChiTietRepository, AdminBillRepository adminBillRepository, SanPhamGiamGiaRepository sanPhamGiamGiaRepository) {
         this.adminBillDetailRepository = adminBillDetailRepository;
         this.hoaDonRepository = hoaDonRepository;
         this.sanPhamChiTietRepository = sanPhamChiTietRepository;
+        this.sanPhamGiamGiaRepository = sanPhamGiamGiaRepository;
     }
 
     @Override
@@ -70,7 +74,6 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
     public ResponseObject<?> createBillDetail(AdminCreateBillDetailRequest request) {
         Optional<HoaDon> billOpt = hoaDonRepository.findById(request.getIdHoaDon());
         Optional<SanPhamChiTiet> prodOpt = sanPhamChiTietRepository.findById(request.getIdSanPhamChiTiet());
-
         if (!billOpt.isPresent() || !prodOpt.isPresent()) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
@@ -81,16 +84,24 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         HoaDon hoaDon = billOpt.get();
         SanPhamChiTiet sanPhamChiTiet = prodOpt.get();
 
+        List<SanPhamGiamGia> saleProds = sanPhamGiamGiaRepository.findBySanPhamChiTiet(sanPhamChiTiet);
+        BigDecimal productPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
+
+        if (!saleProds.isEmpty()) {
+            SanPhamGiamGia saleProd = saleProds.get(0);
+            if (saleProd.getGiaSauGiam() != null) {
+                productPrice = saleProd.getGiaSauGiam();
+            }
+        }
+
         Optional<HoaDonChiTiet> existingBillDetailOpt = adminBillDetailRepository.findByHoaDonAndSanPhamChiTiet(hoaDon, sanPhamChiTiet);
 
         HoaDonChiTiet billDetail;
 
         if (existingBillDetailOpt.isPresent()) {
             billDetail = existingBillDetailOpt.get();
-            if (billDetail == null) {
-                
-            }
-            billDetail.setGia(sanPhamChiTiet.getGia());
+            billDetail.setGia(productPrice);
+
             // ✅ Luôn đảm bảo giá trị không bị null
             BigDecimal currentPrice = billDetail.getGia() != null ? billDetail.getGia() : BigDecimal.ZERO;
 
@@ -109,10 +120,10 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             billDetail = new HoaDonChiTiet();
             billDetail.setHoaDon(hoaDon);
             billDetail.setSanPhamChiTiet(sanPhamChiTiet);
-            billDetail.setGia(sanPhamChiTiet.getGia());
+            billDetail.setGia(productPrice);
             billDetail.setSoLuong(request.getSoLuong());
             // ✅ Kiểm tra giá trước khi nhân
-            BigDecimal currentPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
+            BigDecimal currentPrice = productPrice != null ? productPrice : BigDecimal.ZERO;
             BigDecimal totalAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
 
             billDetail.setGia(currentPrice); // Gán giá trị để tránh `null`
@@ -146,6 +157,18 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
 
         HoaDonChiTiet billDetail = billDetailOpt.get();
         HoaDon hoaDon = billDetail.getHoaDon();
+        SanPhamChiTiet sanPhamChiTiet = billDetail.getSanPhamChiTiet();
+
+        // Kiểm tra và lấy giá khuyến mãi nếu có
+        List<SanPhamGiamGia> saleProds = sanPhamGiamGiaRepository.findBySanPhamChiTiet(sanPhamChiTiet);
+        BigDecimal productPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
+
+        if (!saleProds.isEmpty()) {
+            SanPhamGiamGia saleProd = saleProds.get(0);
+            if (saleProd.getGiaSauGiam() != null) {
+                productPrice = saleProd.getGiaSauGiam();
+            }
+        }
 
         if (request.getSoLuong() <= 0) {
             // Xóa chi tiết hóa đơn nếu số lượng <= 0
@@ -155,8 +178,8 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             if (hoaDon.getLoaiHD().equals("Tại quầy")) {
                 adminBillDetailRepository.updateQuantityProductDetailInBill(request);
             }
-            BigDecimal currentPrice = billDetail.getGia();
-            BigDecimal newAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
+            billDetail.setGia(productPrice);
+            BigDecimal newAmount = productPrice.multiply(new BigDecimal(request.getSoLuong()));
             billDetail.setSoLuong(request.getSoLuong());
             billDetail.setThanhTien(newAmount);
             adminBillDetailRepository.save(billDetail);

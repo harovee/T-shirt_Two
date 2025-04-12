@@ -126,14 +126,14 @@ export const ROUTES_CONSTANTS = {
                         path: "bill-detail",
                         name: "admin-bill-detail",
                     },
-                    BILL_REFUND: {
-                        path: "refund",
-                        name: "admin-bill-refund",
-                    },
-                    BILL_REFUND_DETAIL: {
-                        path: "refund/:maHoaDon",
-                        name: "admin-bill-refund-detail",
-                    },
+                    // BILL_REFUND: {
+                    //     path: "refund",
+                    //     name: "admin-bill-refund",
+                    // },
+                    // BILL_REFUND_DETAIL: {
+                    //     path: "refund/:maHoaDon",
+                    //     name: "admin-bill-refund-detail",
+                    // },
                 }
             },
             PAYMENT: {
