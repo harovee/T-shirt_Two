@@ -50,16 +50,14 @@ const getAvatarColor = (name) => {
 watch(messages, (newMessages) => {
   if (newMessages.length > 0 && !chatVisible.value) {
     // Khi có tin nhắn mới và cửa sổ chat chưa mở
-    newMessagesCount.value = 1;  // Đánh dấu là có tin nhắn mới
+    newMessagesCount.value = 1; // Đánh dấu là có tin nhắn mới
   }
 });
-
-
 
 const toggleChat = () => {
   chatVisible.value = !chatVisible.value;
   if (chatVisible.value) {
-    newMessagesCount.value = 0;  // Reset đếm khi mở chat
+    newMessagesCount.value = 0; // Reset đếm khi mở chat
   }
   nextTick(scrollToBottom);
 };
@@ -202,8 +200,6 @@ const subscribeToRoom = (roomId) => {
   );
 };
 
-
-
 //xử lý gửi tin nhắn
 const sendMessage = () => {
   if (message.value.trim() && stompClient.value) {
@@ -227,7 +223,7 @@ const sendMessage = () => {
       });
 
       messages.value.push(chatMessage);
-      scrollToBottom(); 
+      scrollToBottom();
     }
 
     message.value = "";
@@ -283,12 +279,15 @@ const handleRoomChange = () => {
   subscribeToRoom(selectedRoom.value);
 };
 
-watchEffect(async () => {
-  if (chatHistory.value) {
-    messages.value = [...chatHistory.value]; // Gán lịch sử tin nhắn vào messages
-    scrollToBottom();
-  }
-});
+watchEffect(
+  async () => {
+    if (chatHistory.value) {
+      messages.value = [...chatHistory.value]; // Gán lịch sử tin nhắn vào messages
+      scrollToBottom();
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -413,7 +412,7 @@ watchEffect(async () => {
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: #ff0000;  /* Màu nền của badge */
+  background-color: #ff0000; /* Màu nền của badge */
   color: white;
   font-size: 12px;
   padding: 2px 6px;

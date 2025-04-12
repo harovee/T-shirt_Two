@@ -2,6 +2,7 @@ package com.shop.server.core.admin.san_pham_chi_tiet.repository;
 
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietInOrderResponse;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
 import com.shop.server.repositories.SanPhamChiTietRepository;
 import org.springframework.data.domain.Page;
@@ -305,6 +306,7 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                 SELECT
         			ROW_NUMBER() OVER(ORDER BY spct.ngay_tao DESC) AS catalog,
                     spct.id as id,
+                    spgg.id AS idSanPhamGiamGia,
                     spct.ma_san_pham_chi_tiet as maSanPhamChitiet,
                     cl.ten AS chatLieu,
                     ca.ten AS coAo,
@@ -317,6 +319,9 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                     tn.ten AS tinhNang,
                     sp.ten AS sanPham,
                     spct.gia AS gia,
+                    COALESCE(spgg.gia_sau_giam, spct.gia) AS giaSauGiam, -- Xử lý NULL
+                    COALESCE(spgg.gia_sau_giam, spct.gia) AS giaHienTai,
+                    coalesce(anh.url, 'default-product-detail-image-url.jpg') AS imgUrl,
                     spct.so_luong AS soLuong,
                     spct.trang_thai AS trangThai
                 FROM san_pham_chi_tiet spct
@@ -329,6 +334,8 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                     LEFT JOIN tay_ao ta ON spct.id_tay_ao = ta.id
                     LEFT JOIN thuong_hieu th ON spct.id_thuong_hieu = th.id
                     LEFT JOIN tinh_nang tn ON spct.id_tinh_nang = tn.id
+                    LEFT JOIN san_pham_giam_gia spgg on spct.id = spgg.id_san_pham_chi_tiet and spgg.deleted = false
+                    LEFT JOIN anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
                     JOIN san_pham sp ON spct.id_san_pham = sp.id
         		WHERE (:#{#req.keyword} IS NULL OR spct.ma_san_pham_chi_tiet LIKE CONCAT('%', :#{#req.keyword}, '%'))
                     AND (:#{#req.idChatLieu} IS NULL OR spct.id_chat_lieu LIKE :#{#req.idChatLieu})
@@ -342,27 +349,39 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                     AND (:#{#req.idTinhNang} IS NULL OR spct.id_tinh_nang LIKE :#{#req.idTinhNang})
             		AND (:#{#req.trangThai} IS NULL OR spct.trang_thai = :#{#req.trangThai})
             		AND (:#{#req.gia} IS NULL OR spct.gia <= :#{#req.gia})
-                    AND spct.deleted = 0
+                    AND spct.deleted = 0 and (spct.trang_thai = 0 or spct.trang_thai is null)
                     AND spct.so_luong > 0
     """, countQuery = """
         SELECT COUNT(spct.id)
         FROM san_pham_chi_tiet spct
-            WHERE (:#{#req.keyword} IS NULL OR spct.ma_san_pham_chi_tiet LIKE CONCAT('%', :#{#req.keyword}, '%'))
-                AND (:#{#req.idChatLieu} IS NULL OR spct.id_chat_lieu = :#{#req.idChatLieu})
-                AND (:#{#req.idCoAo} IS NULL OR spct.id_co_ao = :#{#req.idCoAo})
-                AND (:#{#req.idHoaTiet} IS NULL OR spct.id_hoa_tiet = :#{#req.idHoaTiet})
-                AND (:#{#req.idKichCo} IS NULL OR spct.id_kich_co = :#{#req.idKichCo})
-                AND (:#{#req.idKieuDang} IS NULL OR spct.id_kieu_dang = :#{#req.idKieuDang})
-                AND (:#{#req.idMauSac} IS NULL OR spct.id_mau_sac = :#{#req.idMauSac})
-                AND (:#{#req.idTayAo} IS NULL OR spct.id_tay_ao = :#{#req.idTayAo})
-                AND (:#{#req.idThuongHieu} IS NULL OR spct.id_thuong_hieu = :#{#req.idThuongHieu})
-                AND (:#{#req.idTinhNang} IS NULL OR spct.id_tinh_nang = :#{#req.idTinhNang})
-                AND (:#{#req.trangThai} IS NULL OR spct.trang_thai = :#{#req.trangThai})
-                AND (:#{#req.gia} IS NULL OR spct.gia <= :#{#req.gia})
-                AND spct.deleted = 0
-                AND spct.so_luong > 0
+                    LEFT JOIN chat_lieu cl ON spct.id_chat_lieu = cl.id
+                    LEFT JOIN co_ao ca ON spct.id_co_ao = ca.id
+                    LEFT JOIN hoa_tiet ht ON spct.id_hoa_tiet = ht.id
+                    LEFT JOIN kich_co kc ON spct.id_kich_co = kc.id
+                    LEFT JOIN kieu_dang kd ON spct.id_kieu_dang = kd.id
+                    LEFT JOIN mau_sac ms ON spct.id_mau_sac = ms.id
+                    LEFT JOIN tay_ao ta ON spct.id_tay_ao = ta.id
+                    LEFT JOIN thuong_hieu th ON spct.id_thuong_hieu = th.id
+                    LEFT JOIN tinh_nang tn ON spct.id_tinh_nang = tn.id
+                    LEFT JOIN san_pham_giam_gia spgg on spct.id = spgg.id_san_pham_chi_tiet and spgg.deleted = false
+                    LEFT JOIN anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
+                    JOIN san_pham sp ON spct.id_san_pham = sp.id
+        		WHERE (:#{#req.keyword} IS NULL OR spct.ma_san_pham_chi_tiet LIKE CONCAT('%', :#{#req.keyword}, '%'))
+                    AND (:#{#req.idChatLieu} IS NULL OR spct.id_chat_lieu LIKE :#{#req.idChatLieu})
+                    AND (:#{#req.idCoAo} IS NULL OR spct.id_co_ao LIKE :#{#req.idCoAo})
+                    AND (:#{#req.idHoaTiet} IS NULL OR spct.id_hoa_tiet LIKE :#{#req.idHoaTiet})
+                    AND (:#{#req.idKichCo} IS NULL OR spct.id_kich_co LIKE :#{#req.idKichCo})
+                    AND (:#{#req.idKieuDang} IS NULL OR spct.id_kieu_dang LIKE :#{#req.idKieuDang})
+                    AND (:#{#req.idMauSac} IS NULL OR spct.id_mau_sac LIKE :#{#req.idMauSac})
+                    AND (:#{#req.idTayAo} IS NULL OR spct.id_tay_ao LIKE :#{#req.idTayAo})
+                    AND (:#{#req.idThuongHieu} IS NULL OR spct.id_thuong_hieu LIKE :#{#req.idThuongHieu})
+                    AND (:#{#req.idTinhNang} IS NULL OR spct.id_tinh_nang LIKE :#{#req.idTinhNang})
+            		AND (:#{#req.trangThai} IS NULL OR spct.trang_thai = :#{#req.trangThai})
+            		AND (:#{#req.gia} IS NULL OR spct.gia <= :#{#req.gia})
+                    AND spct.deleted = 0 and (spct.trang_thai = 0 or spct.trang_thai is null)
+                    AND spct.so_luong > 0
     """, nativeQuery = true)
-    Page<AdSanPhamChiTietResponse> getAllSanPhamChiTietOverZero(Pageable pageable, AdFindSpctRequest req);
+    Page<AdSanPhamChiTietInOrderResponse> getAllSanPhamChiTietOverZero(Pageable pageable, AdFindSpctRequest req);
 
     @Query(value = """
     SELECT CAST(CASE WHEN spct.so_luong < (:#{#request.quantity} - (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = :#{#request.id})) THEN 1 ELSE 0 END AS SIGNED)
