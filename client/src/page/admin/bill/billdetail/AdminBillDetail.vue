@@ -411,15 +411,30 @@ watch(
           shippingParams.value.toDistrictId = copiedBillData.value.huyen;
           shippingParams.value.toWardCode = copiedBillData.value.xa;
           if (shippingParams.value.toWardCode) {
-            refetchShipping().then(() => {
-              // detailDataSources.value[0].tienShip = shipping?.value?.data.total;
-              if (totalPrice.value <= 2000000) {
-                detailDataSources.value[0].tienShip =
-                  shipping?.value?.data.total;
-              } else {
-                detailDataSources.value[0].tienShip = 0;
-              }
-            });
+            if (
+              serviceIdParams.value.formDistrict &&
+              serviceIdParams.value.shopId &&
+              serviceIdParams.value.toDistrict
+            ) {
+              refetchShipping().then(() => {
+                // Miễn phí ship cho hóa đơn từ 2.000.000đ
+                if (totalPrice.value <= 2000000) {
+                  detailDataSources.value[0].tienShip =
+                    shipping?.value?.data.total;
+                } else {
+                  detailDataSources.value[0].tienShip = 0;
+                }
+              });
+            }
+            // refetchShipping().then(() => {
+            //   // detailDataSources.value[0].tienShip = shipping?.value?.data.total;
+            //   if (totalPrice.value <= 2000000) {
+            //     detailDataSources.value[0].tienShip =
+            //       shipping?.value?.data.total;
+            //   } else {
+            //     detailDataSources.value[0].tienShip = 0;
+            //   }
+            // });
           }
         });
       } else {
@@ -427,7 +442,7 @@ watch(
       }
     }
   },
-  { immediate: true, deep: true }
+  { deep: true }
 );
 
 // Theo dõi nếu id hóa đơn thay đổi
@@ -447,15 +462,30 @@ watch(
           shippingParams.value.toDistrictId = copiedBillData.value.huyen;
           shippingParams.value.toWardCode = copiedBillData.value.xa;
           if (shippingParams.value.toWardCode) {
-            refetchShipping().then(() => {
-              // Miễn phí ship cho hóa đơn từ 2.000.000đ
-              if (totalPrice.value <= 2000000) {
-                detailDataSources.value[0].tienShip =
-                  shipping?.value?.data.total;
-              } else {
-                detailDataSources.value[0].tienShip = 0;
-              }
-            });
+            if (
+              serviceIdParams.value.formDistrict &&
+              serviceIdParams.value.shopId &&
+              serviceIdParams.value.toDistrict
+            ) {
+              refetchShipping().then(() => {
+                // Miễn phí ship cho hóa đơn từ 2.000.000đ
+                if (totalPrice.value <= 2000000) {
+                  detailDataSources.value[0].tienShip =
+                    shipping?.value?.data.total;
+                } else {
+                  detailDataSources.value[0].tienShip = 0;
+                }
+              });
+            }
+            // refetchShipping().then(() => {
+            //   // Miễn phí ship cho hóa đơn từ 2.000.000đ
+            //   if (totalPrice.value <= 2000000) {
+            //     detailDataSources.value[0].tienShip =
+            //       shipping?.value?.data.total;
+            //   } else {
+            //     detailDataSources.value[0].tienShip = 0;
+            //   }
+            // });
           }
         });
       } else {
