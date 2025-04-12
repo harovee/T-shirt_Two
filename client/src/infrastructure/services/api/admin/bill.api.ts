@@ -27,6 +27,7 @@ export interface FindBillRequest extends BillPropsParams, PaginationParams {}
 export interface BillRequest {
   soDienThoai: String | null;
   diaChiNguoiNhan: String | null;
+  nhanVien: string | null;
   // idKhachHang: String | null;
   tenNguoiNhan: String | null;
   ghiChu: String | null;

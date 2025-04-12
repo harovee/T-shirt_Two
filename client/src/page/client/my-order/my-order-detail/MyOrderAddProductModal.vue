@@ -80,6 +80,7 @@ const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
   idSanPhamChiTiet: null,
   soLuong: null,
+  isClient: null
 });
 
 // Trong component Modal
@@ -157,6 +158,7 @@ const handleAddProducts = () => {
       idHoaDon: modelRef.idHoaDon,
       idSanPhamChiTiet: product.id,
       soLuong: 1,
+      isClient: true
     };
     const billHistoryParams = {
           idHoaDon: modelRef.idHoaDon,

@@ -109,7 +109,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
 
         for(ClientInvoiceDetailRequest req : request.getListSanPhamChiTiets()) {
             clientPaymentRepository.saveProductDetailsToInvoice(req, hoaDon.getId(), request.getIdNhanVien());
-            clientPaymentRepository.updateSoLuong(req);
+//            clientPaymentRepository.updateSoLuong(req);
         }
 
         LichSuHoaDon ls = new LichSuHoaDon();

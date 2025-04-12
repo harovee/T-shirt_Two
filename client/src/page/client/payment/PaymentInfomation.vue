@@ -478,7 +478,7 @@ const handlePayment = () => {
       bankCode: "",
       email:props.dataAddress.email
     };
-    console.log(payload);
+    // console.log(payload);
     if (paymentInfo.value.method === "cod") {
       Modal.confirm({
         content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",

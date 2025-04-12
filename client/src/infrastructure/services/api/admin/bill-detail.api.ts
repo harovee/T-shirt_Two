@@ -24,6 +24,7 @@ export interface CreateBillDetailRequest {
     idHoaDon: string | null,
     idSanPhamChiTiet: string | null,
     soLuong: number | null,
+    isClient: boolean
 }
 
 export type BillDetailResponse = ResponseList & {

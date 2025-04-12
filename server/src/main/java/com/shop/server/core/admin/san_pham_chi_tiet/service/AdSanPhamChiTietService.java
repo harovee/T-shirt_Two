@@ -7,6 +7,8 @@ import com.shop.server.core.common.base.ResponseObject;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface AdSanPhamChiTietService {
 
@@ -27,4 +29,10 @@ public interface AdSanPhamChiTietService {
     ResponseObject<?> deleted(String id);
 
     ResponseObject<?> checkQuantity (AdCheckQuantityRequest request);
+
+    ResponseObject<?> checkQuantityByIdSPCT (AdCheckQuantityRequest request);
+
+    ResponseObject<?> checkQuantityInListProduct (List<AdCheckQuantityRequest> listRequest);
+
+    ResponseObject<?> deleteQuantityInStockByListProduct (List<AdCheckQuantityRequest> listRequest);
 }

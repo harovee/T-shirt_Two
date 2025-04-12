@@ -378,7 +378,7 @@ watch(
 
           newData[0].tongTienHD =
             totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
-          console.log(newData[0].tongTienHD);
+          // console.log(newData[0].tongTienHD);
         }
       } else {
         newData[0].tienGiamHD = 0;
@@ -386,7 +386,6 @@ watch(
         newData[0].tongTienHD =
           totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
       }
-      console.log(newData[0]);
 
       // Tính toán lại phụ phí/ hoàn trả
       if (newData[0].tongTienHD > paymentInfo.value.paid) {
@@ -428,7 +427,6 @@ watch(
       }
     }
   },
-
   { immediate: true, deep: true }
 );
 
@@ -603,10 +601,10 @@ const handleUpdateBill = () => {
       { idBill: billId.value, params: payload },
       {
         onSuccess: (result) => {
-          successNotiSort("Cập nhật thông tin thành công");
+          // successNotiSort("Cập nhật thông tin thành công");
         },
         onError: (error: any) => {
-          errorNotiSort("Cập nhật thông tin thất bại");
+          // errorNotiSort("Cập nhật thông tin thất bại");
         },
       }
     );

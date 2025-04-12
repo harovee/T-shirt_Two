@@ -99,7 +99,9 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             BigDecimal newTotalAmount = currentPrice.multiply(new BigDecimal(newQuantity));
             billDetail.setThanhTien(newTotalAmount);
             request.setIdHoaDonChiTiet(billDetail.getId());
-            adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            if (!request.getIsClient()) {
+                adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            }
         } else {
             billDetail = new HoaDonChiTiet();
             billDetail.setHoaDon(hoaDon);
@@ -112,7 +114,9 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
 
             billDetail.setGia(currentPrice); // Gán giá trị để tránh `null`
             billDetail.setThanhTien(totalAmount);
-            adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            if (!request.getIsClient()) {
+                adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            }
         }
         adminBillDetailRepository.save(billDetail);
 
