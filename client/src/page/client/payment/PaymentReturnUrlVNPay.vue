@@ -78,9 +78,9 @@ onMounted(async () => {
       params: queryParams
     });
     
-    console.log('Backend response:', response.data);
+    // console.log('Backend response:', response.data);
     
-    if (response.data && response.data.status === 'OK') {
+    if (queryParams.vnp_ResponseCode ==="00" && response.data.status === 'OK') {
       if (response.data.message && response.data.message.includes('thành công')) {
         status.value = 'success';
         antMessage.success('Thanh toán thành công!');
@@ -109,7 +109,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error in payment return processing:', error);
     status.value = 'fail';
-    errorMessage.value = error.response?.data?.message || 'Có lỗi xảy ra khi xử lý kết quả thanh toán';
+    errorMessage.value = error.response?.data?.message || 'Vui lòng thanh toán lại hoặc chọn phương thức thanh toán khác';
     antMessage.error(errorMessage.value);
     showCountdown.value = true;
     startCountdown(() => {

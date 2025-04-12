@@ -1,7 +1,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey.ts";
-import { clientPaymentRequest, createInvoiceOnline, getVnPayLink, vnPayLinkResponse, vnPayRequest, createInvoiceOnlineWithVnPay, createInvoiceOnlineWithMoMo } from "../../api/client/clientpayment.api";
+import { clientPaymentRequest, createInvoiceOnline, getVnPayLink, vnPayLinkResponse, vnPayRequest, createInvoiceOnlineWithVnPay, createInvoiceOnlineWithMoMo, vietQrRequest, getVietQrCode, createInvoiceOnlineWithVietQr } from "../../api/client/clientpayment.api";
 
 export const useCreateInvoiceOnline = () => {
     const queryClient = useQueryClient();
@@ -46,6 +46,35 @@ export const useCreateInvoiceOnlineWithMomo = () => {
         },
         onError: (error: any) => {
             console.log(queryKey.client.payment.invoiceOnlineMomo, "🚀 ~ createInvoiceOnline ~ error:", error);
+        },
+    });
+};
+export const useGetVietQrCode = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: vietQrRequest) => getVietQrCode(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.client.payment.invoiceInlineVietQr],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.client.payment.invoiceInlineVietQr, "🚀 ~ getVietQrCode ~ error:", error);
+        },
+    });
+};
+
+export const useCreateInvoiceOnlineWithVietQR = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: clientPaymentRequest) => createInvoiceOnlineWithVietQr(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.client.payment.invoiceInlineVietQr],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.client.payment.invoiceInlineVietQr, "🚀 ~ createInvoiceOnlineWithVietQR ~ error:", error);
         },
     });
 };
