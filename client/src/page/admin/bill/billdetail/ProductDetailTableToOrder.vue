@@ -1,43 +1,65 @@
 <template>
-    <!-- Bảng danh sách sản phẩm -->
-    <table-example
-       wrapperClassName="min-h-[35rem]"
-      :columns="columns"
-      :data-source="props.dataSource?.data"
-      :loading="props.loading"
-      :pagination-params="paginationParams || {}"
-      :total-pages="props.dataSource?.totalPages || 1"
-      :showSizeChanger="true"
-      @update:pagination-params="$emit('update:paginationParams', $event)"
-    >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'select'">
-          <a-checkbox @change="() => $emit('select-product', record)" />
-        </template>
-
-        <template v-else-if="column.key === 'anhSanPhamChiTiet'">
-          <Image
-            :src="record.anhSanPhamChiTiet"
-            width="40"
-            height="40"
-            alt="img"
-          />
-        </template>
-
-        <template v-else-if="column.key === 'gia'">
-          <span class="text-red-500">
-            {{ formatCurrencyVND(record.gia) }}
-          </span>
-        </template>
+  <!-- Bảng danh sách sản phẩm -->
+  <table-example
+    wrapperClassName="min-h-[35rem]"
+    :columns="columns"
+    :data-source="props.dataSource?.data"
+    :loading="props.loading"
+    :pagination-params="paginationParams || {}"
+    :total-pages="props.dataSource?.totalPages || 1"
+    :showSizeChanger="true"
+    @update:pagination-params="$emit('update:paginationParams', $event)"
+  >
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.key === 'select'">
+        <a-checkbox @change="() => $emit('select-product', record)" />
       </template>
-    </table-example>
+
+      <template v-else-if="column.key === 'imgUrl'">
+        <a-image
+          :src="
+            record.imgUrl != 'default-product-detail-image-url.jpg'
+              ? record.imgUrl
+              : defaultProductImageSaleUrl
+          "
+          width="40"
+          height="40"
+          alt="img"
+        />
+      </template>
+
+      <template v-else-if="column.key === 'giaHienTai'">
+        <span class="text-red-500">
+          {{ formatCurrencyVND(record.giaHienTai) }}
+        </span>
+      </template>
+
+      <template v-else-if="column.key === 'sanPham'">
+        <span style="color: black">{{ record.sanPham }}</span
+        ><br />
+
+        <span class="text-red-500">
+          <template v-if="record.idSanPhamGiamGia">
+            <del class="text-gray-500">{{ formatCurrencyVND(record.gia) }}</del>
+            {{ formatCurrencyVND(record.giaSauGiam) }}
+          </template>
+          <template v-else>
+            {{ formatCurrencyVND(record.giaSauGiam) }}
+          </template>
+        </span>
+      </template>
+    </template>
+  </table-example>
 </template>
 
 <script lang="ts" setup>
-import TableExample from '@/components/ui/TableExample.vue';
-import { formatCurrencyVND } from '@/utils/common.helper';
-import { ColumnType } from 'ant-design-vue/es/table';
-import { Image } from 'ant-design-vue';
+import TableExample from "@/components/ui/TableExample.vue";
+import {
+  formatCurrencyVND,
+  defaultProductImageSaleUrl,
+} from "@/utils/common.helper";
+import { ColumnType } from "ant-design-vue/es/table";
+import { Image } from "ant-design-vue";
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -70,8 +92,8 @@ const columns: ColumnType[] = [
   },
   {
     title: "Ảnh",
-    dataIndex: "anhSanPhamChiTiet",
-    key: "anhSanPhamChiTiet",
+    dataIndex: "imgUrl",
+    key: "imgUrl",
     ellipsis: true,
     width: 150,
     align: "center",
@@ -165,9 +187,9 @@ const columns: ColumnType[] = [
     align: "center",
   },
   {
-    title: "Giá",
-    dataIndex: "gia",
-    key: "gia",
+    title: "Giá bán",
+    dataIndex: "giaHienTai",
+    key: "giaHienTai",
     ellipsis: true,
     width: 130,
     align: "center",

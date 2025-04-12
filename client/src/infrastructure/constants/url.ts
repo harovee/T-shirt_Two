@@ -57,6 +57,8 @@ export const API_ADMIN_PAYMENT_METHOD = `${API_URL}/admin/payment-method` as str
 export const API_ADMIN_DELIVERY_PAYMENT = `${API_URL}/admin/delivery-payment` as string;
 export const API_ADMIN_BILL_REFUND = `${API_URL}/admin/bill/refund` as string;
 export const API_ADMIN_BILL_DETAIL_REFUND = `${API_URL}/admin/bill-detail/refund` as string;
+export const API_ADMIN_CHAT_HISTORY = `${API_URL}/admin/chat-history/messages` as string;
+
 
 
 export const GHN_API_URL = `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`;

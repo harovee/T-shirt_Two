@@ -180,7 +180,7 @@ const {
   isLoading,
   isFetching,
   refetch
-} = useGetAllProductDetailOverZero(paramsAll, {
+} = useGetAllProductDetailOverZero(paramsAll, { 
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });

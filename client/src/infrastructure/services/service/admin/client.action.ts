@@ -10,6 +10,7 @@ import {
     FindClientRequest,
     getClientAddressesResponseByClientId,
     getClientById,
+    getClientChatList,
     getClients,
     getDistrictsByProvinceId,
     getProvinces,
@@ -229,4 +230,12 @@ export const useGetClientAddressesByClientId = (
         queryFn: () => getClientAddressesResponseByClientId(clientId),
         ...options,
     });
+};
+
+export const useGetClientChatList = (options?: any) => {
+  return useQuery({
+    queryKey: [queryKey.admin.client.clientChatList],
+    queryFn: () => getClientChatList(),
+    ...options,
+  });
 };

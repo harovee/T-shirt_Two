@@ -416,4 +416,13 @@ public class AdminClientServiceImpl implements AdminClientService {
         );
     }
 
+    @Override
+    public ResponseObject<?> getClientListInChat() {
+        return new ResponseObject<>(
+                adminClientRepository.getClientListInChat(),
+                HttpStatus.OK,
+                Message.Success.GET_SUCCESS
+        );
+    }
+
 }

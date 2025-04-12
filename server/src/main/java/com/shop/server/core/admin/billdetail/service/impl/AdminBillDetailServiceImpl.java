@@ -87,6 +87,9 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
 
         if (existingBillDetailOpt.isPresent()) {
             billDetail = existingBillDetailOpt.get();
+            if (billDetail == null) {
+                
+            }
             billDetail.setGia(sanPhamChiTiet.getGia());
             // ✅ Luôn đảm bảo giá trị không bị null
             BigDecimal currentPrice = billDetail.getGia() != null ? billDetail.getGia() : BigDecimal.ZERO;

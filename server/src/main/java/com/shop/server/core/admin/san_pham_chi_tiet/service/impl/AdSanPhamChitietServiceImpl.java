@@ -84,7 +84,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
 
     @Override
     public ResponseObject<?> getALlSanPhamChiTietOverZero(AdFindSpctRequest request) {
-        Pageable pageable = Helper.createPageable(request);
+        Pageable pageable = Helper.createPageable(request, "ngay_tao", "asc");
         return new ResponseObject<>(
                 PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTietOverZero(pageable, request)),
                 HttpStatus.OK,

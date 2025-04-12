@@ -29,7 +29,8 @@ export const queryKey = {
                 districtM: "adClientAddressDistrictM",
                 ward: "adClientAddressWard",
                 wardM: "adClientAddressWardM",
-            }
+            },
+            clientChatList: "adClientChatListKey",
         },
         staff: {
             staffList: "adStaffListKey",
@@ -127,6 +128,9 @@ export const queryKey = {
             voucherDetail: "adVoucherDetailKey",
             khachHangList: "adKhachHangListKey"
         },
+        livechat: {
+            chatHistory: "adChatHistoryKey",
+        }
     },
     client :{
         product: {

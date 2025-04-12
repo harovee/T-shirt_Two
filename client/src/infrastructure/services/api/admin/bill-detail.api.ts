@@ -33,7 +33,7 @@ export type BillDetailResponse = ResponseList & {
     maHoaDon: string | null;
     tenSanPhamChiTiet: string | null;
     tenSanPham: string | null;
-    anhSanPhamChiTiet: string | null;
+    imgUrl: string | null;
     soLuong: number | 0;
     gia: number | null;
     thanhTien: number;
