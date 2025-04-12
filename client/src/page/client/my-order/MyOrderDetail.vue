@@ -195,8 +195,9 @@ const handleRefetchData = (record) => {
   }
 };
 
-const handleReloadData = () => {
-  refetch();
+const handleReloadData = async (done) => {
+  await refetchDetailData();
+  done();
 }
 
 const columnsBill: ColumnType[] = [

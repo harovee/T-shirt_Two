@@ -313,13 +313,17 @@ const handleQuantityChange = async (record: any) => {
     // Chờ check số lượng xong trước khi tiếp tục
     await checkQuantityRefetch();
     const checkValue = checkQuantityData?.value?.data;
-
+    
     if (!checkValue) {
       warningNotiSort("Số lượng trong kho không đủ!");
       reloadData();
     } else {
+      if (payload.soLuongBanSau <= 0) {
+        warningNotiSort("Số lượng không được âm!");
+        reloadData();
+        return;
+      }
       await updateQuantityOrderDetails(payload);
-      warningNotiSort("Số lượng trong kho đủ!");
     }
   } catch (error: any) {
     console.log("⛔ Vào catch...");

@@ -99,6 +99,7 @@ const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
   idSanPhamChiTiet: null,
   soLuong: null,
+  isClient: null
 });
 
 const getIdHoaDonFromUrl = () => {
@@ -148,7 +149,8 @@ const handleAddProducts = () => {
     const requestData = {
       idHoaDon: modelRef.idHoaDon, // ID hóa đơn từ URL
       idSanPhamChiTiet: product.id, // Đảm bảo lấy đúng ID sản phẩm
-      soLuong: 1, // Mặc định số lượng là 1
+      soLuong: 1,   // Mặc định số lượng là 1
+      isClient: false
     };
 
     // console.log("📤 Dữ liệu gửi đi API:", requestData); // Log dữ liệu trước khi gửi

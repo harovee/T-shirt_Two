@@ -51,6 +51,21 @@ public class AdSanPhamChiTietController {
         return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantity(request));
     }
 
+    @GetMapping("/check-quantity/product-detail")
+    public ResponseEntity<?> checkQuantityByIdSPCT(AdCheckQuantityRequest request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantityByIdSPCT(request));
+    }
+
+    @PostMapping("/check-quantity/list-product-detail")
+    public ResponseEntity<?> checkQuantityInListProduct(@RequestBody List<AdCheckQuantityRequest> request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantityInListProduct(request));
+    }
+
+    @PutMapping("/delete-quantity")
+    public ResponseEntity<?> deleteQuantityInListProduct(@RequestBody List<AdCheckQuantityRequest> request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.deleteQuantityInStockByListProduct(request));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getDetailSanPhamChiTiet(@PathVariable final String id) {
         return Helper.createResponseEntity(adSanPhamChiTietService.getSanPhamChiTietById(id));

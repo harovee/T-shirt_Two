@@ -31,4 +31,9 @@ public class ClientPaymentController {
     public ResponseEntity<?> createInvoiceWithMomo(@RequestBody ClientPaymentRequest request) {
         return Helper.createResponseEntity(clientPaymentService.createInvoiceWithMomo(request));
     }
+
+    @PostMapping("/vietqr")
+    public ResponseEntity<?> createInvoiceWithVietQR(@RequestBody ClientPaymentRequest request) {
+        return Helper.createResponseEntity(clientPaymentService.createInvoiceWithVietQr(request));
+    }
 }

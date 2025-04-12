@@ -195,7 +195,11 @@ public class AdminBillServiceImpl implements AdminBillService {
         }
         HoaDon hoaDon = adminBillRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
-
+        if (request.getNhanVien() != null) {
+            NhanVien nhanVien = nhanVienRepository.findById(request.getNhanVien())
+                    .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại"));
+            hoaDon.setNhanVien(nhanVien);
+        }
         if (request.getIdKhachHang() != null) {
             KhachHang khachHang = khachHangRepository.findById(request.getIdKhachHang())
                     .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
@@ -215,6 +219,9 @@ public class AdminBillServiceImpl implements AdminBillService {
         hoaDon.setTinh(request.getTinh());
         hoaDon.setHuyen(request.getHuyen());
         hoaDon.setXa(request.getXa());
+        hoaDon.setTienGiam(request.getTienGiam());
+        hoaDon.setTienShip(request.getTienShip());
+        hoaDon.setTongTien(request.getTongTien());
         HoaDon hd1 = adminBillRepository.save(hoaDon);
 
 //        LichSuHoaDon ls = new LichSuHoaDon();

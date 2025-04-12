@@ -7,8 +7,10 @@ import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiT
 import com.shop.server.repositories.SanPhamChiTietRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -391,6 +393,21 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
 """, nativeQuery = true)
     Long checkQuantity(AdCheckQuantityRequest request);
 
+    @Query(value = """
+    SELECT CAST(CASE WHEN spct.so_luong < :#{#request.quantity} THEN 1 ELSE 0 END AS SIGNED)
+    FROM hoa_don_chi_tiet hdct
+    INNER JOIN san_pham_chi_tiet spct ON hdct.id_san_pham_chi_tiet = spct.id
+    WHERE hdct.id = :#{#request.id}
+""", nativeQuery = true)
+    Long checkQuantityClient(AdCheckQuantityRequest request);
+
+    @Query(value = """
+    SELECT CASE WHEN spct.so_luong < :#{#request.quantity} THEN 1 ELSE 0 END
+    FROM san_pham_chi_tiet spct
+    WHERE spct.id = :#{#request.id}
+""", nativeQuery = true)
+    Long checkQuantityByIdSPCT(AdCheckQuantityRequest request);
+
 //    @Query(value = """
 //    SELECT CAST(CASE WHEN spct.so_luong < (spct.so_luong + (select hdct.so_luong from hoa_don_chi_tiet hdct where hdct.id = :#{#request.id}) - :#{#request.quantity}) THEN 1 ELSE 0 END AS SIGNED)
 //    FROM hoa_don_chi_tiet hdct\s
@@ -398,4 +415,21 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
 //    WHERE hdct.id = :#{#request.id}
 //""", nativeQuery = true)
 //    Long checkQuantity(AdCheckQuantityRequest request);
+
+    @Query(value = """
+            SELECT
+               CASE WHEN :#{#request.quantity} <= spct.so_luong THEN 1 ELSE 0 END
+            FROM san_pham_chi_tiet spct
+            WHERE spct.id = :#{#request.id}
+         """, nativeQuery = true)
+    Long checkQuantityInListProduct (AdCheckQuantityRequest request);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+                    update san_pham_chi_tiet spct
+                    set spct.so_luong = spct.so_luong - :#{#quantity}
+                    where spct.id = :#{#id};
+            """, nativeQuery = true)
+    void decreaseStockProduct(String id, Long quantity);
 }

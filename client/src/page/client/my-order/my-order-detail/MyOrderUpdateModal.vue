@@ -102,7 +102,8 @@ const modelRef = reactive<BillRequest>({
   tinh: null,
   huyen: null,
   xa: null,
-  idPhieuGiamGia: null
+  idPhieuGiamGia: null,
+  nhanVien: null
 });
 
 const rulesRef = reactive({
