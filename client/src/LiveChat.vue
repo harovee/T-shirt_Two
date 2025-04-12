@@ -395,8 +395,9 @@ watchEffect(async () => {
   height: 50px;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 12px rgba(251, 247, 247, 0.2);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 9999;
 }
 
 .chat-toggle:hover {

@@ -102,6 +102,17 @@ const normalizeText = (text) => {
     "gu\\s*ci": "gucci",
     "balen\\s*cia\\s*ga": "balenciaga",
     "\\b(?:sp|sản phẩm)\\b": "sản phẩm",
+    "\\b(ao)\\b": "áo",
+    "\\b(phong)\\b": "phông",
+    "\\b(mau)\\b": "màu",
+    "\\b(den)\\b": "đen",
+    "\\b(trang)\\b": "trắng",
+    "\\b(trag)\\b": "trắng",
+    "\\b(so)\\b": "sơ",
+    "\\b(mi)\\b": "mi",
+    "ao\\s*phong": "áo phông", // "ao phong" → "áo phông"
+    "mau\\s*den": "màu đen", // "mau den" → "màu đen" // "quan jean" → "quần jean"
+    "ao\\s*so\\s*mi": "áo sơ mi",
   };
 
   for (const [pattern, replacement] of Object.entries(replacements)) {
@@ -138,7 +149,7 @@ const extractProductInfo = (text) => {
   console.log("Normalized text:", normalizedText); // Debug log
 
   const patterns = {
-    keyword: /(?:sản phẩm|sp)\s*(\S+)/i,
+    sanPham: /(?:sản phẩm|sp|mua|bán|tìm|áo)\s*(\S+)/i,
     mauSac: /(?:màu|sắc)\s*([^,.\d]+)/i,
     kichCo: /(?:size|kích cỡ|kích thước)\s*(\S+)/i,
     maxPrice:
@@ -174,7 +185,7 @@ const extractProductInfo = (text) => {
             params[key] = colors.length === 1 ? colors[0] : colors;
           }
           break;
-          
+
         case "size":
           params[key] = match[1].trim();
           break;

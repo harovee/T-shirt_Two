@@ -6,7 +6,7 @@ import java.io.IOException;
 public class PdfStorageService {
     public static String savePdfToServer(byte[] pdfBytes, String filename) {
         try {
-            String folderPath = "D:/DATN/TShirtShop/hoa-don/";
+            String folderPath = "C:/New folder/hoa-don/";
             File file = new File(folderPath + filename);
 
             if (!file.getParentFile().exists()) {
