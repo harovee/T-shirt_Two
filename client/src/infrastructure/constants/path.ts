@@ -258,6 +258,10 @@ export const ROUTES_CONSTANTS = {
                 path: "/cm-statistic",
                 name: "cm-statistic",
             },
+            MB_EXAMPLE: {
+                path: "/mb-example",
+                name: "mb-example"
+            }
         }
     },
     PAYMENT: {

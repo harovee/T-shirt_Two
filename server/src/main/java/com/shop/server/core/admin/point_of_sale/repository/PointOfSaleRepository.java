@@ -140,7 +140,8 @@ public interface PointOfSaleRepository extends SanPhamChiTietRepository {
                 left join kieu_dang kd on spct.id_kieu_dang = kd.id
                 left join tinh_nang tn on spct.id_tinh_nang = tn.id
                 left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
-                where hdct.id_hoa_don = ?1 and hdct.trang_thai = 'PENDING' and hdct.deleted = false
+                join hoa_don hd on hdct.id_hoa_don = hd.id
+                where ( hdct.id_hoa_don = ?1 or hd.ma_hoa_don = ?1)  and hdct.trang_thai = 'PENDING' and hdct.deleted = false
                 
             """, nativeQuery = true)
     List<AdPOSOrderDetailResponse> getProductsInOrder(String idOrder);

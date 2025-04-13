@@ -481,6 +481,14 @@ const routes: Array<RouteRecordRaw> = [
         },
     },
     {
+        path: ROUTES_CONSTANTS.COMMON.children.MB_EXAMPLE.path,
+        name: ROUTES_CONSTANTS.COMMON.children.MB_EXAMPLE.name,
+        component: () =>  import('@/infrastructure/mobile.connect/example/mbExample.vue'),
+        meta: {
+            requiresAuth: false
+        },
+    },
+    {
         path: ROUTES_CONSTANTS.PAYMENT.children.VNPay.path,
         name: ROUTES_CONSTANTS.PAYMENT.children.VNPay.name,
         component: () => import('@/page/client/payment/PaymentReturnUrlVNPay.vue'),

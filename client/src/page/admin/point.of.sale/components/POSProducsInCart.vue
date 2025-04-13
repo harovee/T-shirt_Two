@@ -1,7 +1,19 @@
 <template>
-  <h2 class="text-xl font-semibold">Giỏ hàng</h2>
+  <h2 class="text-xl font-semibold inline-flex">Giỏ hàng
+    <a-tooltip v-if="isMBConnected" title="Ngắt kết nối" trigger="hover">
+            <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2  ms-4"
+              size="large"
+              @click="openDisConnectOrderModal(maHoaDon)"
+            >
+              <v-icon name="bi-link" />
+            </a-button>
+   </a-tooltip>
+  </h2>
+
   <div>
     <a-table
+      :loading="isLoading"
       :columns="columns"
       :key="tableKey"
       :data-source="dataSource"
@@ -61,13 +73,16 @@
             <a-input
               type="number"
               v-model:value="record.soLuong"
-              @blur="handleQuantityChange(record)"
+              @change="handleQuantityChange(record)"
               min="1"
             >
             </a-input>
           </div>
           <div v-if="column.dataIndex === 'giaBanHienTai'" class="center">
-            <a-typography-text strong class="cursor-pointer">
+            <a-typography-text
+              strong
+              class="cursor-pointer"
+            >
               {{
                 formatCurrency(
                   record.giaHienTai ? record.giaHienTai : record.gia,
@@ -78,7 +93,10 @@
             </a-typography-text>
           </div>
           <div v-if="column.dataIndex === 'thanhTien'" class="center">
-            <a-typography-text strong class="cursor-pointer text-xl">
+            <a-typography-text
+              strong
+              class="cursor-pointer text-xl"
+            >
               {{
                 formatCurrency(
                   record.giaHienTai
@@ -95,19 +113,14 @@
             class="flex items-center justify-center space-x-2"
           >
             <a-tooltip
-              placement="left"
-              :title="'Xóa sản phẩm khỏi giỏ hàng này?'"
-              trigger="hover"
-            >
-              <a-button
-                class="bg-purple-100"
-                size="middle"
-                shape="round"
-                @click="handleDelete(record.key)"
+                placement="left"
+                :title="'Xóa sản phẩm khỏi giỏ hàng này?'"
+                trigger="hover"
               >
-                <v-icon name="fa-trash-alt" />
-              </a-button>
-            </a-tooltip>
+                <a-button class="bg-purple-100" size="middle" shape="round" @click="handleDelete(record.key)">
+                  <v-icon name="fa-trash-alt" />
+                </a-button>
+              </a-tooltip>
           </div>
         </a-image-preview-group>
       </template>
@@ -115,15 +128,8 @@
   </div>
 </template>
   <script lang="ts" setup>
-import type { TableProps, TableColumnType } from "ant-design-vue";
-import {
-  defineProps,
-  computed,
-  defineEmits,
-  ref,
-  watch,
-  createVNode,
-} from "vue";
+import type { TableProps, TableColumnType} from "ant-design-vue";
+import { defineProps, computed, defineEmits, ref, watch, createVNode } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
   defaultProductImageSaleUrl,
@@ -137,7 +143,7 @@ import {
 import {
   useGetOrderDetails,
   useUpdateQuantityOrderDetails,
-  useDeleteCartById,
+  useDeleteCartById
 } from "@/infrastructure/services/service/admin/point-of-sale";
 import {
   warningNotiSort,
@@ -147,9 +153,6 @@ import {
   openNotification,
 } from "@/utils/notification.config";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { log } from "console";
-import { useCheckQuantityInStock } from "@/infrastructure/services/service/admin/productdetail.action";
-import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 
 const props = defineProps<{
   idOrder: string;
@@ -158,10 +161,6 @@ const props = defineProps<{
 interface DataType extends POSProductDetailResponse {
   key: string;
 }
-
-const oldValue = ref(null);
-const newValue = ref(null);
-const tableKey = ref(0);
 
 const columns: TableColumnType<DataType>[] = [
   {
@@ -212,14 +211,13 @@ const columns: TableColumnType<DataType>[] = [
 
 //
 
-const {
-  data,
-  isLoading,
-  refetch: refetchCart,
-} = useGetOrderDetails(props.idOrder?.valueOf(), {
-  refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
-});
+const { data, isLoading, refetch } = useGetOrderDetails(
+  props.idOrder?.valueOf(),
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  }
+);
 
 const dataSource: DataType[] | any = computed(() => {
   return (
@@ -246,102 +244,30 @@ const dataSource: DataType[] | any = computed(() => {
   );
 });
 
-const params = ref<checkQuantityRequest>({
-  id: null,
-  quantity: null,
-});
-
 const { mutate: updateQuantityOrderDetails } = useUpdateQuantityOrderDetails();
 const { mutate: deleteOrderDetails } = useDeleteCartById();
 
-const { data: checkQuantityData, refetch: checkQuantityRefetch } =
-  useCheckQuantityInStock(params, {
-    refetchOnWindowFocus: false,
-    keepPreviousData: false,
-    enabled: false,
-  });
-
-// const handleQuantityChange = async (record: any) => {
-//   params.value.id = record.key;
-//   params.value.quantity = record.soLuong;
-//   params.value.oldQuantity = oldValue.value;
-//   console.log(params.value);
-
-//   const payload = {
-//     idHoaDonChiTiet: record.key,
-//     soLuongBanSau: record.soLuong,
-//     soLuongBanTruoc: null,
-//   };
-//   try {
-//     checkQuantityRefetch().then(() => {
-//       const checkValue = checkQuantityData?.value?.data;
-
-//       if (!checkValue) {
-//         warningNotiSort("Số lượng trong kho không đủ!");
-//         if (!isLoading) {
-//           await refetch();
-//         }
-//       } else {
-//         updateQuantityOrderDetails(payload);
-//         warningNotiSort("Số lượng trong kho đủ!");
-//       }
-//       // oldValue.value = record.soLuong;
-//     });
-//   } catch (error: any) {
-//     console.log("⛔ Vào catch...");
-//     console.error("🔥 Lỗi từ backend:", error.response?.data || error);
-
-//     if (error.response?.status === 400) {
-//       warningNotiSort(error.response.data.message);
-//     } else {
-//       openNotification(notificationType.error, "Lỗi không xác định!", "");
-//     }
-//   }
-// };
-
-const handleQuantityChange = async (record: any) => {
-  params.value.id = record.key;
-  params.value.quantity = record.soLuong;
-
+const handleQuantityChange = (record: any) => {
   const payload = {
     idHoaDonChiTiet: record.key,
     soLuongBanSau: record.soLuong,
     soLuongBanTruoc: null,
   };
-
   try {
-    // Chờ check số lượng xong trước khi tiếp tục
-    await checkQuantityRefetch();
-    const checkValue = checkQuantityData?.value?.data;
-    
-    if (!checkValue) {
-      warningNotiSort("Số lượng trong kho không đủ!");
-      reloadData();
-    } else {
-      if (payload.soLuongBanSau <= 0) {
-        warningNotiSort("Số lượng không được âm!");
-        reloadData();
-        return;
-      }
-      await updateQuantityOrderDetails(payload);
-    }
+    updateQuantityOrderDetails(payload);
+    // successNotiSort("Sửa thành công")
   } catch (error: any) {
-    console.log("⛔ Vào catch...");
-    console.error("🔥 Lỗi từ backend:", error.response?.data || error);
-
-    if (error.response?.status === 400) {
-      warningNotiSort(error.response.data.message);
-    } else {
-      openNotification(notificationType.error, "Lỗi không xác định!", "");
+    if (error?.response) {
+      openNotification(
+        notificationType.error,
+        error?.response?.data?.message,
+        ""
+      );
+    } else if (error?.errorFields) {
+      openNotification(notificationType.warning, "", "");
     }
   }
 };
-
-const reloadData = async () => {
-  await refetchCart();
-  tableKey.value++;
-};
-
 const handleDelete = (idHdct: string) => {
   Modal.confirm({
     content: "Bạn chắc chắn muốn xóa sản phẩm này ra khỏi giỏ?",
