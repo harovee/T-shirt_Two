@@ -5,6 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
 import { formatCurrencyVND } from "./utils/common.helper";
 import { DingtalkOutlined } from "@ant-design/icons-vue";
+import { useChatToggleStore } from "./infrastructure/stores/chatToggle";
 
 const authStore = useAuthStore();
 const userRole = computed(() => authStore.user.roleName);
@@ -17,7 +18,9 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Chat state
-const isOpen = ref(false);
+const chatToggleStore = useChatToggleStore();
+
+const isOpen = computed(() => chatToggleStore.activeChat === "chatbot");
 const messages = ref([
   {
     text: `Xin chào! Tôi là TsTalk - trợ lý ảo của Tshirt-Two. Tôi có thể giúp gì cho bạn?`,
@@ -29,7 +32,23 @@ const isLoading = ref(false);
 
 // 🔹 Hàm bật/tắt chatbot
 const toggleChat = () => {
-  isOpen.value = !isOpen.value;
+  chatToggleStore.toggleChat("chatbot");
+};
+
+const chatBodyRef = ref(null);
+
+// watch(messages, async () => {
+//   await nextTick(); // đợi DOM render xong
+//   scrollToBottom();
+// });
+
+const scrollToBottom = () => {
+  if (chatBodyRef.value) {
+    chatBodyRef.value.scrollTo({
+      top: chatBodyRef.value.scrollHeight,
+      behavior: "smooth", // hiệu ứng cuộn mượt
+    });
+  }
 };
 
 // Product knowledge base
@@ -38,30 +57,178 @@ const productFeatures = {
   sizes: ["S", "M", "L", "XL", "XXL"],
   colors: ["trắng", "đen", "xanh navy", "đỏ", "hồng", "xám", "kem"],
   styles: ["cổ tròn", "cổ tim", "cổ V", "tay ngắn", "tay dài"],
-  brands: ["Gucci", "Dior", "Balenciaga", "Local Brand"],
+  brands: ["Gucci", "Dior", "Balenciaga", "Local Brand", "Adidas"],
   priceRange: { min: 150000, max: 5000000 },
 };
 
 const systemInfo = {
+  userInfo: [
+    `Tên người dùng: ${authStore.user.userName}`,
+    `Vai trờ người dùng: ${authStore.user.roleName}`,
+  ],
   storeInfo: {
     locations: [
-      "Hà Nội: 123 Trần Duy Hưng",
-      "TP.HCM: 456 Lê Văn Việt",
-      "Đà Nẵng: 789 Ngũ Hành Sơn",
+      "Tòa nhà FPT Polytechnic, 13 phố Trịnh Văn Bô, phường Phương Canh, quận Nam Từ Liêm, TP Hà Nội",
     ],
     openingHours: "9:00 - 21:30 hàng ngày",
     hotline: "1900 1234",
   },
+
   policies: {
     return: "Đổi trả trong 7 ngày nếu sản phẩm còn nguyên tag",
-    shipping: "Miễn phí vận chuyển cho đơn từ 500k",
+    shipping:
+      "Miễn phí vận chuyển áp dụng cho các đơn hàng từ 2 triệu đồng trở lên",
     payment: "Chấp nhận COD, chuyển khoản và ví điện tử",
+    orderStatus: [
+      "Chờ xác nhận",
+      "Chờ giao hàng",
+      "Đang vận chuyển",
+      "Đã giao hàng",
+      "Đã thanh toán",
+      "Thành công",
+      "Hủy bỏ",
+    ],
   },
-  promotions: [
-    "Giảm 20% cho đơn đầu tiên - mã WELCOME20",
-    "Mua 2 tặng 1 áo phông basic",
-    "Freeship toàn quốc thứ 7 hàng tuần",
-  ],
+
+  promotions: ["Hiện tại chưa có chương trình khuyến mãi."],
+
+  systemOverview: {
+    features: {
+      dashboard: {
+        summaryCards: [
+          "Tổng đơn thành công",
+          "Tổng doanh thu",
+          "Khách hàng mới",
+        ],
+        charts: [
+          {
+            name: "Biểu đồ trạng thái đơn hàng hôm nay",
+            type: "pie",
+            segments: [
+              { label: "Thành công", color: "green" },
+              { label: "Chờ xử lý", color: "yellow" },
+              { label: "Đang giao", color: "blue" },
+              { label: "Hủy bỏ", color: "red" },
+            ],
+          },
+        ],
+        productLists: ["Top 5 sản phẩm bán chạy", "Sản phẩm sắp hết hàng"],
+      },
+    },
+  },
+
+  navigation: {
+    sidebar: {
+      mainMenu: [
+        "Tổng quan",
+        "Thống kê",
+        "Bán tại quầy",
+        {
+          label: "Hóa đơn",
+          subMenu: ["Quản lý hóa đơn"],
+        },
+        {
+          label: "Sản phẩm",
+          subMenu: [
+            "Danh mục",
+            "Thương hiệu",
+            "Chất liệu",
+            "Cổ áo",
+            "Tay áo",
+            "Kích cỡ",
+            "Màu sắc",
+            "Tính năng",
+            "Kiểu dáng",
+            "Họa tiết",
+          ],
+        },
+        "Đợt giảm giá",
+        "Phiếu giảm giá",
+        "Nhân viên",
+        "Khách hàng",
+      ],
+    },
+  },
+
+  clientInterface: {
+    header: ["Trang chủ", "Sản phẩm", "Giới thiệu", "Liên hệ"],
+    features: {
+      searchBar: "Thanh tìm kiếm sản phẩm",
+      cart: {
+        icon: "Biểu tượng giỏ hàng",
+        actions: ["Xem giỏ hàng", "Thanh toán"],
+      },
+      userProfile: {
+        icon: "Biểu tượng trang cá nhân",
+        functions: [
+          "Tra cứu đơn hàng bằng mã đơn",
+          "Lọc đơn hàng theo trạng thái",
+        ],
+      },
+      productDetails: {
+        elements: [
+          "Tên sản phẩm",
+          "Giá sản phẩm",
+          "Kích cỡ có sẵn",
+          "Màu sắc",
+          "Nút Thêm vào giỏ hàng",
+          "Nút Xem chi tiết",
+        ],
+      },
+    },
+  },
+
+  orderManagement: {
+    orderDetails: {
+      statusFlow: [
+        "Chờ xác nhận",
+        "Chờ giao hàng",
+        "Đang vận chuyển",
+        "Đã giao hàng",
+        "Đã thanh toán",
+        "Thành công",
+      ],
+      actions: [
+        "Chuyển trạng thái đơn hàng",
+        "Quay lại trạng thái trước",
+        "Hủy đơn",
+      ],
+      sections: [
+        {
+          name: "Thông tin đơn hàng",
+          fields: [
+            "Mã đơn hàng",
+            "Số điện thoại người nhận",
+            "Địa chỉ người nhận",
+            "Tên khách hàng",
+            "Trạng thái",
+            "Tên người nhận",
+          ],
+        },
+        {
+          name: "Lịch sử thanh toán",
+          fields: [
+            "Số tiền khách đưa",
+            "Thời gian giao dịch",
+            "Mã giao dịch",
+            "Phương thức thanh toán",
+            "Nhân viên xác nhận",
+          ],
+        },
+        {
+          name: "Danh sách sản phẩm",
+          columns: [
+            "Ảnh sản phẩm",
+            "Tên sản phẩm",
+            "Giá sản phẩm",
+            "Số lượng",
+            "Thành tiền",
+            "Hành động (Hoàn hàng/Thêm sản phẩm)",
+          ],
+        },
+      ],
+    },
+  },
 };
 
 const normalizeText = (text) => {
@@ -136,6 +303,15 @@ const analyzeIntent = (text) => {
       /(chính sách|khuyến mãi|cửa hàng|đổi trả|vận chuyển|thanh toán)/i,
     greeting: /(chào|hello|hi|xin chào)/i,
     thanks: /(cảm ơn|thanks|thank you)/i,
+    systemOverview: /(tổng quan|dashboard|thống kê|biểu đồ|doanh thu)/i,
+    orderManagement: /(đơn hàng|hóa đơn|trạng thái đơn|quản lý đơn)/i,
+    productManagement: /(sản phẩm|danh mục|thương hiệu|chất liệu)/i,
+    clientFeatures: /(giỏ hàng|thanh toán|trang cá nhân|tìm kiếm sản phẩm)/i,
+    systemPolicy: /(chính sách|đổi trả|vận chuyển|thanh toán)/i,
+    storeInfo: /(cửa hàng|địa chỉ|giờ mở cửa|hotline)/i,
+    mainMenu: /(menu chính|main menu|navigation|menu admin|quản lý menu)/i,
+    userInfo:
+      /(tôi là ai|tao là ai|t là ai|vai trò của tôi|người dùng đăng nhập hiện tại)/,
   };
 
   for (const [intent, pattern] of Object.entries(intents)) {
@@ -246,6 +422,7 @@ const sendMessage = async () => {
 
   const userMessage = userInput.value;
   messages.value.push({ text: userMessage, sender: "user" });
+  scrollToBottom();
   userInput.value = "";
   isLoading.value = true;
 
@@ -269,10 +446,14 @@ const sendMessage = async () => {
         break;
 
       case "systemInfo": {
-        const systemResponse = handleSystemQuery(userMessage);
+        const systemResponse = handleSystemQuery(
+          userMessage,
+          authStore.user.roleName
+        );
         messages.value.push({
-          text: systemResponse,
+          text: `<ul>${systemResponse}</ul>`,
           sender: "bot",
+          isHtml: true
         });
         break;
       }
@@ -314,7 +495,7 @@ const sendMessage = async () => {
                 role: "user",
                 parts: [
                   {
-                    text: `Hệ thống không có sản phẩm phù hợp. Hãy đề xuất các tùy chọn thay thế dựa trên: 
+                    text: `Hệ thống không có sản phẩm phù hợp. Hãy đề xuất các tùy chọn thay thế dựa trên:
             - Chất liệu có sẵn: ${productFeatures.materials.join(", ")}
             - Khoảng giá: ${formatCurrencyVND(
               productFeatures.priceRange.min
@@ -336,11 +517,12 @@ const sendMessage = async () => {
         break;
 
       default:
-        const fallback = await model.generateContent(
-          `Hãy trả lời thân thiện: ${userMessage}`
-        );
+        const prompt = `Hãy trả lời dựa trên thông tin: ${JSON.stringify(
+          systemInfo
+        )}\n\nCâu hỏi: ${userMessage}`;
+        const response = await model.generateContent(prompt);
         messages.value.push({
-          text: await fallback.response.text(),
+          text: await response.response.text(),
           sender: "bot",
         });
     }
@@ -353,39 +535,112 @@ const sendMessage = async () => {
   } finally {
     isLoading.value = false;
   }
+
+  scrollToBottom();
 };
 
-const handleSystemQuery = (query) => {
+const handleSystemQuery = (query, userRole) => {
   const normalized = normalizeText(query);
+  let response = "";
+
   if (/thanh toán|payment/.test(normalized)) {
-    return `💳 Chính sách thanh toán: ${systemInfo.policies.payment}`;
-  }
-
-  if (/chính sách.*đổi trả/.test(normalized)) {
-    return `📜 Chính sách đổi trả: ${systemInfo.policies.return}`;
-  }
-
-  if (/khuyến mãi|ưu đãi/.test(normalized)) {
-    return `🎁 Đang có các khuyến mãi:\n${systemInfo.promotions.join("\n- ")}`;
-  }
-
-  if (/cửa hàng|địa chỉ/.test(normalized)) {
-    return `📍 Hệ thống cửa hàng:\n${systemInfo.storeInfo.locations.join(
+    response = `💳 Chính sách thanh toán: ${systemInfo.policies.payment}`;
+    if (isAdmin) {
+    }
+  } 
+  
+  else if (/khuyến mãi|ưu đãi/.test(normalized)) {
+    response = `🎁 Đang có các khuyến mãi:\n${systemInfo.promotions.join(             //api đợt giảm giá
+      "\n- "
+    )}`;
+  } 
+  
+  else if (/cửa hàng|địa chỉ/.test(normalized)) {
+    response = `📍 Hệ thống cửa hàng:\n${systemInfo.storeInfo.locations.join(
       "\n- "
     )}\nGiờ mở cửa: ${systemInfo.storeInfo.openingHours}`;
+    if (isAdmin) {
+      response += `\n📞 Hotline nội bộ: 090 123 4567`;
+    }
+  } 
+  
+  else if (/vận chuyển|ship/.test(normalized)) {
+    response = `🚚 Chính sách vận chuyển: ${systemInfo.policies.shipping}`;
+  } 
+  
+  else if (/(tổng quan|dashboard|thống kê)/i.test(normalized)) {
+    response = `📊 Thống kê tổng quan:\n${systemInfo.systemOverview.features.dashboard.summaryCards.join(
+      "\n- "
+    )}\n\nBiểu đồ trạng thái đơn hàng: ${systemInfo.systemOverview.features.dashboard.charts[0].segments
+      .map((s) => `${s.label} (${s.color})`)
+      .join(", ")}`;
+  } 
+  
+  else if (/(đơn hàng|hóa đơn|trạng thái)/i.test(normalized)) {
+    response = `📦 Quản lý đơn hàng:\n- Các trạng thái: ${systemInfo.policies.orderStatus.join(
+      ", "
+    )}\n- Chi tiết xem tại mục Hóa đơn -> Quản lý hóa đơn`;
+
+    if (userRole === "ADMIN" || userRole === "USER") {
+      response +=
+        "\n⚙️ Chi tiết xem tại mục Hóa đơn -> Quản lý hóa đơn";
+    }
+  } 
+  
+  else if (/(giỏ hàng|thanh toán)/i.test(normalized)) {
+    response = `🛒 Tính năng khách hàng:\n- ${systemInfo.clientInterface.features.productDetails.elements.join(
+      "\n- "
+    )}`;
+  } 
+  
+  else if (/(chính sách|đổi trả)/i.test(normalized)) {
+    response = `📜 Chính sách:\n- Đổi trả: ${systemInfo.policies.return}\n- Vận chuyển: ${systemInfo.policies.shipping}`;
+  } 
+  
+  else if (/(cửa hàng|địa chỉ)/i.test(normalized)) {
+    response = `🏪 Thông tin cửa hàng:\n${systemInfo.storeInfo.locations.join(
+      "\n- "
+    )}\n⏰ Giờ mở cửa: ${systemInfo.storeInfo.openingHours}`;
+
+    if (userRole === "ADMIN" || userRole === "USER") {
+      response += `\n🔒 Thông tin nội bộ: Doanh thu cao nhất tại ${systemInfo.storeInfo.locations[0]}`;           //api doanh thu
+    }
+  } 
+  
+  else if (/(tôi là ai|vai trò của tôi)/i.test(normalized)) {
+    response = `🏪 Thông tin người dùng đang đăng nhập:\n${systemInfo.userInfo.join(
+      "\n "
+    )}`;
+  } 
+  
+  else if (
+    (/(menu chính|main menu|navigation|menu admin)/i.test(normalized) &&
+      userRole === "ADMIN") ||
+    userRole === "USER"
+  ) {
+    response = "🗂️ Menu quản trị hệ thống:\n";
+    systemInfo.navigation.sidebar.mainMenu.forEach((item) => {
+      if (typeof item === "object") {
+        response += `\n📁 ${item.label}:\n- ${item.subMenu.join("\n- ")}`;
+      } else {
+        response += `\n📌 ${item}`;
+      }
+    });
+    response += "\n\n🔒 Chỉ hiển thị cho quản trị viên hoặc nhân viên";
+    return response;
+  } 
+  
+  else {
+    response = "Tôi có thể giúp gì về thông tin hệ thống?";
   }
 
-  if (/vận chuyển|ship/.test(normalized)) {
-    return `🚚 Chính sách vận chuyển: ${systemInfo.policies.shipping}`;
-  }
-
-  return `ℹ Thông tin hệ thống:\n- Chính sách đổi trả\n- Khuyến mãi\n- Địa chỉ cửa hàng\n- Vận chuyển\nHãy hỏi cụ thể hơn nhé!`;
+  return response;
 };
 </script>
 
 <template>
   <!-- 🔹 Nút bật chatbot -->
-  <a-tooltip title="Chat bot">
+  <a-tooltip title="Chat bot" :z-index="10000">
     <button class="chat-toggle" @click="toggleChat">
       <DingtalkOutlined />
     </button>
@@ -397,13 +652,14 @@ const handleSystemQuery = (query) => {
       <span>TsTalk <DingtalkOutlined /></span>
       <button @click="toggleChat">✖</button>
     </div>
-    <div class="chat-box">
+    <div class="chat-box" ref="chatBodyRef">
       <div
         v-for="(msg, index) in messages"
         :key="index"
-        :class="msg.sender"
-        v-html="msg.text"
-      ></div>
+        :class="`message ${msg.sender}`"
+        v-html="msg.text.replace(/\n/g, '<br>')"
+      >
+      </div>
       <div v-if="isLoading" class="loading">Đang trả lời...</div>
     </div>
     <div class="chat-input">
@@ -445,7 +701,7 @@ const handleSystemQuery = (query) => {
 .chat-container {
   position: fixed;
   bottom: 0px;
-  right: 50px;
+  right: 60px;
   width: 350px;
   height: 450px;
   /* max-height: 500px; */
