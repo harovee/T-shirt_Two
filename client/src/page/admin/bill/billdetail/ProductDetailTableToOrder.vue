@@ -38,10 +38,10 @@
         <span style="color: black">{{ record.sanPham }}</span
         ><br />
 
-        <span class="text-red-500">
+        <span>
           <template v-if="record.idSanPhamGiamGia">
-            <del class="text-gray-500">{{ formatCurrencyVND(record.gia) }}</del>
-            {{ formatCurrencyVND(record.giaSauGiam) }}
+            <del class="text-gray-500">{{ formatCurrencyVND(record.gia) }}</del> - 
+            <span class="text-red-500" style="color: red">{{ formatCurrencyVND(record.giaSauGiam) }}</span>
           </template>
           <template v-else>
             {{ formatCurrencyVND(record.giaSauGiam) }}

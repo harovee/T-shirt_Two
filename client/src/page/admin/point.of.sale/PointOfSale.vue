@@ -350,7 +350,7 @@ const handleQRScan = (qrCode: string) => {
   console.log("Mã QR quét được:", qrCode);
 };
 
-// refetchProducts.value = listAttributes.refetch;
+refetchProducts.value = listAttributes.refetch;
 
 function handleOpenProductsModel() {
   openProductsModal.value = true;

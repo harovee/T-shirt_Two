@@ -227,10 +227,23 @@
               </p>
             </div>
 
-            <div v-else-if="column.key === 'anhSanPhamChiTiet'">
+            <!-- <div v-else-if="column.key === 'anhSanPhamChiTiet'">
               <Image
                 :width="60"
                 :src="record?.anhSanPhamChiTiet"
+                alt="Ảnh SP"
+                class="product-image"
+              />
+            </div> -->
+
+            <div v-else-if="column.key === 'imgUrl'">
+              <a-image
+                :width="60"
+                :src="
+                  record?.imgUrl != 'default-product-detail-image-url.jpg'
+                    ? record.imgUrl
+                    : defaultProductImageSaleUrl
+                "
                 alt="Ảnh SP"
                 class="product-image"
               />
@@ -296,7 +309,7 @@ import {
 } from "vue";
 import MyOrderUpdateModal from "./MyOrderUpdateModal.vue";
 import MyOrderAddProductModal from "./MyOrderAddProductModal.vue";
-import { formatCurrencyVND } from "@/utils/common.helper";
+import { formatCurrencyVND, defaultProductImageSaleUrl } from "@/utils/common.helper";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
@@ -679,7 +692,7 @@ const dataSources: BillDetailResponse[] | any = computed(() => {
       maHoaDon: e.maHoaDon || null,
       tenSanPhamChiTiet: e.tenSanPhamChiTiet || null,
       tenSanPham: e.tenSanPham || null,
-      anhSanPhamChiTiet: e.anhSanPhamChiTiet || null,
+      imgUrl: e.imgUrl || null,
       tenKichCo: e.tenKichCo || null,
       tenMau: e.tenMau || null,
       soLuong: e.soLuong || 0,
@@ -884,6 +897,7 @@ const handleChangeQuantity = async (record: any) => {
       tienShip: copiedDataSource.value[0]?.tienShip || 0,
       tienGiam: copiedDataSource.value[0]?.tienGiamHD || 0,
       tongTien: copiedDataSource.value[0]?.tongTienHD || 0,
+      nhanVien: null,
     };
     try {
       // await validate();
@@ -933,6 +947,7 @@ const handleDelete = (productDetail: any) => {
             tienShip: copiedDataSource.value[0]?.tienShip || 0,
             tienGiam: copiedDataSource.value[0]?.tienGiamHD || 0,
             tongTien: copiedDataSource.value[0]?.tongTienHD || 0,
+            nhanVien: null,
           };
           try {
             // await validate();

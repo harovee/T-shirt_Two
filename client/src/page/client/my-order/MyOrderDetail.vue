@@ -211,8 +211,8 @@ const columnsBill: ColumnType[] = [
   },
   {
     title: "Ảnh",
-    dataIndex: "anhSanPhamChiTiet",
-    key: "anhSanPhamChiTiet",
+    dataIndex: "imgUrl",
+    key: "imgUrl",
     ellipsis: true,
     width: 150,
     align: "center",
