@@ -429,8 +429,6 @@ const { data: checkQuantityData, refetch: checkQuantityRefetch } =
     enabled: false,
   });
 
-
-
 // Trừ số lượng list product
 
 
@@ -682,6 +680,9 @@ const handleChangeQuantity = async (record: any) => {
         emit("update-quantity", record);
       },
       onCancel() {
+        console.log(record.soLuong);
+        console.log(record.previousQuantity);
+        
         record.soLuong = record.previousQuantity || 1; // Trả về giá trị cũ
         setTimeout(() => {
           emit("update-quantity", record);

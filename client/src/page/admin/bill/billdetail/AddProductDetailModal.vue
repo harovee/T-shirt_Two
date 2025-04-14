@@ -90,7 +90,7 @@ const handleSelectProduct = (product: any) => {
     selectedProducts.value.splice(index, 1);
   }
 
-  console.log("Danh sách sản phẩm đã chọn:", selectedProducts.value);
+  // console.log("Danh sách sản phẩm đã chọn:", selectedProducts.value);
 };
 
 const { mutate: createBillDetail } = useCreateBillDetail();
