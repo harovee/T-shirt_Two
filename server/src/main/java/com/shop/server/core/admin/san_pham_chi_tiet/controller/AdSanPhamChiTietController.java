@@ -61,9 +61,9 @@ public class AdSanPhamChiTietController {
         return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantityInListProduct(request));
     }
 
-    @PutMapping("/delete-quantity")
+    @PutMapping("/quantity/plus")
     public ResponseEntity<?> deleteQuantityInListProduct(@RequestBody List<AdCheckQuantityRequest> request) {
-        return Helper.createResponseEntity(adSanPhamChiTietService.deleteQuantityInStockByListProduct(request));
+        return Helper.createResponseEntity(adSanPhamChiTietService.plusQuantityInStockByListProduct(request));
     }
 
     @GetMapping("/{id}")

@@ -246,15 +246,22 @@ export const checkQuantityInStockByIdProductDetail = async (params: Ref<checkQua
 };
 
 // Trừ số lượng sản phẩm trong kho truyền vào 1 list
-export const deleteQuantityListProduct = async (params: Array<checkQuantityRequest>) => {
-    const res = (await request({
-        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/delete-quantity`,
-        method: "PUT",
-        data: params,
-      })) as AxiosResponse<DefaultResponse<null>>;
+// export const plusQuantityListProduct = async (params: Array<checkQuantityRequest>) => {
+//     const res = (await request({
+//         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/quantity/plus`,
+//         method: "PUT",
+//         data: params,
+//       })) as AxiosResponse<DefaultResponse<null>>;
     
-      return res.data;
-};
+//       return res.data;
+// };
+export const plusQuantityListProduct = async (params: Array<checkQuantityRequest>) => {
+    return (await request({
+      url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/quantity/plus`,
+      method: "PUT",
+      data: params,
+    })) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  };
 
 export const getListProductDetail = async () => {
     const res = (await request({

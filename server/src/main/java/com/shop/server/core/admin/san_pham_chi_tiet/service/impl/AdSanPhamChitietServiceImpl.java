@@ -253,13 +253,18 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                 check = true;
             }
         }
+        if (!check) {
+            for (AdCheckQuantityRequest request : listRequest) {
+                adSanPhamChiTietRepository.decreaseStockProduct(request.getId(), request.getQuantity());
+            }
+        }
         return new ResponseObject<>(check, HttpStatus.OK, check ? "Số lượng trong giỏ không đủ" : "Số lượng trong kho đủ!");
     }
 
     @Override
-    public ResponseObject<?> deleteQuantityInStockByListProduct(List<AdCheckQuantityRequest> listRequest) {
+    public ResponseObject<?> plusQuantityInStockByListProduct(List<AdCheckQuantityRequest> listRequest) {
         for (AdCheckQuantityRequest request : listRequest) {
-            adSanPhamChiTietRepository.decreaseStockProduct(request.getId(), request.getQuantity());
+            adSanPhamChiTietRepository.plusStockProduct(request.getId(), request.getQuantity());
         }
         return new ResponseObject<>(null, HttpStatus.OK, "Update số lượng thành công");
     }

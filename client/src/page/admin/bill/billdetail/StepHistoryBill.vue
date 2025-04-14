@@ -60,7 +60,7 @@
             statusIndexStart !== 'Thành công'
           "
           style="margin-left: 8px"
-          @click="rollBack()"
+          @click="rollBack(statusIndexStart)"
         >
           Quay lại trạng thái trước
         </a-button>
@@ -156,7 +156,7 @@ import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-h
 import {
   useCheckQuantityInStock,
   useCheckQuantityListProduct,
-  useDeleteQuantityListProduct,
+  usePlusQuantityListProduct,
 } from "@/infrastructure/services/service/admin/productdetail.action";
 import { sum } from "lodash";
 import { PropType } from "vue";
@@ -216,7 +216,7 @@ const isModalVisible = ref(false);
 
 const { mutate: changeStatus } = useChangeBillStatus();
 
-const { mutate: deleteQuantityListProduct } = useDeleteQuantityListProduct();
+const { mutate: plusQuantityListProduct } = usePlusQuantityListProduct();
 
 const { mutate: checkQuantity, data, error } = useCheckQuantityListProduct();
 
@@ -391,50 +391,84 @@ const confirmBill = async () => {
     ghiChu: "Xác nhận trạng thái đơn hàng -> Chờ giao hàng",
   };
 
-  const check = ref(null)
+  const check = ref(null);
 
-  Modal.confirm({
-    title: "Xác nhận thay đổi trạng thái",
-    content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
-    onOk: async () => {
-      // Check số lượng
-      checkQuantity(listProduct.value, {
-        onSuccess: (result) => {
-          if (result.data) {
-            check.value = result.data;
+  if (props.billData.loaiHD === "Online") {
+    checkQuantity(listProduct.value, {
+      onSuccess: (result) => {
+        if (result.data !== undefined) {
+          check.value = result.data;
+          if (check.value === true) {
+            warningNotiSort(
+              "Số lượng sản phẩm trong kho không đủ, vui lòng kiểm tra lại!"
+            );
+            return;
           }
-        },
-        onError: (error: any) => {
-          errorNotiSort(error?.response?.data?.message);
-        },
-      });
-      if (check.value) {
-        warningNotiSort("Số lượng sản phẩm trong giỏ không đủ, vui lòng kiểm tra lại!");
-        return;
-      }
-      try {
-        if (props.dataProduct.length === 0) {
-          warningNotiSort(
-            "Đơn hàng đang trống, xin vui lòng thêm sản phẩm vào giỏ hoặc hủy đơn hàng!"
-          );
-          return;
-        }
-        // Gọi API để thay đổi trạng thái đơn hàng
-        changeStatus({ idBill, params });
-        emit("update:bill");
-        successNotiSort("Cập nhật trạng thái thành công!");
+          // modal confirm có thay đổi trạng thái k
+          Modal.confirm({
+            title: "Xác nhận thay đổi trạng thái",
+            content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
+            onOk: async () => {
+              try {
+                if (props.dataProduct.length === 0) {
+                  warningNotiSort(
+                    "Đơn hàng đang trống, xin vui lòng thêm sản phẩm vào giỏ hoặc hủy đơn hàng!"
+                  );
+                  return;
+                }
+                // Gọi API để thay đổi trạng thái đơn hàng
+                changeStatus({ idBill, params });
+                emit("update:bill");
+                successNotiSort("Cập nhật trạng thái thành công!");
 
-        // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-        current.value++;
-      } catch (error) {
-        console.error("Cập nhật trạng thái thất bại:", error);
-        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
-      }
-    },
-    onCancel: () => {
-      console.log("Thao tác đã bị hủy.");
-    },
-  });
+                // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+                current.value++;
+              } catch (error) {
+                console.error("Cập nhật trạng thái thất bại:", error);
+                errorNotiSort(
+                  "Cập nhật trạng thái thất bại. Vui lòng thử lại."
+                );
+              }
+            },
+            onCancel: () => {
+              console.log("Thao tác đã bị hủy.");
+            },
+          });
+        }
+      },
+      onError: (error: any) => {
+        errorNotiSort(error?.response?.data?.message);
+      },
+    });
+  } else {
+    Modal.confirm({
+      title: "Xác nhận thay đổi trạng thái",
+      content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
+      onOk: async () => {
+        try {
+          if (props.dataProduct.length === 0) {
+            warningNotiSort(
+              "Đơn hàng đang trống, xin vui lòng thêm sản phẩm vào giỏ hoặc hủy đơn hàng!"
+            );
+            return;
+          }
+          // Gọi API để thay đổi trạng thái đơn hàng
+          changeStatus({ idBill, params });
+          emit("update:bill");
+          successNotiSort("Cập nhật trạng thái thành công!");
+
+          // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+          current.value++;
+        } catch (error) {
+          console.error("Cập nhật trạng thái thất bại:", error);
+          errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+        }
+      },
+      onCancel: () => {
+        console.log("Thao tác đã bị hủy.");
+      },
+    });
+  }
 };
 
 // hàm xác nhận và hoàn lại tiền
@@ -759,7 +793,7 @@ const handleCancelBillPaid = () => {
   });
 };
 
-const rollBack = () => {
+const rollBack = (stepStatus: string) => {
   if (current.value > 0) {
     const prevStep = steps[current.value - 1];
     const stepTitle = prevStep.title;
@@ -789,12 +823,29 @@ const rollBack = () => {
         const params = {
           status: stepTitle,
           trangThai: stepTitle,
-          moTa: description.value, // Gửi mô tả rollback
+          moTa: description.value,
         };
 
         try {
           await changeStatus({ idBill, params });
           successNotiSort(`Trạng thái đã quay lại: ${stepTitle}`);
+          // Hoàn lại số lượng
+          if (
+            props.billData.loaiHD === "Online" &&
+            stepStatus === "Chờ giao hàng"
+          ) {
+            plusQuantityListProduct(
+              { params: listProduct.value },
+              {
+                onSuccess: (result) => {
+                  console.log("Đã hoàn lại số lượng của hóa đơn onl");
+                },
+                onError: (error: any) => {
+                  console.log("Lỗi khi hoàn số lượng");
+                },
+              }
+            );
+          }
 
           // 🔄 Cập nhật lại thời gian của trạng thái rollback
           const stepIndex = steps.findIndex((step) => step.title === stepTitle);

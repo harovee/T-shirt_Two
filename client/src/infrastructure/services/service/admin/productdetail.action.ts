@@ -14,7 +14,7 @@ import {
     getAllProductDetailOverZero,
     checkQuantityInStockByIdProductDetail,
     checkQuantityListProduct,
-    deleteQuantityListProduc
+    plusQuantityListProduct
 } from "@/infrastructure/services/api/admin/product_detail.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -91,11 +91,24 @@ export const useCheckQuantityInStockByProductDetail = (
     });
 };
 
-// Trừ số lượng sản phẩm trong kho, truyền vào 1 list
-export const useDeleteQuantityListProduct = () => {
+// Hoàn lại số lượng sản phẩm trong kho, truyền vào 1 list
+// export const usePlusQuantityListProduct = () => {
+//     const queryClient = useQueryClient();
+//     return useMutation({
+//         mutationFn: ({params}: { params: Array<checkQuantityRequest> }) => plusQuantityListProduct(params),
+//         onSuccess: () => {
+//             queryClient.invalidateQueries({queryKey: [queryKey.admin.productDetail.productDetailList],});
+//         },
+//         onError: (error: any) => {
+//             console.log(queryKey.admin.productDetail.productDetailList + "🚀 ~ productDetailUpdate ~ error:", error);
+//         },
+//     });
+// };
+
+export const usePlusQuantityListProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({params}: { params: Array<checkQuantityRequest> }) => deleteQuantityListProduct(params),
+        mutationFn: ({params}: { params: Array<checkQuantityRequest>; }) => plusQuantityListProduct(params),
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: [queryKey.admin.productDetail.productDetailList],});
         },
