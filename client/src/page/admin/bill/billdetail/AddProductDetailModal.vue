@@ -63,7 +63,8 @@ const props = defineProps({
   loadingValue: {
     type: Boolean,
     required: true,
-  }
+  },
+  billData: Object
 });
 
 // Định nghĩa Emits
@@ -150,7 +151,7 @@ const handleAddProducts = () => {
       idHoaDon: modelRef.idHoaDon, // ID hóa đơn từ URL
       idSanPhamChiTiet: product.id, // Đảm bảo lấy đúng ID sản phẩm
       soLuong: 1,   // Mặc định số lượng là 1
-      isClient: false
+      isClient: props.billData.loaiHD === 'Online' ? true : false
     };
 
     // console.log("📤 Dữ liệu gửi đi API:", requestData); // Log dữ liệu trước khi gửi

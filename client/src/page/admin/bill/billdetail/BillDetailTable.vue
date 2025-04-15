@@ -124,6 +124,7 @@
         @handleClose="handleCloseModalAddProductToOrder"
         @onCancel="isOpenModalAddProductToOrder = false"
         :loadingValue="loadingValue"
+        :billData="billData"
       />
     </div>
 
@@ -633,8 +634,9 @@ const handleUpdateBill = async (modelRef: any) => {
           huyen: modelRef.huyen,
           xa: modelRef.xa,
           idPhieuGiamGia: props.detail ? props.detail.id : null,
-          nhanVien: useAuthStore().user?.email || null,
+          nhanVien: useAuthStore().user?.id || null,
         };
+        
         update(
           { idBill: params.value.idHoaDon, params: payload },
           {

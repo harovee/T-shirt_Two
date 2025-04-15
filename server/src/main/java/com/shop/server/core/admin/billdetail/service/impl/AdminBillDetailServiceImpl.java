@@ -170,15 +170,18 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             }
         }
 
+        if (hoaDon.getLoaiHD().equals("Tại quầy")) {
+            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
+        }
         if (request.getSoLuong() <= 0) {
             // Xóa chi tiết hóa đơn nếu số lượng <= 0
-            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
+//            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
             adminBillDetailRepository.delete(billDetail);
         } else {
             // Cập nhật chi tiết hóa đơn
-            if (hoaDon.getLoaiHD().equals("Tại quầy")) {
-                adminBillDetailRepository.updateQuantityProductDetailInBill(request);
-            }
+//            if (hoaDon.getLoaiHD().equals("Tại quầy")) {
+//                adminBillDetailRepository.updateQuantityProductDetailInBill(request);
+//            }
             billDetail.setGia(productPrice);
             BigDecimal newAmount = productPrice.multiply(new BigDecimal(request.getSoLuong()));
             billDetail.setSoLuong(request.getSoLuong());

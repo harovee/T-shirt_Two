@@ -479,53 +479,123 @@ const confirmBillRefund = () => {
   const description = ref("");
   // API tạo lịch sử hóa đơn
 
-  Modal.confirm({
-    title: "Xác nhận hoàn tiền",
-    content: () => {
-      return h("div", [
-        h(
-          "p",
-          `Số tiền cần trả lại: ${formatCurrencyVND(
+  const check = ref(null);
+
+  if (props.billData.loaiHD === "Online") {
+    checkQuantity(listProduct.value, {
+      onSuccess: (result) => {
+        if (result.data !== undefined) {
+          check.value = result.data;
+          if (check.value === true) {
+            warningNotiSort(
+              "Số lượng sản phẩm trong kho không đủ, vui lòng kiểm tra lại!"
+            );
+            return;
+          }
+          Modal.confirm({
+            title: "Xác nhận hoàn tiền",
+            content: () => {
+              return h("div", [
+                h(
+                  "p",
+                  `Số tiền cần trả lại: ${formatCurrencyVND(
+                    props.dataPaymentInfo.refund
+                  )}`
+                ),
+                h(Input, {
+                  placeholder: "Nhập mã giao dịch ...",
+                  autoSize: { minRows: 2, maxRows: 4 },
+                  onInput: (e) => (description.value = e.target.value),
+                }),
+              ]);
+            },
+            onOk: async () => {
+              const params = {
+                status: stepTitle,
+                trangThai: "Chờ giao hàng",
+                moTa: `Hoàn trả: ${formatCurrencyVND(
+                  props.dataPaymentInfo.refund
+                )} - Mã giao dịch: ${description.value}`,
+                email: props.billData.emailNguoiNhan || null,
+                idHoaDon: idBill,
+                nhanVien: useAuthStore().user?.email || null,
+                ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
+                  props.dataPaymentInfo.refund
+                )}`,
+              };
+              try {
+                // Gọi API để thay đổi trạng thái đơn hàng
+                changeStatus({ idBill, params });
+                successNotiSort("Cập nhật trạng thái thành công!");
+                emit("update:bill");
+                // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+                current.value++;
+              } catch (error) {
+                console.error("Cập nhật trạng thái thất bại:", error);
+                errorNotiSort(
+                  "Cập nhật trạng thái thất bại. Vui lòng thử lại."
+                );
+              }
+            },
+            onCancel: () => {
+              console.log("Thao tác đã bị hủy.");
+            },
+          });
+        }
+      },
+      onError: (error: any) => {
+        errorNotiSort(error?.response?.data?.message);
+      },
+    });
+  } else {
+    Modal.confirm({
+      title: "Xác nhận hoàn tiền",
+      content: () => {
+        return h("div", [
+          h(
+            "p",
+            `Số tiền cần trả lại: ${formatCurrencyVND(
+              props.dataPaymentInfo.refund
+            )}`
+          ),
+          h(Input, {
+            placeholder: "Nhập mã giao dịch ...",
+            autoSize: { minRows: 2, maxRows: 4 },
+            onInput: (e) => (description.value = e.target.value),
+          }),
+        ]);
+      },
+      onOk: async () => {
+        const params = {
+          status: stepTitle,
+          trangThai: "Chờ giao hàng",
+          moTa: `Hoàn trả: ${formatCurrencyVND(
             props.dataPaymentInfo.refund
-          )}`
-        ),
-        h(Input, {
-          placeholder: "Nhập mã giao dịch ...",
-          autoSize: { minRows: 2, maxRows: 4 },
-          onInput: (e) => (description.value = e.target.value),
-        }),
-      ]);
-    },
-    onOk: async () => {
-      const params = {
-        status: stepTitle,
-        trangThai: "Chờ giao hàng",
-        moTa: `Hoàn trả: ${formatCurrencyVND(
-          props.dataPaymentInfo.refund
-        )} - Mã giao dịch: ${description.value}`,
-        email: props.billData.emailNguoiNhan || null,
-        idHoaDon: idBill,
-        nhanVien: useAuthStore().user?.email || null,
-        ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
-          props.dataPaymentInfo.refund
-        )}`,
-      };
-      try {
-        // Gọi API để thay đổi trạng thái đơn hàng
-        changeStatus({ idBill, params });
-        successNotiSort("Cập nhật trạng thái thành công!");
-        emit("update:bill");
-        // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-        current.value++;
-      } catch (error) {
-        console.error("Cập nhật trạng thái thất bại:", error);
-        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
-      }
-    },
-    onCancel: () => {
-      console.log("Thao tác đã bị hủy.");
-    },
-  });
+          )} - Mã giao dịch: ${description.value}`,
+          email: props.billData.emailNguoiNhan || null,
+          idHoaDon: idBill,
+          nhanVien: useAuthStore().user?.email || null,
+          ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
+            props.dataPaymentInfo.refund
+          )}`,
+        };
+        try {
+          // Gọi API để thay đổi trạng thái đơn hàng
+          changeStatus({ idBill, params });
+          successNotiSort("Cập nhật trạng thái thành công!");
+          emit("update:bill");
+          // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+          current.value++;
+        } catch (error) {
+          console.error("Cập nhật trạng thái thất bại:", error);
+          errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+        }
+      },
+      onCancel: () => {
+        console.log("Thao tác đã bị hủy.");
+      },
+    });
+  }
 };
 
 const confirmDelivery = () => {
