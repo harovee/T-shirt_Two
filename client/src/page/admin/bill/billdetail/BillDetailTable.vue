@@ -669,10 +669,13 @@ const getTotalAmount = (totalPaid: number) => {
 };
 
 const handleChangeQuantity = async (record: any) => {
+  if (record.previousQuantity === undefined) {
+    record.previousQuantity = record.soLuong;
+  }
   paramsCheckQuantity.value.id = record.id;
   paramsCheckQuantity.value.quantity = record.soLuong;
 
-  if (record.soLuong !== 0) {
+  if (record.soLuong > 0) {
     record.previousQuantity = record.soLuong;
     console.log("previousQuantity:", record.previousQuantity);
   }
@@ -690,7 +693,7 @@ const handleChangeQuantity = async (record: any) => {
 
     if (!checkValue) {
       warningNotiSort("Số lượng trong kho không đủ!");
-      record.soLuong = record.previousQuantity;
+      record.soLuong = 1;
     } else {
       if (record.soLuong <= 0) {
         warningNotiSort("Số lượng không được âm!");
