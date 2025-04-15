@@ -354,6 +354,30 @@ watch(
     // Tạo bản sao dữ liệu mới từ API để tránh readonly
     detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
     serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
+    if (copiedBillData.value && copiedBillData.value.huyen) {
+      serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+      if (serviceIdParams.value.toDistrict !== 0) {
+        refetchService().then(() => {
+          shippingParams.value.serviceId = service?.value?.data[0].service_id;
+          shippingParams.value.toDistrictId = copiedBillData.value.huyen;
+          shippingParams.value.toWardCode = copiedBillData.value.xa;
+          if (shippingParams.value.toWardCode) {
+            refetchShipping().then(() => {
+              // Miễn phí ship cho hóa đơn từ 2.000.000đ
+              detailDataSources.value[0].tienShip = shipping?.value?.data.total;
+              if (totalPrice.value <= 2000000) {
+                detailDataSources.value[0].tienShip =
+                  shipping?.value?.data.total;
+              } else {
+                detailDataSources.value[0].tienShip = 0;
+              }
+            });
+          }
+        });
+      } else {
+        copiedDataSource.value[0].tienShip = 0;
+      }
+    }
   },
   { immediate: true }
 );
@@ -370,7 +394,6 @@ watch(
           newData[0] = detail?.value?.giaTriGiam;
           newData[0].tongTienHD =
             totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
-          console.log(newData[0].tongTienHD);
         } else {
           // Loại giảm = flase (%)
           newData[0].tienGiamHD =
@@ -401,33 +424,8 @@ watch(
           paymentInfo.value.paid - newData[0].tongTienHD;
       }
     }
-    // voucherId.value = newBillData.idPhieuGiamGia;
-    serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
-    if (copiedBillData.value && copiedBillData.value.huyen) {
-      serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
-      if (serviceIdParams.value.toDistrict !== 0) {
-        refetchService().then(() => {
-          shippingParams.value.serviceId = service?.value?.data[0].service_id;
-          shippingParams.value.toDistrictId = copiedBillData.value.huyen;
-          shippingParams.value.toWardCode = copiedBillData.value.xa;
-          if (shippingParams.value.toWardCode) {
-            refetchShipping().then(() => {
-              // detailDataSources.value[0].tienShip = shipping?.value?.data.total;
-              if (totalPrice.value <= 2000000) {
-                detailDataSources.value[0].tienShip =
-                  shipping?.value?.data.total;
-              } else {
-                detailDataSources.value[0].tienShip = 0;
-              }
-            });
-          }
-        });
-      } else {
-        copiedDataSource.value[0].tienShip = 0;
-      }
-    }
   },
-  { immediate: true, deep: true }
+  { deep: true, immediate: true }
 );
 
 // Theo dõi nếu id hóa đơn thay đổi

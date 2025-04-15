@@ -195,8 +195,11 @@
         <div v-else-if="column.key === 'imgUrl'">
           <a-image
             :width="60"
-            :src="record?.imgUrl != 'default-product-detail-image-url.jpg'
-            ? record.imgUrl : defaultProductImageSaleUrl"
+            :src="
+              record?.imgUrl != 'default-product-detail-image-url.jpg'
+                ? record.imgUrl
+                : defaultProductImageSaleUrl
+            "
             alt="Ảnh SP"
             class="product-image"
           />
@@ -237,14 +240,21 @@ import AdminPayHistory from "./AdminPayHistory.vue";
 import UpdateBillModal from "../bill/UpdateBillModals.vue";
 import AddProductDetailModal from "./AddProductDetailModal.vue";
 import AdminGetDeliveryPayModal from "./AdminGetDeliveryPayModal.vue";
-import { formatCurrencyVND, defaultProductImageSaleUrl } from "@/utils/common.helper";
+import {
+  formatCurrencyVND,
+  defaultProductImageSaleUrl,
+} from "@/utils/common.helper";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
 import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
 import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.action";
-import { useCheckQuantityInStock, useCheckQuantityListProduct, useDeleteQuantityListProduct } from "@/infrastructure/services/service/admin/productdetail.action";
+import {
+  useCheckQuantityInStock,
+  useCheckQuantityListProduct,
+  useDeleteQuantityListProduct,
+} from "@/infrastructure/services/service/admin/productdetail.action";
 import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import {
   useGetListVoucher,
@@ -361,7 +371,7 @@ onMounted(() => {
 // watch(
 //   () => props?.dataSource,
 //   (newData) => {
-    
+
 //   }
 // );
 
@@ -429,10 +439,7 @@ const { data: checkQuantityData, refetch: checkQuantityRefetch } =
     enabled: false,
   });
 
-
-
 // Trừ số lượng list product
-
 
 const copiedDataSource = ref(null);
 
@@ -662,65 +669,53 @@ const getTotalAmount = (totalPaid: number) => {
 };
 
 const handleChangeQuantity = async (record: any) => {
+  if (record.previousQuantity === undefined) {
+    record.previousQuantity = record.soLuong;
+  }
   paramsCheckQuantity.value.id = record.id;
   paramsCheckQuantity.value.quantity = record.soLuong;
 
-  if (!record.previousQuantity && record.soLuong !== 0) {
-    record.previousQuantity = record.soLuong; // Lưu giá trị cũ nếu chưa có
+  if (record.soLuong > 0) {
+    record.previousQuantity = record.soLuong;
+    console.log("previousQuantity:", record.previousQuantity);
   }
-// record.previousQuantity = record.soLuong;
 
   if (record.soLuong === 0) {
-    Modal.confirm({
-      title: "Xác nhận",
-      content: "Bạn có chắc chắn muốn xóa sản phẩm này khỏi đơn hàng?",
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk() {
-        record.thanhTien = 0;
+    handleDelete(record, () => {
+      record.soLuong = record.previousQuantity || 1;
+      setTimeout(() => {
         emit("update-quantity", record);
-      },
-      onCancel() {
-        record.soLuong = record.previousQuantity || 1; // Trả về giá trị cũ
-        setTimeout(() => {
-          emit("update-quantity", record);
-        }, 0);
-      },
+      }, 0);
     });
   } else {
     await checkQuantityRefetch();
     const checkValue = checkQuantityData?.value?.data;
-    
+
     if (!checkValue) {
       warningNotiSort("Số lượng trong kho không đủ!");
-      record.soLuong = record.previousQuantity
-      // setTimeout(() => {
-      //     emit("update-quantity", record);
-      //   }, 0);
-      // reloadData();
+      record.soLuong = 1;
     } else {
       if (record.soLuong <= 0) {
         warningNotiSort("Số lượng không được âm!");
-        
-        // reloadData();
         return;
       }
-      // await updateQuantityOrderDetails(payload);
     }
+
     record.thanhTien = record.soLuong * record.gia;
     emit("update-quantity", record);
-    record.previousQuantity = record.soLuong; // Cập nhật lại giá trị trước đó
-    // console.log(record);
+    record.previousQuantity = record.soLuong;
   }
 };
 
 // Xóa sản phẩm trong giỏ hàng
-const handleDelete = (productDetail: any) => {
+const handleDelete = (productDetail: any, onCancel?: () => void) => {
   Modal.confirm({
     content: "Bạn chắc chắn muốn xóa sản phẩm này ra khỏi giỏ?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
+    okText: "Xóa",
+    okType: "danger",
+    cancelText: "Huỷ",
     async onOk() {
       try {
         // await deleteOrderDetails(productDetail.id);
@@ -730,8 +725,8 @@ const handleDelete = (productDetail: any) => {
         errorNotiSort("Xóa thất bại");
       }
     },
-    cancelText: "Huỷ",
     onCancel() {
+      if (onCancel) onCancel();
       Modal.destroyAll();
     },
   });

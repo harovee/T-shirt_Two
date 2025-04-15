@@ -141,7 +141,7 @@ watch(
       modelRef.xa = newBillData.xa || null;
     }
 
-    console.log(modelRef);
+    // console.log(modelRef);
     
   },
   // { immediate: true } // Theo dõi ngay khi component mount

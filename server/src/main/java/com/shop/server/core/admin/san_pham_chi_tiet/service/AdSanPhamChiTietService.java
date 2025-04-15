@@ -34,5 +34,5 @@ public interface AdSanPhamChiTietService {
 
     ResponseObject<?> checkQuantityInListProduct (List<AdCheckQuantityRequest> listRequest);
 
-    ResponseObject<?> deleteQuantityInStockByListProduct (List<AdCheckQuantityRequest> listRequest);
+    ResponseObject<?> plusQuantityInStockByListProduct (List<AdCheckQuantityRequest> listRequest);
 }

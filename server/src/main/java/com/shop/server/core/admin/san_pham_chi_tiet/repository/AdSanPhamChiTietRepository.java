@@ -432,4 +432,13 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
                     where spct.id = :#{#id};
             """, nativeQuery = true)
     void decreaseStockProduct(String id, Long quantity);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+                    update san_pham_chi_tiet spct
+                    set spct.so_luong = spct.so_luong + :#{#quantity}
+                    where spct.id = :#{#id};
+            """, nativeQuery = true)
+    void plusStockProduct(String id, Long quantity);
 }
