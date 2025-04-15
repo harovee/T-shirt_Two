@@ -172,6 +172,7 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
 
         if (request.getSoLuong() <= 0) {
             // Xóa chi tiết hóa đơn nếu số lượng <= 0
+            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
             adminBillDetailRepository.delete(billDetail);
         } else {
             // Cập nhật chi tiết hóa đơn
