@@ -1,6 +1,6 @@
 // src/routes/productApi.js
 import express from "express";
-import connection from "./dbConfig.js";
+import connection from "./websocket/config/dbConfig.js";
 import cors from 'cors';
 const app = express();
 
