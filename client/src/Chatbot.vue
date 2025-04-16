@@ -37,11 +37,6 @@ const toggleChat = () => {
 
 const chatBodyRef = ref(null);
 
-// watch(messages, async () => {
-//   await nextTick(); // đợi DOM render xong
-//   scrollToBottom();
-// });
-
 const scrollToBottom = () => {
   if (chatBodyRef.value) {
     chatBodyRef.value.scrollTo({
@@ -62,10 +57,13 @@ const productFeatures = {
 };
 
 const systemInfo = {
-  userInfo: [
-    `Tên người dùng: ${authStore.user.userName}`,
-    `Vai trờ người dùng: ${authStore.user.roleName}`,
-  ],
+  userInfo: computed(() => {
+    if (!authStore.user) return [];
+    return [
+      `Tên người dùng: ${authStore.user.userName}`,
+      `Vai trò người dùng: ${authStore.user.roleName}`,
+    ];
+  }),
   storeInfo: {
     locations: [
       "Tòa nhà FPT Polytechnic, 13 phố Trịnh Văn Bô, phường Phương Canh, quận Nam Từ Liêm, TP Hà Nội",
@@ -75,7 +73,7 @@ const systemInfo = {
   },
 
   policies: {
-    return: "Đổi trả trong 7 ngày nếu sản phẩm còn nguyên tag",
+    return: "Hiện cửa hàng chưa áp dụng chính sách đổi trả nào, hãy liên hệ trực tiếp để được tư vấn",
     shipping:
       "Miễn phí vận chuyển áp dụng cho các đơn hàng từ 2 triệu đồng trở lên",
     payment: "Chấp nhận COD, chuyển khoản và ví điện tử",
@@ -90,7 +88,7 @@ const systemInfo = {
     ],
   },
 
-  promotions: ["Hiện tại chưa có chương trình khuyến mãi."],
+  promotions: ["Hiện tại chưa có chương trình khuyến mãi."], //api đợt giảm giá
 
   systemOverview: {
     features: {
@@ -307,7 +305,7 @@ const analyzeIntent = (text) => {
     orderManagement: /(đơn hàng|hóa đơn|trạng thái đơn|quản lý đơn)/i,
     productManagement: /(sản phẩm|danh mục|thương hiệu|chất liệu)/i,
     clientFeatures: /(giỏ hàng|thanh toán|trang cá nhân|tìm kiếm sản phẩm)/i,
-    systemPolicy: /(chính sách|đổi trả|vận chuyển|thanh toán)/i,
+    systemPolicy: /(chính sách|vận chuyển|thanh toán|freeship)/i,
     storeInfo: /(cửa hàng|địa chỉ|giờ mở cửa|hotline)/i,
     mainMenu: /(menu chính|main menu|navigation|menu admin|quản lý menu)/i,
     userInfo:
@@ -330,12 +328,12 @@ const extractProductInfo = (text) => {
     kichCo: /(?:size|kích cỡ|kích thước)\s*(\S+)/i,
     maxPrice:
       /(?:giá|khoảng|dưới|trên|tầm)\s*([\d\s.,]+(?:k|ngàn|tr|triệu)?)\b/i,
-    chatLieu: new RegExp(`(${productFeatures.materials.join("|")})`, "i"),
-    kieuDang: new RegExp(`(${productFeatures.styles.join("|")})`, "i"),
-    thuongHieu: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
-    tayAo: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
-    tinhNang: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
-    thuongHieu: new RegExp(`(${productFeatures.brands.join("|")})`, "i"),
+    chatLieu: /(?:vải|chất liệu)\s*(\S+)/i,
+    kieuDang: /(?:kiểu|dáng)\s*(\S+)/i,
+    thuongHieu: /(?:hiệu|nhãn hàng|nhãn hiệu)\s*(\S+)/i,
+    tayAo: /(?:tay|tay áo)\s*(\S+)/i,
+    tinhNang: /(?:chức năng|tính|tính năng|khả năng)\s*(\S+)/i,
+    hoaTiet: /(?:họa tiết|hình)\s*(\S+)/i,
   };
 
   const params = {};
@@ -453,7 +451,7 @@ const sendMessage = async () => {
         messages.value.push({
           text: `<ul>${systemResponse}</ul>`,
           sender: "bot",
-          isHtml: true
+          isHtml: true,
         });
         break;
       }
@@ -496,11 +494,9 @@ const sendMessage = async () => {
                 parts: [
                   {
                     text: `Hệ thống không có sản phẩm phù hợp. Hãy đề xuất các tùy chọn thay thế dựa trên:
-            - Chất liệu có sẵn: ${productFeatures.materials.join(", ")}
-            - Khoảng giá: ${formatCurrencyVND(
-              productFeatures.priceRange.min
-            )} - ${formatCurrencyVND(productFeatures.priceRange.max)}
-            - Thương hiệu: ${productFeatures.brands.join(", ")}`,
+                  - Chất liệu có sẵn: ${productFeatures.materials.join(", ")}
+                  - Khoảng giá: ${formatCurrencyVND(productFeatures.priceRange.min)} - ${formatCurrencyVND(productFeatures.priceRange.max)}
+                  - Thương hiệu: ${productFeatures.brands.join(", ")}`,
                   },
                 ],
               },
@@ -517,9 +513,15 @@ const sendMessage = async () => {
         break;
 
       default:
+        const safeSystemInfo = {
+          ...systemInfo,
+          userInfo: systemInfo.userInfo.value, // 👉 unwrap computed
+        };
+
         const prompt = `Hãy trả lời dựa trên thông tin: ${JSON.stringify(
-          systemInfo
+          safeSystemInfo
         )}\n\nCâu hỏi: ${userMessage}`;
+
         const response = await model.generateContent(prompt);
         messages.value.push({
           text: await response.response.text(),
@@ -547,28 +549,25 @@ const handleSystemQuery = (query, userRole) => {
     response = `💳 Chính sách thanh toán: ${systemInfo.policies.payment}`;
     if (isAdmin) {
     }
-  } 
-  
-  else if (/khuyến mãi|ưu đãi/.test(normalized)) {
-    response = `🎁 Đang có các khuyến mãi:\n${systemInfo.promotions.join(             //api đợt giảm giá
+  } else if (/khuyến mãi|ưu đãi/.test(normalized)) {
+    response = `🎁 Đang có các khuyến mãi:\n${systemInfo.promotions.join(
+      //api đợt giảm giá
       "\n- "
     )}`;
-  } 
-  
-  else if (/cửa hàng|địa chỉ/.test(normalized)) {
+  } else if (/cửa hàng|địa chỉ/.test(normalized)) {
     response = `📍 Hệ thống cửa hàng:\n${systemInfo.storeInfo.locations.join(
       "\n- "
     )}\nGiờ mở cửa: ${systemInfo.storeInfo.openingHours}`;
     if (isAdmin) {
       response += `\n📞 Hotline nội bộ: 090 123 4567`;
     }
-  } 
+  }
   
-  else if (/vận chuyển|ship/.test(normalized)) {
+  else if (/vận chuyển|ship|chính sách/.test(normalized)) {
     response = `🚚 Chính sách vận chuyển: ${systemInfo.policies.shipping}`;
   } 
   
-  else if (/(tổng quan|dashboard|thống kê)/i.test(normalized)) {
+  else if (/(tổng quan|dashboard|thống kê)/i.test(normalized) && userRole === 'ADMIN') {
     response = `📊 Thống kê tổng quan:\n${systemInfo.systemOverview.features.dashboard.summaryCards.join(
       "\n- "
     )}\n\nBiểu đồ trạng thái đơn hàng: ${systemInfo.systemOverview.features.dashboard.charts[0].segments
@@ -582,19 +581,22 @@ const handleSystemQuery = (query, userRole) => {
     )}\n- Chi tiết xem tại mục Hóa đơn -> Quản lý hóa đơn`;
 
     if (userRole === "ADMIN" || userRole === "USER") {
-      response +=
-        "\n⚙️ Chi tiết xem tại mục Hóa đơn -> Quản lý hóa đơn";
+      response += "\n⚙️ Chi tiết xem tại mục Hóa đơn -> Quản lý hóa đơn";
     }
   } 
   
-  else if (/(giỏ hàng|thanh toán)/i.test(normalized)) {
+  else if (/(giỏ hàng|thanh toán|thanh toán ở đâu)/i.test(normalized)) {
     response = `🛒 Tính năng khách hàng:\n- ${systemInfo.clientInterface.features.productDetails.elements.join(
       "\n- "
     )}`;
   } 
   
-  else if (/(chính sách|đổi trả)/i.test(normalized)) {
-    response = `📜 Chính sách:\n- Đổi trả: ${systemInfo.policies.return}\n- Vận chuyển: ${systemInfo.policies.shipping}`;
+  // else if (/(chính sách|freeship|miễn phí vận chuyển)/i.test(normalized)) {
+  //   response = `📜Cửa hàng chúng tôi có chính sách:\n- Vận chuyển: ${systemInfo.policies.shipping}`;
+  // }
+  
+  else if (/(đổi trả)/i.test(normalized)) {
+    response = `📜${systemInfo.policies.return}`;
   } 
   
   else if (/(cửa hàng|địa chỉ)/i.test(normalized)) {
@@ -603,12 +605,12 @@ const handleSystemQuery = (query, userRole) => {
     )}\n⏰ Giờ mở cửa: ${systemInfo.storeInfo.openingHours}`;
 
     if (userRole === "ADMIN" || userRole === "USER") {
-      response += `\n🔒 Thông tin nội bộ: Doanh thu cao nhất tại ${systemInfo.storeInfo.locations[0]}`;           //api doanh thu
+      response += `\n🔒 Thông tin nội bộ: Doanh thu cao nhất tại ${systemInfo.storeInfo.locations[0]}`; //api doanh thu
     }
   } 
   
   else if (/(tôi là ai|vai trò của tôi)/i.test(normalized)) {
-    response = `🏪 Thông tin người dùng đang đăng nhập:\n${systemInfo.userInfo.join(
+    response = `🏪 Thông tin người dùng đang đăng nhập:\n${systemInfo.userInfo.value.join(
       "\n "
     )}`;
   } 
@@ -658,8 +660,7 @@ const handleSystemQuery = (query, userRole) => {
         :key="index"
         :class="`message ${msg.sender}`"
         v-html="msg.text.replace(/\n/g, '<br>')"
-      >
-      </div>
+      ></div>
       <div v-if="isLoading" class="loading">Đang trả lời...</div>
     </div>
     <div class="chat-input">
