@@ -34,7 +34,7 @@
             <!-- chuông thông báo -->
             <a-dropdown placement="bottomRight" arrow :overlay-style="{ marginTop: '100px' }">
               <template #overlay>
-                <notification-list/>
+                <notification-list :messages="messages"/>
               </template>
               <BellOutlined class="text-xl cursor-pointer" />
             </a-dropdown>
@@ -323,4 +323,8 @@ const handleClick: MenuProps["onClick"] = (e) => {
     router.push(path);
   }
 };
+
+import { useNotificationSocket } from "@/websocket/config/useNotificationSocket";
+const { messages } = useNotificationSocket();
+
 </script>

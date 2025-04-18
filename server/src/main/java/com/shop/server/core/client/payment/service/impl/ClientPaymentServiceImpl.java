@@ -24,10 +24,13 @@ import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.repositories.*;
 import com.shop.server.utils.DateTimeUtil;
 import com.shop.server.utils.VNPayUtil;
+import com.shop.websocket.model.entity.OrderNotification;
+import com.shop.websocket.repository.NotificationRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +59,8 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
     private final SanPhamChiTietRepository sanPhamChiTietRepository;
     private final AdminBillSendMailService adminBillSendMailService;
     private final MomoServices momoService;
+    private final NotificationRepository notificationRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public ResponseObject<?> createInvoice(ClientPaymentRequest request) {
@@ -111,6 +116,13 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
             clientPaymentRepository.saveProductDetailsToInvoice(req, hoaDon.getId(), request.getIdNhanVien());
 //            clientPaymentRepository.updateSoLuong(req);
         }
+
+        // lưu thông báo - gửi thông báo
+        OrderNotification orderNotification = new OrderNotification();
+        orderNotification.setOrderId(hoaDon.getId());
+        orderNotification.setContent("Hóa đơn " + hoaDon.getMa() + " cần xác nhận");
+        OrderNotification noti  = notificationRepository.save(orderNotification);
+        messagingTemplate.convertAndSend("/topic/notification", orderNotification.getContent());
 
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);

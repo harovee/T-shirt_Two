@@ -1,38 +1,24 @@
 <template>
-  <div id="notifications">
-    Đây là thông báo
-    <p v-for="(message, index) in messages" :key="index">{{ message }}</p>
+  <div>
+    <p
+      v-for="(message, index) in messages"
+      :key="index"
+      class="p-2 text-sm text-gray-800 border-b border-gray-200 hover:bg-gray-50"
+    >
+      {{ message }}
+    </p>
+    <p v-if="!messages.length" class="p-2 text-sm text-gray-400 text-center">
+      Không có thông báo
+    </p>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from 'vue'
-import SockJS from 'sockjs-client'
-import type { Client, Message, Subscription } from 'stompjs'
-import Stomp from 'stompjs'
+import { computed } from 'vue';
 
-const messages = ref<string[]>([])
-let stompClient: Client | null = null
-let subscription: Subscription | null = null
+const props = defineProps<{
+  messages: string[];
+}>();
 
-onMounted(() => {
-  const socket = new SockJS('http://localhost:6868/ws')
-  stompClient = Stomp.over(socket)
-  
-  stompClient.connect({}, () => {
-    subscription = stompClient!.subscribe(
-      '/topic/notification',
-      (message: Message) => {
-        messages.value.push(message.body)
-      }
-    )
-  })
-})
-
-onUnmounted(() => {
-  subscription?.unsubscribe()
-  stompClient?.disconnect(() => {
-    console.log('Disconnected from WebSocket')
-  })
-})
+const messages = computed(() => props.messages);
 </script>

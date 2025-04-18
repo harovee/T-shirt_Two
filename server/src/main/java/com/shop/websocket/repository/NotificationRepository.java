@@ -14,7 +14,7 @@ public interface NotificationRepository extends JpaRepository<OrderNotification,
         SELECT
             noti.id AS id,
             noti.ma_hoa_don AS orderId,
-            noti.createdDate AS createdDate,
+            noti.nguoi_tao AS createdDate,
             noti.noi_dung AS content,
             noti.da_xem AS isRead,
             noti.loai_thong_bao AS notificationType
