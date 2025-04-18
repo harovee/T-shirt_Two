@@ -10,12 +10,12 @@ import {
 } from "vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import { Client } from "@stomp/stompjs";
-import { useGetClientChatList } from "./infrastructure/services/service/admin/client.action";
+import { useGetClientChatList } from "../../infrastructure/services/service/admin/client.action";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { useGetChatHistory } from "./infrastructure/services/service/admin/chathistory.action";
-import { dateFormatChatBox } from "./utils/common.helper";
+import { useGetChatHistory } from "../../infrastructure/services/service/admin/chathistory.action";
+import { dateFormatChatBox } from "../../utils/common.helper";
 import { WechatOutlined } from "@ant-design/icons-vue";
-import { useChatToggleStore } from "./infrastructure/stores/chatToggle";
+import { useChatToggleStore } from "../../infrastructure/stores/chatToggle";
 
 const authStore = useAuthStore();
 

@@ -6,6 +6,11 @@ import axios from "axios";
 import { formatCurrencyVND } from "./utils/common.helper";
 import { DingtalkOutlined } from "@ant-design/icons-vue";
 import { useChatToggleStore } from "./infrastructure/stores/chatToggle";
+import { keepPreviousData } from "@tanstack/vue-query";
+import { useGetChatLieu, useGetKieuDang, useGetThuongHieu } from "./infrastructure/services/service/client/productclient.action";
+import { useGetListColor } from "./infrastructure/services/service/admin/color.action";
+import { useGetListSize } from "./infrastructure/services/service/admin/size.action";
+import { useGetListProduct } from "./infrastructure/services/service/admin/product.action";
 
 const authStore = useAuthStore();
 const userRole = computed(() => authStore.user.roleName);
@@ -46,15 +51,47 @@ const scrollToBottom = () => {
   }
 };
 
+const { data: thuongHieu } = useGetThuongHieu({
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const { data: mauSac } = useGetListColor({
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const { data: chatLieu } = useGetChatLieu({
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const { data: kieuDang } = useGetKieuDang({
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const { data: kichCo } = useGetListSize({
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
+const { data: sanPhams } = useGetListProduct({
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
+
 // Product knowledge base
 const productFeatures = {
-  materials: ["cotton", "polyester", "vải cá sấu", "vải jean"],
-  sizes: ["S", "M", "L", "XL", "XXL"],
-  colors: ["trắng", "đen", "xanh navy", "đỏ", "hồng", "xám", "kem"],
-  styles: ["cổ tròn", "cổ tim", "cổ V", "tay ngắn", "tay dài"],
-  brands: ["Gucci", "Dior", "Balenciaga", "Local Brand", "Adidas"],
-  priceRange: { min: 150000, max: 5000000 },
+  materials: chatLieu?.value?.data?.map((item) => item.ten) || [],
+  sizes: kichCo?.value?.data?.map((item) => item.ten) || [],
+  colors: mauSac?.value?.data?.map((item) => item.ten) || [],
+  styles: kieuDang?.value?.data?.map((item) => item.ten) || [],
+  brands: thuongHieu?.value?.data?.map((item) => item.ten) || [],
+  products: sanPhams?.value?.data?.map((item) => item.ten) || [],
+  // priceRange: { min: 150000, max: 5000000 },
 };
+// console.log(productFeatures.products);
 
 const systemInfo = {
   userInfo: computed(() => {
@@ -88,7 +125,7 @@ const systemInfo = {
     ],
   },
 
-  promotions: ["Hiện tại chưa có chương trình khuyến mãi."], //api đợt giảm giá
+  promotions: ["Theo dõi các tin tức khuyến mãi trên trang chủ, hoặc liên hệ trực tiếp cho nhân viên để biết thêm chi tiết"],
 
   systemOverview: {
     features: {
@@ -152,15 +189,11 @@ const systemInfo = {
     header: ["Trang chủ", "Sản phẩm", "Giới thiệu", "Liên hệ"],
     features: {
       searchBar: "Thanh tìm kiếm sản phẩm",
-      cart: {
-        icon: "Biểu tượng giỏ hàng",
-        actions: ["Xem giỏ hàng", "Thanh toán"],
-      },
       userProfile: {
         icon: "Biểu tượng trang cá nhân",
         functions: [
-          "Tra cứu đơn hàng bằng mã đơn",
-          "Lọc đơn hàng theo trạng thái",
+          "Tra cứu đơn hàng đã mua",
+          "Đăng xuất",
         ],
       },
       productDetails: {
@@ -334,6 +367,7 @@ const extractProductInfo = (text) => {
     tayAo: /(?:tay|tay áo)\s*(\S+)/i,
     tinhNang: /(?:chức năng|tính|tính năng|khả năng)\s*(\S+)/i,
     hoaTiet: /(?:họa tiết|hình)\s*(\S+)/i,
+    coAo: /(?:cổ|cổ áo)\s*(\S+)/i,
   };
 
   const params = {};
@@ -462,7 +496,7 @@ const sendMessage = async () => {
         // Fallback nếu không có param nào
         if (Object.keys(searchParams).length === 0) {
           messages.value.push({
-            text: "Bạn có thể nói rõ hơn về sản phẩm cần tìm? (Ví dụ: 'Tìm áo màu đen size L giá 300k')",
+            text: "Bạn có thể nói rõ hơn về sản phẩm cần tìm? (Ví dụ: 'Tìm áo màu đen, size L, giá 300k')",
             sender: "bot",
           });
           break;
@@ -474,14 +508,24 @@ const sendMessage = async () => {
             .map(
               (p) =>
                 `<li>
-          <a href="http://localhost:8888/products/${p.id}" target="_blank">
-            <strong>${p.sanPham}</strong> - ${p.mauSac}
-          </a><br>
-          Giá: <span style="color: green;">${formatCurrencyVND(p.gia)}</span>
-        </li>`
+                    <a href="http://localhost:8888/products/${p.id}" target="_blank">
+                      <strong>${p.sanPham}</strong> - <span style="display: inline-block;background-color: #f5f5f5;border: 1px solid #d9d9d9;padding: 2px 6px;border-radius: 4px;font-size: 10px;color: #595959;margin: 10px 0px 10px;line-height: 1.5;">${p.kichCo}</span> - ${p.mauSac}</a>
+                      Hiệu: ${p.thuongHieu}\n
+                      Chất liệu: ${p.chatLieu}\n
+                      Kiểu dáng: ${p.kieuDang}\n
+                      Tính năng: ${p.tinhNang}\n
+                      Cổ áo: ${p.coAo}\n
+                      Tay áo: ${p.tayAo}\n
+                      Họa tiết: ${p.hoaTiet}\n
+                      Giá: ${p.idSanPhamGiamGia
+                                ? `<span style="color: green;"><del style="color: grey">${formatCurrencyVND(p.gia)}</del> → ${formatCurrencyVND(p.giaSauGiam)}</span>`
+                                : `<span style="color: green;">${formatCurrencyVND(p.gia)}</span>`
+                            }
+                        -------------------------------
+                </li>`
             )
             .join("");
-
+        
           messages.value.push({
             text: `Tôi tìm thấy ${products.length} sản phẩm có thể phù hợp với bạn:<ul>${productList}</ul>`,
             sender: "bot",
@@ -495,8 +539,9 @@ const sendMessage = async () => {
                   {
                     text: `Hệ thống không có sản phẩm phù hợp. Hãy đề xuất các tùy chọn thay thế dựa trên:
                   - Chất liệu có sẵn: ${productFeatures.materials.join(", ")}
-                  - Khoảng giá: ${formatCurrencyVND(productFeatures.priceRange.min)} - ${formatCurrencyVND(productFeatures.priceRange.max)}
-                  - Thương hiệu: ${productFeatures.brands.join(", ")}`,
+                  - Thương hiệu: ${productFeatures.brands.join(", ")}
+                  --------------------------------------
+                  - Hoặc bạn có thể nói rõ hơn về sản phẩm cần tìm? (Ví dụ: 'Tìm áo màu đen, size L, giá 300k,...')`,
                   },
                 ],
               },
@@ -547,7 +592,7 @@ const handleSystemQuery = (query, userRole) => {
 
   if (/thanh toán|payment/.test(normalized)) {
     response = `💳 Chính sách thanh toán: ${systemInfo.policies.payment}`;
-    if (isAdmin) {
+    if (userRole === 'ADMIN') {
     }
   } else if (/khuyến mãi|ưu đãi/.test(normalized)) {
     response = `🎁 Đang có các khuyến mãi:\n${systemInfo.promotions.join(
@@ -558,7 +603,7 @@ const handleSystemQuery = (query, userRole) => {
     response = `📍 Hệ thống cửa hàng:\n${systemInfo.storeInfo.locations.join(
       "\n- "
     )}\nGiờ mở cửa: ${systemInfo.storeInfo.openingHours}`;
-    if (isAdmin) {
+    if (userRole === 'ADMIN') {
       response += `\n📞 Hotline nội bộ: 090 123 4567`;
     }
   }
@@ -576,9 +621,11 @@ const handleSystemQuery = (query, userRole) => {
   } 
   
   else if (/(đơn hàng|hóa đơn|trạng thái)/i.test(normalized)) {
-    response = `📦 Quản lý đơn hàng:\n- Các trạng thái: ${systemInfo.policies.orderStatus.join(
+    if (userRole === 'CLIENT') {
+      response = `📦 Biểu tượng cá nhân :\n- Xem đơn hàng đã mua: ${systemInfo.policies.orderStatus.join(
       ", "
-    )}\n- Chi tiết xem tại mục Hóa đơn -> Quản lý hóa đơn`;
+      )}\n- Xem chi tiết hóa đơn, trạng thái đơn hàng trong từng đơn hàng`;
+    }
 
     if (userRole === "ADMIN" || userRole === "USER") {
       response += "\n⚙️ Chi tiết xem tại mục Hóa đơn -> Quản lý hóa đơn";
@@ -604,7 +651,7 @@ const handleSystemQuery = (query, userRole) => {
       "\n- "
     )}\n⏰ Giờ mở cửa: ${systemInfo.storeInfo.openingHours}`;
 
-    if (userRole === "ADMIN" || userRole === "USER") {
+    if (userRole === "ADMIN") {
       response += `\n🔒 Thông tin nội bộ: Doanh thu cao nhất tại ${systemInfo.storeInfo.locations[0]}`; //api doanh thu
     }
   } 
@@ -615,21 +662,17 @@ const handleSystemQuery = (query, userRole) => {
     )}`;
   } 
   
-  else if (
-    (/(menu chính|main menu|navigation|menu admin)/i.test(normalized) &&
-      userRole === "ADMIN") ||
-    userRole === "USER"
-  ) {
-    response = "🗂️ Menu quản trị hệ thống:\n";
-    systemInfo.navigation.sidebar.mainMenu.forEach((item) => {
-      if (typeof item === "object") {
-        response += `\n📁 ${item.label}:\n- ${item.subMenu.join("\n- ")}`;
-      } else {
-        response += `\n📌 ${item}`;
-      }
-    });
-    response += "\n\n🔒 Chỉ hiển thị cho quản trị viên hoặc nhân viên";
-    return response;
+  else if (/(menu chính|main menu|navigation|menu admin)/i.test(normalized)) {
+    if (userRole === 'ADMIN' || userRole === 'USER') {
+      response = "🗂️ Menu quản trị hệ thống:\n";
+      systemInfo.navigation.sidebar.mainMenu.forEach((item) => {
+        if (typeof item === "object") {
+          response += `\n📁 ${item.label}:\n- ${item.subMenu.join("\n- ")}`;
+        } else {
+          response += `\n📌 ${item}`;
+        }
+      });
+    }
   } 
   
   else {
