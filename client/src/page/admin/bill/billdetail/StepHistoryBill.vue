@@ -105,6 +105,7 @@
       title="Chi tiết lịch sử"
       @cancel="handleCancel"
       @ok="handleCancel"
+      :scroll="{ x: 'max-content', y: 600 }"
     >
       <a-table
         :columns="columns"

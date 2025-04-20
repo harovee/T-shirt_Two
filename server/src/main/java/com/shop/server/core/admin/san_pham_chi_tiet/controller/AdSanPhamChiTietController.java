@@ -3,6 +3,7 @@ package com.shop.server.core.admin.san_pham_chi_tiet.controller;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdUpdateSaleProductDetail;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
 import com.shop.server.core.admin.san_pham_chi_tiet.service.AdSanPhamChiTietService;
@@ -64,6 +65,11 @@ public class AdSanPhamChiTietController {
     @PutMapping("/quantity/plus")
     public ResponseEntity<?> deleteQuantityInListProduct(@RequestBody List<AdCheckQuantityRequest> request) {
         return Helper.createResponseEntity(adSanPhamChiTietService.plusQuantityInStockByListProduct(request));
+    }
+
+    @PutMapping("/sale-product")
+    public ResponseEntity<?> updateSaleProductDetail(@RequestBody AdUpdateSaleProductDetail request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.updateProductSale(request));
     }
 
     @GetMapping("/{id}")

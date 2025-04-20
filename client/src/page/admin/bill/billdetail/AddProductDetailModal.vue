@@ -55,6 +55,8 @@ import { useGetListSize } from "@/infrastructure/services/service/admin/size.act
 import { useGetListSleeve } from "@/infrastructure/services/service/admin/sleeve.action";
 import { useGetListStyle } from "@/infrastructure/services/service/admin/style.action";
 import { useGetListTrademark } from "@/infrastructure/services/service/admin/trademark.action";
+import { useAuthStore } from "@/infrastructure/stores/auth";
+import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
 
 // Định nghĩa Props
 const props = defineProps({
@@ -95,6 +97,8 @@ const handleSelectProduct = (product: any) => {
 };
 
 const { mutate: createBillDetail } = useCreateBillDetail();
+
+const { mutate: createBillHistory } = useCreateBillHistory();
 
 const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
@@ -154,6 +158,14 @@ const handleAddProducts = () => {
       isClient: props.billData.loaiHD === 'Online' ? true : false
     };
 
+    const billHistoryParams = {
+          idHoaDon: modelRef.idHoaDon,
+          hanhDong: `Thêm sản phẩm`,
+          moTa: `Nhân viên "${useAuthStore().user?.email}" đã thêm sản phẩm vào đơn`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null
+        }
+
     // console.log("📤 Dữ liệu gửi đi API:", requestData); // Log dữ liệu trước khi gửi
 
     createBillDetail(requestData, {
@@ -164,6 +176,8 @@ const handleAddProducts = () => {
         console.error("❌ Lỗi khi thêm sản phẩm:", error);
       },
     });
+    // Thêm lịch sử hóa đơn (Khi khách thêm sản phẩm vào đơn)
+    createBillHistory(billHistoryParams);
   });
   // console.log(selectedProducts.value);
 

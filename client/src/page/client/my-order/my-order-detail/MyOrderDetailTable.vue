@@ -840,10 +840,6 @@ const handleChangeQuantity = async (record: any) => {
   params.value.id = record.idSanPhamChiTiet;
   params.value.quantity = record.soLuong;
 
-  if (!record.previousQuantity && record.soLuong !== 0) {
-    record.previousQuantity = record.soLuong; // Lưu giá trị cũ nếu chưa có
-  }
-
   if (record.soLuong === 0) {
     Modal.confirm({
       title: "Xác nhận",
@@ -870,12 +866,17 @@ const handleChangeQuantity = async (record: any) => {
 
     if (!checkValue) {
       warningNotiSort("Số lượng trong kho không đủ!");
+      record.soLuong = 1;
       emit("reload-data", () => {
         tableKey.value++;
       });
       console.log(tableKey.value);
       return;
     } else {
+      if (record.soLuong < 0) {
+        warningNotiSort("Số lượng không được âm!");
+        record.soLuong = 1;
+      }
       emit("update-quantity", record);
     }
     // record.thanhTien = record.soLuong * record.gia;

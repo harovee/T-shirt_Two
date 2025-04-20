@@ -685,6 +685,12 @@ const handleUpdateBill = (x: number) => {
     warningNotiSort("Vui lòng điền thông tin người nhận!");
     return;
   }
+  if (dataSourcePro.value.length <= 0) {
+    warningNotiSort(
+      "Không có sản phẩm nào trong giỏ hàng!"
+    );
+    return;
+  }
   if (paymentedValue.value === 0) {
     warningNotiSort(
       "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"

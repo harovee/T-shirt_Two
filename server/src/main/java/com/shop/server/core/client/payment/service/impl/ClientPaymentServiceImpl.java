@@ -101,7 +101,8 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         adminSendEmailRequest.setEmail(request.getEmail());
         adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
         adminSendEmailRequest.setTrangThai("Chờ xác nhận");
-        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminSendEmailRequest.setGhiChu(request.getGhiChu() == null ? "" : request.getGhiChu());
+        adminSendEmailRequest.setIdHoaDon(hoaDon.getId());
         adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
         if (request.getIdPhieuGiamGia() != null) {
             adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
@@ -169,7 +170,8 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         adminSendEmailRequest.setEmail(request.getEmail());
         adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
         adminSendEmailRequest.setTrangThai("Chờ xác nhận");
-        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminSendEmailRequest.setGhiChu(request.getGhiChu() == null ? "" : request.getGhiChu());
+        adminSendEmailRequest.setIdHoaDon(hoaDon.getId());
         adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
 
         adminBillRepository.save(hoaDon);
@@ -248,7 +250,8 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         adminSendEmailRequest.setEmail(request.getEmail());
         adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
         adminSendEmailRequest.setTrangThai("Chờ xác nhận");
-        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminSendEmailRequest.setGhiChu(request.getGhiChu() == null ? "" : request.getGhiChu());
+        adminSendEmailRequest.setIdHoaDon(hoaDon.getId());
         adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
         if (request.getIdPhieuGiamGia() != null) {
             adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
@@ -323,7 +326,8 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         adminSendEmailRequest.setEmail(request.getEmail());
         adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
         adminSendEmailRequest.setTrangThai("Chờ xác nhận");
-        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminSendEmailRequest.setGhiChu(request.getGhiChu() == null ? "" : request.getGhiChu());
+        adminSendEmailRequest.setIdHoaDon(hoaDon.getId());
         adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
         if (request.getIdPhieuGiamGia() != null) {
             adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());

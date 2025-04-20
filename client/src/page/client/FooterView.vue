@@ -28,7 +28,7 @@
               <td><a href="#">Tin tuyển dụng</a></td>
               <td><a href="#">Chính sách thành viên</a></td>
               <td><a href="#">Chính sách đổi trả</a></td>
-              <td>Email: cskh@tokyolife.vn</td>
+              <td>Email: cskh@tshirttwo2.vn</td>
             </tr>
             <tr>
               <td></td>
