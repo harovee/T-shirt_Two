@@ -9,9 +9,11 @@ import com.shop.server.core.admin.kich_co.repository.AdKichCoRepository;
 import com.shop.server.core.admin.kieu_dang.repository.AdKieuDangRepository;
 import com.shop.server.core.admin.mau_sac.repository.AdMauSacRepository;
 import com.shop.server.core.admin.product.repositories.AdminProductRepository;
+import com.shop.server.core.admin.sale.repositories.AdminSaleProductRepository;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdUpdateSaleProductDetail;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
 import com.shop.server.core.admin.san_pham_chi_tiet.service.AdSanPhamChiTietService;
 import com.shop.server.core.admin.tay_ao.repository.AdTayAoRepository;
@@ -20,7 +22,10 @@ import com.shop.server.core.admin.tinh_nang.repository.AdTinhNangRepository;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.Anh;
+import com.shop.server.entities.main.DotGiamGia;
 import com.shop.server.entities.main.SanPhamChiTiet;
+import com.shop.server.entities.main.SanPhamGiamGia;
+import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +65,8 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
     private final AdminProductRepository adminProductRepository;
 
     private final AdAnhRepository adAnhRepository;
+
+    private final AdminSaleProductRepository sanPhamGiamGiaRepository;
 
 
     @Override
@@ -206,6 +213,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                     spct1.setTinhNang(request.getIdTinhNang() != null ? adTinhNangRepository.findById(request.getIdTinhNang()).orElse(null) : null);
                     return adSanPhamChiTietRepository.save(spct1);
                 });
+        updateProductSale(new AdUpdateSaleProductDetail(id, request.getGia()));
         return spct
                 .map(spct1 -> new ResponseObject<>(spct1, HttpStatus.OK,
                         "Cập nhật sản phẩm chi tiết thành công."))
@@ -267,5 +275,41 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
             adSanPhamChiTietRepository.plusStockProduct(request.getId(), request.getQuantity());
         }
         return new ResponseObject<>(null, HttpStatus.OK, "Update số lượng thành công");
+    }
+
+    @Override
+    public ResponseObject<?> updateProductSale(AdUpdateSaleProductDetail request) {
+        try {
+            List<SanPhamGiamGia> sanPhamGiamGias = sanPhamGiamGiaRepository.findAllBySanPhamChiTietIdAndDeletedIsFalse(request.getId());
+            sanPhamGiamGias.forEach((e) -> {
+                e.setGiaSauGiam(giaSauGiam(e.getDotGiamGia(), request.getPrice()));
+                sanPhamGiamGiaRepository.save(e);
+            });
+            return ResponseObject.successForward(
+                    "OK",
+                    Message.Success.UPDATE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseObject.errorForward(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+        }
+    }
+
+    private BigDecimal giaSauGiam(DotGiamGia dotGiamGia, BigDecimal giaSPCT) {
+        double spct = giaSPCT.doubleValue();
+        String loai = dotGiamGia.getLoai();
+        Double giaTriGiam = dotGiamGia.getGiaTri();
+        Double giaTriGiamToiDa = dotGiamGia.getGiaTriGiamToiDa();
+
+        if (loai.equals("PERCENT")) {
+            return BigDecimal.valueOf(spct - (spct * (giaTriGiam / 100)));
+        }
+        if (loai.equals("VND") && spct >= giaTriGiam) {
+            return BigDecimal.valueOf(spct - giaTriGiam);
+        }
+        if (loai.equals("VND") && spct < giaTriGiam && spct >= giaTriGiamToiDa) {
+            return BigDecimal.valueOf(spct - giaTriGiamToiDa);
+        }
+        return BigDecimal.valueOf(spct / 2);
     }
 }

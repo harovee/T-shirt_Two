@@ -1,7 +1,6 @@
 package com.shop.websocket.repository;
 
 import com.shop.websocket.model.entity.ChatMessage;
-import com.shop.websocket.model.request.FindChatByRequest;
 import com.shop.websocket.model.response.ChatHistoryResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

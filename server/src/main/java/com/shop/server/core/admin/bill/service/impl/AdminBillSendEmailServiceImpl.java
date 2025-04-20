@@ -42,7 +42,12 @@ public class AdminBillSendEmailServiceImpl implements AdminBillSendMailService {
                                                     <p style="margin-top: 20px">
                                                       🚛 Đơn hàng của bạn đang được xử lý và sẽ sớm được giao đến bạn.
                                                     </p>
-                    
+                                                    <p>
+                                                      🔍 Bạn có thể xem chi tiết đơn hàng tại đây:
+                                                      <a href="http://localhost:8888/my-order-detail?idHoaDon=%s" style="color: #4caf50; text-decoration: none;">
+                                                        Xem chi tiết đơn hàng
+                                                      </a>
+                                                    </p>
                                                     <p
                                                       style="
                                                         text-align: center;
@@ -55,7 +60,7 @@ public class AdminBillSendEmailServiceImpl implements AdminBillSendMailService {
                                                   </div>
                         </body>
                     </html>
-                    """, request.getMaHoaDon(), request.getTrangThai(), request.getGhiChu());
+                    """, request.getMaHoaDon(), request.getTrangThai(), request.getGhiChu(), request.getIdHoaDon());
             log.info("sendMail: {}", request.getEmail());
             emailService.sendMailWithAttachment(new
                     EmailDetails(

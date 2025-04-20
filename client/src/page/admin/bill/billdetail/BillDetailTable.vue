@@ -214,7 +214,7 @@
             type="number"
             min="0"
             v-model="record.soLuong"
-            @blur="handleChangeQuantity(record)"
+            @blur="billData.loaiHD === 'Online' ? handleChangeQuantityBiIDProduct(record) : handleChangeQuantity(record)"
             class="w-16 text-center border rounded"
             :disabled="
               [
@@ -245,6 +245,10 @@ import {
   formatCurrencyVND,
   defaultProductImageSaleUrl,
 } from "@/utils/common.helper";
+import {
+  useGetBillHistory,
+  useCreateBillHistory,
+} from "@/infrastructure/services/service/admin/billhistory.action";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
@@ -253,10 +257,10 @@ import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhis
 import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.action";
 import {
   useCheckQuantityInStock,
+  useCheckQuantityInStockByProductDetail,
   useCheckQuantityListProduct,
-  useDeleteQuantityListProduct,
 } from "@/infrastructure/services/service/admin/productdetail.action";
-import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
+import { checkQuantityInStockByIdProductDetail, checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import {
   useGetListVoucher,
   useGetPriceNextVoucher,
@@ -440,6 +444,13 @@ const { data: checkQuantityData, refetch: checkQuantityRefetch } =
     enabled: false,
   });
 
+const { data: checkQuantityDataByIdProduct, refetch: checkQuantityByProductIdRefetch } =
+  useCheckQuantityInStockByProductDetail(paramsCheckQuantity, {
+    refetchOnWindowFocus: false,
+    keepPreviousData: false,
+    enabled: false,
+  });
+
 // Trừ số lượng list product
 
 const copiedDataSource = ref(null);
@@ -526,7 +537,7 @@ const dataSources: BillDetailResponse[] | any = computed(() => {
       catalog: e.catalog || null,
       id: e.id || null,
       maHoaDon: e.maHoaDon || null,
-      tenSanPhamChiTiet: e.tenSanPhamChiTiet || null,
+      tenSanPhamChiTiet: e.idSanPhamChiTiet || null,
       tenSanPham: e.tenSanPham || null,
       imgUrl: e.imgUrl || null,
       tenKichCo: e.tenKichCo || null,
@@ -610,11 +621,21 @@ const totalPrice = computed(() => props.billData?.tongTien);
 
 const { mutate: update } = useUpdateBill();
 
+const { mutate: createBillHistory } = useCreateBillHistory();
+
 const modelRefTmp = ref(null);
 
 // Hàm thay update bill khi thay đổi thông tin giao hàng
 const handleUpdateBill = async (modelRef: any) => {
   modelRefTmp.value = modelRef;
+
+  const billHistoryParams = {
+          idHoaDon: params.value.idHoaDon,
+          hanhDong: `Thay đổi thông tin`,
+          moTa: `Nhân viên "${useAuthStore().user?.email}" thay đổi thông tin giao hàng`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null,
+        };
 
   Modal.confirm({
     content: "Bạn chắc chắn muốn sửa?",
@@ -650,6 +671,7 @@ const handleUpdateBill = async (modelRef: any) => {
             },
           }
         );
+        createBillHistory(billHistoryParams);
       } catch (error: any) {
         console.error("🚀 ~ handleUpdate ~ error:", error);
         if (error?.response) {
@@ -671,11 +693,12 @@ const getTotalAmount = (totalPaid: number) => {
 };
 
 const handleChangeQuantity = async (record: any) => {
+  paramsCheckQuantity.value.id = record.id;
+  paramsCheckQuantity.value.quantity = record.soLuong;
+
   if (record.previousQuantity === undefined) {
     record.previousQuantity = record.soLuong;
   }
-  paramsCheckQuantity.value.id = record.id;
-  paramsCheckQuantity.value.quantity = record.soLuong;
 
   if (record.soLuong > 0) {
     record.previousQuantity = record.soLuong;
@@ -706,6 +729,46 @@ const handleChangeQuantity = async (record: any) => {
     record.thanhTien = record.soLuong * record.gia;
     emit("update-quantity", record);
     record.previousQuantity = record.soLuong;
+  }
+};
+
+const handleChangeQuantityBiIDProduct = async (record: any) => {
+  paramsCheckQuantity.value.id = record.tenSanPhamChiTiet;
+  paramsCheckQuantity.value.quantity = record.soLuong;
+
+  // if (record.previousQuantity === undefined) {
+  //   record.previousQuantity = record.soLuong;
+  // }
+
+  // if (record.soLuong > 0) {
+  //   record.previousQuantity = record.soLuong;
+  //   console.log("previousQuantity:", record.previousQuantity);
+  // }
+
+  if (record.soLuong === 0) {
+    handleDelete(record, () => {
+      record.soLuong = 1;
+      setTimeout(() => {
+        emit("update-quantity", record);
+      }, 0);
+    });
+  } else {
+    await checkQuantityByProductIdRefetch();
+    const checkValue = checkQuantityData?.value?.data;
+    
+    if (!checkValue) {
+      warningNotiSort("Số lượng trong kho không đủ!");
+      record.soLuong = 1;
+    } else {
+      if (record.soLuong <= 0) {
+        warningNotiSort("Số lượng không được âm!");
+        record.soLuong = 1;
+        return;
+      }
+    }
+
+    record.thanhTien = record.soLuong * record.gia;
+    emit("update-quantity", record);
   }
 };
 
