@@ -24,6 +24,7 @@ export interface CreateBillDetailRequest {
     idHoaDon: string | null,
     idSanPhamChiTiet: string | null,
     soLuong: number | null,
+    isClient: boolean
 }
 
 export type BillDetailResponse = ResponseList & {
@@ -32,7 +33,7 @@ export type BillDetailResponse = ResponseList & {
     maHoaDon: string | null;
     tenSanPhamChiTiet: string | null;
     tenSanPham: string | null;
-    anhSanPhamChiTiet: string | null;
+    imgUrl: string | null;
     soLuong: number | 0;
     gia: number | null;
     thanhTien: number;

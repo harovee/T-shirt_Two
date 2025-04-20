@@ -109,7 +109,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
 
         for(ClientInvoiceDetailRequest req : request.getListSanPhamChiTiets()) {
             clientPaymentRepository.saveProductDetailsToInvoice(req, hoaDon.getId(), request.getIdNhanVien());
-            clientPaymentRepository.updateSoLuong(req);
+//            clientPaymentRepository.updateSoLuong(req);
         }
 
         LichSuHoaDon ls = new LichSuHoaDon();
@@ -160,7 +160,9 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTienGiam(request.getTienGiam());
         hoaDon.setTienShip(request.getTienShip());
         hoaDon.setTongTien(request.getTongTien());
+        hoaDon.setPhuongThucNhan("Giao hàng");
         hoaDon.setEmailNguoiNhan(request.getEmail());
+
 
         adminBillRepository.save(hoaDon);
         AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
@@ -190,8 +192,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
 
         if (request.getPaymentMethod().equals("vnpay")) {
             VNPayRequest vnPayRequest = new VNPayRequest();
-//             vnPayRequest.setAmount(String.valueOf(request.getTongTien()));
-            vnPayRequest.setAmount(request.getAmount());
+            vnPayRequest.setAmount(String.valueOf(request.getTongTien()));
             vnPayRequest.setBankCode(request.getBankCode());
             VNPayResponse vnPayResponse = paymentService.createVnPayPayment(vnPayRequest, VNPayUtil.getIpAddress(httpRequest), hoaDon.getId());
             return new ResponseObject<>(vnPayResponse, HttpStatus.OK, "Redirect to VNPay");
@@ -237,9 +238,18 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());
         hoaDon.setTienGiam(request.getTienGiam());
         hoaDon.setTienShip(request.getTienShip());
+        hoaDon.setPhuongThucNhan("Giao hàng");
         hoaDon.setTongTien(request.getTongTien());
 
         adminBillRepository.save(hoaDon);
+
+        adminBillRepository.save(hoaDon);
+        AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
+        adminSendEmailRequest.setEmail(request.getEmail());
+        adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
+        adminSendEmailRequest.setTrangThai("Chờ xác nhận");
+        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
         if (request.getIdPhieuGiamGia() != null) {
             adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
         }
@@ -258,10 +268,88 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
         if (request.getPaymentMethod().equals("momo")){
             ClientMomoRequest momoRequest = new ClientMomoRequest();
-            momoRequest.setAmount(Long.valueOf(request.getAmount()));
+            momoRequest.setAmount(request.getTongTien().longValue());
             momoRequest.setOrderId(hoaDon.getId());
             return new ResponseObject<>(momoService.createMomo(momoRequest),HttpStatus.OK, "Redirect to Momo");
         }
+        return new ResponseObject<>(
+                null,
+                HttpStatus.OK,
+                Message.Success.CREATE_SUCCESS
+        );
+    }
+
+    @Override
+    public ResponseObject<?> createInvoiceWithVietQr(ClientPaymentRequest request) {
+        String maHD;
+        Random random = new Random();
+        do {
+            int number = random.nextInt(10000);
+            maHD = String.format("HD%04d", number);
+        } while (adminBillRepository.existsHoaDonByMa(maHD));
+
+        HoaDon hoaDon = new HoaDon();
+        hoaDon.setMa(maHD);
+        hoaDon.setLoaiHD("Online");
+        hoaDon.setTrangThai("Chờ xác nhận");
+
+        KhachHang kh = request.getIdKhachHang() != null ? khachHangRepository.findById(request.getIdKhachHang())
+                .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại")) : null;
+        hoaDon.setKhachHang(kh);
+
+        NhanVien nv = request.getIdNhanVien() != null ? nhanVienRepository.findById(request.getIdNhanVien())
+                .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại")) : null;
+        hoaDon.setNhanVien(nv);
+
+        PhieuGiamGia pgg = request.getIdPhieuGiamGia() != null ? phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia())
+                .orElseThrow(() -> new RuntimeException("Phiếu giảm giá không tồn tại")) : null;
+        hoaDon.setPhieuGiamGia(pgg);
+
+        hoaDon.setDiaChiNguoiNhan(request.getDiaChiNguoiNhan());
+        hoaDon.setGhiChu(request.getGhiChu());
+        hoaDon.setSoDienThoai(request.getSoDienThoai());
+        hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());
+        hoaDon.setTienGiam(request.getTienGiam());
+        hoaDon.setTienShip(request.getTienShip());
+        hoaDon.setTongTien(request.getTongTien());
+        hoaDon.setPhuongThucNhan("Giao hàng");
+        hoaDon.setTinh(request.getTinh());
+        hoaDon.setXa(request.getXa());
+        hoaDon.setHuyen(request.getHuyen());
+        hoaDon.setEmailNguoiNhan(request.getEmail());
+
+        adminBillRepository.save(hoaDon);
+        AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
+        adminSendEmailRequest.setEmail(request.getEmail());
+        adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
+        adminSendEmailRequest.setTrangThai("Chờ xác nhận");
+        adminSendEmailRequest.setGhiChu(request.getGhiChu());
+        adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
+        if (request.getIdPhieuGiamGia() != null) {
+            adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
+        }
+
+        for(ClientInvoiceDetailRequest req : request.getListSanPhamChiTiets()) {
+            clientPaymentRepository.saveProductDetailsToInvoice(req, hoaDon.getId(), request.getIdNhanVien());
+            clientPaymentRepository.updateSoLuong(req);
+        }
+        ChiTietPhuongThucThanhToan chiTietPTTT = new ChiTietPhuongThucThanhToan();
+        chiTietPTTT.setHoaDon(hoaDon);
+        chiTietPTTT.setMaGiaoDich(request.getMaGiaoDich());
+        chiTietPTTT.setTienKhachDua(request.getTongTien());
+        chiTietPTTT.setGhiChu("Thanh toán qua VietQr");
+
+        PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
+        chiTietPTTT.setPhuongThucThanhToan(pttt);
+
+        chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
+        LichSuHoaDon ls = new LichSuHoaDon();
+        ls.setIdHoaDon(hoaDon);
+        ls.setHanhDong("Tạo hóa đơn");
+        ls.setMoTa("Tạo hóa đơn online");
+        ls.setNguoiTao(request.getIdNhanVien());
+        ls.setTrangThai(hoaDon.getTrangThai());
+        LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
         return new ResponseObject<>(
                 null,
                 HttpStatus.OK,
@@ -282,13 +370,11 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
             ChiTietPhuongThucThanhToan chiTietPTTT = new ChiTietPhuongThucThanhToan();
             chiTietPTTT.setHoaDon(hoaDon);
             chiTietPTTT.setMaGiaoDich(transactionNo);
-            chiTietPTTT.setTienKhachDua(paymentAmount);
+            chiTietPTTT.setTienKhachDua(paymentAmount.divide(new BigDecimal(100)));
             chiTietPTTT.setGhiChu("VNPay Payment - Transaction");
             PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
             chiTietPTTT.setPhuongThucThanhToan(pttt);
             chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
-//            hoaDon.setTrangThai("Chờ xác nhận"); // Assuming 2 means "Paid"
-//            hoaDonRepository.save(hoaDon);
             log.info("VNPay payment processed successfully: Invoice {}, Amount {}, Transaction {}",
                     invoiceId, paymentAmount, transactionNo);
         } catch (Exception e) {

@@ -23,6 +23,12 @@ export interface FindProductDetailRequest extends PropertyProductDetailParams, P
     idSanPham?: string;
 }
 
+// Request lấy ra boolean có đủ sản phẩm trong kho k
+export interface checkQuantityRequest {
+    id: string | null,
+    quantity: number | null
+}
+
 export interface FindAllProductDetailRequest extends PropertyProductDetailParams, PaginationParams {
 }
 
@@ -180,6 +186,83 @@ export const getProductDetails = async (params: Ref<FindProductDetailRequest>) =
     return res.data;
 };
 
+// Check số lượng sản phẩm trong kho - Hiếu check bằng id hóa đơn chi tiết
+export const checkQuantityInStock = async (params: Ref<checkQuantityRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/check-quantity`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<Boolean>
+    >;
+    return res.data;
+};
+
+// check bằng id spct
+export const checkQuantityInStockByIdProductDetail = async (params: Ref<checkQuantityRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/check-quantity/product-detail`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<Boolean>
+    >;
+    return res.data;
+};
+
+// Check số lượng truyền vào 1 list product
+// export const checkQuantityListProduct = async (params: Ref<Array<checkQuantityRequest>>) => {
+//     const res = (await request({
+//         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/check-quantity/list-product-detail`,
+//         method: "GET",
+//         params: params.value,
+//     })) as AxiosResponse<
+//         DefaultResponse<Boolean>
+//     >;
+//     return res.data;
+// };
+
+// export const checkQuantityListProduct = async (
+//     params: Ref<Array<checkQuantityRequest>>
+//   ) => {
+//     const res = (await request({
+//       url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/check-quantity/list-product-detail`,
+//       method: "POST",
+//       data: params.value, // ✅ dùng `data` thay vì `params`
+//     })) as AxiosResponse<DefaultResponse<boolean>>;
+//     return res.data;
+//   };
+
+  export const checkQuantityListProduct = async (data: Array<checkQuantityRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/check-quantity/list-product-detail`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<boolean>>
+    >;
+
+    return res.data;
+};
+
+// Trừ số lượng sản phẩm trong kho truyền vào 1 list
+// export const plusQuantityListProduct = async (params: Array<checkQuantityRequest>) => {
+//     const res = (await request({
+//         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/quantity/plus`,
+//         method: "PUT",
+//         data: params,
+//       })) as AxiosResponse<DefaultResponse<null>>;
+    
+//       return res.data;
+// };
+export const plusQuantityListProduct = async (params: Array<checkQuantityRequest>) => {
+    return (await request({
+      url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/quantity/plus`,
+      method: "PUT",
+      data: params,
+    })) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  };
+
 export const getListProductDetail = async () => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/list-product-detail`,
@@ -190,9 +273,23 @@ export const getListProductDetail = async () => {
     return res.data;
 };
 
+
+
 export const getAllProductDetails = async (paramsAll: Ref<FindAllProductDetailRequest>) => {
     const res = (await request({
         url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-product-detail`,
+        method: "GET",
+        params: paramsAll.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ProductDetailResponse>>>
+    >;
+
+    return res.data;
+};
+
+export const getAllProductDetailOverZero = async (paramsAll: Ref<FindAllProductDetailRequest>) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-product-detail-over-zero`,
         method: "GET",
         params: paramsAll.value,
     })) as AxiosResponse<

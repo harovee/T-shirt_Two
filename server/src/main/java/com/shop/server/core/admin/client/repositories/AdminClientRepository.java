@@ -170,4 +170,15 @@ public interface AdminClientRepository extends KhachHangRepository {
             """, nativeQuery = true)
     List<AdminAddressByClientIdResponse> getAddressByClientId(String clientId);
 
+    @Query(value = """
+            SELECT
+                kh.id AS id,
+                kh.ho_va_ten as name,
+                kh.ma_khach_hang as code
+            FROM khach_hang kh
+            WHERE
+                kh.deleted = 0
+            ORDER BY kh.ngay_tao DESC
+            """, nativeQuery = true)
+    List<AdminClientResponse> getClientListInChat();
 }

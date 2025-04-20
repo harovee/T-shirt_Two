@@ -107,24 +107,24 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: true
                 },
             },
-            {
-                path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.path,
-                name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name,
-                component: () => import('@/page/admin/bill/refund/AdminBillRefund.vue'),
-                meta: {
-                    requiresRole: ROLES.ADMIN,
-                    requiresAuth: true
-                },
-            },
-            {
-                path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND_DETAIL.path,
-                name: "admin-bill-refund-detail",
-                component: () => import('@/page/admin/bill/refund/RefundDetail.vue'),
-                meta: {
-                    requiresRole: ROLES.ADMIN,
-                    requiresAuth: true
-                },
-            },
+            // {
+            //     path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.path,
+            //     name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name,
+            //     component: () => import('@/page/admin/bill/refund/AdminBillRefund.vue'),
+            //     meta: {
+            //         requiresRole: ROLES.ADMIN,
+            //         requiresAuth: true
+            //     },
+            // },
+            // {
+            //     path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND_DETAIL.path,
+            //     name: "admin-bill-refund-detail",
+            //     component: () => import('@/page/admin/bill/refund/RefundDetail.vue'),
+            //     meta: {
+            //         requiresRole: ROLES.ADMIN,
+            //         requiresAuth: true
+            //     },
+            // },
             {
                 path: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name,
@@ -476,6 +476,14 @@ const routes: Array<RouteRecordRaw> = [
         path: ROUTES_CONSTANTS.COMMON.children.STATISTIC.path,
         name: ROUTES_CONSTANTS.COMMON.children.STATISTIC.name,
         component: () => import('@/page/admin/statistic/Statistic.vue'),
+        meta: {
+            requiresAuth: false
+        },
+    },
+    {
+        path: ROUTES_CONSTANTS.COMMON.children.MB_EXAMPLE.path,
+        name: ROUTES_CONSTANTS.COMMON.children.MB_EXAMPLE.name,
+        component: () =>  import('@/infrastructure/mobile.connect/example/mbExample.vue'),
         meta: {
             requiresAuth: false
         },

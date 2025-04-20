@@ -10,17 +10,6 @@
               placeholder="Chọn mã giảm giá ..."
               readonly
             />
-            <!-- <a-button
-              class="flex justify-between items-center"
-              :style="{
-                backgroundColor: '#b91c1c',
-                borderColor: '#b91c1c',
-                color: 'white',
-              }"
-              @click="getVoucher"
-            >
-              !
-            </a-button> -->
             <a-tooltip title="Không sử dụng phiếu" trigger="hover">
               <a-button
                 class="flex justify-between items-center gap-2"
@@ -156,6 +145,80 @@
       </a-form>
     </div>
   </div>
+  
+  <!-- QR Code Modal -->
+  <a-modal
+  v-model:visible="qrCodeModalVisible"
+  title="Thanh toán qua VietQR"
+  :footer="null"
+  width="700px"
+  :maskClosable="false"
+  @cancel="handleCancelQRModal"
+>
+  <div class="text-center">
+    <div v-if="qrCodeLoading" class="py-10">
+      <a-spin tip="Đang tạo mã QR...">
+        <div class="content" />
+      </a-spin>
+    </div>
+    <div v-else-if="qrCodeData" class="flex flex-col md:flex-row py-4">
+      <!-- QR Code on the left -->
+      <div class="md:w-1/2 flex justify-center items-center">
+        <img :src="qrCodeData.qrDataURL" class="mx-auto" alt="QR Code" />
+      </div>
+      
+      <!-- Payment info on the right -->
+      <div class="md:w-1/2 text-left px-4 md:pl-8 flex flex-col justify-center">
+        <!-- <div class="text-lg font-bold mb-4"> Số tiền: {{ formatCurrencyVND(paymentInfo.total) }}</div> -->
+        <p>Vui lòng quét mã QR để thanh toán</p>
+        <div class="mt-4">
+          <p class="font-medium mb-2">Thông tin chuyển khoản:</p>
+          <table class="w-full border-collapse">
+            <tr>
+              <td class="py-1 pr-2 font-medium">Số tài khoản:</td>
+              <td>4252420691 </td>
+            </tr>
+            <tr>
+              <td class="py-1 pr-2 font-medium">Chủ tài khoản:</td>
+              <td>HOANG VAN THANH</td>
+            </tr>
+            <tr>
+              <td class="py-1 pr-2 font-medium">Ngân hàng:</td>
+              <td>BIDV</td>
+            </tr>
+            <tr>
+              <td class="py-1 pr-2 font-medium">Nội dung CK:</td>
+              <td>{{ qrPaymentReference }}</td>
+            </tr>
+            <tr>
+              <td class="py-1 pr-2 font-medium">Số tiền:</td>
+              <td class="text-lg font-bold">{{ formatCurrencyVND(paymentInfo.total) }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div v-else class="py-10 text-red-500">
+      Không thể tạo mã QR. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.
+    </div>
+    
+    <!-- Buttons at the bottom -->
+    <div v-if="qrCodeData" class="flex justify-center space-x-4 mt-6">
+      <a-button 
+        type="primary"
+        :style="{
+          backgroundColor: '#b91c1c',
+          borderColor: '#b91c1c',
+          color: 'white',
+        }"
+        @click="handleConfirmPaymentWithVietQR"
+      >
+        Xác nhận đã thanh toán
+      </a-button>
+      <a-button @click="handleCancelQRModal">Huỷ</a-button>
+    </div>
+  </div>
+</a-modal>
 </template>
 
 <script lang="ts" setup>
@@ -169,7 +232,7 @@ import {
   createVNode,
   nextTick,
 } from "vue";
-import { Form, message, Modal, Upload } from "ant-design-vue";
+import { Form, message, Modal, Upload, Spin } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import {
   warningNotiSort,
@@ -177,7 +240,6 @@ import {
   errorNotiSort,
 } from "@/utils/notification.config";
 import { keepPreviousData } from "@tanstack/vue-query";
-// import PayMentAddress from "./PayMentAddress.vue";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 import { useRouter } from "vue-router";
 import {
@@ -188,10 +250,9 @@ import {
   useGetServiceId,
   useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
-import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithMomo, useCreateInvoiceOnlineWithVnPay } from "@/infrastructure/services/service/client/clientPayment.action";
+import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithMomo, useCreateInvoiceOnlineWithVietQR, useCreateInvoiceOnlineWithVnPay, useGetVietQrCode } from "@/infrastructure/services/service/client/clientPayment.action";
 
 import VoucherPaymentModal from "@/page/client/payment/voucher/VoucherPaymentModal.vue";
-import PaymentMethod from "@/page/admin/point.of.sale/payment-method/PaymentMethod.vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   formatCurrencyVND,
@@ -205,6 +266,7 @@ import {
 import {
   clientPaymentRequest,
   invoiceDetailRequest,
+  vietQrRequest,
 } from "@/infrastructure/services/api/client/clientpayment.api";
 import {
   useGetOrderDetails,
@@ -237,10 +299,7 @@ import {
   useGetWardsByDistrictIdQuery,
   useUpdateClientAddress,
 } from "@/infrastructure/services/service/admin/client.action";
-import { log } from "console";
 import { useCartStore } from "@/infrastructure/stores/cart";
-
-// import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
 
 const props = defineProps({
   dataAddress: {
@@ -260,34 +319,33 @@ const cartStore = useCartStore();
 
 const listProducts = computed(() => cartStore.checkoutData);
 
-// const emit = defineEmits(["handlePaymentInfo"]);
-
 const paymentMethods = [
   {
     value: "cod",
     label: "Thanh toán khi nhận hàng (COD)",
     description: "Thanh toán bằng tiền mặt khi nhận hàng tại nhà",
-    icon: "ri-money-dollar-box-fill", // Thay thế với đường dẫn thực của bạn
+    icon: "ri-money-dollar-box-fill",
   },
   {
     value: "vnpay",
     label: "Thanh toán qua VN Pay",
     description: "Thanh toán nhanh chóng và an toàn qua cổng VN Pay",
-    icon: "ri-bank-card-fill", // Thay thế với đường dẫn thực của bạn
+    icon: "ri-bank-card-fill",
   },
   {
     value: "momo",
     label: "Thanh toán qua Momo",
     description: "Thanh toán dễ dàng qua ví điện tử Momo",
-    icon: "ri-wallet-3-fill", // Thay thế với đường dẫn thực của bạn
+    icon: "ri-wallet-3-fill",
   },
   {
     value: "vietQR",
     label: "Thanh toán qua VietQR",
     description: "Chuyển khoản nhanh chóng bằng mã QR",
-    icon: "ri-qr-code-fill", // Thay thế với đường dẫn thực của bạn
+    icon: "ri-qr-code-fill",
   },
 ];
+
 const pageSize = ref(5);
 const current1 = ref(1);
 
@@ -299,14 +357,16 @@ const voucher = ref<VoucherResponse>();
 
 const customer = ref(null);
 
+// QR Code specific states
+const qrCodeModalVisible = ref(false);
+const qrCodeLoading = ref(false);
+const qrCodeData = ref("");
+const qrPaymentReference = ref("");
+
 interface DataType extends POSProductDetailResponse {
   key: string;
   thanhTien: number;
 }
-
-const handleAddressUpdate = (newAddress) => {
-  selectedAddress.value = newAddress;
-};
 
 const paramsVoucher = ref<FindVoucherRequest>({
   page: 1,
@@ -316,7 +376,7 @@ const paramsVoucher = ref<FindVoucherRequest>({
   tongTien: 0,
 });
 
-const voucherRequest = ref<voucherRequest>({
+const voucherRequestParams = ref<voucherRequest>({
   keyword: "",
   idKhachHang: useAuthStore().user?.id || null,
 });
@@ -339,6 +399,7 @@ const paymentInfo = ref({
   name: "" || null,
   fullAddress: props.fullAddressCustomer || null,
   phoneNumber: "" || null,
+  maGiaoDich: "" || null,
 });
 
 const { data: dataVouchers } = useGetListVoucher(paramsVoucher, {
@@ -349,7 +410,7 @@ const { data: dataVouchers } = useGetListVoucher(paramsVoucher, {
 const dataListVoucher = computed(() => dataVouchers?.value?.data?.data || []);
 
 const { data: dataVoucherByCode, refetch } = useGetVoucherByCode(
-  voucherRequest,
+  voucherRequestParams,
   {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
@@ -368,33 +429,16 @@ const dataNextPriceVouchers = computed(
   () => dataNextPriceVoucher?.value?.data || []
 );
 
-// Hàm format tiền sang VNĐ
-const formatter = (value: any) => {
-  if (!value) return "";
-  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-};
 const open = ref(false);
-
-const openPaymentMethod = ref(false);
-
 const router = useRouter();
-
 const activeTabCustomers = reactive({});
 
 const openVoucherModal = () => {
   open.value = true;
 };
 
-const openPaymentMethodModal = () => {
-  openPaymentMethod.value = true;
-};
-
 const handleClose = () => {
   open.value = false;
-};
-
-const handleClosePaymentMethod = () => {
-  openPaymentMethod.value = false;
 };
 
 const updateTotal = () => {
@@ -421,10 +465,17 @@ const getVoucher = () => {
 };
 
 const { mutate: createInvoice } = useCreateInvoiceOnline();
-// const { mutate: createInvoiceWithVnPay } = useCreateInvoiceOnlineWithVnPay();
-
+const { mutate: createInvoiceWithVietQr } = useCreateInvoiceOnlineWithVietQR();
 const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
+const getVietQrcode = useGetVietQrCode();
+const createInvoiceMutationMomo = useCreateInvoiceOnlineWithMomo();
 
+// Function to generate a unique reference for the payment
+const generatePaymentReference = () => {
+  const userId = useAuthStore().user?.id || "guest";
+  const timestamp = new Date().getTime();
+  return `ORDER-${userId}-${timestamp}`;
+};
 
 const handleGetVoucher = (voucherDetail: any) => {
   voucher.value = voucherDetail;
@@ -444,169 +495,183 @@ const handleGetVoucher = (voucherDetail: any) => {
   }
 };
 
-const createInvoiceMutationMomo = useCreateInvoiceOnlineWithMomo();
+// Create payload for order creation
+const createOrderPayload = () => {
+  const listSanPhamChiTiets: invoiceDetailRequest[] = listProducts.value.map(
+    (product) => ({
+      idSanPhamChiTiet: product.id || null,
+      soLuong: product.soLuong || null,
+      gia: product.gia || null,
+    })
+  );
+
+  return {
+    diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
+    ghiChu: props.memo || null,
+    soDienThoai: paymentInfo.value.phoneNumber || null,
+    tenNguoiNhan: paymentInfo.value.name || null,
+    tienGiam: paymentInfo.value.discount || null,
+    tienShip: paymentInfo.value.shippingFee || null,
+    tongTien: paymentInfo.value.total || null,
+    idKhachHang: useAuthStore().user?.id || null,
+    idNhanVien: null,
+    idPhieuGiamGia: paymentInfo.value.voucherId || null,
+    listSanPhamChiTiets: listSanPhamChiTiets || null,
+    paymentMethod: paymentInfo.value.method,
+    tinh: props.dataAddress.province,
+    huyen: props.dataAddress.district,
+    xa: props.dataAddress.ward,
+    amount: paymentInfo.value.total + "" || null,
+    bankCode: "",
+    email: props.dataAddress.email,
+    maGiaoDich : ""
+  };
+};
+
+// Handle showing the QR code modal
+const showQRCodeModal = async () => {
+  qrCodeModalVisible.value = true;
+  qrCodeLoading.value = true;
+  qrPaymentReference.value = generatePaymentReference();
+  
+  try {
+    const vietQRRequest = {
+      accountNo: 4252420691,
+      accountName: "HOANG VAN THANH",
+      acqId: 970418,
+      addInfo: qrPaymentReference.value,
+      format: "text",
+      template: "compact2",
+      amount: paymentInfo.value.total
+    };
+    
+    const response = await getVietQrcode.mutateAsync(vietQRRequest);
+    if (response && response.data) {
+      qrCodeData.value = response.data;
+    } else {
+      throw new Error("Không nhận được dữ liệu QR");
+    }
+  } catch (error) {
+    console.error("Error generating QR code:", error);
+    errorNotiSort("Không thể tạo mã QR. Vui lòng thử lại.");
+  } finally {
+    qrCodeLoading.value = false;
+  }
+};
+
+// Handle confirming payment and creating order
+const handleConfirmPaymentWithVietQR = async () => {
+  try {
+    const payload = createOrderPayload();
+    payload.maGiaoDich = qrPaymentReference.value
+    await createInvoiceWithVietQr(payload);
+    clearCart();
+    successNotiSort("Hoàn thành đơn hàng!");
+    qrCodeModalVisible.value = false;
+    router.push({ name: "client-complete-payment" });
+  } catch (error: any) {
+    console.error("Error creating order:", error);
+    if (error?.response) {
+      errorNotiSort(error?.response?.data?.message);
+    } else {
+      errorNotiSort("Đã có lỗi xảy ra khi tạo đơn hàng");
+    }
+  }
+};
+
+// Handle cancelling the QR modal
+const handleCancelQRModal = () => {
+  Modal.confirm({
+    title: "Huỷ thanh toán",
+    content: "Bạn có chắc muốn huỷ thanh toán qua VietQR không?",
+    okText: "Đồng ý",
+    cancelText: "Không",
+    onOk() {
+      qrCodeModalVisible.value = false;
+      qrCodeData.value = "";
+    },
+  });
+};
 
 const handlePayment = () => {
   if (!props.validateAddress) {
     warningNotiSort("Vui lòng nhập đủ thông tin giao hàng.");
-  } else {
-    const listSanPhamChiTiets: invoiceDetailRequest[] = listProducts.value.map(
-      (product) => ({
-        idSanPhamChiTiet: product.id || null,
-        soLuong: product.soLuong || null,
-        gia: product.gia || null,
-      })
-    );
-
-    const payload = {
-      diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
-      ghiChu: props.memo || null,
-      soDienThoai: paymentInfo.value.phoneNumber || null,
-      tenNguoiNhan: paymentInfo.value.name || null,
-      tienGiam: paymentInfo.value.discount || null,
-      tienShip: paymentInfo.value.shippingFee || null,
-      tongTien: paymentInfo.value.total || null,
-      idKhachHang: useAuthStore().user?.id || null,
-      idNhanVien: null,
-      idPhieuGiamGia: paymentInfo.value.voucherId || null,
-      listSanPhamChiTiets: listSanPhamChiTiets || null,
-      paymentMethod: paymentInfo.value.method,
-      tinh: props.dataAddress.province,
-      huyen: props.dataAddress.district,
-      xa: props.dataAddress.ward,
-      amount: paymentInfo.value.total + "" || null,
-      bankCode: "",
-      email:props.dataAddress.email
-    };
-    console.log(payload);
-    if (paymentInfo.value.method === "cod") {
-      Modal.confirm({
-        content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
-        icon: createVNode(ExclamationCircleOutlined),
-        centered: true,
-
-        async onOk() {
-          try {
-            await createInvoice(payload);
-            clearCart();
-            successNotiSort("Hoàn thành đơn hàng!");
-            router.push({ name: "client-complete-payment" });
-          } catch (error: any) {
-            console.error("🚀 ~ handleCreate ~ error:", error);
-            if (error?.response) {
-              errorNotiSort(error?.response?.data?.message);
-            }
+    return;
+  }
+  
+  const payload = createOrderPayload();
+  
+  if (paymentInfo.value.method === "vietQR") {
+    showQRCodeModal();
+  } else if (paymentInfo.value.method === "cod") {
+    Modal.confirm({
+      content: "Bạn chắc chắn muốn hoàn thành đơn hàng?",
+      icon: createVNode(ExclamationCircleOutlined),
+      centered: true,
+      async onOk() {
+        try {
+          await createInvoice(payload);
+          clearCart();
+          successNotiSort("Hoàn thành đơn hàng!");
+          router.push({ name: "client-complete-payment" });
+        } catch (error: any) {
+          console.error("Error creating order:", error);
+          if (error?.response) {
+            errorNotiSort(error?.response?.data?.message);
           }
-        },
-        cancelText: "Huỷ",
-        onCancel() {
-          Modal.destroyAll();
-        },
-      });
-    } else if (paymentInfo.value.method === "vnpay") {
-      Modal.confirm({
-        content: "Bạn chắc chắn muốn thanh toán qua VNPay?",
-        icon: createVNode(ExclamationCircleOutlined),
-        centered: true,
-        async onOk() {
-          try {
-            const response = await createInvoiceMutation.mutateAsync(payload);
-
-            if (response?.data?.paymentUrl) {
-              window.open(response?.data?.paymentUrl, "_blank");
-            }
-            console.log(response);
-          } catch (error: any) {
-            console.error("🚀 ~ handleCreate ~ error:", error);
-            if (error?.response) {
-              errorNotiSort(error?.response?.data?.message);
-            }
+        }
+      },
+      cancelText: "Huỷ",
+      onCancel() {
+        Modal.destroyAll();
+      },
+    });
+  } else if (paymentInfo.value.method === "vnpay") {
+    Modal.confirm({
+      content: "Bạn chắc chắn muốn thanh toán qua VNPay?",
+      icon: createVNode(ExclamationCircleOutlined),
+      centered: true,
+      async onOk() {
+        try {
+          const response = await createInvoiceMutation.mutateAsync(payload);
+          if (response?.data?.paymentUrl) {
+            window.open(response?.data?.paymentUrl, "_blank");
           }
-        },
-        cancelText: "Huỷ",
-        onCancel() {
-          Modal.destroyAll();
-        },
-      });
-    } else if (paymentInfo.value.method === "momo") {
-      Modal.confirm({
-        content: "Bạn chắc chắn muốn thanh toán qua ví Momo?",
-        icon: createVNode(ExclamationCircleOutlined),
-        centered: true,
-        async onOk() {
-          // try {
-          //   const response = await createInvoiceMutation.mutateAsync(payload);
-
-          //   if (response?.data?.paymentUrl) {
-          //     window.open(response?.data?.paymentUrl, "_blank");
-          //   }
-          //   console.log(response);
-          // } catch (error: any) {
-          //   console.error("🚀 ~ handleCreate ~ error:", error);
-          //   if (error?.response) {
-          //     errorNotiSort(error?.response?.data?.message);
-          //   }
-          // }
-          console.log("Thanh toán ví momo");
-        },
-        cancelText: "Huỷ",
-        onCancel() {
-          Modal.destroyAll();
-        },
-      });
-    } else {
-      Modal.confirm({
-        content: "Bạn chắc chắn muốn thanh toán qua ví Momo?",
-        icon: createVNode(ExclamationCircleOutlined),
-        centered: true,
-        async onOk() {
-          // try {
-          //   const response = await createInvoiceMutation.mutateAsync(payload);
-
-          //   if (response?.data?.paymentUrl) {
-          //     window.open(response?.data?.paymentUrl, "_blank");
-          //   }
-          //   console.log(response);
-          // } catch (error: any) {
-          //   console.error("🚀 ~ handleCreate ~ error:", error);
-          //   if (error?.response) {
-          //     errorNotiSort(error?.response?.data?.message);
-          //   }
-          // }
-          console.log("Thanh toán ví viet qr");
-        },
-        cancelText: "Huỷ",
-        onCancel() {
-          Modal.destroyAll();
-        },
-      });
-    }
-    else{
-      Modal.confirm({
-        content: "Bạn chắc chắn muốn thanh toán qua MoMo?",
-        icon: createVNode(ExclamationCircleOutlined),
-        centered: true,
-        async onOk() {
-          try {
-            const response = await createInvoiceMutationMomo.mutateAsync(payload);
-            console.log(response);
-            
-            if (response?.data?.payUrl) {
+        } catch (error: any) {
+          console.error("Error with VNPay:", error);
+          if (error?.response) {
+            errorNotiSort(error?.response?.data?.message);
+          }
+        }
+      },
+      cancelText: "Huỷ",
+      onCancel() {
+        Modal.destroyAll();
+      },
+    });
+  } else if (paymentInfo.value.method === "momo") {
+    Modal.confirm({
+      content: "Bạn chắc chắn muốn thanh toán qua MoMo?",
+      icon: createVNode(ExclamationCircleOutlined),
+      centered: true,
+      async onOk() {
+        try {
+          const response = await createInvoiceMutationMomo.mutateAsync(payload);
+          if (response?.data?.payUrl) {
             window.open(response?.data?.payUrl, "_blank");
-          } 
-          } catch (error: any) {
-            console.error("🚀 ~ handleCreate ~ error:", error); 
-            if (error?.response) {
-              errorNotiSort(error?.response?.data?.message);
-            }
           }
-        },
-        cancelText: "Huỷ",
-        onCancel() {
-          Modal.destroyAll();
-        },
-      });
-    }
+        } catch (error: any) {
+          console.error("Error with MoMo:", error);
+          if (error?.response) {
+            errorNotiSort(error?.response?.data?.message);
+          }
+        }
+      },
+      cancelText: "Huỷ",
+      onCancel() {
+        Modal.destroyAll();
+      },
+    });
   }
 };
 
@@ -655,4 +720,9 @@ watch(
 .custom-radio-group .ant-radio-button-wrapper-checked::before {
   background-color: #b91c1c !important;
 }
-</style>
+
+.payment-method-item.active {
+  border-color: #b91c1c;
+  background-color: #fee2e2;
+}
+</style>  

@@ -74,7 +74,7 @@
       <h3 class="text-lg font-bold">Lịch sử thanh toán</h3>
       <a-button
         v-if="
-          billData?.trangThai === 'Đã giao hàng' &&
+          billData?.trangThai === 'Đang vận chuyển' &&
           paymentInfoData.amountPayable > 0
         "
         class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
@@ -124,6 +124,7 @@
         @handleClose="handleCloseModalAddProductToOrder"
         @onCancel="isOpenModalAddProductToOrder = false"
         :loadingValue="loadingValue"
+        :billData="billData"
       />
     </div>
 
@@ -192,10 +193,14 @@
           </p>
         </div>
 
-        <div v-else-if="column.key === 'anhSanPhamChiTiet'">
-          <Image
+        <div v-else-if="column.key === 'imgUrl'">
+          <a-image
             :width="60"
-            :src="record?.anhSanPhamChiTiet"
+            :src="
+              record?.imgUrl != 'default-product-detail-image-url.jpg'
+                ? record.imgUrl
+                : defaultProductImageSaleUrl
+            "
             alt="Ảnh SP"
             class="product-image"
           />
@@ -209,7 +214,7 @@
             type="number"
             min="0"
             v-model="record.soLuong"
-            @change="handleChangeQuantity(record)"
+            @blur="handleChangeQuantity(record)"
             class="w-16 text-center border rounded"
             :disabled="
               [
@@ -236,7 +241,10 @@ import AdminPayHistory from "./AdminPayHistory.vue";
 import UpdateBillModal from "../bill/UpdateBillModals.vue";
 import AddProductDetailModal from "./AddProductDetailModal.vue";
 import AdminGetDeliveryPayModal from "./AdminGetDeliveryPayModal.vue";
-import { formatCurrencyVND } from "@/utils/common.helper";
+import {
+  formatCurrencyVND,
+  defaultProductImageSaleUrl,
+} from "@/utils/common.helper";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
@@ -244,11 +252,18 @@ import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-h
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
 import { useUpdateBill } from "@/infrastructure/services/service/admin/bill.action";
 import {
+  useCheckQuantityInStock,
+  useCheckQuantityListProduct,
+  useDeleteQuantityListProduct,
+} from "@/infrastructure/services/service/admin/productdetail.action";
+import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
+import {
   useGetListVoucher,
   useGetPriceNextVoucher,
   useGetShippingFee,
   useGetServiceId,
 } from "@/infrastructure/services/service/admin/payment.action";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
   VoucherResponse,
@@ -317,6 +332,11 @@ const emit = defineEmits([
   "refetch-data",
 ]);
 
+const paramsCheckQuantity = ref<checkQuantityRequest>({
+  id: null,
+  quantity: null,
+});
+
 watch(
   () => props?.billData,
   (result) => {
@@ -348,6 +368,13 @@ const params = ref<FindPayHistoryRequest>({
 onMounted(() => {
   params.value.idHoaDon = getIdHoaDonFromUrl();
 });
+
+// watch(
+//   () => props?.dataSource,
+//   (newData) => {
+
+//   }
+// );
 
 // Hàm tính cân nặng và chiều dài của đơn hàng
 const calculateProductDimensions = () => {
@@ -404,6 +431,16 @@ const { data: shipping, refetch: refetchShipping } = useGetShippingFee(
       !!shippingParams.value.toDistrictId && !!shippingParams.value.toWardCode,
   }
 );
+
+// Hàm check số lượng trong kho
+const { data: checkQuantityData, refetch: checkQuantityRefetch } =
+  useCheckQuantityInStock(paramsCheckQuantity, {
+    refetchOnWindowFocus: false,
+    keepPreviousData: false,
+    enabled: false,
+  });
+
+// Trừ số lượng list product
 
 const copiedDataSource = ref(null);
 
@@ -491,7 +528,7 @@ const dataSources: BillDetailResponse[] | any = computed(() => {
       maHoaDon: e.maHoaDon || null,
       tenSanPhamChiTiet: e.tenSanPhamChiTiet || null,
       tenSanPham: e.tenSanPham || null,
-      anhSanPhamChiTiet: e.anhSanPhamChiTiet || null,
+      imgUrl: e.imgUrl || null,
       tenKichCo: e.tenKichCo || null,
       tenMau: e.tenMau || null,
       soLuong: e.soLuong || 0,
@@ -597,7 +634,9 @@ const handleUpdateBill = async (modelRef: any) => {
           huyen: modelRef.huyen,
           xa: modelRef.xa,
           idPhieuGiamGia: props.detail ? props.detail.id : null,
+          nhanVien: useAuthStore().user?.id || null,
         };
+        
         update(
           { idBill: params.value.idHoaDon, params: payload },
           {
@@ -632,41 +671,53 @@ const getTotalAmount = (totalPaid: number) => {
 };
 
 const handleChangeQuantity = async (record: any) => {
-  if (!record.previousQuantity && record.soLuong !== 0) {
-    record.previousQuantity = record.soLuong; // Lưu giá trị cũ nếu chưa có
+  if (record.previousQuantity === undefined) {
+    record.previousQuantity = record.soLuong;
+  }
+  paramsCheckQuantity.value.id = record.id;
+  paramsCheckQuantity.value.quantity = record.soLuong;
+
+  if (record.soLuong > 0) {
+    record.previousQuantity = record.soLuong;
+    console.log("previousQuantity:", record.previousQuantity);
   }
 
   if (record.soLuong === 0) {
-    Modal.confirm({
-      title: "Xác nhận",
-      content: "Bạn có chắc chắn muốn xóa sản phẩm này khỏi đơn hàng?",
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk() {
-        record.thanhTien = 0;
+    handleDelete(record, () => {
+      record.soLuong = record.previousQuantity || 1;
+      setTimeout(() => {
         emit("update-quantity", record);
-      },
-      onCancel() {
-        record.soLuong = record.previousQuantity || 1; // Trả về giá trị cũ
-        setTimeout(() => {
-          emit("update-quantity", record);
-        }, 0);
-      },
+      }, 0);
     });
   } else {
+    await checkQuantityRefetch();
+    const checkValue = checkQuantityData?.value?.data;
+
+    if (!checkValue) {
+      warningNotiSort("Số lượng trong kho không đủ!");
+      record.soLuong = 1;
+    } else {
+      if (record.soLuong <= 0) {
+        warningNotiSort("Số lượng không được âm!");
+        return;
+      }
+    }
+
     record.thanhTien = record.soLuong * record.gia;
     emit("update-quantity", record);
-    record.previousQuantity = record.soLuong; // Cập nhật lại giá trị trước đó
+    record.previousQuantity = record.soLuong;
   }
 };
 
 // Xóa sản phẩm trong giỏ hàng
-const handleDelete = (productDetail: any) => {
+const handleDelete = (productDetail: any, onCancel?: () => void) => {
   Modal.confirm({
     content: "Bạn chắc chắn muốn xóa sản phẩm này ra khỏi giỏ?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
+    okText: "Xóa",
+    okType: "danger",
+    cancelText: "Huỷ",
     async onOk() {
       try {
         // await deleteOrderDetails(productDetail.id);
@@ -676,8 +727,8 @@ const handleDelete = (productDetail: any) => {
         errorNotiSort("Xóa thất bại");
       }
     },
-    cancelText: "Huỷ",
     onCancel() {
+      if (onCancel) onCancel();
       Modal.destroyAll();
     },
   });

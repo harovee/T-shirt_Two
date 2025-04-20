@@ -407,6 +407,8 @@ const rowSelection = computed<TableProps["rowSelection"]>(() => ({
 
 watch(() => dataSource.value, () => {
   selectedRowKeys.value = [];
+  console.log(dataSource.value);
+  
 })
 
 </script>

@@ -1,9 +1,21 @@
 <template>
-  <h2 class="text-xl font-semibold">Giỏ hàng</h2>
+  <h2 class="text-xl font-semibold inline-flex">Giỏ hàng
+    <a-tooltip v-if="isMBConnected" title="Ngắt kết nối" trigger="hover">
+            <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2  ms-4"
+              size="large"
+              @click="openDisConnectOrderModal(maHoaDon)"
+            >
+              <v-icon name="bi-link" />
+            </a-button>
+   </a-tooltip>
+  </h2>
+
   <div>
     <a-table
       :loading="isLoading"
       :columns="columns"
+      :key="tableKey"
       :data-source="dataSource"
       :pagination="false"
       :scroll="{ x: 1000, y: 400 }"

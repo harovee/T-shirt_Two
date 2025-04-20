@@ -137,7 +137,7 @@ const Cart = () => {
             <Text style={styles.productName}>{item.name}</Text>
             <Text>{item.note}</Text>
           </View>
-          <View> <Text style={{fontSize: 17, color: 'red'}}>{item.price}</Text> </View>
+          <Text style={{fontSize: 17, color: 'red'}}>{item.price}</Text>
         </View>
        
        

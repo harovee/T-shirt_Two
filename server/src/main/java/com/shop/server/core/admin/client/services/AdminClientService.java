@@ -39,4 +39,6 @@ public interface AdminClientService {
 
     ResponseObject<?> getAddressesByClientId(String id);
 
+    ResponseObject<?> getClientListInChat();
+
 }

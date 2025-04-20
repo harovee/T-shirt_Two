@@ -100,4 +100,8 @@ public class AdminClientController {
         return Helper.createResponseEntity(adminClientService.changeDefaultClientAddress(id));
     }
 
+    @GetMapping("/client-chat-list")
+    public ResponseEntity<?> getClientsInChat() {
+        return Helper.createResponseEntity(adminClientService.getClientListInChat());
+    }
 }

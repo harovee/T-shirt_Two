@@ -9,6 +9,7 @@ import com.shop.server.core.admin.kich_co.repository.AdKichCoRepository;
 import com.shop.server.core.admin.kieu_dang.repository.AdKieuDangRepository;
 import com.shop.server.core.admin.mau_sac.repository.AdMauSacRepository;
 import com.shop.server.core.admin.product.repositories.AdminProductRepository;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
@@ -28,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -75,6 +77,16 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         Pageable pageable = Helper.createPageable(request);
         return new ResponseObject<>(
                 PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTiets(pageable, request)),
+                HttpStatus.OK,
+                "Lấy dữ liệu thành công."
+        );
+    }
+
+    @Override
+    public ResponseObject<?> getALlSanPhamChiTietOverZero(AdFindSpctRequest request) {
+        Pageable pageable = Helper.createPageable(request, "ngay_tao", "asc");
+        return new ResponseObject<>(
+                PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTietOverZero(pageable, request)),
                 HttpStatus.OK,
                 "Lấy dữ liệu thành công."
         );
@@ -131,12 +143,26 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         spct.setDeleted(false);
         SanPhamChiTiet addedSPCT = adSanPhamChiTietRepository.save(spct);
         if (request.getListAnh().size() > 0 || request.getListAnh() != null) {
-            for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+//            for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+//                Anh anh = new Anh();
+//                anh.setSanPhamChiTiet(addedSPCT);
+//                anh.setUrl(anhRequest.getUrl());
+//                anh.setTen(anhRequest.getName());
+//
+//                anh.setDeleted(false);
+//                adAnhRepository.save(anh);
+//            }
+            for (int i = 0; i < request.getListAnh().size(); i++) {
+                AdCreateUpdateAnhRequest anhRequest = request.getListAnh().get(i);
+
                 Anh anh = new Anh();
                 anh.setSanPhamChiTiet(addedSPCT);
                 anh.setUrl(anhRequest.getUrl());
                 anh.setTen(anhRequest.getName());
                 anh.setDeleted(false);
+                if (i == 0) {
+                    anh.setIsTop(true);
+                }
                 adAnhRepository.save(anh);
             }
         }
@@ -199,5 +225,47 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                         "Xóa sản phẩm chi tiết thành công."))
                 .orElseGet(() -> new ResponseObject<>(null, HttpStatus.NOT_FOUND,
                         "Sản phẩm chi tiết không tồn tại."));
+    }
+
+    @Override
+    public ResponseObject<?> checkQuantity(AdCheckQuantityRequest request) {
+        if (adSanPhamChiTietRepository.checkQuantity(request) == 0) {
+            return new ResponseObject<>(true, HttpStatus.OK, "Số lượng trong kho đủ!");
+        } else {
+            return new ResponseObject<>(false, HttpStatus.OK, "Số lượng trong kho không đủ!");
+        }
+    }
+
+    @Override
+    public ResponseObject<?> checkQuantityByIdSPCT(AdCheckQuantityRequest request) {
+        if (adSanPhamChiTietRepository.checkQuantityByIdSPCT(request) == 0) {
+            return new ResponseObject<>(true, HttpStatus.OK, "Số lượng trong kho đủ!");
+        } else {
+            return new ResponseObject<>(false, HttpStatus.OK, "Số lượng trong kho không đủ!");
+        }
+    }
+
+    @Override
+    public ResponseObject<?> checkQuantityInListProduct(List<AdCheckQuantityRequest> listRequest) {
+        boolean check = false;
+        for (AdCheckQuantityRequest request : listRequest) {
+            if (adSanPhamChiTietRepository.checkQuantityInListProduct(request) == 0) {
+                check = true;
+            }
+        }
+        if (!check) {
+            for (AdCheckQuantityRequest request : listRequest) {
+                adSanPhamChiTietRepository.decreaseStockProduct(request.getId(), request.getQuantity());
+            }
+        }
+        return new ResponseObject<>(check, HttpStatus.OK, check ? "Số lượng trong giỏ không đủ" : "Số lượng trong kho đủ!");
+    }
+
+    @Override
+    public ResponseObject<?> plusQuantityInStockByListProduct(List<AdCheckQuantityRequest> listRequest) {
+        for (AdCheckQuantityRequest request : listRequest) {
+            adSanPhamChiTietRepository.plusStockProduct(request.getId(), request.getQuantity());
+        }
+        return new ResponseObject<>(null, HttpStatus.OK, "Update số lượng thành công");
     }
 }
