@@ -1,85 +1,120 @@
 <template>
   <div>
     <h1 class="text-base font-bold">Bạn đã chọn</h1>
-    <div class="flex flex-wrap gap-2 mb-4">
-      <!-- Hiển thị các filter đã chọn -->
-      <template v-for="(filters, category) in selectedFilters" :key="category">
+    <div class="flex flex-wrap gap-2 mb-4 max-w-full">
+      <!-- Hiển thị các filter đã chọn với độ dài giới hạn -->
+      <template v-for="(value, category) in selectedFiltersState" :key="category">
         <a-tag 
-          v-for="filter in filters" 
-          :key="filter"
+          v-if="value && category !== 'khoangGia'"
           closable 
-          @close="removeFilter(category, filter)"
+          @close="removeFilter(category)"
+          class="truncate-tag"
+          :title="value"
         >
-          {{ filter }}
+          {{ truncateText(value) }}
         </a-tag>
       </template>
+      <!-- Hiển thị khoảng giá đã chọn -->
+      <a-tag 
+        v-if="priceRange[0] > 0 || priceRange[1] < maxPrice"
+        closable 
+        @close="resetPriceRange"
+        class="truncate-tag"
+      >
+        {{ formatCurrency(priceRange[0]) }} - {{ formatCurrency(priceRange[1]) }}
+      </a-tag>
     </div>
     <hr />
+    
+    <!-- Khoảng giá luôn hiển thị -->
+    <div class="mt-4 mb-4">
+      <h2 class="text-base font-medium mb-2">Khoảng giá</h2>
+      <div class="price-range-container">
+        <div class="price-range-values">
+          <span>{{ formatCurrency(priceRange[0]) }}</span>
+          <span>{{ formatCurrency(priceRange[1]) }}</span>
+        </div>
+        <a-slider
+          v-model:value="priceRange"
+          range
+          :min="0"
+          :max="maxPrice"
+          :step="10000"
+          @change="handlePriceChange"
+        />
+      </div>
+    </div>
+    <hr />
+    
     <!-- Panel cho Danh mục -->
     <a-collapse v-model:activeKey="activeKey" accordion :bordered="false">
       <a-collapse-panel key="danhmuc" header="Danh mục">
-        <a-checkbox-group>
+        <div class="checkbox-group">
           <a-checkbox
             v-for="dm in listDanhMuc"
             :key="dm.id"
-            :value="dm.ten"
-            :checked="selectedFiltersState.tenDanhMuc.includes(dm.ten)"
-            @change="onChangeFilter('tenDanhMuc', $event, dm.ten)"
+            :checked="selectedFiltersState.tenDanhMuc === dm.ten"
+            @change="(e) => handleCheckboxChange('tenDanhMuc', e, dm.ten)"
           >
-            {{ dm.ten }}
+            <span :title="dm.ten" class="truncate-text">
+              {{ truncateText(dm.ten) }}
+            </span>
           </a-checkbox>
-        </a-checkbox-group>
+        </div>
       </a-collapse-panel>
     </a-collapse>
 
     <!-- Panel cho Kiểu dáng -->
     <a-collapse v-model:activeKey="activeKey" accordion :bordered="false">
       <a-collapse-panel key="kieudang" header="Kiểu dáng">
-        <a-checkbox-group>
+        <div class="checkbox-group">
           <a-checkbox
             v-for="kd in listKieuDang"
             :key="kd.id"
-            :value="kd.ten"
-            :checked="selectedFiltersState.tenKieuDang.includes(kd.ten)"
-            @change="onChangeFilter('tenKieuDang', $event, kd.ten)"
+            :checked="selectedFiltersState.tenKieuDang === kd.ten"
+            @change="(e) => handleCheckboxChange('tenKieuDang', e, kd.ten)"
           >
-            {{ kd.ten }}
+            <span :title="kd.ten" class="truncate-text">
+              {{ truncateText(kd.ten) }}
+            </span>
           </a-checkbox>
-        </a-checkbox-group>
+        </div>
       </a-collapse-panel>
     </a-collapse>
 
     <!-- Panel cho Chất liệu -->
     <a-collapse v-model:activeKey="activeKey" accordion :bordered="false">
       <a-collapse-panel key="chatlieu" header="Chất liệu">
-        <a-checkbox-group>
+        <div class="checkbox-group">
           <a-checkbox
             v-for="cl in listChatLieu"
             :key="cl.id"
-            :value="cl.ten"
-            :checked="selectedFiltersState.tenChatLieu.includes(cl.ten)"
-            @change="onChangeFilter('tenChatLieu', $event, cl.ten)"
+            :checked="selectedFiltersState.tenChatLieu === cl.ten"
+            @change="(e) => handleCheckboxChange('tenChatLieu', e, cl.ten)"
           >
-            {{ cl.ten }}
+            <span :title="cl.ten" class="truncate-text">
+              {{ truncateText(cl.ten) }}
+            </span>
           </a-checkbox>
-        </a-checkbox-group>
+        </div>
       </a-collapse-panel>
     </a-collapse>
 
     <!-- Panel cho Thương hiệu -->
     <a-collapse v-model:activeKey="activeKey" accordion :bordered="false">
       <a-collapse-panel key="thuonghieu" header="Thương hiệu">
-        <a-checkbox-group>
+        <div class="checkbox-group">
           <a-checkbox
             v-for="th in listThuongHieu"
             :key="th.id"
-            :value="th.ten"
-            :checked="selectedFiltersState.tenThuongHieu.includes(th.ten)"
-            @change="onChangeFilter('tenThuongHieu', $event, th.ten)"
+            :checked="selectedFiltersState.tenThuongHieu === th.ten"
+            @change="(e) => handleCheckboxChange('tenThuongHieu', e, th.ten)"
           >
-            {{ th.ten }}
+            <span :title="th.ten" class="truncate-text">
+              {{ truncateText(th.ten) }}
+            </span>
           </a-checkbox>
-        </a-checkbox-group>
+        </div>
       </a-collapse-panel>
     </a-collapse>
   </div>
@@ -95,7 +130,6 @@ import {
   useGetThuongHieu 
 } from "@/infrastructure/services/service/client/productclient.action";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { debounce } from "lodash";
 import { FindProductClientRequest } from "@/infrastructure/services/api/client/clientproduct.api";
 
 const emit = defineEmits([
@@ -103,14 +137,16 @@ const emit = defineEmits([
 ]);
 
 const selectedFiltersState = reactive({
-  tenDanhMuc: [],
-  tenKieuDang: [],
-  tenChatLieu: [],
-  tenThuongHieu: []
+  tenDanhMuc: "",
+  tenKieuDang: "",
+  tenChatLieu: "",
+  tenThuongHieu: ""
 });
 
+const maxPrice = 2000000;
+const priceRange = ref([0, maxPrice]);
 
-const params= ref<FindProductClientRequest>({
+const params = ref<FindProductClientRequest>({
     page: 1,
     size: 20,
     tenSanPham: "",
@@ -118,9 +154,9 @@ const params= ref<FindProductClientRequest>({
     tenChatLieu: "",
     tenKieuDang: "",
     tenThuongHieu: "",
-    khoangGia: null
+    min: 0,
+    max: null
 });
-
 
 const { data: chatLieu } = useGetChatLieu({
   refetchOnWindowFocus: false,
@@ -149,13 +185,42 @@ const listThuongHieu = computed(() => thuongHieu?.value?.data || []);
 const listKieuDang = computed(() => kieuDang?.value?.data || []);
 const listColor = computed(() => color?.value?.data || []);
 
-const selectedFilters = computed(() => {
-  return Object.fromEntries(
-    Object.entries(selectedFiltersState).filter(([_, values]) => values.length > 0)
-  );
-});
+// Hàm để cắt bớt text khi dài hơn 15 ký tự
+function truncateText(text: string): string {
+  return text && text.length > 15 ? text.substring(0, 15) + '...' : text;
+}
 
-watch(() => selectedFiltersState, () => {
+// Hàm định dạng tiền tệ
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('vi-VN').format(value);
+}
+
+// Xử lý khi thay đổi khoảng giá
+function handlePriceChange(value: [number, number]) {
+  params.value.min = value[0];
+  params.value.max = value[1] === maxPrice ? null : value[1];
+  
+  emit('filter', params.value);
+}
+
+// Reset khoảng giá về mặc định
+function resetPriceRange() {
+  priceRange.value = [0, maxPrice];
+  params.value.min = 0;
+  params.value.max = null;
+  emit('filter', params.value);
+}
+
+// Xử lý checkbox chỉ chọn một giá trị
+function handleCheckboxChange(category: string, e: any, value: string) {
+  if (e.target.checked) {
+    selectedFiltersState[category] = value;
+  } else {
+    selectedFiltersState[category] = "";
+  }
+}
+
+watch(selectedFiltersState, () => {
   const filterMapping = {
     tenDanhMuc: 'tenDanhMuc',
     tenKieuDang: 'tenKieuDang',
@@ -165,51 +230,69 @@ watch(() => selectedFiltersState, () => {
 
   Object.keys(filterMapping).forEach((stateKey) => {
     const paramKey = filterMapping[stateKey];
-    if (selectedFiltersState[stateKey].length === 0) {
-      params.value[paramKey] = "";
-    } else {
-      params.value[paramKey] = selectedFiltersState[stateKey].join(',');
-    }
+    params.value[paramKey] = selectedFiltersState[stateKey] || "";
   });
+  
   emit('filter', params.value);
 }, { deep: true });
 
-function onChangeFilter(key: keyof FindProductClientRequest, e: any, value: string) {
-  const isChecked = e.target.checked;
-  
-  if (isChecked) {
-    if (!selectedFiltersState[key].includes(value)) {
-      selectedFiltersState[key].push(value);
-    }
-  } else {
-    const index = selectedFiltersState[key].indexOf(value);
-    if (index > -1) {
-      selectedFiltersState[key].splice(index, 1);
-    }
-    
-  }
-  
-};
-
-function removeFilter(category: string, value: string) {
-  const index = selectedFiltersState[category].indexOf(value);
-  if (index > -1) {
-    selectedFiltersState[category].splice(index, 1);
-  }
+function removeFilter(category: string) {
+  selectedFiltersState[category] = "";
 }
 
-const activeKey = ref(["color"]);
-
-// const emitFilter = debounce(() => {
-//   // const payload: FindProductClientRequest = { ...params.value };
-//   const payload = params.value;
-//   Object.keys(payload).forEach(key => {
-//     if (payload[key] === '') {
-//       delete payload[key];
-//     }
-//   });
-
-//   emit('filter', payload);
-// }, 300);
-
+const activeKey = ref(["danhmuc"]); // Changed default active key to danhmuc since khoanggia is now always visible
 </script>
+
+<style scoped>
+.truncate-tag {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truncate-text {
+  display: inline-block;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-range-container {
+  padding: 0 8px;
+}
+
+.price-range-values {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+:deep(.ant-slider-track) {
+  background-color: #f5222d;
+}
+
+:deep(.ant-slider-handle) {
+  border-color: #f5222d;
+}
+
+:deep(.ant-slider-handle:focus) {
+  box-shadow: 0 0 0 5px rgba(245, 34, 45, 0.12);
+}
+
+:deep(.ant-slider:hover .ant-slider-track) {
+  background-color: #ff4d4f;
+}
+
+:deep(.ant-slider:hover .ant-slider-handle) {
+  border-color: #ff4d4f;
+}
+</style>

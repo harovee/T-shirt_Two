@@ -24,6 +24,12 @@
             <a-card hoverable class="w-full">
             <template #cover>
               <div class="product-image-container">
+                <div 
+                  v-if="product.phanTramGiam && product.phanTramGiam.length > 0" 
+                  class="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded-md z-10 font-medium"
+                >
+                  -{{ product.phanTramGiam[0] }}%
+                </div>
                 <img
                   :alt="product.ten"
                   :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
@@ -90,11 +96,11 @@
       <div class="pagination-container flex justify-center mt-8 mb-4">
         <a-pagination
           v-model:current="currentPage"
-          :total="props.dataSource?.totalElements"
+          :total="totalProducts"
           :pageSize="pageSize"
           @change="handlePageChange"
           show-size-changer
-          :pageSizeOptions="['12', '20', '40', '60']"
+          :pageSizeOptions="['20', '40', '60']"
           :showTotal="total => `Tổng ${total} sản phẩm`"
           @showSizeChange="handleSizeChange"
         />
@@ -115,7 +121,12 @@ import router from "@/infrastructure/routes/router.ts";
 const selectedArrange = ref("default");
 const currentPage = ref(1);
 const pageSize = ref(20);
-const totalItems = ref(0);
+
+const totalProducts = computed(() => {
+  if (!props.dataSource) return 0;
+  if (Array.isArray(props.dataSource)) return props.dataSource.length;
+  return props.dataSource.totalElements || props.dataSource.totalItems || props.dataSource.total || 0;
+});
 
 const props = defineProps({
   dataSource: Object,

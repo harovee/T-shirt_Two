@@ -53,4 +53,7 @@ public interface ClientProductProjectionResponse extends BaseResponse {
 
     String getAnhs();
 
+    String getPhanTramGiam();
+
+    Integer getTongSoLuongBan();
 }

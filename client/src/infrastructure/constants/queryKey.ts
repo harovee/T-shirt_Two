@@ -134,7 +134,9 @@ export const queryKey = {
             colorList: "colorListkey",
             thuongHieuList: "thuongHieuListKey",
             kieuDangList: "kieuDangListKey",
-            chatLieuList: "chatLieuListKey"
+            chatLieuList: "chatLieuListKey",
+            productSaleList: "clientSaleProductKey",
+            productBestSaleList: "clientBestSaleProductKey",
         },
         payment: {
             invoiceOnline: "clientInvoiceOnlineKey",

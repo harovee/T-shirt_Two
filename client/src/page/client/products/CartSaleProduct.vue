@@ -1,19 +1,6 @@
 <template>
   <div class="product-list px-4">
-    <!-- Show product list when not viewing product detail -->
-    <div class="flex items-center mb-6">
-      <p class="mr-8 text-base font-medium text-gray-700">Sắp xếp theo</p>
-      <a-select class="w-64" v-model:value="selectedArrange">
-        <!-- <a-select-option
-          v-for="arrange in arrangesData"
-          :key="arrange.value"
-          :value="arrange.value"
-          >{{ arrange.name }}</a-select-option
-        > -->
-      </a-select>
-    </div>
-    
-    <a-row class="mb-8">
+    <a-row class="mb-8 mt-2">
       <!-- Lặp qua danh sách sản phẩm -->
       <a-col
         :span="5"
@@ -94,18 +81,16 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from "vue";
 import {formatCurrency} from "@/utils/common.helper"
-import { ClientProductDetailRequest, ClientProductRequest, FindProductClientRequest } from "@/infrastructure/services/api/client/clientproduct.api";
-import { useGetTop8ProductsMoiNhat } from "@/infrastructure/services/service/client/productclient.action";
+import {  ClientProductRequest, FindProductClientRequest } from "@/infrastructure/services/api/client/clientproduct.api";
+import { useGetSaleProduct } from "@/infrastructure/services/service/client/productclient.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import router from "@/infrastructure/routes/router.ts";
 
 const selectedArrange = ref("default");
-const showProductDetail = ref(false);
-const selectedProduct = ref(null);
 
 const params= ref<FindProductClientRequest>({
     page: 1,
-    size: 20,
+    size: 8,
     tenSanPham: "",
     tenDanhMuc: "",
     tenChatLieu: "",
@@ -117,12 +102,17 @@ const params= ref<FindProductClientRequest>({
     tenHoaTiet: ""
 });
 
-const { data: top8Product } = useGetTop8ProductsMoiNhat(params,{
+const { data: saleProduct } = useGetSaleProduct(params,{
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData
 });
 
-const products = computed(() => top8Product?.value?.data || []);
+const products = computed(() => {
+  const productData = saleProduct?.value?.data?.data || [];
+
+  return productData;
+});
+
 
 watch(selectedArrange, (newValue) => {
   console.log("Sorting by:", newValue);
@@ -176,7 +166,7 @@ const handleRedirectProductDetail = (product) => {
 
 <script lang="ts">
 export default {
-  name: 'client-home',
+  name: 'client-sale-product',
 };
 </script>
 

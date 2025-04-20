@@ -1,126 +1,222 @@
 <template>
-  <div class="product-detail-container" v-if="product">
-    <h4 class="breadcrumb-title">
-        <router-link to="/home" class="breadcrumb-link">Trang chủ</router-link> /
-        <router-link to="/products" class="breadcrumb-link">Sản phẩm</router-link> /
-        {{ product.ten }}
-      </h4>
-    <a-row :gutter="[24, 24]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" v-if="product">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center text-sm font-medium text-gray-500 mb-6">
+      <router-link to="/home" class="hover:text-blue-600 transition-colors">Trang chủ</router-link>
+      <span class="mx-2">/</span>
+      <router-link to="/products" class="hover:text-blue-600 transition-colors">Sản phẩm</router-link>
+      <span class="mx-2">/</span>
+      <span class="text-gray-800">{{ product.ten }}</span>
+    </nav>
+
+    <div class="flex flex-col lg:flex-row gap-8">
       <!-- Left side - Product Images -->
-      <a-col :span="16">
-              <div class="product-images">
-                  <div class="thumbnail-container">
-                    <img
-                      v-for="(image, index) in displayedImages"
-                      :key="index"
-                      :src="image"
-                      :alt="`${product.ten} - ảnh ${index + 1}`"
-                      class="thumbnail"
-                      :class="{ 'active': selectedImage === image }"
-                      @click="selectedImage = image"
-                    />
-                  </div>
-
-                  <div class="main-image-container">
-                    <img
-                      :src="selectedImage"
-                      :alt="product.ten"
-                      class="main-image"
-                    />
-                  </div>
-      </div>
-      </a-col>
-
-      <!-- Right side - Product Information -->
-      <a-col :span="8">
-        <div class="product-info">
-          <h1 class="product-title">{{ product.ten }}</h1>
-
-          <div class="product-price">
-            <span
-              v-if="displayedDiscount && displayedDiscount.length > 0"
-              class="original-price"
-            >
-              {{ formatCurrency(displayedPrice && displayedPrice.length > 0 ? displayedPrice[0] : 0, "VND", "vi-VN") }}
-            </span>
-            <span class="discounted-price">
-              {{
-                displayedDiscount && displayedDiscount.length > 0
-                  ? formatCurrency(displayedDiscount[0], "VND", "vi-VN")
-                  : formatCurrency(displayedPrice && displayedPrice.length > 0 ? displayedPrice[0] : 0, "VND", "vi-VN")
-              }}
-            </span>
+      <div class="w-full lg:w-2/3">
+        <div class="flex flex-row-reverse gap-4">
+          <!-- Thumbnails -->
+          <div class="flex-1">
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden relative">
+              <!-- Badge giảm giá -->
+                <!-- <div 
+                v-if="effectivePhanTramGiam" 
+                class="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded-md z-10 font-medium"
+              >
+                -{{ effectivePhanTramGiam }}%
+              </div> -->
+              <img
+                :src="selectedImage"
+                :alt="product.ten"
+                class="w-full h-auto object-contain aspect-square"
+              />
+            </div>
           </div>
 
+          <!-- Thumbnail navigation -->
+          <div class="w-20">
+            <div class="flex flex-col gap-3 max-h-96 overflow-y-auto pr-2">
+              <div
+                v-for="(image, index) in allProductImages"
+                :key="index"
+                class="cursor-pointer rounded-md overflow-hidden border-2 transition-all"
+                :class="selectedImage === image ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-gray-300'"
+                @click="selectedImage = image"
+              >
+                <img
+                  :src="image"
+                  :alt="`${product.ten} - ảnh ${index + 1}`"
+                  class="w-full h-auto aspect-square object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side - Product Information -->
+      <div class="w-full lg:w-1/3">
+        <div class="bg-white rounded-lg p-6 shadow-sm">
+          <h1 class="text-2xl font-bold text-gray-800 mb-4">{{ product.ten }}</h1>
+
+          <!-- Price -->
+            <div class="mb-6">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-baseline gap-2">
+                  <span
+                    v-if="displayedDiscount && displayedDiscount.length > 0"
+                    class="line-through text-gray-400 text-lg"
+                  >
+                    {{ formatCurrency(displayedPrice && displayedPrice.length > 0 ? displayedPrice[0] : 0, "VND", "vi-VN") }}
+                  </span>
+                  <span class="text-2xl font-bold text-red-600">
+                    {{
+                      displayedDiscount && displayedDiscount.length > 0
+                        ? formatCurrency(displayedDiscount[0], "VND", "vi-VN")
+                        : formatCurrency(displayedPrice && displayedPrice.length > 0 ? displayedPrice[0] : 0, "VND", "vi-VN")
+                    }}
+                  </span>
+                  <!-- Hiển thị badge phần trăm giảm giá -->
+                  <span 
+                    v-if="effectivePhanTramGiam"
+                    class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-medium"
+                  >
+                    Giảm {{ effectivePhanTramGiam }}%
+                  </span>
+                </div>
+                
+                <!-- Thông báo tiết kiệm -->
+                <div v-if="displayedDiscount && displayedDiscount.length > 0 && displayedPrice && displayedPrice.length > 0" class="text-green-600 text-sm">
+                  Tiết kiệm: {{ formatCurrency(displayedPrice[0] - displayedDiscount[0], "VND", "vi-VN") }}
+                </div>
+              </div>
+            </div>
+
+          <!-- Divider -->
+          <div class="w-full h-px bg-gray-200 my-4"></div>
+
           <!-- Size selection -->
-          <div class="product-size mb-4" v-if="product.kichCo && product.kichCo.length > 0">
-            <p class="attribute-label">Kích cỡ:</p>
-            <div class="size-options">
-              <a-radio-group v-model:value="selectedSize">
-                <a-radio-button
-                  v-for="(size, index) in product.kichCo"
-                  :key="index"
-                  :value="size.id"
-                >
-                  {{ size.ten }}
-                </a-radio-button>
-              </a-radio-group>
+          <div class="mb-6" v-if="product.kichCo && product.kichCo.length > 0">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kích cỡ:</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="(size, index) in product.kichCo"
+                :key="index"
+                class="px-4 py-2 border rounded-md text-sm transition-all"
+                :class="selectedSize === size.id ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'"
+                @click="selectedSize = size.id"
+              >
+                {{ size.ten }}
+              </button>
             </div>
           </div>
 
           <!-- Color selection -->
-          <div class="product-color mb-4" v-if="product.color && product.color.length > 0">
-                <p class="attribute-label">Màu sắc:</p>
-                <div class="color-options">
-                  <a-radio-group v-model:value="selectedColor">
-                    <a-radio-button v-for="(mausac, index) in product.color" :key="index" :value="mausac.id">
-                        <span :style="{ backgroundColor: mausac.code, width: '30px', height: '30px',
-                        display: 'inline-block', borderRadius: '50%' }"></span>
-                  </a-radio-button>
-              </a-radio-group>
-                </div>
-              </div>
-
-              <div class="product-quantity mb-4">
-              <p class="attribute-label">Số lượng:</p>
-              <div class="quantity-container">
-                <button @click="decreaseQuantity" class="quantity-btn">−</button>
-                <input type="text" v-model="quantity" class="quantity-input" readonly />
-                <button @click="increaseQuantity" class="quantity-btn">+</button>
-              </div>
+          <div class="mb-6" v-if="product.color && product.color.length > 0">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Màu sắc:</label>
+            <div class="flex flex-wrap gap-3">
+              <button
+                v-for="(mausac, index) in product.color"
+                :key="index"
+                class="w-10 h-10 rounded-full border-2 transition-transform hover:scale-110 focus:outline-none"
+                :style="{ backgroundColor: mausac.code }"
+                :class="selectedColor === mausac.id ? 'border-blue-500 shadow-md' : 'border-gray-300'"
+                @click="selectedColor = mausac.id"
+              >
+                <span v-if="selectedColor === mausac.id" class="flex items-center justify-center h-full">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </span>
+              </button>
             </div>
+          </div>
 
-          <div class="product-actions">
-            <a-button type="primary" size="large" class="mr-4" @click="addToCart">
-              <shopping-cart-outlined /> Thêm vào giỏ hàng
-            </a-button>
-            <a-button type="default" size="large" @click="buyNow">
+          <!-- Quantity -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Số lượng:</label>
+            <div class="flex items-center">
+              <button 
+                @click="decreaseQuantity" 
+                class="w-10 h-10 rounded-l-md border border-gray-300 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                </svg>
+              </button>
+              <input 
+                type="text" 
+                v-model="quantity" 
+                readonly 
+                class="w-16 h-10 border-t border-b border-gray-300 text-center text-gray-700 font-medium"
+              />
+              <button 
+                @click="increaseQuantity" 
+                class="w-10 h-10 rounded-r-md border border-gray-300 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col sm:flex-row gap-3 mb-6">
+            <button
+              @click="addToCart"
+              class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-md font-medium flex items-center justify-center gap-2 transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+              Thêm vào giỏ hàng
+            </button>
+            <button
+              @click="buyNow"
+              class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-md font-medium transition-colors"
+            >
               Mua ngay
-            </a-button>
+            </button>
           </div>
 
           <!-- Product description -->
-          <div class="product-description mt-6">
-            <a-divider />
-            <h3>Mô tả sản phẩm</h3>
-            <p>{{ product.moTa || 'Không có mô tả cho sản phẩm này.' }}</p>
+          <div class="border-t border-gray-200 pt-4 mt-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Mô tả sản phẩm</h3>
+            <p class="text-gray-600">{{ product.moTa || 'Không có mô tả cho sản phẩm này.' }}</p>
           </div>
 
           <!-- Product details -->
-          <div class="product-details mt-4">
-            <h3>Thông tin chi tiết</h3>
-            <a-descriptions :column="1">
-              <a-descriptions-item label="Thương hiệu">{{ getAttributeName(product.thuongHieu) }}</a-descriptions-item>
-              <a-descriptions-item label="Chất liệu">{{ getAttributeName(product.chatLieu) }}</a-descriptions-item>
-              <a-descriptions-item label="Kiểu dáng">{{ getAttributeName(product.kieuDang) }}</a-descriptions-item>
-              <a-descriptions-item label="Cổ áo">{{ getAttributeName(product.coAo) }}</a-descriptions-item>
-              <a-descriptions-item label="Tay áo">{{ getAttributeName(product.tayAo) }}</a-descriptions-item>
-              <a-descriptions-item label="Họa tiết">{{ getAttributeName(product.hoaTiet) }}</a-descriptions-item>
-            </a-descriptions>
+          <div class="border-t border-gray-200 pt-4 mt-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Thông tin chi tiết</h3>
+            <div class="space-y-2">
+              <div class="flex">
+                <span class="w-1/3 text-gray-500">Thương hiệu:</span>
+                <span class="w-2/3 text-gray-800">{{ getAttributeName(product.thuongHieu) }}</span>
+              </div>
+              <div class="flex">
+                <span class="w-1/3 text-gray-500">Chất liệu:</span>
+                <span class="w-2/3 text-gray-800">{{ getAttributeName(product.chatLieu) }}</span>
+              </div>
+              <div class="flex">
+                <span class="w-1/3 text-gray-500">Kiểu dáng:</span>
+                <span class="w-2/3 text-gray-800">{{ getAttributeName(product.kieuDang) }}</span>
+              </div>
+              <div class="flex">
+                <span class="w-1/3 text-gray-500">Cổ áo:</span>
+                <span class="w-2/3 text-gray-800">{{ getAttributeName(product.coAo) }}</span>
+              </div>
+              <div class="flex">
+                <span class="w-1/3 text-gray-500">Tay áo:</span>
+                <span class="w-2/3 text-gray-800">{{ getAttributeName(product.tayAo) }}</span>
+              </div>
+              <div class="flex">
+                <span class="w-1/3 text-gray-500">Họa tiết:</span>
+                <span class="w-2/3 text-gray-800">{{ getAttributeName(product.hoaTiet) }}</span>
+              </div>
+            </div>
           </div>
         </div>
-      </a-col>
-    </a-row>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -215,29 +311,28 @@ const quantity = ref(1);
 
 const displayedPrice = ref<number[]>([]);
 const displayedDiscount = ref<number[]>([]);
-const displayedImages = ref<string[]>([]);
-
+const allProductImages = ref<string[]>([]); // Danh sách tất cả ảnh sản phẩm
+const currentVariantImage = ref<string | null>(null); // Ảnh của variant hiện tại
 
 watch(product, (newProduct) => {
   if (newProduct) {
     displayedPrice.value = newProduct.gia || [];
     displayedDiscount.value = newProduct.discount || [];
 
-    // Sửa cách lấy URL ảnh
+    // Lưu tất cả ảnh sản phẩm vào biến riêng
     if (newProduct.anh && Array.isArray(newProduct.anh)) {
-      displayedImages.value = newProduct.anh.map(img => img.url);
+      allProductImages.value = newProduct.anh.map(img => img.url);
 
-      if (displayedImages.value.length > 0) {
-        selectedImage.value = displayedImages.value[0];
+      if (allProductImages.value.length > 0) {
+        selectedImage.value = allProductImages.value[0];
       } else {
         selectedImage.value = '/default-product-image.jpg';
       }
     } else {
-      displayedImages.value = [];
+      allProductImages.value = [];
       selectedImage.value = '/default-product-image.jpg';
     }
     
-    // Phần còn lại giữ nguyên
     if (newProduct.kichCo && newProduct.kichCo.length > 0) {
       selectedSize.value = newProduct.kichCo[0].id;
       paramsDetail.value.idKichCo = selectedSize.value;
@@ -249,9 +344,6 @@ watch(product, (newProduct) => {
     }
   }
 }, { immediate: true });
-
-
-
 
 const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   productId,
@@ -278,6 +370,20 @@ watch(selectedColor, (newColor) => {
 });
 
 
+// Computed property lấy giá trị phanTramGiam từ dataDetail nếu có
+const effectivePhanTramGiam = computed(() => {
+  if (
+    dataDetail.value &&
+    dataDetail.value.data &&
+    dataDetail.value.data.data &&
+    dataDetail.value.data.data.phanTramGiam &&
+    dataDetail.value.data.data.phanTramGiam.length > 0
+  ) {
+    return dataDetail.value.data.data.phanTramGiam[0];
+  }
+  return null;
+});
+
 watch(dataDetail, (newDetail) => {
   if (newDetail && newDetail.data && newDetail?.data?.data) {
     const detailData = newDetail?.data?.data;
@@ -285,13 +391,20 @@ watch(dataDetail, (newDetail) => {
       displayedPrice.value = detailData.gia;
     }
     displayedDiscount.value = detailData.discount;
-    // Sửa cách lấy URL ảnh
-    if (detailData.anh && Array.isArray(detailData.anh)) {
-      displayedImages.value = detailData.anh.map(img => img.url);
-
-      if (displayedImages.value.length > 0) {
-        selectedImage.value = displayedImages.value[0];
+    
+    // Chỉ cập nhật ảnh được chọn khi có ảnh mới từ variant
+    if (detailData.anh && Array.isArray(detailData.anh) && detailData.anh.length > 0) {
+      // Lấy ảnh đầu tiên từ variant làm ảnh hiện tại
+      const variantImage = detailData.anh[0].url;
+      
+      // Kiểm tra xem ảnh này đã có trong danh sách chưa
+      if (!allProductImages.value.includes(variantImage)) {
+        // Nếu chưa có, thêm vào đầu danh sách
+        allProductImages.value.unshift(variantImage);
       }
+      
+      // Đặt ảnh variant làm ảnh được chọn
+      selectedImage.value = variantImage;
     }
   }
 });
@@ -304,15 +417,6 @@ const getAttributeName = (attribute) => {
 const addToCart = () => {
   if (!product.value) return;
 
-  // console.log('Adding to cart:', {
-  //   ProductDetail: dataDetail?.value?.data?.data,
-  //   size: selectedSize.value,
-  //   color: selectedColor.value,
-  //   quantity: quantity.value,
-  //   price: displayedDiscount.value && displayedDiscount.value.length > 0 ? displayedDiscount.value[0] : displayedPrice.value[0]
-  // });
-
-  // Thao
   addProduct({
     id: dataDetail?.value?.data?.data?.maSPCTs[0],
     name: dataDetail?.value?.data?.data?.ten,
@@ -329,10 +433,9 @@ const addToCart = () => {
 
 const buyNow = () => {
   router.push({
-        name: 'client-cart'
-    });
+    name: 'client-cart'
+  });
   addToCart();
-  console.log('Buy now clicked');
 };
 
 const decreaseQuantity = () => {
@@ -345,210 +448,3 @@ const increaseQuantity = () => {
   quantity.value++;
 };
 </script>
-
-<style scoped>
-.product-detail-container {
-  margin: 0 200px;
-  padding: 24px;
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-}
-
-.product-images {
-  display: flex;
-  gap: 16px;
-  margin-right: 30px;
-}
-
-.thumbnail-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 80px;
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.thumbnail {
-  width: 75px;
-  height: 75px;
-  object-fit: cover;
-  cursor: pointer;
-  border: 1px solid #eee;
-  padding: 2px;
-}
-
-.thumbnail.active {
-  border-color: #1890ff;
-  border-width: 2px;
-}
-
-.main-image-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f9f9f9;
-  max-width: calc(100% - 100px);
-}
-
-.main-image {
-  max-width: 100%;
-  max-height: 500px;
-  object-fit: contain;
-}
-.product-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 16px;
-}
-
-.product-price {
-  margin-bottom: 20px;
-}
-
-.original-price {
-  text-decoration: line-through;
-  color: grey;
-  margin-right: 10px;
-  font-size: 16px;
-}
-
-.discounted-price {
-  font-weight: bold;
-  font-size: 24px;
-  color: red;
-}
-
-.attribute-label {
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.color-options {
-  display: flex;
-  gap: 8px;
-}
-
-.color-option {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-}
-
-.color-option.active {
-  border-color: #1890ff;
-}
-
-.product-actions {
-  margin-top: 24px;
-}
-
-.product-description, .product-details {
-  margin-top: 24px;
-}
-.color-options {
-display: flex;
-gap: 10px;
-align-items: center;
-flex-wrap: wrap;
-}
-
-.color-option {
-width: 40px;
-height: 40px;
-border-radius: 50%;
-cursor: pointer;
-border: 2px solid transparent;
-transition: transform 0.2s ease, border-color 0.2s ease;
-display: flex;
-align-items: center;
-justify-content: center;
-position: relative;
-}
-
-.color-option:hover {
-transform: scale(1.1);
-}
-
-.color-option.active {
-border-color: #1890ff;
-box-shadow: 0 0 5px rgba(24, 144, 255, 0.5);
-}
-
-.color-option.active::after {
-content: '✔';
-color: white;
-font-size: 20px;
-font-weight: bold;
-position: absolute;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-}
-.breadcrumb-title {
-font-size: 16px;
-font-weight: 500;
-color: #555;
-margin-bottom: 20px;
-margin-top: 15px;
-}
-.breadcrumb-title {
-font-size: 16px;
-font-weight: 500;
-color: #555;
-margin-bottom: 16px;
-}
-
-.breadcrumb-link {
-color: #1890ff;
-text-decoration: none;
-transition: color 0.2s ease-in-out;
-}
-
-.breadcrumb-link:hover {
-color: #0056b3;
-text-decoration: underline;
-}
-.quantity-container {
-display: flex;
-align-items: center;
-gap: 8px;
-}
-
-.quantity-btn {
-width: 32px;
-height: 32px;
-font-size: 20px;
-font-weight: bold;
-border: none;
-background-color: #ffff;
-color: rgb(30, 28, 28);
-border-radius: 20px;
-cursor: pointer;
-transition: 0.2s ease;
-}
-
-.quantity-btn:hover {
-background-color: #96999a;
-}
-
-.quantity-input {
-width: 50px;
-height: 32px;
-text-align: center;
-border: 1px solid #ccc;
-border-radius: 4px;
-font-size: 16px;
-font-weight: bold;
-}
-</style>

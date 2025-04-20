@@ -1,18 +1,5 @@
 <template>
   <div class="product-list px-4">
-    <!-- Show product list when not viewing product detail -->
-    <div class="flex items-center mb-6">
-      <p class="mr-8 text-base font-medium text-gray-700">Sắp xếp theo</p>
-      <a-select class="w-64" v-model:value="selectedArrange">
-        <!-- <a-select-option
-          v-for="arrange in arrangesData"
-          :key="arrange.value"
-          :value="arrange.value"
-          >{{ arrange.name }}</a-select-option
-        > -->
-      </a-select>
-    </div>
-    
     <a-row class="mb-8">
       <!-- Lặp qua danh sách sản phẩm -->
       <a-col
@@ -25,6 +12,7 @@
           <a-card hoverable class="w-full shadow-sm rounded-lg overflow-hidden border border-gray-100">
             <template #cover>
               <div class="product-image-container bg-gray-50">
+                <!-- Discount badge if discount exists -->
                 <div 
                   v-if="product.phanTramGiam && product.phanTramGiam.length > 0" 
                   class="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded-md z-10 font-medium"
@@ -54,9 +42,21 @@
               <template #description>
                 <div class="py-2">
                   <p class="mb-3">
-                    <span class="price-range text-red-600 font-bold text-lg">
-                      {{ getFormattedPriceRange(product) }}
-                    </span>
+                    <!-- When discount exists -->
+                    <template v-if="product.phanTramGiam && product.phanTramGiam.length > 0">
+                      <span class="text-red-600 font-bold text-lg">
+                        {{ formatCurrency(product.discount[0], "VND", "vi-VN") }}
+                      </span>
+                      <span class="text-gray-500 text-sm line-through ml-2">
+                        {{ formatCurrency(product.gia[0], "VND", "vi-VN") }}
+                      </span>
+                    </template>
+                    <!-- When no discount -->
+                    <template v-else>
+                      <span class="price-range text-red-600 font-bold text-lg">
+                        {{ getFormattedPriceRange(product) }}
+                      </span>
+                    </template>
                   </p>
 
                   <!-- Size dynamic list -->
@@ -81,6 +81,9 @@
                       class="inline-block mr-2 mb-1 w-5 h-5 rounded-full cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                     ></span>
                   </p>
+                  <p v-if="product.tongSoLuongBan" class="mt-3 text-sm text-gray-700">
+                    Đã bán :  <span class="font-bold">{{ product.tongSoLuongBan }}</span>
+                  </p>
                 </div>
               </template>
             </a-card-meta>
@@ -94,35 +97,20 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from "vue";
 import {formatCurrency} from "@/utils/common.helper"
-import { ClientProductDetailRequest, ClientProductRequest, FindProductClientRequest } from "@/infrastructure/services/api/client/clientproduct.api";
-import { useGetTop8ProductsMoiNhat } from "@/infrastructure/services/service/client/productclient.action";
+import {  ClientProductRequest, FindProductClientRequest } from "@/infrastructure/services/api/client/clientproduct.api";
+import { useGetProductBestSale, useGetTop8ProductsMoiNhat } from "@/infrastructure/services/service/client/productclient.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import router from "@/infrastructure/routes/router.ts";
 
 const selectedArrange = ref("default");
-const showProductDetail = ref(false);
-const selectedProduct = ref(null);
 
-const params= ref<FindProductClientRequest>({
-    page: 1,
-    size: 20,
-    tenSanPham: "",
-    tenDanhMuc: "",
-    tenChatLieu: "",
-    tenTayAo: "",
-    tenTinhNang: "",
-    tenKieuDang: "",
-    tenCoAo: "",
-    tenThuongHieu: "",
-    tenHoaTiet: ""
-});
-
-const { data: top8Product } = useGetTop8ProductsMoiNhat(params,{
+const { data: bestSaleProduct } = useGetProductBestSale({
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData
 });
 
-const products = computed(() => top8Product?.value?.data || []);
+const products = computed(() => bestSaleProduct?.value?.data || []);
+
 
 watch(selectedArrange, (newValue) => {
   console.log("Sorting by:", newValue);
@@ -215,4 +203,4 @@ export default {
 .product-image-container:hover .hover-image {
   opacity: 1;
 }
-</style>
+</style>  

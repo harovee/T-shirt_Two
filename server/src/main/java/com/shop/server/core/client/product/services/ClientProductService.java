@@ -15,4 +15,8 @@ public interface ClientProductService {
     ResponseObject<?> getTop8Product(ClientProductSearchRequest request);
 
     ResponseObject<?> getProductDetaiById(String idSanPham,ClientProductDetailRequest request);
+
+    ResponseObject<?> getProductBestSale();
+
+    ResponseObject<?>  getSaleProduct(ClientProductSearchRequest request);
 }

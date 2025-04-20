@@ -67,17 +67,6 @@
             <span>{{ getDateFormat(record.ngayKetThuc) }}</span>
         </div>
         <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
-          <a-tooltip
-          title="Chi tiết phiếu giảm giá"
-            trigger="hover"
-             
-          >
-            <a-button  class="bg-blue-100"  size="middle" shape="round"
-              @click="handleRedirectVoucherDetail(record.id)"
-            >
-              <v-icon name="fa-eye" />
-            </a-button>
-          </a-tooltip>
           <a-popconfirm
             :title=" record.trangThai =='ACTIVE' ? 'Vô hiệu hóa phiếu giảm giá này?': 'Kích hoạt phiếu giảm giá này' "
             ok-text="Có"
@@ -85,7 +74,7 @@
             @confirm="handleChangeStatusVoucher(record.id, record.trangThai == 'INACTIVE' ? 'ACTIVE' : 'INACTIVE')"
           >
             <a-tooltip
-              :title="record.ngayKetThuc <= Date.now() ? 'Không thể chuyển trạng thái khi đã kết thúc' : 'Cập nhật trạng thái phiếu giảm giá'"
+              :title="record.ngayKetThuc <= Date.now() ? 'Không thể chuyển trạng thái khi đã kết thúc' : 'Đổi trạng thái phiếu giảm giá'"
               trigger="hover"
             >
               <a-button
@@ -98,6 +87,15 @@
               </a-button>
             </a-tooltip>
           </a-popconfirm>
+          <a-tooltip
+            title="Chi tiết phiếu giảm giá"
+            trigger="hover">
+            <a-button  class="bg-blue-100"  size="middle" shape="round"
+              @click="handleRedirectVoucherDetail(record.id)">
+              <v-icon name="fa-eye" />
+            </a-button>
+          </a-tooltip>
+          
         </div>
       </template>
     </table-spotify>
@@ -165,7 +163,7 @@ const columnsVoucher: ColumnType[] = [
     dataIndex: "catalog",
     key: "catalog",
     ellipsis: true,
-    width: 50,
+    width: 30,
     align: "center"
   },
   {
@@ -189,7 +187,7 @@ const columnsVoucher: ColumnType[] = [
     dataIndex: "soLuong",
     key: "soLuong",
     ellipsis: true,
-    width: 55,
+    width: 70,
     resizable: true,
   },
   {
@@ -197,7 +195,7 @@ const columnsVoucher: ColumnType[] = [
     dataIndex: "kieu",
     key: "kieu",
     ellipsis: true,
-    width: 100,
+    width: 80,
     resizable: true,
   },
   {
