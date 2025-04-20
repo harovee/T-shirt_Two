@@ -20,9 +20,11 @@ import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,8 +71,11 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Dữ liệu không được để trống");
         }
         request.setMa(Helper.generateCode("PGG"));
-        if (adPhieuGiamGiaRepository.existsPhieuGiamGiaByTen(request.getTen()) != null) {
-            return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Phiếu giảm giá đã tồn tại");
+//        if (adPhieuGiamGiaRepository.existsPhieuGiamGiaByTen(request.getTen().trim()) != null) {
+//            return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên phiếu giảm giá đã tồn tại");
+//        }
+        if (adPhieuGiamGiaRepository.existsByTen(request.getTen().trim())) {
+            return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên phiếu giảm giá đã tồn tại");
         }
         if (request.getSoLuong() == null || request.getSoLuong() <= 0) {
             return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
@@ -88,9 +93,8 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
                 // request.setGiamToiDa(request.getGiaTriGiam());
                 Long dieuKienGiam = Long.parseLong(request.getDieuKienGiam());
                 Double giaTriGiam = request.getGiaTriGiam();
-                request.setGiamToiDa(String.valueOf(BigDecimal.valueOf(888000)));
                 if (giaTriGiam < 0 || giaTriGiam > 100) {
-                    return new ResponseObject<>(null, HttpStatus.OK, "GiaTriGiam % nằm trong khoảng 0-100% ");
+                    return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "GiaTriGiam % nằm trong khoảng 0-100% ");
                 }
             } catch (Exception e) {
                 return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm, giá trị giảm và giảm tối đa sai kiểu dữ liệu");
@@ -98,12 +102,13 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
         }
         PhieuGiamGia phieuGiamGia = new PhieuGiamGia();
         BeanUtils.copyProperties(request, phieuGiamGia);
-        if (!phieuGiamGia.getKieu()) {
-            for (KhachHang khachHang : adminKhachHangRepository.findAll()) {
-                adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHang, phieuGiamGia);
-            }
+        PhieuGiamGia savedVoucher = adPhieuGiamGiaRepository.save(phieuGiamGia);
+
+        if (!savedVoucher.getKieu()) {
+            sendEmailsInBatchesAsync(savedVoucher.getId());
         }
-        return new ResponseObject<>(adPhieuGiamGiaRepository.save(phieuGiamGia), HttpStatus.OK, "Thêm Phiếu giảm giá thành công");
+
+        return new ResponseObject<>(savedVoucher, HttpStatus.OK, "Thêm Phiếu giảm giá thành công");
     }
 
 
@@ -114,8 +119,8 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
         }
         Optional<PhieuGiamGia> optionalPhieuGiamGia = adPhieuGiamGiaRepository.findById(id);
         if (optionalPhieuGiamGia.isPresent()) {
-            if (adPhieuGiamGiaRepository.existPhieuGiamGiaById(id, request.getTen()) != null) {
-                return new ResponseObject<>(null, HttpStatus.CONFLICT, "Tên phiếu giảm giá đã tồn tại");
+            if (adPhieuGiamGiaRepository.existPhieuGiamGiaById(id, request.getTen().trim()) != null) {
+                return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên phiếu giảm giá đã tồn tại");
             }
 
             if (request.getSoLuong() < 0) {
@@ -131,14 +136,10 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
                 }
             } else {
                 try {
-                    Long giamToiDa = Long.parseLong(request.getGiamToiDa());
                     Long dieuKienGiam = Long.parseLong(request.getDieuKienGiam());
                     Double giaTriGiam = request.getGiaTriGiam();
                     if (giaTriGiam < 0 || giaTriGiam > 100) {
                         return new ResponseObject<>(null, HttpStatus.OK, "GiaTriGiam % nằm trong khoảng 0-100% ");
-                    }
-                    if (giamToiDa < (giaTriGiam / 100 * dieuKienGiam)) {
-                        return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Giá trị giảm tối đa không được nhỏ hơn giảm tối thiểu");
                     }
                 } catch (Exception e) {
                     return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm, giá trị giảm và giảm tối đa sai kiểu dữ liệu");
@@ -307,5 +308,28 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
         }
         return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "PhieuGiamGia không tìm thấy");
     }
+    @Async
+    public void sendEmailsInBatchesAsync(String voucherId) {
+        PhieuGiamGia phieuGiamGia = adPhieuGiamGiaRepository.findById(voucherId).orElse(null);
+        if (phieuGiamGia == null) return;
 
+        final int BATCH_SIZE = 100;
+        int page = 0;
+
+        Pageable pageable = PageRequest.of(page, BATCH_SIZE);
+        Page<KhachHang> khachHangPage;
+
+        do {
+            khachHangPage = adminKhachHangRepository.findAll(pageable);
+            for (KhachHang khachHang : khachHangPage.getContent()) {
+                try {
+                    adPhieuGiamGiaMailService.sendMailCreateKhachHangVoucher(khachHang, phieuGiamGia);
+                } catch (Exception e) {
+                    // Log lỗi nhưng tiếp tục gửi cho khách hàng khác
+                    log.error("Lỗi gửi email cho khách hàng {}: {}", khachHang.getId(), e.getMessage());
+                }
+            }
+            pageable = khachHangPage.nextPageable();
+        } while (khachHangPage.hasNext());
+    }
 }

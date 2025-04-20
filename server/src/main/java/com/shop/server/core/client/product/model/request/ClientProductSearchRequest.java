@@ -21,5 +21,7 @@ public class ClientProductSearchRequest extends PageableRequest {
 
     private String tenKieuDang;
 
-    private BigDecimal khoangGia;
+    private BigDecimal max;
+
+    private BigDecimal min;
 }

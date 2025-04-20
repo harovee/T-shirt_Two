@@ -33,7 +33,7 @@
             </a-input>
           </a-form-item>
 
-          <a-form-item  class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa">
+          <a-form-item  class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" v-if="formState.loaiGiam">
             <a-input v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa" disabled>
               <template #addonAfter>đ</template>
             </a-input>
@@ -284,14 +284,12 @@ const handleUpdateVoucher = (id :string | any,dataRequest: PhieuGiamGiaRequest) 
             data : dataRequest,
         },
           {
-            onSuccess: () => {
-              toast.success("Cập nhật phiếu giảm giá thành công!");
+            onSuccess: (result) => {
+              openNotification(notificationType.success, result?.data.message, '');
               handleRedirectClient();
             },
             onError: (error: any) => {
-              toast.error(
-                error?.response?.data?.message || "Đã xảy ra lỗi khi cập nhật phiếu giảm giá!"
-              );
+              openNotification(notificationType.error, error?.response?.data?.message, '');
             },
           }
         );

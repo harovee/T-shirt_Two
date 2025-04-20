@@ -1,5 +1,4 @@
 <template>
-  
   <a-form
       layout="vertical"
       class="grid grid-cols-4 gap-4 md:grid-cols-1 lg:grid-cols-3"
@@ -12,7 +11,7 @@
           v-model:value="params.keyword"
           placeholder="Tìm kiếm theo mã hoặc tên"
           allowClear
-          @change="onChangeInput('keyword' , $event)"
+          @change="onChangeInput('keyword', $event)"
       />
     </a-form-item>
 
@@ -22,7 +21,7 @@
     >
       <a-select
           v-model:value="params.loaiGiam"
-          @change="onChangeFilter('loaiGiam' , $event)"
+          @change="onChangeFilter('loaiGiam', $event)"
           placeholder="Chọn loại giảm"
           allowClear
       >
@@ -41,7 +40,7 @@
     >
       <a-select
           v-model:value="params.trangThai"
-          @change="onChangeFilter('trangThai' , $event)"
+          @change="onChangeFilter('trangThai', $event)"
           placeholder="Chọn trạng thái"
           allowClear
       >
@@ -60,25 +59,36 @@
     >
       <a-range-picker
           v-model:value="dateRange"
-          format="DD-MM-YYYY"
+          format="hh:ss DD-MM-YYYY"
           @change="onChangeDateRange"
       />
     </a-form-item>
   </a-form>
+  <div class="flex justify-end">
+      <a-tooltip title="Làm mới bộ lọc" trigger="hover">
+          <a-button
+            class="me-3 bg-purple-300 flex justify-between items-center gap-2"
+            size="large"
+            @click="refreshFilters()"
+          >
+            <v-icon name="ri-refresh-fill" style="font-size: 14px"></v-icon>
+          </a-button>
+        </a-tooltip>
+  </div>
 </template>
 
 <script setup lang="ts">
 import {debounce} from "lodash";
 import { defineEmits, ref, watch} from "vue";
 import {FindVoucherRequest, PropertyVoucherParams} from "@/infrastructure/services/api/admin/voucher/voucher.api";
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import { ReloadOutlined } from '@ant-design/icons-vue';
 
 const emit = defineEmits([
   "filter"
 ]);
 
 const dateRange = ref<[string | null, string | null] | null>(null);
-
 
 function onChangeDateRange(dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) {
   if (dates && dates[0] && dates[1]) {
@@ -91,28 +101,29 @@ function onChangeDateRange(dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | nul
   debouncedEmit();
 }
 
-
-const params = ref<PropertyVoucherParams>({
+const defaultParams: PropertyVoucherParams = {
   page: 1,
   keyword: null,
   startDate: null,
   endDate: null,
   loaiGiam: null,
   trangThai: null,
-})
+};
+
+const params = ref<PropertyVoucherParams>({...defaultParams});
 
 const loaiGiamOptions = [
   {label: "Tất cả", value: null},
   {label: "%", value: 0},
   {label: "Tiền", value: 1}
-]
+];
 
 const trangThaiOptions = [
   {label: "Tất cả", value: null},
   {label: "Đang áp dụng", value: "IN_PROGRESS"},
   {label: "Sắp diễn ra", value: "NOT_STARTED"},
   {label: "Hết hạn", value: "EXPIRED"}
-]
+];
 
 const debouncedEmit = debounce(() => {
   const payload = {...params.value};
@@ -131,9 +142,14 @@ function onChangeFilter(key: keyof FindVoucherRequest, value: any) {
   debouncedEmit();
 }
 
-
 function onChangeInput(key: keyof FindVoucherRequest, e: any) {
   params.value[key] = e.target.value;
+  debouncedEmit();
+}
+
+function refreshFilters() {
+  params.value = {...defaultParams};
+  dateRange.value = null;
   debouncedEmit();
 }
 
@@ -147,5 +163,4 @@ watch(
 </script>
 
 <style scoped>
-
 </style>

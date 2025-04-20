@@ -15,13 +15,14 @@ import { keepPreviousData } from "@tanstack/vue-query";
 import { useGetChatHistory } from "../../infrastructure/services/service/admin/chathistory.action";
 import { dateFormatChatBox } from "../../utils/common.helper";
 import { WechatOutlined } from "@ant-design/icons-vue";
+import { useChatToggleStore } from "../../infrastructure/stores/chatToggle";
 
 const authStore = useAuthStore();
 
 const messages = ref([]);
 const message = ref("");
 const stompClient = ref(null);
-const chatVisible = ref(false);
+const chatVisible = computed(() => chatToggleStore.activeChat === "livechat");
 const renderKey = ref(0);
 const chatBodyRef = ref(null);
 const previousMessages = ref({});
@@ -54,10 +55,12 @@ watch(messages, (newMessages) => {
   }
 });
 
+const chatToggleStore = useChatToggleStore();
+
 const toggleChat = () => {
-  chatVisible.value = !chatVisible.value;
+  chatToggleStore.toggleChat("livechat");
   if (chatVisible.value) {
-    newMessagesCount.value = 0; // Reset đếm khi mở chat
+    newMessagesCount.value = 0;  // Reset đếm khi mở chat
   }
   nextTick(scrollToBottom);
 };
@@ -136,7 +139,7 @@ const connectWebSocket = () => {
   stompClient.value = new Client({
     brokerURL: "ws://localhost:6868/ws",
     onConnect: (frame) => {
-      // console.log("Đã kết nối: " + frame);
+      console.log("Đã kết nối: " + frame);
       subscribeToRoom(selectedRoom.value);
 
       stompClient.value.publish({
@@ -223,7 +226,7 @@ const sendMessage = () => {
       });
 
       messages.value.push(chatMessage);
-      scrollToBottom();
+      scrollToBottom(); 
     }
 
     message.value = "";
@@ -279,15 +282,12 @@ const handleRoomChange = () => {
   subscribeToRoom(selectedRoom.value);
 };
 
-watchEffect(
-  async () => {
-    if (chatHistory.value) {
-      messages.value = [...chatHistory.value]; // Gán lịch sử tin nhắn vào messages
-      scrollToBottom();
-    }
-  },
-  { immediate: true }
-);
+watchEffect(async () => {
+  if (chatHistory.value) {
+    messages.value = [...chatHistory.value]; // Gán lịch sử tin nhắn vào messages
+    scrollToBottom();
+  }
+});
 </script>
 
 <template>
@@ -413,7 +413,7 @@ watchEffect(
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: #ff0000; /* Màu nền của badge */
+  background-color: #ff0000;  /* Màu nền của badge */
   color: white;
   font-size: 12px;
   padding: 2px 6px;

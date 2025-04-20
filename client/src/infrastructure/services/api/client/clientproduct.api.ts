@@ -1,4 +1,3 @@
-import { ClientProductDetailRequest } from './clientproduct.api';
 import {DefaultResponse, PaginationParams, PaginationResponse, ResponseList} from "@/infrastructure/types/api.common";
 import {Ref} from "vue";
 import request from "@/infrastructure/services/request.ts";
@@ -12,7 +11,8 @@ export interface PropertyProductParams {
     tenChatLieu?: string | null;
     tenKieuDang?: string | null;
     tenThuongHieu?: string | null;
-    khoangGia?: number | null;
+    max?: number | null;
+    min?: number | null;
     [key: string]: any;
 }
 
@@ -127,6 +127,10 @@ export type ClientProductResponse = ResponseList & {
     kichCo: List<SizeResponse>;
 
     color: List<ColorResponse>;
+    
+    phanTramGiam: List<number>;
+
+    tongSoLuongBan: number;
 };
 
 
@@ -253,5 +257,28 @@ export const getColor = async () => {
     })) as AxiosResponse<
         DefaultResponse<Array<ColorResponse>>
     >;
+    return res.data;
+};
+
+export const getProductsBestSale = async () => {
+    const res = (await request({
+        url: `${API_CLIENT_ALLPRODUCT}/product-best-sale`,
+        method: "GET"
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ClientProductResponse>>>
+    >;
+
+    return res.data;
+};
+
+export const getSaleProducts = async (params: Ref<FindProductClientRequest>) => {
+    const res = (await request({
+        url: `${API_CLIENT_ALLPRODUCT}/sale-product`,
+        method: "GET",
+        params: params.value,
+    })) as AxiosResponse<
+        DefaultResponse<PaginationResponse<Array<ClientProductResponse>>>
+    >;
+
     return res.data;
 };

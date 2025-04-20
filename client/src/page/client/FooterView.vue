@@ -28,7 +28,7 @@
               <td><a href="#">Tin tuyển dụng</a></td>
               <td><a href="#">Chính sách thành viên</a></td>
               <td><a href="#">Chính sách đổi trả</a></td>
-              <td>Email: cskh@tshirttwo2.vn</td>
+              <td>Email: tshirttwo2@gmail.com</td>
             </tr>
             <tr>
               <td></td>

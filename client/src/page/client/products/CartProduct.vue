@@ -1,29 +1,36 @@
 <template>
-  <div class="product-list">
+  <div class="product-list px-4">
     <!-- Show product list when not viewing product detail -->
-      <div class="flex items-center">
-        <p class="mr-8 mt-4 text-base">Sắp xếp theo</p>
-        <a-select class="w-64" v-model:value="selectedArrange">
-          <!-- <a-select-option
-            v-for="arrange in arrangesData"
-            :key="arrange.value"
-            :value="arrange.value"
-            >{{ arrange.name }}</a-select-option
-          > -->
-        </a-select>
-      </div>
-      <a-row>
-        <!-- Lặp qua danh sách sản phẩm -->
-        <a-col
-          :span="6"
-          v-for="product in products"
-          :key="product.id"
-          class="p-3"
-        >
-          <div @click="handleRedirectProductDetail(product)">
-            <a-card hoverable class="w-full">
+    <div class="flex items-center mb-6">
+      <p class="mr-8 text-base font-medium text-gray-700">Sắp xếp theo</p>
+      <a-select class="w-64" v-model:value="selectedArrange">
+        <!-- <a-select-option
+          v-for="arrange in arrangesData"
+          :key="arrange.value"
+          :value="arrange.value"
+          >{{ arrange.name }}</a-select-option
+        > -->
+      </a-select>
+    </div>
+    
+    <a-row class="mb-8">
+      <!-- Lặp qua danh sách sản phẩm -->
+      <a-col
+        :span="5"
+        v-for="product in products"
+        :key="product.id"
+        class="p-3"
+      >
+        <div @click="handleRedirectProductDetail(product)" class="cursor-pointer transition-transform duration-300 hover:scale-105">
+          <a-card hoverable class="w-full shadow-sm rounded-lg overflow-hidden border border-gray-100">
             <template #cover>
-              <div class="product-image-container">
+              <div class="product-image-container bg-gray-50">
+                <div 
+                  v-if="product.phanTramGiam && product.phanTramGiam.length > 0" 
+                  class="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded-md z-10 font-medium"
+                >
+                  -{{ product.phanTramGiam[0] }}%
+                </div>
                 <img
                   :alt="product.ten"
                   :src="product.anh && product.anh.length > 0 ? product.anh[0].url : '/default-product-image.jpg'"
@@ -35,7 +42,6 @@
                   :src="product.anh[1].url"
                   class="product-image hover-image"
                 />
-                <!-- Nếu không có hình thứ 2, dùng hình đầu tiên hoặc ảnh mặc định -->
                 <img
                   v-else
                   :alt="product.ten"
@@ -46,51 +52,42 @@
             </template>
             <a-card-meta :title="product.ten">
               <template #description>
-                <div>
-                  <p>
-                    <span class="price-range">
-                      {{
-                        getFormattedPriceRange(product)
-                      }}
+                <div class="py-2">
+                  <p class="mb-3">
+                    <span class="price-range text-red-600 font-bold text-lg">
+                      {{ getFormattedPriceRange(product) }}
                     </span>
                   </p>
 
                   <!-- Size dynamic list -->
-                  <p class="mb-2">
-                    Size:
+                  <p class="mb-3 flex items-center flex-wrap">
+                    <span class="text-gray-700 font-medium mr-2">Size:</span>
                     <span
                       v-for="(size, index) in product.kichCo"
                       :key="index"
-                      class="inline-block mr-2 p-2 w-4 h-4 text-center cursor-pointer"
+                      class="inline-flex items-center justify-center mr-2 mb-1 w-6 h-6 text-xs text-center text-gray-700 border border-gray-300 rounded hover:bg-gray-100 cursor-pointer transition-colors"
                     >
                       {{ size.ten }}
                     </span>
                   </p>
 
                   <!-- Color dynamic list -->
-                  <p>
-                    Màu:
+                  <p class="flex items-center flex-wrap">
+                    <span class="text-gray-700 font-medium mr-2">Màu:</span>
                     <span
                       v-for="(c, index) in product.color"
                       :key="index"
                       :style="{ backgroundColor: c.code }"
-                      class="inline-block mr-2 p-2 w-4 h-4 rounded-full cursor-pointer"
+                      class="inline-block mr-2 mb-1 w-5 h-5 rounded-full cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                     ></span>
                   </p>
                 </div>
               </template>
             </a-card-meta>
-            <!-- <div class="flex justify-evenly">
-              <a-button type="primary">Thêm vào giỏ</a-button>
-              <a-button type="primary" @click="handleRedirectProductDetail(product)">Xem chi tiết</a-button>
-            </div> -->
           </a-card>
-          </div>
-        </a-col>
-      </a-row>
-      </div>
-  <div class="flex justify-center">
-    <a-button type="text" class="mb-10 h-10 w-48 border-2 border-gray-300 rounded-lg px-4 text-base font-bold">Tất cả sản phẩm</a-button>
+        </div>
+      </a-col>
+    </a-row>
   </div>
 </template>
 
@@ -182,42 +179,21 @@ export default {
   name: 'client-home',
 };
 </script>
+
 <style scoped>
-.product-list {
-  padding: 16px;
-}
-
-.original-price {
-  text-decoration: line-through;
-  color: grey;
-  margin-right: 10px;
-  font-size: 14px;
-}
-
-.discounted-price {
-  font-weight: bold;
-  font-size: 17px;
-  color: red;
-}
-
-:deep(.ant-card-meta-title) {
-  font-size: 18px; /* Đặt kích thước chữ ở đây */
-  font-weight: bold;
-}
 .product-image-container {
   position: relative;
   width: 100%;
-  height: 260px; /* Keeping your original fixed height */
+  height: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Removed overflow: hidden to allow images to extend beyond container */
 }
 
 .product-image {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Keeps the original aspect ratio */
+  object-fit: contain;
   position: absolute;
   top: 0;
   left: 0;
@@ -239,11 +215,4 @@ export default {
 .product-image-container:hover .hover-image {
   opacity: 1;
 }
-
-.price-range {
-  font-weight: bold;
-  font-size: 17px;
-  color: red;
-}
 </style>
-

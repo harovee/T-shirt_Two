@@ -17,12 +17,15 @@
               TRANG CHỦ
             </router-link>
 
-            <router-link
-              to="/products"
+            <!-- Cập nhật router-link cho trang products -->
+            <a
+              href="javascript:void(0)"
               class="text-black font-bold text-lg hover:text-gray-400 transition duration-200"
+              @click="goToProducts"
             >
               SẢN PHẨM
-            </router-link>
+            </a>
+            
             <router-link
               to="/about"
               class="text-black font-bold text-lg hover:text-gray-400 transition duration-200"
@@ -38,9 +41,12 @@
           </div>
           <div class="search-container me-6">
             <a-input-search
-              placeholder="Tìm kiếm sản phẩm"
-              class="search-input"
-            />
+                v-model:value="searchKey"
+                placeholder="Tìm kiếm sản phẩm"
+                class="search-input"
+                @change="handleSearch"
+                allow-clear
+              />
           </div>
           <a-tooltip placement="bottom">
             <template #title>
@@ -106,17 +112,48 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path.ts";
 import { useAuthStore } from "@/infrastructure/stores/auth.ts";
 import FooterView from "@/page/client/FooterView.vue"
+import { useSearchStore } from '@/infrastructure/stores/search';
 
 const auth = useAuthStore();
+const searchStore = useSearchStore();
+const router = useRouter();
+const route = useRoute();
 
 const userInfo = computed(() => auth.user);
+const searchKey = ref("");
 
-const router = useRouter();
+// Theo dõi thay đổi route và xóa searchKey khi không ở trang products
+watch(() => route.path, (newPath) => {
+  if (!newPath.includes('/products')) {
+    // Nếu không phải trang products, xóa giá trị tìm kiếm
+    searchStore.setSearchKey("");
+    searchKey.value = "";
+  } else {
+    // Nếu đang ở trang products, lấy giá trị từ store (để hiển thị trong ô tìm kiếm)
+    searchKey.value = searchStore.searchKey || "";
+  }
+}, { immediate: true });
+
+const handleSearch = () => {
+  // Cập nhật giá trị tìm kiếm trong store
+  searchStore.setSearchKey(searchKey.value);
+  router.push({ path: 'products' });
+};
+
+// Hàm mới để xử lý khi nhấp vào "SẢN PHẨM"
+const goToProducts = () => {
+  // Xóa giá trị tìm kiếm
+  searchStore.setSearchKey("");
+  searchKey.value = "";
+  
+  // Điều hướng đến trang products
+  router.push({ path: '/products' });
+};
 
 const handleLogout = () => {
   auth.logout();

@@ -70,6 +70,27 @@ public class ClientProductServiceImpl implements ClientProductService {
                 "Lấy sản phẩm chi tiết thành công");
     }
 
+    @Override
+    public ResponseObject<?> getProductBestSale() {
+        List<ClientProductProjectionResponse> projections = clientProductRepository.getTopProductBestSale();
+        List<ClientProductResponse> responses = projections.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+        return new ResponseObject<>(responses,
+                HttpStatus.OK,
+                "Lấy danh sách sản phẩm bán chạy thành công");
+    }
+
+    @Override
+    public ResponseObject<?> getSaleProduct(ClientProductSearchRequest request) {
+        Pageable pageable = Helper.createPageable(request);
+        Page<ClientProductProjectionResponse> projectionResponses = clientProductRepository.getSaleProduct(request,pageable);
+        Page<ClientProductResponse> responses = projectionResponses.map(this::convertToResponse);
+        return new ResponseObject<>(PageableObject.of(responses),
+                HttpStatus.OK,
+                "Lấy danh sách sản phẩm được giảm giá thành công");
+    }
+
     private Page<ClientProductResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request) {
         Page<ClientProductProjectionResponse> projections = clientProductRepository.getAllProducts(pageable, request);
         return projections.map(this::convertToResponse);
@@ -121,6 +142,19 @@ public class ClientProductServiceImpl implements ClientProductService {
                 .collect(Collectors.toList());
         response.setDiscount(giaGiam);
         }
+        // Xử lý phần trăm giảm
+        if (projection.getPhanTramGiam() != null) {
+            List<Double> phanTramGiamList = Arrays.stream(projection.getPhanTramGiam().split(","))
+                    .map(String::trim)
+                    .map(percentStr -> Double.parseDouble(percentStr.replace("%", "")))
+                    .collect(Collectors.toList());
+            response.setPhanTramGiam(phanTramGiamList);
+        }
+
+        // Xử lý tổng số lượng bán
+        if (projection.getTongSoLuongBan() != null) {
+            response.setTongSoLuongBan(projection.getTongSoLuongBan());
+        }
         // Xử lý danh sách kích cỡ
         List<SizeResponse> sizes = processSizes(projection.getKichCos());
         response.setKichCo(sizes);
@@ -132,27 +166,21 @@ public class ClientProductServiceImpl implements ClientProductService {
         return response;
     }
 
-    private List<ImageResponse> processImages(String anhWithIds) {
-        if (anhWithIds == null || anhWithIds.isEmpty()) {
+    private List<ImageResponse> processImages(String anhUrls) {
+        if (anhUrls == null || anhUrls.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<ImageResponse> results = new ArrayList<>();
-        // Split by comma to get each ID:URL pair
-        String[] pairs = anhWithIds.split(",");
+        String[] urls = anhUrls.split(",");
 
-        for (String pair : pairs) {
-            // Find the position of the first colon which separates ID from URL
-            int firstColonIndex = pair.indexOf(":");
-            if (firstColonIndex > 0) {
-                String id = pair.substring(0, firstColonIndex).trim();
-                String url = pair.substring(firstColonIndex + 1).trim();
-                results.add(new ImageResponse(id, url));
-            }
+        for (String url : urls) {
+            results.add(new ImageResponse(null, url.trim()));
         }
 
         return results;
     }
+
 
     private List<SizeResponse> processSizes(String sizesWithIds) {
         if (sizesWithIds == null) {

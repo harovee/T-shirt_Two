@@ -10,7 +10,7 @@
         <div class="flex justify-center">
           <h1 class="text-3xl mt-8">Sản phẩm</h1>
         </div>
-        <all-cart-product 
+        <all-cart-product
           :data-source="products"
           :loading="isLoading || isFetching"
         />
@@ -25,39 +25,60 @@ import { useGetAllProducts } from "@/infrastructure/services/service/client/prod
 import AllCartProduct from "@/page/client/products/AllCartProduct.vue";
 import FilterProduct from "@/page/client/products/FilterProduct.vue";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
+import { useSearchStore } from '@/infrastructure/stores/search';
 
+const searchStore = useSearchStore();
 
-const params= ref<FindProductClientRequest>({
-    page: 1,
-    size: 20,
-    tenSanPham: "",
-    tenDanhMuc: "",
-    tenChatLieu: "",
-    tenKieuDang: "",
-    tenThuongHieu: "",
-    khoangGia: null
+const searchKey = computed(() => searchStore.searchKey || "");
+
+const params = ref<FindProductClientRequest>({
+  page: 1,
+  size: 20,
+  tenSanPham: searchKey.value,
+  tenDanhMuc: "",
+  tenChatLieu: "",
+  tenKieuDang: "",
+  tenThuongHieu: "",
+  min: 0,
+  max: null
 });
 
-
-const { data: allProduct, isFetching, isLoading, refetch} = useGetAllProducts(params,{
+const { data: allProduct, isFetching, isLoading, refetch } = useGetAllProducts(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData
 });
 
 const products = computed(() => allProduct?.value?.data?.data || []);
 
-
 const handleFilter = (newParams: FindProductClientRequest) => {
   console.log('Received Filter Params:', newParams);
-  params.value = {...params.value, ...newParams};
+  
+  // Ensure price range values are properly handled
+  params.value = {
+    ...params.value,
+    ...newParams,
+    min: newParams.min !== undefined ? newParams.min : params.value.min,
+    max: newParams.max !== undefined ? newParams.max : params.value.max
+  };
 };
 
-
-watch(() => params.value, (newdata) => {
-  if (newdata) {
-    console.log(newdata);
-    
+watch(() => searchStore.searchKey, (newSearchKey) => {
+  if (params.value.tenSanPham !== newSearchKey) {
+    params.value.tenSanPham = newSearchKey || "";
+    refetch();
   }
-}, {deep: true});
+}, { immediate: true });
+
+watch(() => params.value, (newParams) => {
+  console.log('Params changed:', newParams);
+  refetch();
+}, { deep: true });
+
+onMounted(() => {
+  if (searchKey.value) {
+    params.value.tenSanPham = searchKey.value || "";
+    refetch();
+  }
+});
 </script>
