@@ -89,47 +89,99 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
         """, nativeQuery = true)
     void updateProductQuantityAfterDelete(String idOrderDetail);
 
+//    @Modifying
+//    @Transactional
+//    @Query(value = """
+//            insert into hoa_don_chi_tiet
+//            (id, ngay_tao, deleted, ngay_sua, nguoi_sua, nguoi_tao,
+//             gia, so_luong, thanh_tien,
+//             trang_thai, id_hoa_don, id_san_pham_chi_tiet)
+//             select
+//                UUID(),
+//                UNIX_TIMESTAMP()*1000,
+//                false,
+//                UNIX_TIMESTAMP()*1000,
+//                :#{#req.userEmail},
+//                :#{#req.userEmail},
+//                if(tinh_gia_hien_tai(spct.id) is  null, spct.gia, tinh_gia_hien_tai(spct.id)),
+//                1,
+//                if(tinh_gia_hien_tai(spct.id) is  null, spct.gia, tinh_gia_hien_tai(spct.id)),
+//                'PENDING',
+//                :#{#req.idHoaDonCho},
+//                spct.id
+//             from san_pham_chi_tiet spct
+//             where spct.id in :#{#req.idSanPhamChiTiets}
+//                   and not exists (
+//                       select 1 from hoa_don_chi_tiet hdct
+//                            where hdct.id_hoa_don = :#{#req.idHoaDonCho}
+//                            and hdct.id_san_pham_chi_tiet = spct.id
+//                   );
+//            """, nativeQuery = true)
+//    void saveProductDetailsToCart(AdPOSAddProductsToCartRequest req);
+
+
+//    @Modifying
+//    @Transactional
+//    @Query(value = """
+//                 update hoa_don_chi_tiet hdct
+//                     set hdct.so_luong = hdct.so_luong + :#{#req.soLuong},
+//                         hdct.ngay_sua = UNIX_TIMESTAMP()*1000,
+//                         hdct.nguoi_sua = :#{#req.userEmail},
+//                         hdct.thanh_tien = hdct.gia * hdct.so_luong
+//                     where hdct.id_hoa_don = :#{#req.idHoaDonCho}
+//                     and hdct.id_san_pham_chi_tiet in :#{#req.idSanPhamChiTiets};
+//            """, nativeQuery = true)
+//    void updateExistingProductInCart(AdPOSAddProductsToCartRequest req);
+
     @Modifying
     @Transactional
     @Query(value = """
-            insert into hoa_don_chi_tiet
+            INSERT INTO hoa_don_chi_tiet
             (id, ngay_tao, deleted, ngay_sua, nguoi_sua, nguoi_tao,
              gia, so_luong, thanh_tien,
              trang_thai, id_hoa_don, id_san_pham_chi_tiet)
-             select
+            SELECT
                 UUID(),
                 UNIX_TIMESTAMP()*1000,
-                false,
+                FALSE,
                 UNIX_TIMESTAMP()*1000,
                 :#{#req.userEmail},
                 :#{#req.userEmail},
-                if(tinh_gia_hien_tai(spct.id) is  null, spct.gia, tinh_gia_hien_tai(spct.id)),
+                IFNULL(tinh_gia_hien_tai(spct.id), spct.gia),
                 1,
-                if(tinh_gia_hien_tai(spct.id) is  null, spct.gia, tinh_gia_hien_tai(spct.id)),
+                IFNULL(tinh_gia_hien_tai(spct.id), spct.gia),
                 'PENDING',
                 :#{#req.idHoaDonCho},
                 spct.id
-             from san_pham_chi_tiet spct
-             where spct.id in :#{#req.idSanPhamChiTiets}
-                   and not exists (
-                       select 1 from hoa_don_chi_tiet hdct
-                            where hdct.id_hoa_don = :#{#req.idHoaDonCho}
-                            and hdct.id_san_pham_chi_tiet = spct.id
-                   );
+            FROM san_pham_chi_tiet spct
+            WHERE spct.id IN (:#{#req.idSanPhamChiTiets})
+            AND NOT EXISTS (
+                SELECT 1 FROM hoa_don_chi_tiet hdct
+                WHERE hdct.id_hoa_don = :#{#req.idHoaDonCho}
+                AND hdct.id_san_pham_chi_tiet = spct.id
+                AND hdct.gia = IFNULL(tinh_gia_hien_tai(spct.id), spct.gia) -- 💡 So sánh cả giá
+            )
+            ;
+            
             """, nativeQuery = true)
     void saveProductDetailsToCart(AdPOSAddProductsToCartRequest req);
-
 
     @Modifying
     @Transactional
     @Query(value = """
-                 update hoa_don_chi_tiet hdct
-                     set hdct.so_luong = hdct.so_luong + :#{#req.soLuong},
-                         hdct.ngay_sua = UNIX_TIMESTAMP()*1000,
-                         hdct.nguoi_sua = :#{#req.userEmail},
-                         hdct.thanh_tien = hdct.gia * hdct.so_luong
-                     where hdct.id_hoa_don = :#{#req.idHoaDonCho}
-                     and hdct.id_san_pham_chi_tiet in :#{#req.idSanPhamChiTiets};
+                 UPDATE hoa_don_chi_tiet hdct
+                 JOIN san_pham_chi_tiet spct ON hdct.id_san_pham_chi_tiet = spct.id
+                 SET
+                     hdct.so_luong = hdct.so_luong + :#{#req.soLuong},
+                     hdct.ngay_sua = UNIX_TIMESTAMP()*1000,
+                     hdct.nguoi_sua = :#{#req.userEmail},
+                     hdct.thanh_tien = hdct.gia * (hdct.so_luong + :#{#req.soLuong})
+                 WHERE
+                     hdct.id_hoa_don = :#{#req.idHoaDonCho}
+                     AND hdct.id_san_pham_chi_tiet IN (:#{#req.idSanPhamChiTiets})
+                     AND hdct.gia = IFNULL(tinh_gia_hien_tai(spct.id), spct.gia)
+                 ;
+                 
             """, nativeQuery = true)
     void updateExistingProductInCart(AdPOSAddProductsToCartRequest req);
 

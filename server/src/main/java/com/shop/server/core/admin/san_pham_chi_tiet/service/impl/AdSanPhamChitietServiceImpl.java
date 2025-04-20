@@ -213,6 +213,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                     spct1.setTinhNang(request.getIdTinhNang() != null ? adTinhNangRepository.findById(request.getIdTinhNang()).orElse(null) : null);
                     return adSanPhamChiTietRepository.save(spct1);
                 });
+        updateProductSale(new AdUpdateSaleProductDetail(id, request.getGia()));
         return spct
                 .map(spct1 -> new ResponseObject<>(spct1, HttpStatus.OK,
                         "Cập nhật sản phẩm chi tiết thành công."))
