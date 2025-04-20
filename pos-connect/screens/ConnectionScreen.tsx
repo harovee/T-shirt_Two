@@ -22,9 +22,9 @@ import type { AppNavigationProp } from "../types/navigation"
 
 // Danh sách kết nối gần đây mẫu
 const RECENT_CONNECTIONS = [
-  { id: "1", name: "POS Cửa hàng chính", connectionId: "POS-MAIN-01" },
-  { id: "2", name: "POS Quầy thu ngân 1", connectionId: "POS-CHECKOUT-01" },
-  { id: "3", name: "POS Quầy thu ngân 2", connectionId: "POS-CHECKOUT-02" },
+  { id: "1", name: "POS Cửa hàng chính", connectionId: "192.168.0.101"},
+  { id: "2", name: "POS Quầy thu ngân 1", connectionId: "192.168.0.102"},
+  { id: "3", name: "POS Quầy thu ngân 2", connectionId: "192.168.0.103"},
 ]
 
 const ConnectionScreen = () => {
