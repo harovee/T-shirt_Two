@@ -10,5 +10,5 @@ public interface AdKhachHangResponse extends BaseResponse {
 
     String getPhone();
 
-    String getNgaySinh();
+    Long getNgaySinh();
 }

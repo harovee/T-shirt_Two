@@ -62,4 +62,9 @@ public class ClientProductResponse {
     private List<SizeResponse> kichCo;
 
     private List<ColorResponse> color;
+
+    private List<Double> phanTramGiam;
+
+    private Integer tongSoLuongBan;
+
 }

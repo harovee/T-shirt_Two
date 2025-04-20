@@ -116,6 +116,7 @@ const rowSelection = computed<TableProps['rowSelection']>(() => ({
   getCheckboxProps: (record: DataType) => ({
     disabled: false,
   }),
+  preserveSelectedRowKeys: true
 }));
 
   watch(() => props.idKhachHangs, (newVal) => {

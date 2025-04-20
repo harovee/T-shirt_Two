@@ -10,7 +10,9 @@ import {
     getChatLieu,
     getThuongHieu,
     getKieuDang,
-    getColor
+    getColor,
+    getProductsBestSale,
+    getSaleProducts
 } from "@/infrastructure/services/api/client/clientproduct.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -108,6 +110,26 @@ export const useGetColor = (
     return useQuery({
         queryKey: [queryKey.client.product.colorList, ],
         queryFn: () => getColor(),
+        ...options,
+    });
+};
+
+export const useGetProductBestSale = (
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getProductsBestSale>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.productBestSaleList],
+        queryFn: () => getProductsBestSale(),
+        ...options,
+    });
+};
+
+export const useGetSaleProduct = (
+    params: Ref<FindProductClientRequest>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getSaleProducts>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.productSaleList, params],
+        queryFn: () => getSaleProducts(params),
         ...options,
     });
 };

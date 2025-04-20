@@ -92,7 +92,7 @@
 
 <script lang="ts">
 export default {
-  name: 'admin add voucher',
+  name: 'admin-voucher-add',
 };
 </script>
 
@@ -126,6 +126,12 @@ const { data } = useGetListKhachHang(params, {
 });
 
 
+// Hàm format tiền sang VNĐ
+const formatter = (value: any) => {
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
 const idKhachHangs = ref<string[]>([]);
 
 const dataSource = computed(() => data?.value?.data|| []);
@@ -137,7 +143,7 @@ const formRef = ref();
 const formState: UnwrapRef<FormState> = reactive( {
     ten: "",
     loaiGiam: false,
-    giaTriGiam: "0",
+    giaTriGiam: "0",  
     giamToiDa: "",
     soLuong: 0,
     dieuKienGiam: "0",
@@ -165,8 +171,8 @@ const rules: Record<string, Rule[]> = {
               if (formState.loaiGiam === true && value != null && value <= 0) {
                   return Promise.reject('Giá trị giảm phải lớn hơn 0');
               }
-              if (formState.loaiGiam === false && value > 100 || formState.loaiGiam === false && value <= 0) {
-                  return Promise.reject('Giá trị giảm chỉ bé hơn hoặc bằng 100%');
+              if (formState.loaiGiam === false && value > 100 || formState.loaiGiam === false && value < 1) {
+                  return Promise.reject('Giá trị giảm chỉ bé hơn hoặc bằng 100% và lớn hơn hoặc bằng x1');
               }
               return Promise.resolve();
           },
@@ -262,9 +268,7 @@ const handleCreateVoucher = (dataRequest: PhieuGiamGiaRequest) => {
             handleRedirectClient();
           },
           onError: (error: any) => {
-            toast.error(
-              openNotification(notificationType.error, error?.response?.data?.message, '')
-            );
+              openNotification(notificationType.error, error?.response?.data?.message, '');      
           },
         });
       } catch (error: any) {

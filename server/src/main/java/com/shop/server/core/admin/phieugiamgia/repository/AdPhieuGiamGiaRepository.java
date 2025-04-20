@@ -84,14 +84,6 @@ public interface AdPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
     @Query(value = """
                      SELECT *
                             FROM phieu_giam_gia ph
-                            WHERE ph.ten like :#{#ten}
-                              
-            """, nativeQuery = true)
-    PhieuGiamGia existsPhieuGiamGiaByTen(String ten);
-
-    @Query(value = """
-                     SELECT *
-                            FROM phieu_giam_gia ph
                             WHERE ph.ten = :ten
                               AND (:id IS NULL OR ph.id != :id)
                               
@@ -115,4 +107,5 @@ public interface AdPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
             """, nativeQuery = true)
     Optional<PhieuGiamGiaResponse> getPhieuGiamGiaByMa(String ma);
 
+    boolean existsByTen(String ten);
 }
