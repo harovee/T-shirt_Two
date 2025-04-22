@@ -91,4 +91,13 @@ public class AdSanPhamChiTietController {
     public ResponseEntity<?> deleteSanPhamChiTiet(@PathVariable final String id) {
         return Helper.createResponseEntity(adSanPhamChiTietService.deleted(id));
     }
+
+    @GetMapping("/all-productdetail")
+    public ResponseEntity<?> getAllProduct() {
+        return Helper.createResponseEntity(adSanPhamChiTietService.getAllProductDetail());
+    }
+    @GetMapping("/product-detail-by-id/{id}")
+    public ResponseEntity<?> getSanPhamChiTietByProductId(@PathVariable String id) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.getAllProductDetailByIdSanPham(id));
+    }
 }

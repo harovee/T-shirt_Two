@@ -30,8 +30,10 @@ import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -78,6 +80,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                 "Lấy dữ liệu thành công."
         );
     }
+
 
     @Override
     public ResponseObject<?> getALlSanPhamChiTiets(AdFindSpctRequest request) {
@@ -137,6 +140,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         spct.setGia(request.getGia());
         spct.setSoLuong(request.getSoLuong());
         spct.setTrangThai(Status.ACTIVE);
+        spct.setGioiTinh(request.getGioiTinh());
         spct.setSanPham(request.getIdSanPham() != null ? adminProductRepository.findById(request.getIdSanPham()).orElse(null) : null);
         spct.setChatLieu(request.getIdChatLieu() != null ? adChatLieuRepository.findById(request.getIdChatLieu()).orElse(null) : null);
         spct.setCoAo(request.getIdCoAo() != null ? adCoAoRepository.findById(request.getIdCoAo()).orElse(null) : null);
@@ -176,6 +180,8 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         return new ResponseObject<>(addedSPCT, HttpStatus.CREATED, "Tạo sản phẩm chi tiết thành công.");
     }
 
+    @Modifying
+    @Transactional
     @Override
     public ResponseObject<?> updateSanPhamChiTiet(String id, AdCreateUpdateSpctRequest request) {
         if (request.getGia() == null || request.getGia().compareTo(BigDecimal.ZERO) <= 0) {
@@ -190,6 +196,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                 .map(spct1 -> {
                     spct1.setGia(request.getGia());
                     spct1.setSoLuong(request.getSoLuong());
+                    spct1.setGioiTinh(request.getGioiTinh());
                     spct1.setTrangThai(request.getTrangThai() == 0 ? Status.ACTIVE : Status.INACTIVE);
 //                    spct1.setSanPham(adminProductRepository.findById(request.getIdSanPham()).orElse(null));
 //                    spct1.setChatLieu(adChatLieuRepository.findById(request.getIdChatLieu()).orElse(null));
@@ -211,6 +218,17 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                     spct1.setTayAo(request.getIdTayAo() != null ? adTayAoRepository.findById(request.getIdTayAo()).orElse(null) : null);
                     spct1.setThuongHieu(request.getIdThuongHieu() != null ? adThuongHieuRepository.findById(request.getIdThuongHieu()).orElse(null) : null);
                     spct1.setTinhNang(request.getIdTinhNang() != null ? adTinhNangRepository.findById(request.getIdTinhNang()).orElse(null) : null);
+                    if (request.getListAnh() != null) {
+                        adAnhRepository.deleteAllByIdSanPhamChiTiet(id);
+                        for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+                            Anh anh = new Anh();
+                            anh.setTen(anhRequest.getName());
+                            anh.setUrl(anhRequest.getUrl());
+                            anh.setSanPhamChiTiet(spct1);
+                            anh.setDeleted(false);
+                            adAnhRepository.save(anh);
+                        }
+                    }
                     return adSanPhamChiTietRepository.save(spct1);
                 });
         updateProductSale(new AdUpdateSaleProductDetail(id, request.getGia()));
@@ -233,6 +251,20 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                         "Xóa sản phẩm chi tiết thành công."))
                 .orElseGet(() -> new ResponseObject<>(null, HttpStatus.NOT_FOUND,
                         "Sản phẩm chi tiết không tồn tại."));
+    }
+
+    ////All spct không phân trang
+    @Override
+    public ResponseObject<?> getAllProductDetail() {
+        return new ResponseObject<>(adSanPhamChiTietRepository.getAllProductDetail(),
+                HttpStatus.OK,
+                "Lấy danh sách spct thành công");
+    }
+    ////All spct theo idSanPham không phân trang
+    @Override
+    public ResponseObject<?> getAllProductDetailByIdSanPham(String idSanPham) {
+        return new ResponseObject<>(adSanPhamChiTietRepository.getAllProductDetailByIdSanPham(idSanPham),HttpStatus.OK,
+                "Lấy danh sách spct theo sản phẩm thành công");
     }
 
     @Override

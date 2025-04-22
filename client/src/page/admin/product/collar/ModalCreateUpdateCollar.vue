@@ -82,7 +82,11 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
-        
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên cổ áo không được chứa ký tự đặc biệt");
+        }
+
         const allCollarDatas = Array.isArray(props.allCollarData) ? props.allCollarData : [];
         if (props.CollarDetail && props.CollarDetail.ten.toLowerCase() === value.toLowerCase()) {
             return Promise.resolve();
@@ -160,6 +164,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten
   };
@@ -174,7 +179,7 @@ const handleAddOrUpdate = async () => {
     async onOk() {
 
   try {
-    await validate();
+    
     if (props.CollarDetail) {
       await updateCollar({
         id: props.CollarDetail.id,

@@ -37,5 +37,7 @@ public class AdCreateUpdateSpctRequest {
 
     private String idSanPham;
 
+    private String gioiTinh;
+
     private List<AdCreateUpdateAnhRequest> listAnh;
 }

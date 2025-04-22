@@ -47,13 +47,13 @@ public class AdAnhServiceImpl implements AdAnhService {
 //            }
 //        }
 
-//        Anh anh = new Anh();
-//        anh.setTen(request.getTen());
-//        anh.setUrl(request.getUrl());
-//        anh.setSanPhamChiTiet(request.getIdSanPhamChiTiet() != null ? adSanPhamChiTietRepository.findById(request.getIdSanPhamChiTiet()).orElse(null) : null);
-//        anh.setDeleted(false);
-//        Anh anh1 = adAnhRepository.save(anh);
-        return new ResponseObject<>(null, HttpStatus.CREATED, "Tạo ảnh thành công.");
+        Anh anh = new Anh();
+        anh.setTen(request.getName());
+        anh.setUrl(request.getUrl());
+        anh.setSanPhamChiTiet(request.getIdSanPhamChiTiet() != null ? adSanPhamChiTietRepository.findById(request.getIdSanPhamChiTiet()).orElse(null) : null);
+        anh.setDeleted(false);
+        Anh anh1 = adAnhRepository.save(anh);
+        return new ResponseObject<>(anh1, HttpStatus.CREATED, "Tạo ảnh thành công.");
     }
 
     @Override
@@ -83,6 +83,17 @@ public class AdAnhServiceImpl implements AdAnhService {
                         "Cập nhật ảnh thành công."))
                 .orElseGet(() -> new ResponseObject<>(null, HttpStatus.NOT_FOUND,
                         "Ảnh không tồn tại."));
+    }
+
+    @Override
+    public ResponseObject<?> deleteAnh(String id) {
+        Optional<Anh> optionalAnh =  adAnhRepository.findById(id);
+        if (optionalAnh.isPresent()) {
+            adAnhRepository.delete(optionalAnh.get());
+            return new ResponseObject<>(null,HttpStatus.OK,
+                    "Xoá ảnh thành công");
+        }
+        return new ResponseObject<>(null,HttpStatus.BAD_REQUEST, "Không tìm thấy ảnh");
     }
 
     public boolean checkName(String name) {

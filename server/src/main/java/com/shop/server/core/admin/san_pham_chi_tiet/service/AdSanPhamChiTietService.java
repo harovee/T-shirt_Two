@@ -31,6 +31,8 @@ public interface AdSanPhamChiTietService {
 
     ResponseObject<?> deleted(String id);
 
+    ResponseObject<?> getAllProductDetail();
+  
     ResponseObject<?> checkQuantity (AdCheckQuantityRequest request);
 
     ResponseObject<?> checkQuantityByIdSPCT (AdCheckQuantityRequest request);
@@ -41,4 +43,5 @@ public interface AdSanPhamChiTietService {
 
     ResponseObject<?> updateProductSale (AdUpdateSaleProductDetail request);
 
+    ResponseObject<?> getAllProductDetailByIdSanPham(String idSanPham);
 }

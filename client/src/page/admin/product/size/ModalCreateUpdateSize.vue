@@ -92,6 +92,10 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên kích cỡ không được chứa ký tự đặc biệt");
+        }
         const allSizeDatas = Array.isArray(props.allSizeData)
           ? props.allSizeData
           : [];
@@ -301,6 +305,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten,
     chieuCaoMin: modelRef.chieuCaoMin,
@@ -319,7 +324,7 @@ const handleAddOrUpdate = async () => {
     async onOk() {
 
   try {
-    await validate();
+    
     if (props.SizeDetail) {
       await updateSize({
         id: props.SizeDetail.id,

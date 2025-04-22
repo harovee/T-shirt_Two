@@ -3,8 +3,10 @@ package com.shop.server.core.admin.image.repository;
 import com.shop.server.core.admin.image.model.request.AdFindAnhRequest;
 import com.shop.server.core.admin.image.model.response.AdAnhResponse;
 import com.shop.server.repositories.AnhRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +27,13 @@ public interface AdAnhRepository extends AnhRepository {
     List<AdAnhResponse> getAllAnh (AdFindAnhRequest req);
 
     Boolean existsAnhByUrl(String url);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+            DELETE FROM anh WHERE anh.id_san_pham_chi_tiet = :idSanPhamChiTiet 
+    """, nativeQuery = true)
+    void deleteAllByIdSanPhamChiTiet(String idSanPhamChiTiet);
 
 //    @Query("""
 //        SELECT dm

@@ -111,6 +111,10 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên màu sắc không được chứa ký tự đặc biệt");
+        }
         const allColorDatas = Array.isArray(props.allColorData)
           ? props.allColorData
           : [];
@@ -195,6 +199,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     maMauSac: modelRef.maMauSac,
     ten: modelRef.ten,
@@ -209,7 +214,7 @@ const handleAddOrUpdate = async () => {
 
     async onOk() {
       try {
-        await validate();
+        
         if (props.ColorDetail) {
           await updateColor({
             id: props.ColorDetail.id,

@@ -56,14 +56,14 @@ public class AdDanhMucServiceImpl implements AdDanhMucService {
     public ResponseObject<?> createDanhMuc(@Valid AdCreateUpdateDanhMucRequest request) {
 
         if (request.getTen() == null || request.getTen().isBlank()) {
-            return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "Tên không được trống");
+            return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên không được trống");
         } else {
             if (request.getTen().length() < 1 || request.getTen().length() > 255) {
-                return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "Tên phải từ 1 -> 255 ký tự");
+                return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên phải từ 1 -> 255 ký tự");
             } else if (!checkName(request.getTen())) {
-                return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "Tên không được chứa ký tự đặc biệt.");
+                return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên không được chứa ký tự đặc biệt.");
             } else if (adDanhMucRepository.existsDanhMucByTen(request.getTen())) {
-                return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "Tên đã tồn tại, xin vui lòng nhập lại.");
+                return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên đã tồn tại, xin vui lòng nhập lại.");
             }
         }
 

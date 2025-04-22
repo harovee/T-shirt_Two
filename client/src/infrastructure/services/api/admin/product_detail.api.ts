@@ -61,6 +61,8 @@ export interface ProductDetailRequest {
     idSanPham: string | null
 
     listAnh: Array<anh> | null
+
+    gioiTinh: string | null
 }
 
 export interface anh {
@@ -98,6 +100,8 @@ export interface RenProductDetailResponse {
     idTinhNang: string | null
 
     idSanPham: string | null
+
+    gioiTinh: string | null
 }
 
 export interface ProductDetailListResponse {
@@ -131,6 +135,8 @@ export interface ProductDetailListResponse {
     tinhNang: string | null
 
     sanPham: string | null
+
+    gioiTinh: string | null
 }
 
 
@@ -149,6 +155,8 @@ export interface ProductDetailUpdateRequest {
     idTinhNang: string | null
     idSanPham: string | null
     trangThai: Number | null
+    listAnh: Array<anh> | null
+    gioiTinh: string | null
 }
 
 export type ProductDetailResponse = ResponseList & {
@@ -167,6 +175,7 @@ export type ProductDetailResponse = ResponseList & {
     gia: number | 0
     ngayTao: Number | null
     trangThai: Number | null
+    gioiTinh: string | null
 };
 
 // export type ListProductResponse = {
@@ -351,4 +360,26 @@ export const updateProductDetail = async (id: string, params: ProductDetailUpdat
       })) as AxiosResponse<DefaultResponse<null>>;
     
       return res.data;
+};
+
+// Lấy danh sách spct không phân trang
+export const getListSanPhamChiTiet = async () => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/all-productdetail`,
+        method: "GET"
+    })) as AxiosResponse<
+        DefaultResponse<Array<ProductDetailListResponse>>
+    >;
+    return res.data;
+};
+
+// Lấy danh sách spct theo id sanpham không phân trang
+export const getListSanPhamChiTietByIdSanPham = async (id: string | null) => {
+    const res = (await request({
+        url: `${PREFIX_API_ADMIN_PRODUCT_DETAIL}/product-detail-by-id/${id}`,
+        method: "GET"
+    })) as AxiosResponse<
+        DefaultResponse<Array<ProductDetailListResponse>>
+    >;
+    return res.data;
 };

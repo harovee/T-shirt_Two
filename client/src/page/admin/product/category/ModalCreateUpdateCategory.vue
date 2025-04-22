@@ -88,6 +88,12 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
+
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên danh mục không được chứa ký tự đặc biệt");
+        }
+
         const allCategoryDatas = Array.isArray(props.allCategoryData)
           ? props.allCategoryData
           : [];
@@ -165,6 +171,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten,
   };
@@ -176,8 +183,8 @@ const handleAddOrUpdate = async () => {
     centered: true,
 
     async onOk() {
+      
       try {
-        await validate();
         if (props.CategoryDetail) {
           await updateCategory({
             id: props.CategoryDetail.id,
@@ -187,7 +194,6 @@ const handleAddOrUpdate = async () => {
           await createCategory(payload);
           resetFields();
         }
-
         successNotiSort(
           props.CategoryDetail
             ? "Cập nhật danh mục thành công"
@@ -197,7 +203,7 @@ const handleAddOrUpdate = async () => {
         emit("handleClose");
       } catch (error: any) {
         console.error("🚀 ~ handleAddOrUpdate ~ error:", error);
-        warningNotiSort(error?.response?.data?.message);
+        errorNotiSort(error?.response?.data?.message || "Có lỗi xảy ra khi xử lý yêu cầu");
       }
     },
   });
