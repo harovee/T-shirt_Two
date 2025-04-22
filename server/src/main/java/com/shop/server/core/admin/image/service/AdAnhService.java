@@ -13,4 +13,5 @@ public interface AdAnhService {
 
     ResponseObject<?> updateAnh(String id, @Valid AdCreateUpdateAnhRequest request);
 
+    ResponseObject<?> deleteAnh(String id);
 }

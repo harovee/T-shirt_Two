@@ -3,6 +3,9 @@
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">Danh sách sản phẩm</h3>
+        <p class="text-sm text-gray-500">
+          Hiển thị danh sách sản phẩm T-Shirts Two
+        </p>
       </div>
       <div class="p-2.5">
         <a-tooltip title="Thêm sản phẩm" trigger="hover">
@@ -149,7 +152,7 @@ watch(isOpenModalCreateProduct, (newVal) => {
 
 const columnsProduct: ColumnType[] = [
   {
-    title: "STT",
+    title: "#",
     dataIndex: "catalog",
     key: "catalog",
     ellipsis: true,

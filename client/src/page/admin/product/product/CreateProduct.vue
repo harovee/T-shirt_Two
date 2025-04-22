@@ -55,7 +55,7 @@
               </a-row>
             </div>
           </a-form-item>
-
+          
           <a-form-item
             :label="field.label"
             :name="field.name"
@@ -153,7 +153,7 @@
               @search="handleInputSize"
             />
           </a-form-item>
-
+          
           <a-form-item
             class="label-bold"
             :label="field.label"
@@ -241,6 +241,13 @@
               @search="handleInputTrademark"
               style="margin-right: 8px"
             ></a-select>
+            <a-radio-group v-model:value="modelRef[field.name]" 
+                  v-if="field.name === 'gioiTinh'"
+                  @change="generateProductDetails">
+                <a-radio value="Nam">Nam</a-radio>
+                <a-radio value="Nữ">Nữ</a-radio>
+                <a-radio value="Nam và nữ">Cả nam và nữ</a-radio>
+              </a-radio-group>
             <a-select
               v-if="field.name === 'idTinhNang'"
               v-model:value="modelRef[field.name]"
@@ -253,6 +260,7 @@
               @search="handleInputFeature"
               style="margin-right: 8px"
             ></a-select>
+            
             <!-- <a-select
               v-if="field.name === 'idMauSac'"
               v-model:value="colorItem"
@@ -280,6 +288,7 @@
               @search="handleInputSize"
             /> -->
           </a-form-item>
+          
         </template>
       </a-form>
       <modal-create-product
@@ -400,6 +409,7 @@ const modelRef = reactive<ProductDetailRequest>({
   idTinhNang: null,
   idSanPham: null,
   listAnh: [] || null,
+  gioiTinh: "Nam"
 });
 
 const colorItem = ref([]);
@@ -563,6 +573,41 @@ const listTrademark = computed(() => {
   );
 });
 
+
+// Utility function for validation
+const validateAttributeName = (value, existingList, attributeName) => {
+  // Check if empty
+  if (!value || value.trim() === '') {
+    errorNotiSort(`${attributeName} không được để trống!`);
+    return false;
+  }
+  
+  // Check length (1-255 characters)
+  if (value.length > 255) {
+    errorNotiSort(`${attributeName} không được vượt quá 255 ký tự!`);
+    return false;
+  }
+  
+  // Check for special characters using regex
+  const specialCharsRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+  if (specialCharsRegex.test(value)) {
+    errorNotiSort(`${attributeName} không được chứa ký tự đặc biệt!`);
+    return false;
+  }
+  
+  // Check for duplicates
+  const isDuplicate = existingList.some(item => 
+    item.label.toLowerCase() === value.toLowerCase()
+  );
+  
+  if (isDuplicate) {
+    errorNotiSort(`${attributeName} đã tồn tại!`);
+    return false;
+  }
+  
+  return true;
+};
+
 // Thêm nhanh chất liệu
 const filterOptionMaterial = (input: string, option: any) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
@@ -588,14 +633,19 @@ const notFoundContentMaterial = computed(() => {
 const { mutate: createMaterial } = useCreateMaterial();
 
 const handleAddNewMaterial = async () => {
+  const value = tempValueMaterial.value;
+  
+  if (!validateAttributeName(value, listMaterial.value, 'Chất liệu')) {
+    return;
+  }
+  
   const payload = {
-    ten: tempValueMaterial.value,
+    ten: value,
   };
-
   try {
     await createMaterial(payload);
-
     successNotiSort("Thêm chất liệu thành công!");
+    tempValueMaterial.value = '';
   } catch (error) {
     console.error(error);
     errorNotiSort("Có lỗi xảy ra khi thêm chất liệu!");
@@ -627,14 +677,20 @@ const notFoundContentCollar = computed(() => {
 const { mutate: createCollar } = useCreateCollar();
 
 const handleAddNewCollar = async () => {
+  const value = tempValueCollar.value;
+  
+  if (!validateAttributeName(value, listCollar.value, 'Cổ áo')) {
+    return;
+  }
+  
   const payload = {
-    ten: tempValueCollar.value,
+    ten: value,
   };
 
   try {
     await createCollar(payload);
-
     successNotiSort("Thêm cổ áo thành công!");
+    tempValueCollar.value = '';
   } catch (error) {
     console.error(error);
     errorNotiSort("Có lỗi xảy ra khi thêm cổ áo!");
@@ -666,14 +722,20 @@ const notFoundContentSleeve = computed(() => {
 const { mutate: createSleeve } = useCreateSleeve();
 
 const handleAddNewSleeve = async () => {
+  const value = tempValueSleeve.value;
+  
+  if (!validateAttributeName(value, listSleeve.value, 'Tay áo')) {
+    return;
+  }
+  
   const payload = {
-    ten: tempValueSleeve.value,
+    ten: value,
   };
 
   try {
     await createSleeve(payload);
-
     successNotiSort("Thêm tay áo thành công!");
+    tempValueSleeve.value = ''; // Clear the input
   } catch (error) {
     console.error(error);
     errorNotiSort("Có lỗi xảy ra khi thêm tay áo!");
@@ -704,18 +766,49 @@ const notFoundContentTrademark = computed(() => {
 
 const { mutate: createTrademark } = useCreateTrademark();
 
+// Modified implementation for Trademark
 const handleAddNewTrademark = async () => {
-  const payload = {
-    ten: tempValueTrademark.value,
-  };
+    const value = tempValueTrademark.value;
+    
+    // Check if empty
+    if (!value || value.trim() === '') {
+      errorNotiSort("Thương hiệu không được để trống!");
+      return;
+    }
+    
+    // Check length (1-255 characters)
+    if (value.length > 255) {
+      errorNotiSort("Thương hiệu không được vượt quá 255 ký tự!");
+      return;
+    }
+    
+    const invalidCharsRegex = /[^a-zA-Z0-9\s\-\.\'&®™]/;
+    if (invalidCharsRegex.test(value)) {
+      errorNotiSort("Thương hiệu chứa ký tự không hợp lệ!");
+      return;
+    }
+    
+    // Check for duplicates
+    const isDuplicate = listTrademark.value.some(item => 
+      item.label.toLowerCase() === value.toLowerCase()
+    );
+    
+    if (isDuplicate) {
+      errorNotiSort("Thương hiệu đã tồn tại!");
+      return;
+    }
+    
+    const payload = {
+      ten: value,
+    };
 
   try {
-    await createTrademark(payload);
-
-    successNotiSort("Thêm thương hiệu thành công!");
-  } catch (error) {
-    console.error(error);
-    errorNotiSort("Có lỗi xảy ra khi thêm thương hiệu!");
+      await createTrademark(payload);
+      successNotiSort("Thêm thương hiệu thành công!");
+      tempValueTrademark.value = ''; // Clear the input
+    } catch (error) {
+      console.error(error);
+      errorNotiSort("Có lỗi xảy ra khi thêm thương hiệu!");
   }
 };
 
@@ -744,19 +837,26 @@ const notFoundContentPattern = computed(() => {
 const { mutate: createPattern } = useCreatePattern();
 
 const handleAddNewPattern = async () => {
+  const value = tempValuePattern.value;
+  
+  if (!validateAttributeName(value, listPattern.value, 'Họa tiết')) {
+    return;
+  }
+  
   const payload = {
-    ten: tempValuePattern.value,
+    ten: value,
   };
 
   try {
     await createPattern(payload);
-
     successNotiSort("Thêm họa tiết thành công!");
+    tempValuePattern.value = ''; // Clear the input
   } catch (error) {
     console.error(error);
     errorNotiSort("Có lỗi xảy ra khi thêm họa tiết!");
   }
 };
+
 
 // Thêm nhanh kiểu dáng
 const filterOptionStyle = (input: string, option: any) => {
@@ -783,14 +883,20 @@ const notFoundContentStyle = computed(() => {
 const { mutate: createStyle } = useCreateStyle();
 
 const handleAddNewStyle = async () => {
+  const value = tempValueStyle.value;
+  
+  if (!validateAttributeName(value, listStyle.value, 'Kiểu dáng')) {
+    return;
+  }
+  
   const payload = {
-    ten: tempValueStyle.value,
+    ten: value,
   };
 
   try {
     await createStyle(payload);
-
     successNotiSort("Thêm kiểu dáng thành công!");
+    tempValueStyle.value = ''; // Clear the input
   } catch (error) {
     console.error(error);
     errorNotiSort("Có lỗi xảy ra khi thêm kiểu dáng!");
@@ -822,14 +928,20 @@ const notFoundContentFeature = computed(() => {
 const { mutate: createFeature } = useCreateFeature();
 
 const handleAddNewFeature = async () => {
+  const value = tempValueFeature.value;
+  
+  if (!validateAttributeName(value, listFeature.value, 'Tính năng')) {
+    return;
+  }
+  
   const payload = {
-    ten: tempValueFeature.value,
+    ten: value,
   };
 
   try {
     await createFeature(payload);
-
     successNotiSort("Thêm tính năng thành công!");
+    tempValueFeature.value = ''; // Clear the input
   } catch (error) {
     console.error(error);
     errorNotiSort("Có lỗi xảy ra khi thêm tính năng!");
@@ -900,8 +1012,14 @@ const notFoundContentSize = computed(() => {
 const { mutate: createSize } = useCreateSize();
 
 const handleAddNewSize = async () => {
+  const value = tempValueSize.value;
+  
+  if (!validateAttributeName(value, listSize.value, 'Kích cỡ')) {
+    return;
+  }
+  
   const payload = {
-    ten: tempValueSize.value,
+    ten: value,
     chieuCaoMin: 0,
     chieuCaoMax: 0,
     canNangMin: 0,
@@ -911,6 +1029,7 @@ const handleAddNewSize = async () => {
   try {
     await createSize(payload);
     successNotiSort("Thêm kích cỡ thành công!");
+    tempValueSize.value = ''; // Clear the input
   } catch (error) {
     console.error(error);
     errorNotiSort("Có lỗi xảy ra khi thêm kích cỡ!");
@@ -1035,10 +1154,14 @@ const generateProductDetails = () => {
         idThuongHieu: modelRef.idThuongHieu,
         idTinhNang: modelRef.idTinhNang,
         idSanPham: modelRef.idSanPham,
+        gioiTinh: modelRef.gioiTinh,
       });
     });
   });
+ 
+  
   productDetails.value = generatedDetails;
+  console.log(generatedDetails);
 };
 
 // Xóa phần tử trong dataProductDetail để cập nhật lại bảng khi xóa 1 biến thể
@@ -1095,6 +1218,7 @@ const formFields = computed(() => [
     component: "a-select",
     placeholder: "Nhâp tên sản phẩm",
   },
+  
   {
     label: "Chất liệu",
     name: "idChatLieu",
@@ -1136,6 +1260,11 @@ const formFields = computed(() => [
     name: "idKieuDang",
     component: "a-select",
     placeholder: "Chọn kiểu dáng",
+  },
+  {
+    label: "Giới tính",
+    name: "gioiTinh",
+    component: "a-radio-group",
   },
   {
     label: "Màu sắc",

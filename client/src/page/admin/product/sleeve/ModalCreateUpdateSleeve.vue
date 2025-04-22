@@ -82,7 +82,10 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
-        
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên tay áo không được chứa ký tự đặc biệt");
+        }
         const allSleeveDatas = Array.isArray(props.allSleeveData) ? props.allSleeveData : [];
         if (props.SleeveDetail && props.SleeveDetail.ten.toLowerCase() === value.toLowerCase()) {
             return Promise.resolve();
@@ -160,6 +163,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten
   };
@@ -174,7 +178,7 @@ const handleAddOrUpdate = async () => {
     async onOk() {
 
   try {
-    await validate();
+    
     if (props.SleeveDetail) {
       await updateSleeve({
         id: props.SleeveDetail.id,

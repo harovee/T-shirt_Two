@@ -76,7 +76,10 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
-        
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên chất liệu không được chứa ký tự đặc biệt");
+        }
         const allMaterialDatas = Array.isArray(props.allMaterialData) ? props.allMaterialData : [];
         if (props.MaterialDetail && props.MaterialDetail.ten.toLowerCase() === value.toLowerCase()) {
             return Promise.resolve();
@@ -155,6 +158,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten
   };
@@ -169,7 +173,7 @@ const handleAddOrUpdate = async () => {
     async onOk() {
 
   try {
-    await validate();
+    
     if (props.MaterialDetail) {
       updateMaterial({
         id: props.MaterialDetail.id,

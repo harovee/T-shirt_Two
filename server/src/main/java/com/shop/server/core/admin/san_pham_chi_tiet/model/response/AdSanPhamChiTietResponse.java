@@ -32,4 +32,6 @@ public interface AdSanPhamChiTietResponse extends BaseResponse {
     String getSoLuong ();
 
     Integer getTrangThai ();
+
+    String getGioiTinh();
 }

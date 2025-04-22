@@ -8,7 +8,9 @@ import {
     getProductDetail,
     getAllProductDetails,
     FindAllProductDetailRequest,
-    getListProductDetail
+    getListProductDetail,
+    getListSanPhamChiTiet,
+    getListSanPhamChiTietByIdSanPham
 } from "@/infrastructure/services/api/admin/product_detail.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -78,5 +80,25 @@ export const useUpdateProductDetail = () => {
         onError: (error: any) => {
             console.log(queryKey.admin.productDetail.productDetailList + "🚀 ~ productDetailUpdate ~ error:", error);
         },
+    });
+};
+
+// Lấy danh sách sản phẩm chi tiết không phân trang
+export const useGetListSanPhamChiTiet = (
+): UseQueryReturnType<Awaited<ReturnType<typeof getListSanPhamChiTiet>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.productDetail.productDetailListNoPage],
+        queryFn: () => getListSanPhamChiTiet()
+    });
+};
+
+// lấy danh sách sản phẩm chi tiết theo sản phẩm không phân trang 
+export const useGetSanPhamChiTietByIdSanPham = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getListSanPhamChiTietByIdSanPham>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.productDetail.productDetailList, id,],
+        queryFn: () => getListSanPhamChiTietByIdSanPham(id.value),
+        ...options,
     });
 };

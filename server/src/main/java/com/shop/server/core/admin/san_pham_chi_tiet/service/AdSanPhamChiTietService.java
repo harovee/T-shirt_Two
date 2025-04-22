@@ -23,5 +23,7 @@ public interface AdSanPhamChiTietService {
 
     ResponseObject<?> deleted(String id);
 
+    ResponseObject<?> getAllProductDetail();
 
+    ResponseObject<?> getAllProductDetailByIdSanPham(String idSanPham);
 }

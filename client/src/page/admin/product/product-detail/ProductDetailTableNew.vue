@@ -5,6 +5,9 @@
         <h3 class="text-xl font-semibold text-gray-800">
           Danh sách sản phẩm chi tiết {{ changeFill ? "" : " - " + findTenSanPham(productId) }}
         </h3>
+        <p class="text-sm text-gray-500">
+          Hiển thị danh sách sản phẩm chi tiết T-Shirts Two
+        </p>
       </div>
       <div v-if="selectedRowKeyNews.length > 0">
         <a-button type="primary" class="ml-auto" @click="handleEdit">

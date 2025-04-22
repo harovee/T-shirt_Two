@@ -9,6 +9,8 @@
       cancel-text="Hủy"
       destroyOnClose
       centered
+      width="900px"
+     
     >
       <a-form
         layout="vertical"
@@ -30,17 +32,69 @@
           </a-form-item>
         </template>
       </a-form>
-      <!-- Canvas hiển thị mã QR -->
-      <canvas
-        ref="qrcodeCanvasRef"
-        style="width: 200px; height: 200px"
-      ></canvas>
-      <a-button
-        type="primary"
-        class="mt-5"
-        @click="downloadQr(ProductDetail.maSPCT)"
-        >Tải mã QR</a-button
-      >
+
+      <div class="flex flex-wrap gap-6 mt-6">
+        <!-- QR Code Section -->
+        <div class="qr-section flex-1">
+          <h3 class="mb-2 font-medium">Mã QR</h3>
+          <div class="flex flex-col items-center">
+            <canvas
+              ref="qrcodeCanvasRef"
+              style="width: 200px; height: 200px"
+            ></canvas>
+            <a-button
+              type="primary"
+              class="mt-2"
+              @click="downloadQr(ProductDetail.maSPCT)"
+            >Tải mã QR</a-button>
+          </div>
+        </div>
+
+        <!-- Images Section -->
+        <div class="images-section flex-1">
+          <h3 class="mb-2 font-medium">Hình ảnh sản phẩm</h3>
+          <div v-if="isLoadingImages">
+            <a-spin />
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <!-- Existing Images -->
+            <div
+              v-for="(image, index) in productImages"
+              :key="index"
+              class="relative"
+            >
+              <img
+                :src="image.url"
+                alt="Product image"
+                class="w-24 h-24 object-cover rounded border border-gray-200"
+              />
+              <div class="absolute top-0 right-0 flex">
+                <a-button
+                  type="primary"
+                  danger
+                  size="small"
+                  class="flex items-center justify-center w-6 h-6 p-0"
+                  @click="handleDeleteImage(image.id, index)"
+                >
+                  <v-icon name="fa-trash" style="font-size: 12px"></v-icon>
+                </a-button>
+              </div>
+            </div>
+
+            <!-- Upload New Image Button -->
+            <div class="w-24 h-24">
+              <a-button
+                @click="openCloudinaryWidget"
+                class="w-full h-full flex items-center justify-center border border-dashed border-gray-300"
+                v-if="productImages.length <4"
+              >
+                <v-icon name="co-plus" style="font-size: 16px"></v-icon>
+                <span class="ml-1">Thêm</span>
+              </a-button>
+            </div>
+          </div>
+        </div>
+      </div>
     </a-modal>
   </div>
 </template>
@@ -55,17 +109,23 @@ import {
   reactive,
   watch,
   inject,
-  ref, nextTick
+  ref, 
+  nextTick
 } from "vue";
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
-import { warningNotiSort, successNotiSort } from "@/utils/notification.config";
+import { warningNotiSort, successNotiSort, errorNotiSort } from "@/utils/notification.config";
 import { useUpdateProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
-import { ProductDetailUpdateRequest } from "@/infrastructure/services/api/admin/product_detail.api";
+import { ProductDetailUpdateRequest, anh } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useGetListCategory } from "@/infrastructure/services/service/admin/category.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import QRCode from "qrcode-generator";
+import {
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_UPLOAD_PRESET,
+} from "@/infrastructure/constants/cloudinary";
+import axios from "axios";
 
 const props = defineProps({
   open: Boolean,
@@ -73,7 +133,7 @@ const props = defineProps({
   isLoadingDetail: Boolean,
 });
 
-const listProduct = inject ('listProduct');
+const listProduct = inject('listProduct');
 const listMaterial = inject('listMaterial');
 const listCollar = inject('listCollar');
 const listSleeve = inject('listSleeve');
@@ -84,18 +144,93 @@ const listPattern = inject('listPattern');
 const listSize = inject('listSize');
 const listStyle = inject('listStyle');
 
-watch(
-  () => props.ProductDetail,
-  (newData) => console.log(newData)
-);
-
-const emit = defineEmits(["handleClose"]);
+const emit = defineEmits(["handleClose", "refreshData"]);
 
 const { mutate: updateProductDetail } = useUpdateProductDetail();
+const productImages = ref<anh[]>([]);
+const isLoadingImages = ref(false);
+
+watch(()=> props.ProductDetail, (newValue) =>{
+  console.log(newValue);
+  
+} )
+
+// Initialize Cloudinary widget
+let cloudinaryWidget;
+
+onMounted(() => {
+  cloudinaryWidget = window.cloudinary.createUploadWidget(
+    {
+      cloudName: CLOUDINARY_CLOUD_NAME,
+      uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+    },
+    (error, result) => {
+      if (!error && result && result.event === "success") {
+        const imageUrl = result.info.url;
+        const imageName = result.info.original_filename;
+        
+        // Add the new image to productImages
+        productImages.value.push({
+          url: imageUrl,
+          name: imageName
+        });
+        updateModelRefImages();
+      }
+    }
+  );
+});
+
+const updateModelRefImages = () => {
+  modelRef.listAnh = [...productImages.value];
+};
+
+const openCloudinaryWidget = () => {
+  if (cloudinaryWidget) {
+    cloudinaryWidget.open();
+  }
+};
+
+const fetchProductImages = async () => {
+  if (!props.ProductDetail || !props.ProductDetail.id) return;
+  
+  isLoadingImages.value = true;
+  try {
+    // Get images by product detail ID
+    const response = await axios.get(`http://localhost:6868/api/v1/admin/image`, {
+      params: {
+        idSanPhamChiTiet: props.ProductDetail.id
+      }
+    });
+    productImages.value = response.data.data || [];
+    updateModelRefImages();
+  } catch (error) {
+    console.error("Error fetching product images:", error);
+    errorNotiSort("Không thể tải hình ảnh sản phẩm");
+  } finally {
+    isLoadingImages.value = false;
+  }
+};
+
+const handleDeleteImage = async (imageId, index) => {
+  try {
+    if (imageId) {
+      // If the image has an ID, it's stored in the database
+      await axios.delete(`http://localhost:6868/api/v1/admin/image/${imageId}`);
+    }
+    
+    // Remove from local array
+    productImages.value.splice(index, 1);
+    updateModelRefImages();
+    successNotiSort("Xóa ảnh thành công");
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    errorNotiSort("Không thể xóa ảnh");
+  }
+};
 
 const modelRef = reactive<ProductDetailUpdateRequest>({
     gia: null,
-    soLuong:null,
+    soLuong: null,
     idChatLieu: null,
     idCoAo: null,
     idHoaTiet: null,
@@ -106,11 +241,13 @@ const modelRef = reactive<ProductDetailUpdateRequest>({
     idThuongHieu: null,
     idTinhNang: null,
     idSanPham: null,
-    trangThai: null
+    trangThai: null,
+    listAnh: [],
+    gioiTinh: null
 });
 
 const rulesRef = reactive({
-  
+  // You can add validation rules here if needed
 });
 
 const { resetFields, validate, validateInfos } = Form.useForm(
@@ -135,10 +272,18 @@ watch(
         idSanPham: newVal?.sanPham?.id,
         gia: newVal?.gia,
         soLuong: newVal?.soLuong,
-        trangThai: newVal?.trangThai === "ACTIVE" ? 0 : 1
+        trangThai: newVal?.trangThai === "ACTIVE" ? 0 : 1,
+        gioiTinh: newVal?.gioiTinh
+      });
+      
+      // Fetch images when product detail changes
+      fetchProductImages();
+      nextTick(() => {
+        generateQr(newVal.maSPCT);
       });
     } else {
       resetFields();
+      productImages.value = [];
     }
   },
   { immediate: true }
@@ -252,16 +397,30 @@ const formFields = computed(() => [
     component: "a-radio-group",
     props: {
       options: [
-        { label: "Đang áp dụng", value: 0 },
-        { label: "Ngưng áp dụng", value: 1 },
+        { label: "Đang bán", value: 0 },
+        { label: "Ngưng bán", value: 1 },
       ],
       value: 0,
     },
   },
-  
+  {
+    label: "Giới tính",
+    name: "gioiTinh",
+    component: "a-radio-group",
+    props: {
+      options: [
+        { label: "Nam", value: "Nam" },
+        { label: "Nữ", value: "Nữ" },
+        { label: "Nam và nữ ", value: "Nam và Nữ" },
+      ],
+    },
+  },
 ]);
 
 const handleUpdateProductDetail = () => {
+  // Update the listAnh in modelRef with current images
+  updateModelRefImages();
+  
   const payload = {
     gia: modelRef.gia,
     soLuong: modelRef.soLuong,
@@ -275,14 +434,16 @@ const handleUpdateProductDetail = () => {
     idThuongHieu: modelRef.idThuongHieu,
     idTinhNang: modelRef.idTinhNang,
     idSanPham: modelRef.idSanPham,
-    trangThai: modelRef.trangThai
+    trangThai: modelRef.trangThai,
+    listAnh: modelRef.listAnh,
+    gioiTinh: modelRef.gioiTinh
   };
+  console.log(payload);
 
   Modal.confirm({
     content: "Bạn chắc chắn muốn cập nhật?",
     icon: createVNode(ExclamationCircleOutlined),
     centered: true,
-
     async onOk() {
       try {
         await validate();
@@ -291,6 +452,7 @@ const handleUpdateProductDetail = () => {
           params: payload,
         });
         successNotiSort("Cập nhật sản phẩm chi tiết thành công");
+        emit("refreshData");
         handleClose();
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
@@ -309,13 +471,14 @@ const handleUpdateProductDetail = () => {
 const handleClose = () => {
   emit("handleClose");
   resetFields();
+  productImages.value = [];
 };
 
 const qrcodeCanvasRef = ref(null);
 
 // Tạo Qr hiển thị lên
 const generateQr = (maSPCT) => {
-  if (!qrcodeCanvasRef.value) return;
+  if (!qrcodeCanvasRef.value || !maSPCT) return;
 
   const qr = QRCode(0, "H");
   qr.addData(maSPCT);
@@ -378,22 +541,6 @@ const downloadQr = (maSPCT) => {
   link.download = `${maSPCT}.png`;
   link.click();
 };
-
-onMounted(() => {
-  if (props.ProductDetail) {
-    generateQr(props.ProductDetail.maSPCT)
-  }
-})
-watch(
-  () => props.ProductDetail, 
-  (newVal) => {
-    if (newVal) {
-      generateQr(newVal.maSPCT);
-    }
-  }
-);
-
-  // -----------------------------------------------
 </script>
 
 <style scoped>
@@ -401,5 +548,9 @@ watch(
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.qr-section, .images-section {
+  min-width: 300px;
 }
 </style>

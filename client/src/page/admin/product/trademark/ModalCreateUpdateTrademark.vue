@@ -160,6 +160,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten
   };
@@ -174,7 +175,7 @@ const handleAddOrUpdate = async () => {
     async onOk() {
 
   try {
-    await validate();
+    
     if (props.TrademarkDetail) {
       await updateTrademark({
         id: props.TrademarkDetail.id,

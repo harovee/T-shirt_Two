@@ -46,6 +46,10 @@ import { useRoute } from "vue-router";
 import {
   FindProductDetailRequest,
   FindAllProductDetailRequest,
+  getListAllProductDetail,
+  getListProductDetail,
+  getListSanPhamChiTiet,
+  getListSanPhamChiTietByIdSanPham,
 } from "@/infrastructure/services/api/admin/product_detail.api";
 import {
   useGetProductDetail,
@@ -331,36 +335,84 @@ const computedPaginationHandler = computed(() => {
     : handlePaginationChange;
 });
 
-const handleExportToExcel = () => {
+// const handleExportToExcel = () => {
 
-  const dataExcel = computedDataSource.value?.data;
-  const filteredData = dataExcel?.map((item: any) => {
-    return {
-      STT: item.catalog,
-      "Mã sản phẩm": item.maSanPhamChiTiet,
-      "Tên Sản Phẩm": item.sanPham,
-      "Chất liệu": item.chatLieu,
-      "Thương hiệu": item.thuongHieu,
-      "Cổ áo": item.coAo,
-      "Tay áo": item.tayAo,
-      "Kiểu dáng": item.kieuDang,
-      "Họa tiết": item.hoaTiet,
-      "Tính năng": item.tinhNang,
-      Giá: formatter(item.gia) || 0,
-      "Số lượng": item.soLuong || 0,
-      "Trạng thái": item.trangThai ? "Đang áp dụng" : "Ngừng áp dụng",
-    };
-  });
-  const ws = XLSX.utils.json_to_sheet(filteredData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-  XLSX.writeFile(wb, 'danh_sach.xlsx');
-  // console.log(allData);
+//   const dataExcel = computedDataSource.value?.data;
+//   console.log(dataExcel);
+  
+//   const filteredData = dataExcel?.map((item: any) => {
+//     return {
+//       STT: item.catalog,
+//       "Mã sản phẩm": item.maSanPhamChiTiet,
+//       "Tên Sản Phẩm": item.sanPham,
+//       "Chất liệu": item.chatLieu,
+//       "Thương hiệu": item.thuongHieu,
+//       "Cổ áo": item.coAo,
+//       "Tay áo": item.tayAo,
+//       "Kiểu dáng": item.kieuDang,
+//       "Họa tiết": item.hoaTiet,
+//       "Kích cỡ" : item.kichCo,
+//       "Màu sắc" : item.mauSac,
+//       "Tính năng": item.tinhNang,
+//       Giá: formatter(item.gia) || 0,
+//       "Số lượng": item.soLuong || 0,
+//       "Trạng thái": item.trangThai ? "Ngừng áp dụng" : "Đang áp dụng",
+//     };
+//   });
+//   const ws = XLSX.utils.json_to_sheet(filteredData);
+//   const wb = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+//   XLSX.writeFile(wb, 'danh_sach.xlsx');
+//   // console.log(allData);
+// };
+
+const handleExportToExcel = async () => {
+  try {
+    let allData: any[] = [];
+    
+    if (changeProductDetail.value) {
+      // Khi chọn tất cả sản phẩm - lấy tất cả sản phẩm không phân trang
+      const response = await getListSanPhamChiTiet();
+      allData = response?.data || [];
+    } else {
+      // Khi chọn sản phẩm cụ thể - lấy tất cả sản phẩm chi tiết theo sản phẩm không phân trang
+      const response = await getListSanPhamChiTietByIdSanPham(productId.value);
+      allData = response?.data || [];
+    }
+    
+    const filteredData = allData.map((item: any) => {
+      return {
+        STT: item.catalog,
+        "Mã sản phẩm": item.maSanPhamChiTiet,
+        "Tên Sản Phẩm": item.sanPham,
+        "Chất liệu": item.chatLieu,
+        "Thương hiệu": item.thuongHieu,
+        "Cổ áo": item.coAo,
+        "Tay áo": item.tayAo,
+        "Kiểu dáng": item.kieuDang,
+        "Họa tiết": item.hoaTiet,
+        "Kích cỡ": item.kichCo,
+        "Màu sắc": item.mauSac,
+        "Tính năng": item.tinhNang,
+        Giá: formatter(item.gia) || 0,
+        "Số lượng": item.soLuong || 0,
+        "Trạng thái": item.trangThai ? "Ngưng bán" : "Đang bán",
+      };
+    });
+    
+    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    XLSX.writeFile(wb, 'danh_sach.xlsx');
+  } catch (error) {
+    console.error("Lỗi khi xuất Excel:", error);
+    // Có thể thêm thông báo lỗi cho người dùng
+  }
 };
 
 const formatter = (value: any) => {
   if (!value) return "";
-  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${Math.round(value)} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 // provide để truyền dữ liệu sang component con

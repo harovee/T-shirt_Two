@@ -82,7 +82,10 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
-        
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên kiểu dáng không được chứa ký tự đặc biệt");
+        }
         const allStyleDatas = Array.isArray(props.allStyleData) ? props.allStyleData : [];
         if (props.StyleDetail && props.StyleDetail.ten.toLowerCase() === value.toLowerCase()) {
             return Promise.resolve();
@@ -160,6 +163,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten
   };
@@ -174,7 +178,7 @@ const handleAddOrUpdate = async () => {
     async onOk() {
 
   try {
-    await validate();
+    
     if (props.StyleDetail) {
       await updateStyle({
         id: props.StyleDetail.id,
