@@ -28,8 +28,8 @@
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'soLuong'" class="text-center">
-          <a-input type="number" v-model:value="record.soLuong" min="0">
-          </a-input>
+          <a-input-number type="number" v-model:value="record.soLuong" min="0">
+          </a-input-number>
         </div>
         <div v-if="column.key === 'gia'" class="text-center">
           <a-input-number
