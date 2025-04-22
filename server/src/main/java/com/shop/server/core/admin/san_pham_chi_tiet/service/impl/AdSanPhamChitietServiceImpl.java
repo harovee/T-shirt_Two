@@ -9,8 +9,11 @@ import com.shop.server.core.admin.kich_co.repository.AdKichCoRepository;
 import com.shop.server.core.admin.kieu_dang.repository.AdKieuDangRepository;
 import com.shop.server.core.admin.mau_sac.repository.AdMauSacRepository;
 import com.shop.server.core.admin.product.repositories.AdminProductRepository;
+import com.shop.server.core.admin.sale.repositories.AdminSaleProductRepository;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdUpdateSaleProductDetail;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
 import com.shop.server.core.admin.san_pham_chi_tiet.service.AdSanPhamChiTietService;
 import com.shop.server.core.admin.tay_ao.repository.AdTayAoRepository;
@@ -19,7 +22,10 @@ import com.shop.server.core.admin.tinh_nang.repository.AdTinhNangRepository;
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.Anh;
+import com.shop.server.entities.main.DotGiamGia;
 import com.shop.server.entities.main.SanPhamChiTiet;
+import com.shop.server.entities.main.SanPhamGiamGia;
+import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.infrastructure.constants.module.Status;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -61,6 +68,8 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
 
     private final AdAnhRepository adAnhRepository;
 
+    private final AdminSaleProductRepository sanPhamGiamGiaRepository;
+
 
     @Override
     public ResponseObject<?> getSanPhamChiTiets(AdFindSpctRequest request) {
@@ -78,6 +87,16 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         Pageable pageable = Helper.createPageable(request);
         return new ResponseObject<>(
                 PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTiets(pageable, request)),
+                HttpStatus.OK,
+                "Lấy dữ liệu thành công."
+        );
+    }
+
+    @Override
+    public ResponseObject<?> getALlSanPhamChiTietOverZero(AdFindSpctRequest request) {
+        Pageable pageable = Helper.createPageable(request, "ngay_tao", "asc");
+        return new ResponseObject<>(
+                PageableObject.of(adSanPhamChiTietRepository.getAllSanPhamChiTietOverZero(pageable, request)),
                 HttpStatus.OK,
                 "Lấy dữ liệu thành công."
         );
@@ -135,12 +154,26 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         spct.setDeleted(false);
         SanPhamChiTiet addedSPCT = adSanPhamChiTietRepository.save(spct);
         if (request.getListAnh().size() > 0 || request.getListAnh() != null) {
-            for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+//            for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+//                Anh anh = new Anh();
+//                anh.setSanPhamChiTiet(addedSPCT);
+//                anh.setUrl(anhRequest.getUrl());
+//                anh.setTen(anhRequest.getName());
+//
+//                anh.setDeleted(false);
+//                adAnhRepository.save(anh);
+//            }
+            for (int i = 0; i < request.getListAnh().size(); i++) {
+                AdCreateUpdateAnhRequest anhRequest = request.getListAnh().get(i);
+
                 Anh anh = new Anh();
                 anh.setSanPhamChiTiet(addedSPCT);
                 anh.setUrl(anhRequest.getUrl());
                 anh.setTen(anhRequest.getName());
                 anh.setDeleted(false);
+                if (i == 0) {
+                    anh.setIsTop(true);
+                }
                 adAnhRepository.save(anh);
             }
         }
@@ -198,6 +231,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                     }
                     return adSanPhamChiTietRepository.save(spct1);
                 });
+        updateProductSale(new AdUpdateSaleProductDetail(id, request.getGia()));
         return spct
                 .map(spct1 -> new ResponseObject<>(spct1, HttpStatus.OK,
                         "Cập nhật sản phẩm chi tiết thành công."))
@@ -233,5 +267,81 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                 "Lấy danh sách spct theo sản phẩm thành công");
     }
 
+    @Override
+    public ResponseObject<?> checkQuantity(AdCheckQuantityRequest request) {
+        if (adSanPhamChiTietRepository.checkQuantity(request) == 0) {
+            return new ResponseObject<>(true, HttpStatus.OK, "Số lượng trong kho đủ!");
+        } else {
+            return new ResponseObject<>(false, HttpStatus.OK, "Số lượng trong kho không đủ!");
+        }
+    }
 
+    @Override
+    public ResponseObject<?> checkQuantityByIdSPCT(AdCheckQuantityRequest request) {
+        if (adSanPhamChiTietRepository.checkQuantityByIdSPCT(request) == 0) {
+            return new ResponseObject<>(true, HttpStatus.OK, "Số lượng trong kho đủ!");
+        } else {
+            return new ResponseObject<>(false, HttpStatus.OK, "Số lượng trong kho không đủ!");
+        }
+    }
+
+    @Override
+    public ResponseObject<?> checkQuantityInListProduct(List<AdCheckQuantityRequest> listRequest) {
+        boolean check = false;
+        for (AdCheckQuantityRequest request : listRequest) {
+            if (adSanPhamChiTietRepository.checkQuantityInListProduct(request) == 0) {
+                check = true;
+            }
+        }
+        if (!check) {
+            for (AdCheckQuantityRequest request : listRequest) {
+                adSanPhamChiTietRepository.decreaseStockProduct(request.getId(), request.getQuantity());
+            }
+        }
+        return new ResponseObject<>(check, HttpStatus.OK, check ? "Số lượng trong giỏ không đủ" : "Số lượng trong kho đủ!");
+    }
+
+    @Override
+    public ResponseObject<?> plusQuantityInStockByListProduct(List<AdCheckQuantityRequest> listRequest) {
+        for (AdCheckQuantityRequest request : listRequest) {
+            adSanPhamChiTietRepository.plusStockProduct(request.getId(), request.getQuantity());
+        }
+        return new ResponseObject<>(null, HttpStatus.OK, "Update số lượng thành công");
+    }
+
+    @Override
+    public ResponseObject<?> updateProductSale(AdUpdateSaleProductDetail request) {
+        try {
+            List<SanPhamGiamGia> sanPhamGiamGias = sanPhamGiamGiaRepository.findAllBySanPhamChiTietIdAndDeletedIsFalse(request.getId());
+            sanPhamGiamGias.forEach((e) -> {
+                e.setGiaSauGiam(giaSauGiam(e.getDotGiamGia(), request.getPrice()));
+                sanPhamGiamGiaRepository.save(e);
+            });
+            return ResponseObject.successForward(
+                    "OK",
+                    Message.Success.UPDATE_SUCCESS);
+        } catch (Exception e) {
+            return ResponseObject.errorForward(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+        }
+    }
+
+    private BigDecimal giaSauGiam(DotGiamGia dotGiamGia, BigDecimal giaSPCT) {
+        double spct = giaSPCT.doubleValue();
+        String loai = dotGiamGia.getLoai();
+        Double giaTriGiam = dotGiamGia.getGiaTri();
+        Double giaTriGiamToiDa = dotGiamGia.getGiaTriGiamToiDa();
+
+        if (loai.equals("PERCENT")) {
+            return BigDecimal.valueOf(spct - (spct * (giaTriGiam / 100)));
+        }
+        if (loai.equals("VND") && spct >= giaTriGiam) {
+            return BigDecimal.valueOf(spct - giaTriGiam);
+        }
+        if (loai.equals("VND") && spct < giaTriGiam && spct >= giaTriGiamToiDa) {
+            return BigDecimal.valueOf(spct - giaTriGiamToiDa);
+        }
+        return BigDecimal.valueOf(spct / 2);
+    }
 }

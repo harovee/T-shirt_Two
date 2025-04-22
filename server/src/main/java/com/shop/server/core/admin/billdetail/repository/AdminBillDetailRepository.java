@@ -1,11 +1,9 @@
 package com.shop.server.core.admin.billdetail.repository;
 
-import com.shop.server.core.admin.billdetail.model.request.AdminCreateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminFindBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.request.AdminUpdateBillDetailRequest;
 import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailRefundResponse;
 import com.shop.server.core.admin.billdetail.model.response.AdminBillDetailResponse;
-import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
 import com.shop.server.entities.main.HoaDon;
 import com.shop.server.entities.main.HoaDonChiTiet;
 import com.shop.server.entities.main.SanPhamChiTiet;
@@ -34,7 +32,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             ct.id_san_pham_chi_tiet AS idSanPhamChiTiet,
             sp.ten AS tenSanPham,
             spct.ten AS tenSanPhamChiTiet,
-            MIN(anh.url) AS anhSanPhamChiTiet,
+            coalesce(anh.url, 'default-product-detail-image-url.jpg') as imgUrl,
             ct.so_luong AS soLuong,
             ct.gia AS gia,
             ct.thanh_tien AS thanhTien,
@@ -50,7 +48,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             pgg.ten AS tenPhieuGiam
         FROM hoa_don_chi_tiet ct 
         LEFT JOIN san_pham_chi_tiet spct ON ct.id_san_pham_chi_tiet = spct.id
-        LEFT JOIN anh ON spct.id = anh.id_san_pham_chi_tiet
+        left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
         JOIN hoa_don hd ON ct.id_hoa_don = hd.id
         JOIN kich_co kc ON spct.id_kich_co = kc.id
         LEFT JOIN phieu_giam_gia pgg ON pgg.id = hd.id_phieu_giam_gia
@@ -60,7 +58,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             (:#{#req.keyword} IS NULL OR
              spct.ten LIKE CONCAT('%', :#{#req.keyword}, '%'))
         AND (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = hd.id)
-        GROUP BY ct.id, hd.id, spct.id, sp.id, kc.id, ms.id, pgg.id;
+        GROUP BY ct.id, hd.id, spct.id, sp.id, kc.id, ms.id, pgg.id, anh.url;
     """,countQuery = """
             SELECT
             COUNT(ct.id)
@@ -135,4 +133,13 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
     void decreaseStockInAdd(@Param("idSanPhamChiTiet") String idSanPhamChiTiet,@Param("soLuong") int soLuong);
 
     List<HoaDonChiTiet> findByHoaDon(HoaDon hoaDon);
+
+    @Query(value = """
+    SELECT CAST(CASE WHEN spct.so_luong < ?2 THEN 1 ELSE 0 END AS SIGNED)
+    FROM hoa_don_chi_tiet hdct 
+    LEFT JOIN san_pham_chi_tiet spct ON hdct.id_san_pham_chi_tiet = spct.id
+    WHERE hdct.id = ?1
+""", nativeQuery = true)
+    Integer checkQuantityInStock(String id, Long quantity);
+
 }

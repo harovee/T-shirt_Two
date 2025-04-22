@@ -354,55 +354,6 @@ watch(
     // Tạo bản sao dữ liệu mới từ API để tránh readonly
     detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
     serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
-  },
-  { immediate: true }
-);
-
-// Theo dõi cái bản sao của detail data
-watch(
-  () => detailDataSources.value,
-  (newData) => {
-    if (newData[0]) {
-      // Tính toán lại phí giảm sau khi thêm sản phẩm hoặc thay đổi số lượng
-      if (detail.value) {
-        // Loại giảm = true (tiền mặt)
-        if (detail.value.loaiGiam) {
-          newData[0] = detail?.value?.giaTriGiam;
-        newData[0].tongTienHD =
-          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
-        console.log(newData[0].tongTienHD);
-        } else {
-          // Loại giảm = flase (%)
-        newData[0].tienGiamHD =
-          (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
-
-        newData[0].tongTienHD =
-          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
-        console.log(newData[0].tongTienHD);
-        }
-      } else {
-        newData[0].tienGiamHD = 0;
-        newData[0].tienShip = 0;
-        newData[0].tongTienHD = totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
-      }
-      console.log(newData[0]);
-      
-      // Tính toán lại phụ phí/ hoàn trả
-      if (newData[0].tongTienHD > paymentInfo.value.paid) {
-        paymentInfo.value.amountPayable =
-          detailDataSources.value[0].tongTienHD - paymentInfo.value.paid;
-        paymentInfo.value.surcharge =
-          newData[0].tongTienHD - paymentInfo.value.paid;
-        paymentInfo.value.refund = 0;
-      } else {
-        paymentInfo.value.amountPayable = 0;
-        paymentInfo.value.surcharge = 0;
-        paymentInfo.value.refund =
-          paymentInfo.value.paid - newData[0].tongTienHD;
-      }
-    }
-    // voucherId.value = newBillData.idPhieuGiamGia;
-    serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
     if (copiedBillData.value && copiedBillData.value.huyen) {
       serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
       if (serviceIdParams.value.toDistrict !== 0) {
@@ -412,7 +363,8 @@ watch(
           shippingParams.value.toWardCode = copiedBillData.value.xa;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
-              // detailDataSources.value[0].tienShip = shipping?.value?.data.total;
+              // Miễn phí ship cho hóa đơn từ 2.000.000đ
+              detailDataSources.value[0].tienShip = shipping?.value?.data.total;
               if (totalPrice.value <= 2000000) {
                 detailDataSources.value[0].tienShip =
                   shipping?.value?.data.total;
@@ -427,8 +379,53 @@ watch(
       }
     }
   },
+  { immediate: true }
+);
 
-  { immediate: true, deep: true }
+// Theo dõi cái bản sao của detail data
+watch(
+  () => detailDataSources.value,
+  (newData) => {
+    if (newData[0]) {
+      // Tính toán lại phí giảm sau khi thêm sản phẩm hoặc thay đổi số lượng
+      if (detail.value) {
+        // Loại giảm = true (tiền mặt)
+        if (detail.value.loaiGiam) {
+          newData[0] = detail?.value?.giaTriGiam;
+          newData[0].tongTienHD =
+            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+        } else {
+          // Loại giảm = flase (%)
+          newData[0].tienGiamHD =
+            (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
+
+          newData[0].tongTienHD =
+            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+          // console.log(newData[0].tongTienHD);
+        }
+      } else {
+        newData[0].tienGiamHD = 0;
+        newData[0].tienShip = 0;
+        newData[0].tongTienHD =
+          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+      }
+
+      // Tính toán lại phụ phí/ hoàn trả
+      if (newData[0].tongTienHD > paymentInfo.value.paid) {
+        paymentInfo.value.amountPayable =
+          detailDataSources.value[0].tongTienHD - paymentInfo.value.paid;
+        paymentInfo.value.surcharge =
+          newData[0].tongTienHD - paymentInfo.value.paid;
+        paymentInfo.value.refund = 0;
+      } else {
+        paymentInfo.value.amountPayable = 0;
+        paymentInfo.value.surcharge = 0;
+        paymentInfo.value.refund =
+          paymentInfo.value.paid - newData[0].tongTienHD;
+      }
+    }
+  },
+  { deep: true, immediate: true }
 );
 
 // Theo dõi nếu id hóa đơn thay đổi
@@ -602,10 +599,10 @@ const handleUpdateBill = () => {
       { idBill: billId.value, params: payload },
       {
         onSuccess: (result) => {
-          successNotiSort("Cập nhật thông tin thành công");
+          // successNotiSort("Cập nhật thông tin thành công");
         },
         onError: (error: any) => {
-          errorNotiSort("Cập nhật thông tin thất bại");
+          // errorNotiSort("Cập nhật thông tin thất bại");
         },
       }
     );
@@ -630,8 +627,8 @@ const columnsBill: ColumnType[] = [
   },
   {
     title: "Ảnh",
-    dataIndex: "anhSanPhamChiTiet",
-    key: "anhSanPhamChiTiet",
+    dataIndex: "imgUrl",
+    key: "imgUrl",
     ellipsis: true,
     width: 150,
     align: "center",

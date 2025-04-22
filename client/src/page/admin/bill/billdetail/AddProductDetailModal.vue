@@ -41,7 +41,7 @@ import {
 } from "vue";
 import ProductDetailTableToOrder from "./ProductDetailTableToOrder.vue";
 import FilterProductToOrder from "./FilterProductToOrder.vue";
-import { useGetAllProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
+import { useGetAllProductDetail, useGetAllProductDetailOverZero } from "@/infrastructure/services/service/admin/productdetail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { FindProductDetailRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useCreateBillDetail } from "@/infrastructure/services/service/admin/bill-detail.action";
@@ -55,6 +55,8 @@ import { useGetListSize } from "@/infrastructure/services/service/admin/size.act
 import { useGetListSleeve } from "@/infrastructure/services/service/admin/sleeve.action";
 import { useGetListStyle } from "@/infrastructure/services/service/admin/style.action";
 import { useGetListTrademark } from "@/infrastructure/services/service/admin/trademark.action";
+import { useAuthStore } from "@/infrastructure/stores/auth";
+import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
 
 // Định nghĩa Props
 const props = defineProps({
@@ -63,7 +65,8 @@ const props = defineProps({
   loadingValue: {
     type: Boolean,
     required: true,
-  }
+  },
+  billData: Object
 });
 
 // Định nghĩa Emits
@@ -90,15 +93,18 @@ const handleSelectProduct = (product: any) => {
     selectedProducts.value.splice(index, 1);
   }
 
-  console.log("Danh sách sản phẩm đã chọn:", selectedProducts.value);
+  // console.log("Danh sách sản phẩm đã chọn:", selectedProducts.value);
 };
 
 const { mutate: createBillDetail } = useCreateBillDetail();
+
+const { mutate: createBillHistory } = useCreateBillHistory();
 
 const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
   idSanPhamChiTiet: null,
   soLuong: null,
+  isClient: null,
 });
 
 const getIdHoaDonFromUrl = () => {
@@ -148,8 +154,17 @@ const handleAddProducts = () => {
     const requestData = {
       idHoaDon: modelRef.idHoaDon, // ID hóa đơn từ URL
       idSanPhamChiTiet: product.id, // Đảm bảo lấy đúng ID sản phẩm
-      soLuong: 1, // Mặc định số lượng là 1
+      soLuong: 1,   // Mặc định số lượng là 1
+      isClient: props.billData.loaiHD === 'Online' ? true : false
     };
+
+    const billHistoryParams = {
+          idHoaDon: modelRef.idHoaDon,
+          hanhDong: `Thêm sản phẩm`,
+          moTa: `Nhân viên "${useAuthStore().user?.email}" đã thêm sản phẩm vào đơn`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null
+        }
 
     // console.log("📤 Dữ liệu gửi đi API:", requestData); // Log dữ liệu trước khi gửi
 
@@ -161,6 +176,8 @@ const handleAddProducts = () => {
         console.error("❌ Lỗi khi thêm sản phẩm:", error);
       },
     });
+    // Thêm lịch sử hóa đơn (Khi khách thêm sản phẩm vào đơn)
+    createBillHistory(billHistoryParams);
   });
   // console.log(selectedProducts.value);
 
@@ -178,7 +195,7 @@ const {
   isLoading,
   isFetching,
   refetch
-} = useGetAllProductDetail(paramsAll, {
+} = useGetAllProductDetailOverZero(paramsAll, { 
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });

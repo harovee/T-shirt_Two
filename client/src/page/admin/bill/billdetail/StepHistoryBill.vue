@@ -60,7 +60,7 @@
             statusIndexStart !== 'Thành công'
           "
           style="margin-left: 8px"
-          @click="rollBack()"
+          @click="rollBack(statusIndexStart)"
         >
           Quay lại trạng thái trước
         </a-button>
@@ -95,6 +95,14 @@
         >
           Chi tiết
         </a-button>
+        <a-button
+          v-if="statusIndexStart === 'Thành công'"
+          class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
+          style="margin-right: 15px"
+          @click="createInvoicePdf"
+        >
+          Xuất hóa đơn
+        </a-button>
       </div>
     </div>
 
@@ -105,6 +113,7 @@
       title="Chi tiết lịch sử"
       @cancel="handleCancel"
       @ok="handleCancel"
+      :scroll="{ x: 'max-content', y: 600 }"
     >
       <a-table
         :columns="columns"
@@ -131,7 +140,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, h, onMounted, computed, nextTick } from "vue";
+import { ref, watch, h, onMounted, computed, nextTick, createVNode } from "vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   CarOutlined,
@@ -153,7 +162,15 @@ import { Input, Modal } from "ant-design-vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { useGetPayHistory } from "@/infrastructure/services/service/admin/payhistory.action";
 import { FindPayHistoryRequest } from "@/infrastructure/services/api/admin/pay-history.api";
+import {
+  useCheckQuantityInStock,
+  useCheckQuantityListProduct,
+  usePlusQuantityListProduct,
+} from "@/infrastructure/services/service/admin/productdetail.action";
 import { sum } from "lodash";
+import { PropType } from "vue";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { createInvoicePdfWithId } from "@/infrastructure/services/api/admin/payment.api";
 
 interface DataSource {
   data: {
@@ -171,16 +188,31 @@ interface Step {
 }
 
 // Props
-const props = defineProps<{
-  dataSource: DataSource;
-  loading: Boolean;
-  dataPaymentInfo: Object;
+const props = defineProps({
+  dataSource: {
+    type: Object as PropType<DataSource>,
+  },
+  loading: Boolean,
+  dataPaymentInfo: Object,
   dataProduct: {
-    type: Array<any>;
-    required: true;
-  };
-  billData: Object;
-}>();
+    type: Array,
+    required: true,
+  },
+  billData: Object,
+});
+
+const listProduct = ref(null);
+
+watch(
+  () => props?.dataProduct,
+  (newData) => {
+    listProduct.value = newData.map((item) => ({
+      id: item.idSanPhamChiTiet,
+      quantity: item.soLuong,
+    }));
+    console.log(props.dataProduct);
+  }
+);
 
 const emit = defineEmits(["update:bill"]);
 
@@ -195,6 +227,10 @@ const current = ref<number>(0);
 const isModalVisible = ref(false);
 
 const { mutate: changeStatus } = useChangeBillStatus();
+
+const { mutate: plusQuantityListProduct } = usePlusQuantityListProduct();
+
+const { mutate: checkQuantity, data, error } = useCheckQuantityListProduct();
 
 // Khai báo các bước khi hủy hóa đơn thành công
 const stepsCancel: Step[] = [
@@ -238,6 +274,7 @@ const steps: Step[] = [
     icon: h(CheckCircleOutlined),
   },
 ];
+
 onMounted(() => {
   if (props.dataSource?.data?.length > 0) {
     updateCurrentStep(props.dataSource);
@@ -337,7 +374,21 @@ watch(
 );
 
 // hàm xác nhận không hoàn tiền
-const confirmBill = () => {
+const confirmBill = async () => {
+  const payload = {
+    soDienThoai: props.billData.soDienThoai,
+    diaChiNguoiNhan: props.billData.diaChiNguoiNhan,
+    tenNguoiNhan: props.billData.tenNguoiNhan,
+    ghiChu: props.billData.ghiChu,
+    tinh: props.billData.tinh,
+    huyen: props.billData.huyen,
+    xa: props.billData.xa,
+    idPhieuGiamGia: props.billData.idPhieuGiamGia,
+    tienShip: props.dataProduct[0]?.tienShip || 0,
+    tienGiam: props.dataProduct[0]?.tienGiamHD || 0,
+    tongTien: props.dataProduct[0]?.tongTienHD || 0,
+  };
+
   // Lấy trạng thái tiếp theo từ mảng steps
   const nextStep = steps[current.value + 1];
   const stepTitle = nextStep.title;
@@ -352,33 +403,84 @@ const confirmBill = () => {
     ghiChu: "Xác nhận trạng thái đơn hàng -> Chờ giao hàng",
   };
 
-  Modal.confirm({
-    title: "Xác nhận thay đổi trạng thái",
-    content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
-    onOk: async () => {
-      try {
-        if (props.dataProduct.length === 0) {
-          warningNotiSort(
-            "Đơn hàng đang trống, xin vui lòng thêm sản phẩm vào giỏ hoặc hủy đơn hàng!"
-          );
-          return;
-        }
-        // Gọi API để thay đổi trạng thái đơn hàng
-        changeStatus({ idBill, params });
-        emit("update:bill");
-        successNotiSort("Cập nhật trạng thái thành công!");
+  const check = ref(null);
 
-        // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-        current.value++;
-      } catch (error) {
-        console.error("Cập nhật trạng thái thất bại:", error);
-        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
-      }
-    },
-    onCancel: () => {
-      console.log("Thao tác đã bị hủy.");
-    },
-  });
+  if (props.billData.loaiHD === "Online") {
+    checkQuantity(listProduct.value, {
+      onSuccess: (result) => {
+        if (result.data !== undefined) {
+          check.value = result.data;
+          if (check.value === true) {
+            warningNotiSort(
+              "Số lượng sản phẩm trong kho không đủ, vui lòng kiểm tra lại!"
+            );
+            return;
+          }
+          // modal confirm có thay đổi trạng thái k
+          Modal.confirm({
+            title: "Xác nhận thay đổi trạng thái",
+            content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
+            onOk: async () => {
+              try {
+                if (props.dataProduct.length === 0) {
+                  warningNotiSort(
+                    "Đơn hàng đang trống, xin vui lòng thêm sản phẩm vào giỏ hoặc hủy đơn hàng!"
+                  );
+                  return;
+                }
+                // Gọi API để thay đổi trạng thái đơn hàng
+                changeStatus({ idBill, params });
+                emit("update:bill");
+                successNotiSort("Cập nhật trạng thái thành công!");
+
+                // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+                current.value++;
+              } catch (error) {
+                console.error("Cập nhật trạng thái thất bại:", error);
+                errorNotiSort(
+                  "Cập nhật trạng thái thất bại. Vui lòng thử lại."
+                );
+              }
+            },
+            onCancel: () => {
+              console.log("Thao tác đã bị hủy.");
+            },
+          });
+        }
+      },
+      onError: (error: any) => {
+        errorNotiSort(error?.response?.data?.message);
+      },
+    });
+  } else {
+    Modal.confirm({
+      title: "Xác nhận thay đổi trạng thái",
+      content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
+      onOk: async () => {
+        try {
+          if (props.dataProduct.length === 0) {
+            warningNotiSort(
+              "Đơn hàng đang trống, xin vui lòng thêm sản phẩm vào giỏ hoặc hủy đơn hàng!"
+            );
+            return;
+          }
+          // Gọi API để thay đổi trạng thái đơn hàng
+          changeStatus({ idBill, params });
+          emit("update:bill");
+          successNotiSort("Cập nhật trạng thái thành công!");
+
+          // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+          current.value++;
+        } catch (error) {
+          console.error("Cập nhật trạng thái thất bại:", error);
+          errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+        }
+      },
+      onCancel: () => {
+        console.log("Thao tác đã bị hủy.");
+      },
+    });
+  }
 };
 
 // hàm xác nhận và hoàn lại tiền
@@ -389,53 +491,123 @@ const confirmBillRefund = () => {
   const description = ref("");
   // API tạo lịch sử hóa đơn
 
-  Modal.confirm({
-    title: "Xác nhận hoàn tiền",
-    content: () => {
-      return h("div", [
-        h(
-          "p",
-          `Số tiền cần trả lại: ${formatCurrencyVND(
+  const check = ref(null);
+
+  if (props.billData.loaiHD === "Online") {
+    checkQuantity(listProduct.value, {
+      onSuccess: (result) => {
+        if (result.data !== undefined) {
+          check.value = result.data;
+          if (check.value === true) {
+            warningNotiSort(
+              "Số lượng sản phẩm trong kho không đủ, vui lòng kiểm tra lại!"
+            );
+            return;
+          }
+          Modal.confirm({
+            title: "Xác nhận hoàn tiền",
+            content: () => {
+              return h("div", [
+                h(
+                  "p",
+                  `Số tiền cần trả lại: ${formatCurrencyVND(
+                    props.dataPaymentInfo.refund
+                  )}`
+                ),
+                h(Input, {
+                  placeholder: "Nhập mã giao dịch ...",
+                  autoSize: { minRows: 2, maxRows: 4 },
+                  onInput: (e) => (description.value = e.target.value),
+                }),
+              ]);
+            },
+            onOk: async () => {
+              const params = {
+                status: stepTitle,
+                trangThai: "Chờ giao hàng",
+                moTa: `Hoàn trả: ${formatCurrencyVND(
+                  props.dataPaymentInfo.refund
+                )} - Mã giao dịch: ${description.value}`,
+                email: props.billData.emailNguoiNhan || null,
+                idHoaDon: idBill,
+                nhanVien: useAuthStore().user?.email || null,
+                ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
+                  props.dataPaymentInfo.refund
+                )}`,
+              };
+              try {
+                // Gọi API để thay đổi trạng thái đơn hàng
+                changeStatus({ idBill, params });
+                successNotiSort("Cập nhật trạng thái thành công!");
+                emit("update:bill");
+                // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+                current.value++;
+              } catch (error) {
+                console.error("Cập nhật trạng thái thất bại:", error);
+                errorNotiSort(
+                  "Cập nhật trạng thái thất bại. Vui lòng thử lại."
+                );
+              }
+            },
+            onCancel: () => {
+              console.log("Thao tác đã bị hủy.");
+            },
+          });
+        }
+      },
+      onError: (error: any) => {
+        errorNotiSort(error?.response?.data?.message);
+      },
+    });
+  } else {
+    Modal.confirm({
+      title: "Xác nhận hoàn tiền",
+      content: () => {
+        return h("div", [
+          h(
+            "p",
+            `Số tiền cần trả lại: ${formatCurrencyVND(
+              props.dataPaymentInfo.refund
+            )}`
+          ),
+          h(Input, {
+            placeholder: "Nhập mã giao dịch ...",
+            autoSize: { minRows: 2, maxRows: 4 },
+            onInput: (e) => (description.value = e.target.value),
+          }),
+        ]);
+      },
+      onOk: async () => {
+        const params = {
+          status: stepTitle,
+          trangThai: "Chờ giao hàng",
+          moTa: `Hoàn trả: ${formatCurrencyVND(
             props.dataPaymentInfo.refund
-          )}`
-        ),
-        h(Input, {
-          placeholder: "Nhập mã giao dịch ...",
-          autoSize: { minRows: 2, maxRows: 4 },
-          onInput: (e) => (description.value = e.target.value),
-        }),
-      ]);
-    },
-    onOk: async () => {
-      const params = {
-        status: stepTitle,
-        trangThai: "Chờ giao hàng",
-        moTa: `Hoàn trả: ${formatCurrencyVND(
-          props.dataPaymentInfo.refund
-        )} - Mã giao dịch: ${description.value}`,
-        email: props.billData.emailNguoiNhan || null,
-        idHoaDon: idBill,
-        nhanVien: useAuthStore().user?.email || null,
-        ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
-          props.dataPaymentInfo.refund
-        )}`,
-      };
-      try {
-        // Gọi API để thay đổi trạng thái đơn hàng
-        changeStatus({ idBill, params });
-        successNotiSort("Cập nhật trạng thái thành công!");
-        emit("update:bill");
-        // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-        current.value++;
-      } catch (error) {
-        console.error("Cập nhật trạng thái thất bại:", error);
-        errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
-      }
-    },
-    onCancel: () => {
-      console.log("Thao tác đã bị hủy.");
-    },
-  });
+          )} - Mã giao dịch: ${description.value}`,
+          email: props.billData.emailNguoiNhan || null,
+          idHoaDon: idBill,
+          nhanVien: useAuthStore().user?.email || null,
+          ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
+            props.dataPaymentInfo.refund
+          )}`,
+        };
+        try {
+          // Gọi API để thay đổi trạng thái đơn hàng
+          changeStatus({ idBill, params });
+          successNotiSort("Cập nhật trạng thái thành công!");
+          emit("update:bill");
+          // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
+          current.value++;
+        } catch (error) {
+          console.error("Cập nhật trạng thái thất bại:", error);
+          errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
+        }
+      },
+      onCancel: () => {
+        console.log("Thao tác đã bị hủy.");
+      },
+    });
+  }
 };
 
 const confirmDelivery = () => {
@@ -703,7 +875,7 @@ const handleCancelBillPaid = () => {
   });
 };
 
-const rollBack = () => {
+const rollBack = (stepStatus: string) => {
   if (current.value > 0) {
     const prevStep = steps[current.value - 1];
     const stepTitle = prevStep.title;
@@ -733,12 +905,29 @@ const rollBack = () => {
         const params = {
           status: stepTitle,
           trangThai: stepTitle,
-          moTa: description.value, // Gửi mô tả rollback
+          moTa: description.value,
         };
 
         try {
           await changeStatus({ idBill, params });
           successNotiSort(`Trạng thái đã quay lại: ${stepTitle}`);
+          // Hoàn lại số lượng
+          if (
+            props.billData.loaiHD === "Online" &&
+            stepStatus === "Chờ giao hàng"
+          ) {
+            plusQuantityListProduct(
+              { params: listProduct.value },
+              {
+                onSuccess: (result) => {
+                  console.log("Đã hoàn lại số lượng của hóa đơn onl");
+                },
+                onError: (error: any) => {
+                  console.log("Lỗi khi hoàn số lượng");
+                },
+              }
+            );
+          }
 
           // 🔄 Cập nhật lại thời gian của trạng thái rollback
           const stepIndex = steps.findIndex((step) => step.title === stepTitle);
@@ -758,6 +947,67 @@ const rollBack = () => {
       onCancel: () => console.log("Thao tác rollback bị hủy."),
     });
   }
+};
+
+// const listProducts = computed(() => {
+//   return props.dataProduct.map(item => ({
+//     catalog: item.catalog,
+//     tenMauSac: item.tenMau,
+//     kichCo: item.tenKichCo,
+//     tenSanPham: item.tenSanPham,
+//     giaHienTai: item.gia,
+//     SoLuong: item.soLuong
+//   }));
+// });
+// Hàm in hóa đơn
+const createInvoicePdf = async () => {
+  const listProducts = computed(() => {
+    return props.dataProduct.map((item) => ({
+      catalog: item.catalog,
+      tenMauSac: item.tenMau,
+      kichCo: item.tenKichCo,
+      tenSanPham: item.tenSanPham,
+      giaHienTai: item.gia,
+      SoLuong: item.soLuong,
+    }));
+  });
+
+  const pdfParams = {
+    idKhachHang: null,
+
+    idNhanVien: useAuthStore().user?.id || null,
+
+    idHoaDon: billId.value,
+
+    products: listProducts.value,
+
+    tongTien: null,
+
+    phiVanChuyen: null,
+
+    giamGia: null,
+  };
+
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn in hóa đơn?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        await createInvoicePdfWithId(billId.value, pdfParams);
+        console.log(props.dataProduct);
+        
+        console.log(billId.value);
+        console.log(pdfParams);
+      } catch (error: any) {
+        console.error("🚀 ~ handleCreate ~ error:", error);
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
 };
 
 const showDetailModal = () => {

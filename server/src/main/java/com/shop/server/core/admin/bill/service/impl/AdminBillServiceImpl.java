@@ -81,14 +81,14 @@ public class AdminBillServiceImpl implements AdminBillService {
         );
     }
 
-    @Override
-    public ResponseObject<?> getBillRefundByMaHD(String maHoaDon) {
-        return new ResponseObject<>(
-                adminBillRepository.getDetailBillByMaOnRefund(maHoaDon),
-                HttpStatus.OK,
-                Message.Success.GET_SUCCESS
-        );
-    }
+//    @Override
+//    public ResponseObject<?> getBillRefundByMaHD(String maHoaDon) {
+//        return new ResponseObject<>(
+//                adminBillRepository.getDetailBillByMaOnRefund(maHoaDon),
+//                HttpStatus.OK,
+//                Message.Success.GET_SUCCESS
+//        );
+//    }
 
 //    @Override
 //    public ResponseObject<?> createBill(@Valid AdminSaveBillRequest request, BindingResult result) {
@@ -195,7 +195,11 @@ public class AdminBillServiceImpl implements AdminBillService {
         }
         HoaDon hoaDon = adminBillRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
-
+        if (request.getNhanVien() != null) {
+            NhanVien nhanVien = nhanVienRepository.findById(request.getNhanVien())
+                    .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại"));
+            hoaDon.setNhanVien(nhanVien);
+        }
         if (request.getIdKhachHang() != null) {
             KhachHang khachHang = khachHangRepository.findById(request.getIdKhachHang())
                     .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
@@ -211,16 +215,13 @@ public class AdminBillServiceImpl implements AdminBillService {
         if (request.getSoDienThoai() != null) {
             hoaDon.setSoDienThoai(request.getSoDienThoai());
         }
-//        else {
-//            hoaDon.setSoDienThoai(khachHangRepository.findById(request.getIdKhachHang()).get().getPhoneNumber());
-//        }
         hoaDon.setGhiChu(request.getGhiChu());
         hoaDon.setTinh(request.getTinh());
         hoaDon.setHuyen(request.getHuyen());
         hoaDon.setXa(request.getXa());
-//        hoaDon.setTienShip(request.getTienShip());
-//        hoaDon.setTienGiam(request.getTienGiam());
-//        hoaDon.setTongTien(request.getTongTien());
+        hoaDon.setTienGiam(request.getTienGiam());
+        hoaDon.setTienShip(request.getTienShip());
+        hoaDon.setTongTien(request.getTongTien());
         HoaDon hd1 = adminBillRepository.save(hoaDon);
 
 //        LichSuHoaDon ls = new LichSuHoaDon();

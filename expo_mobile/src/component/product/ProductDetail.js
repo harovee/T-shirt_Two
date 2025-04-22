@@ -98,7 +98,7 @@ const ProductDetail = ({ navigation }) => {
         </Text>
 
         {/* Vouchers */}
-        <ScrollView horizontal style={{ marginVertical: 20 }}>
+        {/* <ScrollView horizontal style={{ marginVertical: 20 }}>
           {product.vouchers.map((voucher) => (
             <View key={voucher.id} style={{ marginRight: 15 }}>
               <Text>Giảm {voucher.discount}</Text>
@@ -109,10 +109,10 @@ const ProductDetail = ({ navigation }) => {
               />
             </View>
           ))}
-        </ScrollView>
+        </ScrollView> */}
 
         {/* Thông tin giao hàng */}
-        <View>
+        {/* <View>
           <Text>
             Giao hàng: {product.shipping.type} - {product.shipping.fee}
           </Text>
@@ -120,7 +120,7 @@ const ProductDetail = ({ navigation }) => {
           {product.shipping.preparationTime && (
             <Text>Thời gian chuẩn bị: {product.shipping.preparationTime}</Text>
           )}
-        </View>
+        </View> */}
 
         {/* Mô tả chi tiết sản phẩm */}
         <View style={{ marginTop: 20 }}>
@@ -147,12 +147,12 @@ const ProductDetail = ({ navigation }) => {
           <Text style={styles.buttonText}>+ Thêm vô giỏ</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.button, styles.buyNow]}
           onPress={() => alert("Mua ngay!")}
         >
           <Text style={styles.buttonText}>Mua ngay</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

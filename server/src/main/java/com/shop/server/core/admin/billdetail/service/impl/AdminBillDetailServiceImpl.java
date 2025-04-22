@@ -11,12 +11,15 @@ import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.HoaDon;
 import com.shop.server.entities.main.HoaDonChiTiet;
 import com.shop.server.entities.main.SanPhamChiTiet;
+import com.shop.server.entities.main.SanPhamGiamGia;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.repositories.HoaDonRepository;
 import com.shop.server.repositories.SanPhamChiTietRepository;
+import com.shop.server.repositories.SanPhamGiamGiaRepository;
 import com.shop.server.utils.Helper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,11 +32,13 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
     private final AdminBillDetailRepository adminBillDetailRepository;
     private final HoaDonRepository hoaDonRepository;
     private final SanPhamChiTietRepository sanPhamChiTietRepository;
+    private final SanPhamGiamGiaRepository sanPhamGiamGiaRepository;
 
-    public AdminBillDetailServiceImpl(AdminBillDetailRepository adminBillDetailRepository, HoaDonRepository hoaDonRepository, SanPhamChiTietRepository sanPhamChiTietRepository, AdminBillRepository adminBillRepository) {
+    public AdminBillDetailServiceImpl(AdminBillDetailRepository adminBillDetailRepository, HoaDonRepository hoaDonRepository, SanPhamChiTietRepository sanPhamChiTietRepository, AdminBillRepository adminBillRepository, SanPhamGiamGiaRepository sanPhamGiamGiaRepository) {
         this.adminBillDetailRepository = adminBillDetailRepository;
         this.hoaDonRepository = hoaDonRepository;
         this.sanPhamChiTietRepository = sanPhamChiTietRepository;
+        this.sanPhamGiamGiaRepository = sanPhamGiamGiaRepository;
     }
 
     @Override
@@ -69,7 +74,6 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
     public ResponseObject<?> createBillDetail(AdminCreateBillDetailRequest request) {
         Optional<HoaDon> billOpt = hoaDonRepository.findById(request.getIdHoaDon());
         Optional<SanPhamChiTiet> prodOpt = sanPhamChiTietRepository.findById(request.getIdSanPhamChiTiet());
-
         if (!billOpt.isPresent() || !prodOpt.isPresent()) {
             return ResponseObject.errorForward(
                     HttpStatus.BAD_REQUEST,
@@ -80,13 +84,24 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
         HoaDon hoaDon = billOpt.get();
         SanPhamChiTiet sanPhamChiTiet = prodOpt.get();
 
+        List<SanPhamGiamGia> saleProds = sanPhamGiamGiaRepository.findBySanPhamChiTiet(sanPhamChiTiet);
+        BigDecimal productPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
+
+        if (!saleProds.isEmpty()) {
+            SanPhamGiamGia saleProd = saleProds.get(0);
+            if (saleProd.getGiaSauGiam() != null) {
+                productPrice = saleProd.getGiaSauGiam();
+            }
+        }
+
         Optional<HoaDonChiTiet> existingBillDetailOpt = adminBillDetailRepository.findByHoaDonAndSanPhamChiTiet(hoaDon, sanPhamChiTiet);
 
         HoaDonChiTiet billDetail;
 
         if (existingBillDetailOpt.isPresent()) {
             billDetail = existingBillDetailOpt.get();
-            billDetail.setGia(sanPhamChiTiet.getGia());
+            billDetail.setGia(productPrice);
+
             // ✅ Luôn đảm bảo giá trị không bị null
             BigDecimal currentPrice = billDetail.getGia() != null ? billDetail.getGia() : BigDecimal.ZERO;
 
@@ -98,20 +113,24 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
             BigDecimal newTotalAmount = currentPrice.multiply(new BigDecimal(newQuantity));
             billDetail.setThanhTien(newTotalAmount);
             request.setIdHoaDonChiTiet(billDetail.getId());
-            adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            if (!request.getIsClient()) {
+                adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            }
         } else {
             billDetail = new HoaDonChiTiet();
             billDetail.setHoaDon(hoaDon);
             billDetail.setSanPhamChiTiet(sanPhamChiTiet);
-            billDetail.setGia(sanPhamChiTiet.getGia());
+            billDetail.setGia(productPrice);
             billDetail.setSoLuong(request.getSoLuong());
             // ✅ Kiểm tra giá trước khi nhân
-            BigDecimal currentPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
+            BigDecimal currentPrice = productPrice != null ? productPrice : BigDecimal.ZERO;
             BigDecimal totalAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
 
             billDetail.setGia(currentPrice); // Gán giá trị để tránh `null`
             billDetail.setThanhTien(totalAmount);
-            adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            if (!request.getIsClient()) {
+                adminBillDetailRepository.decreaseStockInAdd(sanPhamChiTiet.getId(), request.getSoLuong());
+            }
         }
         adminBillDetailRepository.save(billDetail);
 
@@ -138,23 +157,37 @@ public class AdminBillDetailServiceImpl implements AdminBillDetailService {
 
         HoaDonChiTiet billDetail = billDetailOpt.get();
         HoaDon hoaDon = billDetail.getHoaDon();
+        SanPhamChiTiet sanPhamChiTiet = billDetail.getSanPhamChiTiet();
 
+        // Kiểm tra và lấy giá khuyến mãi nếu có
+        List<SanPhamGiamGia> saleProds = sanPhamGiamGiaRepository.findBySanPhamChiTiet(sanPhamChiTiet);
+        BigDecimal productPrice = sanPhamChiTiet.getGia() != null ? sanPhamChiTiet.getGia() : BigDecimal.ZERO;
+
+        if (!saleProds.isEmpty()) {
+            SanPhamGiamGia saleProd = saleProds.get(0);
+            if (saleProd.getGiaSauGiam() != null) {
+                productPrice = saleProd.getGiaSauGiam();
+            }
+        }
+
+        if (hoaDon.getLoaiHD().equals("Tại quầy")) {
+            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
+        }
         if (request.getSoLuong() <= 0) {
             // Xóa chi tiết hóa đơn nếu số lượng <= 0
+//            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
             adminBillDetailRepository.delete(billDetail);
         } else {
             // Cập nhật chi tiết hóa đơn
-            adminBillDetailRepository.updateQuantityProductDetailInBill(request);
-            BigDecimal currentPrice = billDetail.getGia();
-            BigDecimal newAmount = currentPrice.multiply(new BigDecimal(request.getSoLuong()));
-
+//            if (hoaDon.getLoaiHD().equals("Tại quầy")) {
+//                adminBillDetailRepository.updateQuantityProductDetailInBill(request);
+//            }
+            billDetail.setGia(productPrice);
+            BigDecimal newAmount = productPrice.multiply(new BigDecimal(request.getSoLuong()));
             billDetail.setSoLuong(request.getSoLuong());
             billDetail.setThanhTien(newAmount);
             adminBillDetailRepository.save(billDetail);
         }
-
-        // Cập nhật tổng tiền hóa đơn
-//        updateBillTotalAmount(hoaDon);
 
         return ResponseObject.successForward(
                 HttpStatus.OK,

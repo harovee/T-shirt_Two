@@ -1,15 +1,25 @@
 import * as React from 'react';
+import { useState, useContext } from 'react';
 import {NavigationContainer} from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, Text, View, Button, TextInput, Pressable, ScrollView, FlatList, SafeAreaView } from 'react-native';
 import {  MaterialIcons } from '@expo/vector-icons';
 
 
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { InvoiceContext } from '../core/invoice.connect/InvoiceContext';
+
 import Slide from '../component/home/Slide';
 import Widget from '../component/home/Widget';
 import BestSellerListInHome from '../component/home/BestSellerListInHome';
+import ProductList from './home/ProductList';
 
 export default Home = ({navigation}) => {
+  const insets = useSafeAreaInsets();
+    const {
+      isConnected,
+    } = useContext(InvoiceContext);
+
   const list_screens = [
     {
       key: '1',
@@ -25,8 +35,14 @@ export default Home = ({navigation}) => {
     },
     {
       key: '3',
-      name: 'best-sller',
+      name: 'best-seller',
       value: BestSellerListInHome,
+      style: {}
+    },
+    {
+      key: '4',
+      name: 'product-list',
+      value: ProductList,
       style: {}
     },
 
@@ -63,23 +79,38 @@ export default Home = ({navigation}) => {
                 >
                   <MaterialIcons name="shopping-cart" size={24} style={styles.header_button}/>
                 </Pressable>
+
+                <Pressable
+                onPress={() => navigation.navigate('InvoiceConnect')}
+                style={({ pressed }) => [
+                  styles.ms,
+                  pressed && styles.pressedButton,
+                  { backgroundColor: isConnected ? 'red':'white'}
+                ]}
+                >
+                  <MaterialIcons name="link" size={26} style={styles.header_button}/>
+                </Pressable>
                 
             </View>
       </View>
 
       <View style={styles.bg}>
-        <ScrollView>
-          {list_screens.map((item) => {
-            const ScreenComponent = item.value; // Lấy component từ item.value
-            return (
-              <SafeAreaView key={item.key} style={[item.style, styles.bg]}>
-                <ScreenComponent navigation={navigation} />
-              </SafeAreaView>
-            );
-          })}
-        </ScrollView>
+        <FlatList
+            data={list_screens}
+            keyExtractor={(item) => item.key}
+                contentContainerStyle={{
+                  paddingBottom: insets.bottom + 150, 
+                }}
+            renderItem={({ item }) => {
+              const ScreenComponent = item.value;
+              return (
+                <SafeAreaView style={[item.style, styles.bg]}>
+                  <ScreenComponent navigation={navigation} />
+                </SafeAreaView>
+              );
+            }}
+        />
 
-        <Text>SBDjbSH</Text>
       </View>
       
     </View>
@@ -135,5 +166,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  widget_container: {
+    elevation: 3,
+    width: 'fit-content'
+
+  }
 
 });

@@ -41,7 +41,7 @@ import {
 } from "vue";
 import ProductDetailTableToOrder from "@/page/admin/bill/billdetail/ProductDetailTableToOrder.vue";
 import FilterProductToOrder from "@/page/admin/bill/billdetail/FilterProductToOrder.vue";
-import { useGetAllProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
+import { useGetAllProductDetail , useGetAllProductDetailOverZero } from "@/infrastructure/services/service/admin/productdetail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { FindProductDetailRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useCreateBillDetail } from "@/infrastructure/services/service/admin/bill-detail.action";
@@ -55,6 +55,9 @@ import { useGetListSize } from "@/infrastructure/services/service/admin/size.act
 import { useGetListSleeve } from "@/infrastructure/services/service/admin/sleeve.action";
 import { useGetListStyle } from "@/infrastructure/services/service/admin/style.action";
 import { useGetListTrademark } from "@/infrastructure/services/service/admin/trademark.action";
+import { createUpdateBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
+import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 // Định nghĩa Props
 const props = defineProps({
@@ -71,10 +74,13 @@ const emit = defineEmits(["handleClose"]);
 
 const { mutate: createBillDetail } = useCreateBillDetail();
 
+const { mutate: createBillHistory } = useCreateBillHistory();
+
 const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
   idSanPhamChiTiet: null,
   soLuong: null,
+  isClient: null
 });
 
 // Trong component Modal
@@ -152,15 +158,24 @@ const handleAddProducts = () => {
       idHoaDon: modelRef.idHoaDon,
       idSanPhamChiTiet: product.id,
       soLuong: 1,
+      isClient: true
     };
+    const billHistoryParams = {
+          idHoaDon: modelRef.idHoaDon,
+          hanhDong: `Thêm sản phẩm`,
+          moTa: `Khách hàng đã thêm sản phẩm vào đơn`,
+          trangThai: "Chờ xác nhận",
+          nguoiTao: useAuthStore().user?.id || null
+        }
     createBillDetail(requestData, {
       onSuccess: () => {
-        // console.log(`✅ Thêm sản phẩm ${product.maSanPhamChiTiet} thành công`);
       },
       onError: (error) => {
         console.error("❌ Lỗi khi thêm sản phẩm:", error);
-      },
+      }
     });
+    // Thêm lịch sử hóa đơn (Khi khách thêm sản phẩm vào đơn)
+    createBillHistory(billHistoryParams);
   });
 
   handleClose();
@@ -177,7 +192,7 @@ const {
   isLoading,
   isFetching,
   refetch
-} = useGetAllProductDetail(paramsAll, {
+} = useGetAllProductDetailOverZero(paramsAll, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });

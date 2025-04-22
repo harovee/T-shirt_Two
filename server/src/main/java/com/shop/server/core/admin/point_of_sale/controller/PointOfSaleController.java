@@ -111,6 +111,24 @@ public class PointOfSaleController {
         }
     }
 
+    @PostMapping("/pdf/{id}")
+    public ResponseEntity<String> saveInvoiceId(@PathVariable("id") String id, @RequestBody AdPOSInvoicePdfRequest request) {
+        try {
+            byte[] pdfBytes = invoicePdfService.generateInvoicePdfWithId(id, request);
+
+            String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(id);
+            String filePath = PdfStorageService.savePdfToServer(pdfBytes, maHoaDon + ".pdf");
+
+            if (filePath != null) {
+                return ResponseEntity.ok("File PDF đã lưu tại: " + filePath);
+            } else {
+                return ResponseEntity.status(500).body("Lỗi khi lưu file PDF.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi tạo PDF: " + e.getMessage());
+        }
+    }
+
     private byte[] generateInvoicePdf(AdPOSInvoicePdfRequest request) {
         try {
             return new byte[0];

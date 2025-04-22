@@ -2,7 +2,7 @@
   <div class="p-4 rounded-xl border-2 shadow-purple-950">
     <div class="flex justify-between items-center">
       <div>
-        <h3 class="text-xl font-semibold text-gray-800">Danh sách phiếu giảm giá</h3>
+        <h3 class="text-xl font-semibold text-gray-800">Danh sách phiếu giảm giá </h3>
         <p class="text-sm text-gray-500">
           Hiển thị danh sách phiếu giảm giá T-Shirts Two
         </p>

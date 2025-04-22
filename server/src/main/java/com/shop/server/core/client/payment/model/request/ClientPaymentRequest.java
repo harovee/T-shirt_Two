@@ -42,4 +42,5 @@ import java.util.List;
 
         List<ClientInvoiceDetailRequest> listSanPhamChiTiets;
 
+        String maGiaoDich;
     }

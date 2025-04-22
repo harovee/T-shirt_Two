@@ -9,11 +9,11 @@ const widgetData = [
   { id: '3', name: 'Ưu đãi', icon: 'star' },
   { id: '4', name: 'SP mới', icon: 'new-releases' },
   { id: '5', name: 'Bán chạy', icon: 'whatshot' },
-  { id: '6', name: 'Hot deal', icon: 'local-fire-department' },
-  { id: '7', name: 'Khuyến mãi', icon: 'card-giftcard' },
-  { id: '8', name: 'Giảm giá', icon: 'trending-down' },
-  { id: '9', name: 'Combo', icon: 'widgets' },
-  { id: '10', name: 'Độc quyền', icon: 'verified' },
+  // { id: '6', name: 'Hot deal', icon: 'local-fire-department' },
+  // { id: '7', name: 'Khuyến mãi', icon: 'card-giftcard' },
+  // { id: '8', name: 'Giảm giá', icon: 'trending-down' },
+  // { id: '9', name: 'Combo', icon: 'widgets' },
+  // { id: '10', name: 'Độc quyền', icon: 'verified' },
 ];
 
 const Widget = () => {
@@ -30,20 +30,27 @@ const Widget = () => {
   );
 
   return (
-    <FlatList
-    data={widgetData}
-    renderItem={renderItem}
-    keyExtractor={(item) => item.id}
-    numColumns={5} // Mỗi hàng 5 nút
-    contentContainerStyle={styles.container}
-    scrollEnabled={false} // Không cuộn được
-  />
+    <View style={styles.container}>
+        <View>
+            <FlatList
+            data={widgetData}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            numColumns={5} // Mỗi hàng 5 nút
+            contentContainerStyle={styles.container}
+            scrollEnabled={false} // Không cuộn được
+          />
+        </View>
+    </View>
+    
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
+    display: 'flex',
+    justifyContent: 'center',
     alignItems: 'center',
     // paddingVertical: 10,
   },

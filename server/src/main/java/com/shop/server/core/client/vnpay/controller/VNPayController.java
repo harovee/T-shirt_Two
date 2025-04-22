@@ -47,7 +47,7 @@ public class VNPayController {
 
                 // Trả về thông báo thất bại với mã lỗi cụ thể
                 String errorMessage = "Thanh toán thất bại: " + clientPaymentService.getVnPayErrorMessage(vnpResponseCode);
-                return ResponseEntity.ok(new ResponseObject<>(null, HttpStatus.OK, errorMessage));
+                return ResponseEntity.ok(new ResponseObject<>(null, HttpStatus.BAD_REQUEST, errorMessage));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

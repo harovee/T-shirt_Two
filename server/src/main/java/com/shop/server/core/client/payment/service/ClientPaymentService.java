@@ -13,4 +13,6 @@ public interface ClientPaymentService {
     ResponseObject<?> createInvoiceWithVnPay (ClientPaymentRequest request, HttpServletRequest httpRequest);
 
      ResponseObject<?> createInvoiceWithMomo(ClientPaymentRequest request);
+
+    ResponseObject<?> createInvoiceWithVietQr(ClientPaymentRequest request);
 }

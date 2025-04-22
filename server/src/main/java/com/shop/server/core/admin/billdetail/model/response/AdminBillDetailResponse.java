@@ -17,7 +17,7 @@ public interface AdminBillDetailResponse extends BaseResponse {
 
     String getTenSanPham();
 
-    String getAnhSanPhamChiTiet();
+    String getImgUrl();
 
     String getTenKichCo();
 
