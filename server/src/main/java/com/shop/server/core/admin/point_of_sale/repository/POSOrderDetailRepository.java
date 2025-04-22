@@ -138,7 +138,7 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
     @Query(value = """
             INSERT INTO hoa_don_chi_tiet
             (id, ngay_tao, deleted, ngay_sua, nguoi_sua, nguoi_tao,
-             gia, so_luong, thanh_tien,
+             gia,gia_goc, so_luong, thanh_tien,
              trang_thai, id_hoa_don, id_san_pham_chi_tiet)
             SELECT
                 UUID(),
@@ -148,6 +148,7 @@ public interface POSOrderDetailRepository extends HoaDonChiTietRepository {
                 :#{#req.userEmail},
                 :#{#req.userEmail},
                 IFNULL(tinh_gia_hien_tai(spct.id), spct.gia),
+                spct.gia,
                 1,
                 IFNULL(tinh_gia_hien_tai(spct.id), spct.gia),
                 'PENDING',

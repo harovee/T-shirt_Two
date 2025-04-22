@@ -95,6 +95,14 @@
         >
           Chi tiết
         </a-button>
+        <a-button
+          v-if="statusIndexStart === 'Thành công'"
+          class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
+          style="margin-right: 15px"
+          @click="createInvoicePdf"
+        >
+          Xuất hóa đơn
+        </a-button>
       </div>
     </div>
 
@@ -132,7 +140,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, h, onMounted, computed, nextTick } from "vue";
+import { ref, watch, h, onMounted, computed, nextTick, createVNode } from "vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   CarOutlined,
@@ -161,6 +169,8 @@ import {
 } from "@/infrastructure/services/service/admin/productdetail.action";
 import { sum } from "lodash";
 import { PropType } from "vue";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { createInvoicePdfWithId } from "@/infrastructure/services/api/admin/payment.api";
 
 interface DataSource {
   data: {
@@ -200,6 +210,7 @@ watch(
       id: item.idSanPhamChiTiet,
       quantity: item.soLuong,
     }));
+    console.log(props.dataProduct);
   }
 );
 
@@ -936,6 +947,67 @@ const rollBack = (stepStatus: string) => {
       onCancel: () => console.log("Thao tác rollback bị hủy."),
     });
   }
+};
+
+// const listProducts = computed(() => {
+//   return props.dataProduct.map(item => ({
+//     catalog: item.catalog,
+//     tenMauSac: item.tenMau,
+//     kichCo: item.tenKichCo,
+//     tenSanPham: item.tenSanPham,
+//     giaHienTai: item.gia,
+//     SoLuong: item.soLuong
+//   }));
+// });
+// Hàm in hóa đơn
+const createInvoicePdf = async () => {
+  const listProducts = computed(() => {
+    return props.dataProduct.map((item) => ({
+      catalog: item.catalog,
+      tenMauSac: item.tenMau,
+      kichCo: item.tenKichCo,
+      tenSanPham: item.tenSanPham,
+      giaHienTai: item.gia,
+      SoLuong: item.soLuong,
+    }));
+  });
+
+  const pdfParams = {
+    idKhachHang: null,
+
+    idNhanVien: useAuthStore().user?.id || null,
+
+    idHoaDon: billId.value,
+
+    products: listProducts.value,
+
+    tongTien: null,
+
+    phiVanChuyen: null,
+
+    giamGia: null,
+  };
+
+  Modal.confirm({
+    content: "Bạn chắc chắn muốn in hóa đơn?",
+    icon: createVNode(ExclamationCircleOutlined),
+    centered: true,
+    async onOk() {
+      try {
+        await createInvoicePdfWithId(billId.value, pdfParams);
+        console.log(props.dataProduct);
+        
+        console.log(billId.value);
+        console.log(pdfParams);
+      } catch (error: any) {
+        console.error("🚀 ~ handleCreate ~ error:", error);
+      }
+    },
+    cancelText: "Huỷ",
+    onCancel() {
+      Modal.destroyAll();
+    },
+  });
 };
 
 const showDetailModal = () => {

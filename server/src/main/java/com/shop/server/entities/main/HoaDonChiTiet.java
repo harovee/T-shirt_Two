@@ -36,10 +36,12 @@ public class HoaDonChiTiet extends PrimaryEntity implements Serializable {
     @Column(name = "gia")
     private BigDecimal gia;
 
+    @Column(name = "gia_goc")
+    private BigDecimal giaGoc;
+
     @Column(name = "thanh_tien")
     private BigDecimal thanhTien;
 
     @Column(name = "trang_thai")
     private String trangThai;
-
 }

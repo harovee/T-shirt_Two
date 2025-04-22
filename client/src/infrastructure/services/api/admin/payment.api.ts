@@ -186,6 +186,17 @@ export const createInvoicePdf = async (data: invoicePdfRequest) => {
     return res.data;
 };
 
+export const createInvoicePdfWithId = async (id: string, data: invoicePdfRequest) => {
+    const res = (await request({
+        url: `${API_ADMIN_POINT_OF_SALE}/pdf/${id}`,
+        method: "POST",
+        data: data
+    })) as AxiosResponse<
+        DefaultResponse<DefaultResponse<null>>
+    >;
+    return res.data;
+};
+
 export const getListVoucher = async (params: Ref<FindVoucherRequest>) => {
     const res = (await request({
         url: `${API_ADMIN_PAYMENT}/voucher`,

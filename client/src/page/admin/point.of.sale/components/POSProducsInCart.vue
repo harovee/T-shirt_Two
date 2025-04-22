@@ -46,6 +46,7 @@
                   {{ formatCurrency(record.gia, "VND", "vi-VN") }}</a-tag
                 ></a-space
               >
+              <a-space class="text-red-500" v-if="record.gia !== record.giaGoc">Đã có sự thay đổi giá từ {{ formatCurrency(record.giaGoc, "VND", "vi-VN") }} -> {{ formatCurrency(record.gia, "VND", "vi-VN") }}</a-space>
             </a-space>
           </div>
           <div v-if="column.dataIndex === 'chiTiet'" class="text-left">
@@ -230,6 +231,7 @@ const dataSource: DataType[] | any = computed(() => {
       ten: e.ten || "",
       soLuong: e.soLuong || "",
       gia: e.gia || 0,
+      giaGoc: e.giaGoc || 0,
       giaHienTai: e.giaHienTai || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
@@ -246,6 +248,12 @@ const dataSource: DataType[] | any = computed(() => {
     })) || []
   );
 });
+
+watch (() => dataSource.value, (newData) => {
+  if (newData) {
+    console.log(newData);
+  }
+})
 
 const { mutate: updateQuantityOrderDetails } = useUpdateQuantityOrderDetails();
 const { mutate: deleteOrderDetails } = useDeleteCartById();
@@ -272,6 +280,12 @@ const { data: checkQuantityData, refetch: checkQuantityRefetch } =
 const handleQuantityChange = async (record: any) => {
   params.value.id = record.key;
   params.value.quantity = record.soLuong;
+
+  if (record.soLuong > preQuantity.value && record.giaGoc !== record.gia) {
+    warningNotiSort("Sản phẩm này đã thay đổi giá, không thể thêm số lượng!");
+    reloadData();
+    return;
+  }
 
   const payload = {
     idHoaDonChiTiet: record.key,
