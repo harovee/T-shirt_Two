@@ -32,9 +32,15 @@
 
           <div class="flex items-center gap-4 justify-end">
             <!-- chuông thông báo -->
-            <a-dropdown placement="bottomRight" arrow :overlay-style="{ marginTop: '100px' }">
+            <a-dropdown
+              placement="bottomRight"
+              arrow
+              :overlay-style="{ marginTop: '100px' }"
+            >
               <template #overlay>
-                <notification-list :messages="messages"/>
+                <div class="custom-dropdown-notification">
+                  <notification-list :messages="messages" />
+                </div>
               </template>
               <BellOutlined class="text-xl cursor-pointer" />
             </a-dropdown>
@@ -326,5 +332,40 @@ const handleClick: MenuProps["onClick"] = (e) => {
 
 import { useNotificationSocket } from "@/websocket/config/useNotificationSocket";
 const { messages } = useNotificationSocket();
-
+console.log(messages);
 </script>
+
+<style scoped>
+.custom-dropdown-notification {
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+}
+
+/* Trong component notification-list.vue */
+.notification-item {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.notification-item:hover {
+  background-color: #f5f5f5;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.notification-content {
+  font-size: 13px;
+  color: #666;
+}
+</style>

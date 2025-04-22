@@ -124,6 +124,7 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         orderNotification.setContent("Hóa đơn " + hoaDon.getMa() + " cần xác nhận");
         OrderNotification noti  = notificationRepository.save(orderNotification);
         messagingTemplate.convertAndSend("/topic/notification", orderNotification.getContent());
+//        messagingTemplate.convertAndSend("/topic/notification", orderNotification.getContent());
 
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);
