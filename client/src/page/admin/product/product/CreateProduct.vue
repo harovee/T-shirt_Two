@@ -246,7 +246,7 @@
                   @change="generateProductDetails">
                 <a-radio value="Nam">Nam</a-radio>
                 <a-radio value="Nữ">Nữ</a-radio>
-                <a-radio value="Nam và nữ">Cả nam và nữ</a-radio>
+                <a-radio value="Nam và Nữ">Cả nam và nữ</a-radio>
               </a-radio-group>
             <a-select
               v-if="field.name === 'idTinhNang'"
@@ -335,6 +335,7 @@ import {
   provide,
   h,
   nextTick,
+  onMounted,
 } from "vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
@@ -409,7 +410,7 @@ const modelRef = reactive<ProductDetailRequest>({
   idTinhNang: null,
   idSanPham: null,
   listAnh: [] || null,
-  gioiTinh: "Nam"
+  gioiTinh: "Nam và Nữ"
 });
 
 const colorItem = ref([]);
@@ -1159,10 +1160,14 @@ const generateProductDetails = () => {
     });
   });
  
-  
   productDetails.value = generatedDetails;
-  console.log(generatedDetails);
+  console.log(productDetails.value);
+  
 };
+
+onMounted(() => {
+  generateProductDetails();
+});
 
 // Xóa phần tử trong dataProductDetail để cập nhật lại bảng khi xóa 1 biến thể
 
@@ -1195,7 +1200,11 @@ const handleUpdateQuantity = (dataSource) => {
     }
   });
 };
-
+watch([colorItem, sizeItem], () => {
+  if (colorItem.value.length > 0 && sizeItem.value.length > 0) {
+    generateProductDetails();
+  }
+}, { deep: true });
 // watch (() => productDetails.value, (newValue) => console.log(newValue)
 // )
 

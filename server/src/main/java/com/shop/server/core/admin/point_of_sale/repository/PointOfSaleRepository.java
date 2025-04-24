@@ -32,7 +32,7 @@ public interface PointOfSaleRepository extends SanPhamChiTietRepository {
                     ms.ma_mau_sac,
                     ms.ten as ten_mau_sac,
                     CONCAT(ca.ten, ', ', ta.ten, ', ', ht.ten, ', ', cl.ten, ', ', kd.ten, ', ', tn.ten) as phong_cach,
-                    coalesce(anh.url, 'default-product-detail-image-url.jpg') as link_anh
+                    coalesce((SELECT url FROM anh WHERE id_san_pham_chi_tiet = spct.id AND is_top = true LIMIT 1), 'default-product-detail-image-url.jpg') as link_anh
                 from san_pham_chi_tiet spct
                 join san_pham sp on spct.id_san_pham = sp.id
                 join danh_muc dm on dm.id = sp.id_danh_muc

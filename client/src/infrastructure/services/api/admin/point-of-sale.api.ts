@@ -6,7 +6,7 @@ import request from "@/infrastructure/services/request.ts";
 
 export interface PropertyPOSProductDetailParams {
     keyword?: string | null;
-    gioiTinh?: boolean | null;
+    gioiTinh?: string | null;
     idThuongHieu?: string | null;
     idKichCo?: string | null;
     idCoAo?: string | null;
@@ -30,7 +30,7 @@ export type POSProductDetailResponse = ResponseList & {
     giaHienTai: number | null;
     tenSanPham: string | null;
     tenThuongHieu: string | null;
-    gioiTinh: boolean | null;
+    gioiTinh: string | null;
     kichCo: string | null;
     phongCach: string | null;
     maMauSac: string | null;

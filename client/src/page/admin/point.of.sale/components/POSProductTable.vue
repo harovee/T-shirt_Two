@@ -59,8 +59,9 @@
           size="small"
         >
           <a-select-option key="-1" :value="null">Tất cả</a-select-option>
-          <a-select-option key="0" :value="true">Nam</a-select-option>
-          <a-select-option key="1" :value="false">Nữ</a-select-option>
+          <a-select-option key="Nam" :value="'Nam'">Nam</a-select-option>
+          <a-select-option key="Nữ" :value="'Nữ'">Nữ</a-select-option>
+          <a-select-option key="Nam và Nữ" :value="'Nam và Nữ'">Nam và Nữ</a-select-option>
         </a-select>
       </a-space>
 
@@ -353,11 +354,7 @@ const dataSource: DataType[] | any = computed(() => {
       giaHienTai: e.giaHienTai || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
-      gioiTinh: e.gioiTinh
-        ? "Nam"
-        : e.gioiTinh == false
-        ? "Nữ"
-        : "Không xác định",
+      gioiTinh: e.gioiTinh,
       kichCo: e.kichCo || "",
       phongCach: e.phongCach || "",
       maMauSac: e.maMauSac || "",
@@ -407,6 +404,8 @@ const rowSelection = computed<TableProps["rowSelection"]>(() => ({
 
 watch(() => dataSource.value, () => {
   selectedRowKeys.value = [];
+  console.log(dataSource.value)   
+  
 })
 
 </script>
