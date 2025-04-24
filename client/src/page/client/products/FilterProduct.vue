@@ -143,7 +143,7 @@ const selectedFiltersState = reactive({
   tenThuongHieu: ""
 });
 
-const maxPrice = 2000000;
+const maxPrice = 20000000;
 const priceRange = ref([0, maxPrice]);
 
 const params = ref<FindProductClientRequest>({

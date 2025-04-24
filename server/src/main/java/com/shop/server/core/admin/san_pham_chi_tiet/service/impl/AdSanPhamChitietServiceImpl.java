@@ -191,15 +191,6 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
         spct.setDeleted(false);
         SanPhamChiTiet addedSPCT = adSanPhamChiTietRepository.save(spct);
         if (request.getListAnh().size() > 0 || request.getListAnh() != null) {
-//            for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
-//                Anh anh = new Anh();
-//                anh.setSanPhamChiTiet(addedSPCT);
-//                anh.setUrl(anhRequest.getUrl());
-//                anh.setTen(anhRequest.getName());
-//
-//                anh.setDeleted(false);
-//                adAnhRepository.save(anh);
-//            }
             for (int i = 0; i < request.getListAnh().size(); i++) {
                 AdCreateUpdateAnhRequest anhRequest = request.getListAnh().get(i);
 
