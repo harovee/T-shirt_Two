@@ -115,7 +115,7 @@ import {
 import { Form, message, Modal, Upload } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { toast } from "vue3-toastify";
-import { warningNotiSort, successNotiSort, errorNotiSort } from "@/utils/notification.config";
+import { warningNotiSort, successNotiSort, errorNotiSort, openNotification, notificationType } from "@/utils/notification.config";
 import { useUpdateProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
 import { ProductDetailUpdateRequest, anh } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useGetListCategory } from "@/infrastructure/services/service/admin/category.action";
@@ -450,10 +450,16 @@ const handleUpdateProductDetail = () => {
         updateProductDetail({
           id: props.ProductDetail.id,
           params: payload,
-        });
-        successNotiSort("Cập nhật sản phẩm chi tiết thành công");
-        emit("refreshData");
-        handleClose();
+        },{
+          onSuccess: (result) => {
+            openNotification(notificationType.success, "Cập nhật sản phẩm thành công", '');
+            emit("refreshData");
+            handleClose()
+          },
+          onError: (error: any) => {
+            openNotification(notificationType.error, error?.response?.data?.message, '');
+          },
+        });   
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {

@@ -1,9 +1,11 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.repository;
 
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietInOrderResponse;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
+import com.shop.server.entities.main.SanPhamChiTiet;
 import com.shop.server.entities.main.SanPhamGiamGia;
 import com.shop.server.repositories.SanPhamChiTietRepository;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
@@ -390,6 +393,60 @@ public interface AdSanPhamChiTietRepository extends SanPhamChiTietRepository {
 
 
     Boolean existsSanPhamChiTietByMaSPCT(String maSPCT);
+
+    @Query(value = """
+                SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+                FROM san_pham_chi_tiet spct
+                WHERE spct.id_san_pham = :idSanPham
+                      AND spct.id_kich_co = :idKichCo\s
+                      AND spct.id_mau_sac = :idMauSac
+                      AND spct.id_chat_lieu = :idChatLieu
+                      AND spct.id_co_ao = :idCoAo
+                      AND spct.id_tay_ao = :idTayAo
+                      AND spct.id_hoa_tiet = :idHoaTiet
+                      AND spct.id_kieu_dang = :idKieuDang
+                      AND spct.id_tinh_nang = :idTinhNang
+                      AND spct.id_thuong_hieu = :idThuongHieu
+                      AND spct.gioi_tinh = :gioiTinh
+                      AND spct.deleted = 0
+        """, nativeQuery = true)
+    Integer existsSanPhamChiTiet(String idSanPham, String idKichCo, String idMauSac, String idChatLieu, String idCoAo,
+                                 String idTayAo, String idHoaTiet, String idKieuDang, String idTinhNang, String idThuongHieu, String gioiTinh);
+
+    @Query(value = """
+            SELECT * FROM san_pham_chi_tiet spct
+            WHERE spct.id_san_pham = :#{#request.idSanPham}
+              AND spct.id_kich_co = :#{#request.idKichCo} 
+              AND spct.id_mau_sac = :#{#request.idMauSac}
+              AND spct.id_chat_lieu = :#{#request.idChatLieu}
+              AND spct.id_co_ao = :#{#request.idCoAo}
+              AND spct.id_tay_ao = :#{#request.idTayAo}
+              AND spct.id_hoa_tiet = :#{#request.idHoaTiet}
+              AND spct.id_kieu_dang = :#{#request.idKieuDang}
+              AND spct.id_tinh_nang = :#{#request.idTinhNang}
+              AND spct.id_thuong_hieu = :#{#request.idThuongHieu}
+              AND spct.gioi_tinh = :#{#request.gioiTinh}
+              AND spct.deleted = 0
+            LIMIT 1
+""", nativeQuery = true)
+    SanPhamChiTiet findExistingSanPhamChiTiet(AdCreateUpdateSpctRequest request);
+
+    @Query(value = """
+        SELECT * FROM san_pham_chi_tiet spct
+         WHERE spct.id_san_pham = :#{#request.idSanPham}
+              AND spct.id_kich_co = :#{#request.idKichCo} 
+              AND spct.id_mau_sac = :#{#request.idMauSac}
+              AND spct.id_chat_lieu = :#{#request.idChatLieu}
+              AND spct.id_co_ao = :#{#request.idCoAo}
+              AND spct.id_tay_ao = :#{#request.idTayAo}
+              AND spct.id_hoa_tiet = :#{#request.idHoaTiet}
+              AND spct.id_kieu_dang = :#{#request.idKieuDang}
+              AND spct.id_tinh_nang = :#{#request.idTinhNang}
+              AND spct.id_thuong_hieu = :#{#request.idThuongHieu}
+              AND spct.gioi_tinh = :#{#request.gioiTinh}
+              AND spct.id != :excludeId
+        """, nativeQuery = true)
+    Optional<SanPhamChiTiet> findExistingSanPhamChiTietExcluding(AdCreateUpdateSpctRequest request, String excludeId);
 
     @Query(value = """
                         SELECT

@@ -20,7 +20,7 @@ public interface AdPOSOrderDetailResponse extends BaseResponse {
 
     String getTenThuongHieu();
 
-    Boolean getGioiTinh();
+    String getGioiTinh();
 
     String getKichCo();
 

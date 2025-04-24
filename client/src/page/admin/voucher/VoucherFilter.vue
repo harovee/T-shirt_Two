@@ -122,7 +122,7 @@ const trangThaiOptions = [
   {label: "Tất cả", value: null},
   {label: "Đang áp dụng", value: "IN_PROGRESS"},
   {label: "Sắp diễn ra", value: "NOT_STARTED"},
-  {label: "Hết hạn", value: "EXPIRED"}
+  {label: "Hết hạn", value: "EXPRIXED"}
 ];
 
 const debouncedEmit = debounce(() => {

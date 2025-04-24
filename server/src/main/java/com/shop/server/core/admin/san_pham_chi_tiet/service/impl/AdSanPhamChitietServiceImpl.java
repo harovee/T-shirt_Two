@@ -119,6 +119,7 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
                         "Id: " + id + " không tồn tại"));
     }
 
+    @Transactional
     @Override
     public ResponseObject<?> createSanPhamChiTiet(AdCreateUpdateSpctRequest request) {
         if (request.getGia() == null || request.getGia().compareTo(BigDecimal.ZERO) < 0) {
@@ -128,7 +129,43 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
             System.out.println("Số lượng phải lớn hơn 0.");
             return new ResponseObject<>(null, HttpStatus.FOUND, "Số lượng không được nhỏ hơn 0");
         }
+        Integer existingSpct = adSanPhamChiTietRepository.existsSanPhamChiTiet( request.getIdSanPham(),
+                request.getIdKichCo(),
+                request.getIdMauSac(),
+                request.getIdChatLieu(),
+                request.getIdCoAo(),
+                request.getIdTayAo(),
+                request.getIdHoaTiet(),
+                request.getIdKieuDang(),
+                request.getIdTinhNang(),
+                request.getIdThuongHieu(),
+                request.getGioiTinh());
 
+        if (existingSpct ==1) {
+            // Find the existing product detail
+            SanPhamChiTiet existingProduct = adSanPhamChiTietRepository.findExistingSanPhamChiTiet(request);
+
+            if (existingProduct != null) {
+                // update số lượng và giá
+                existingProduct.setSoLuong(existingProduct.getSoLuong() + request.getSoLuong());
+                existingProduct.setGia(request.getGia());
+                existingProduct.setGioiTinh(request.getGioiTinh());
+                SanPhamChiTiet updatedSPCT = adSanPhamChiTietRepository.save(existingProduct);
+
+                if (request.getListAnh().size() > 0 || request.getListAnh() != null) {
+                    for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+                        Anh anh = new Anh();
+                        anh.setSanPhamChiTiet(updatedSPCT);
+                        anh.setUrl(anhRequest.getUrl());
+                        anh.setTen(anhRequest.getName());
+                        anh.setDeleted(false);
+                        adAnhRepository.save(anh);
+                    }
+                }
+
+                return new ResponseObject<>(updatedSPCT, HttpStatus.OK, "Sản phẩm chi tiết đã tồn tại, đã cập nhật số lượng và giá.");
+            }
+        }
         SanPhamChiTiet spct = new SanPhamChiTiet();
         Random random = new Random();
         String code;
@@ -184,6 +221,58 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
     @Transactional
     @Override
     public ResponseObject<?> updateSanPhamChiTiet(String id, AdCreateUpdateSpctRequest request) {
+//        if (request.getGia() == null || request.getGia().compareTo(BigDecimal.ZERO) <= 0) {
+//            return new ResponseObject<>(null, HttpStatus.FOUND, "Giá không được nhỏ hơn 0");
+//        }
+//        if (request.getSoLuong() == null || request.getSoLuong() <= 0) {
+//            System.out.println("Số lượng phải lớn hơn 0.");
+//            return new ResponseObject<>(null, HttpStatus.FOUND, "Số lượng không được nhỏ hơn 0");
+//        }
+//
+//        Optional<SanPhamChiTiet> spct = adSanPhamChiTietRepository.findById(id)
+//                .map(spct1 -> {
+//                    spct1.setGia(request.getGia());
+//                    spct1.setSoLuong(request.getSoLuong());
+//                    spct1.setGioiTinh(request.getGioiTinh());
+//                    spct1.setTrangThai(request.getTrangThai() == 0 ? Status.ACTIVE : Status.INACTIVE);
+////                    spct1.setSanPham(adminProductRepository.findById(request.getIdSanPham()).orElse(null));
+////                    spct1.setChatLieu(adChatLieuRepository.findById(request.getIdChatLieu()).orElse(null));
+////                    spct1.setCoAo(adCoAoRepository.findById(request.getIdCoAo()).orElse(null));
+////                    spct1.setHoaTiet(adHoaTietRepository.findById(request.getIdHoaTiet()).orElse(null));
+////                    spct1.setKichCo(adKichCoRepository.findById(request.getIdKichCo()).orElse(null));
+////                    spct1.setKieuDang(adKieuDangRepository.findById(request.getIdKieuDang()).orElse(null));
+////                    spct1.setMauSac(adMauSacRepository.findById(request.getIdMauSac()).orElse(null));
+////                    spct1.setTayAo(adTayAoRepository.findById(request.getIdTayAo()).orElse(null));
+////                    spct1.setThuongHieu(adThuongHieuRepository.findById(request.getIdThuongHieu()).orElse(null));
+////                    spct1.setTinhNang(adTinhNangRepository.findById(request.getIdTinhNang()).orElse(null));
+//                    spct1.setSanPham(request.getIdSanPham() != null ? adminProductRepository.findById(request.getIdSanPham()).orElse(null) : null);
+//                    spct1.setChatLieu(request.getIdChatLieu() != null ? adChatLieuRepository.findById(request.getIdChatLieu()).orElse(null) : null);
+//                    spct1.setCoAo(request.getIdCoAo() != null ? adCoAoRepository.findById(request.getIdCoAo()).orElse(null) : null);
+//                    spct1.setHoaTiet(request.getIdHoaTiet() != null ? adHoaTietRepository.findById(request.getIdHoaTiet()).orElse(null) : null);
+//                    spct1.setKichCo(request.getIdKichCo() != null ? adKichCoRepository.findById(request.getIdKichCo()).orElse(null) : null);
+//                    spct1.setKieuDang(request.getIdKieuDang() != null ? adKieuDangRepository.findById(request.getIdKieuDang()).orElse(null) : null);
+//                    spct1.setMauSac(request.getIdMauSac() != null ? adMauSacRepository.findById(request.getIdMauSac()).orElse(null) : null);
+//                    spct1.setTayAo(request.getIdTayAo() != null ? adTayAoRepository.findById(request.getIdTayAo()).orElse(null) : null);
+//                    spct1.setThuongHieu(request.getIdThuongHieu() != null ? adThuongHieuRepository.findById(request.getIdThuongHieu()).orElse(null) : null);
+//                    spct1.setTinhNang(request.getIdTinhNang() != null ? adTinhNangRepository.findById(request.getIdTinhNang()).orElse(null) : null);
+//                    if (request.getListAnh() != null) {
+//                        adAnhRepository.deleteAllByIdSanPhamChiTiet(id);
+//                        for (AdCreateUpdateAnhRequest anhRequest : request.getListAnh()) {
+//                            Anh anh = new Anh();
+//                            anh.setTen(anhRequest.getName());
+//                            anh.setUrl(anhRequest.getUrl());
+//                            anh.setSanPhamChiTiet(spct1);
+//                            anh.setDeleted(false);
+//                            adAnhRepository.save(anh);
+//                        }
+//                    }
+//                    return adSanPhamChiTietRepository.save(spct1);
+//                });
+//        return spct
+//                .map(spct1 -> new ResponseObject<>(spct1, HttpStatus.OK,
+//                        "Cập nhật sản phẩm chi tiết thành công."))
+//                .orElseGet(() -> new ResponseObject<>(null, HttpStatus.NOT_FOUND,
+//                        "Sản phẩm chi tiết không tồn tại."));
         if (request.getGia() == null || request.getGia().compareTo(BigDecimal.ZERO) <= 0) {
             return new ResponseObject<>(null, HttpStatus.FOUND, "Giá không được nhỏ hơn 0");
         }
@@ -192,22 +281,21 @@ public class AdSanPhamChitietServiceImpl implements AdSanPhamChiTietService {
             return new ResponseObject<>(null, HttpStatus.FOUND, "Số lượng không được nhỏ hơn 0");
         }
 
+        // Check if the updated product would create a duplicate with another existing product
+        Optional<SanPhamChiTiet> existingDuplicate = adSanPhamChiTietRepository.findExistingSanPhamChiTietExcluding(request, id);
+
+        if (existingDuplicate.isPresent()) {
+            // Option 1: Reject the update
+            return new ResponseObject<>(null, HttpStatus.CONFLICT,
+                    "Cập nhật không thành công. Sản phẩm chi tiết với các thuộc tính này đã tồn tại.");
+        }
+
         Optional<SanPhamChiTiet> spct = adSanPhamChiTietRepository.findById(id)
                 .map(spct1 -> {
                     spct1.setGia(request.getGia());
                     spct1.setSoLuong(request.getSoLuong());
                     spct1.setGioiTinh(request.getGioiTinh());
                     spct1.setTrangThai(request.getTrangThai() == 0 ? Status.ACTIVE : Status.INACTIVE);
-//                    spct1.setSanPham(adminProductRepository.findById(request.getIdSanPham()).orElse(null));
-//                    spct1.setChatLieu(adChatLieuRepository.findById(request.getIdChatLieu()).orElse(null));
-//                    spct1.setCoAo(adCoAoRepository.findById(request.getIdCoAo()).orElse(null));
-//                    spct1.setHoaTiet(adHoaTietRepository.findById(request.getIdHoaTiet()).orElse(null));
-//                    spct1.setKichCo(adKichCoRepository.findById(request.getIdKichCo()).orElse(null));
-//                    spct1.setKieuDang(adKieuDangRepository.findById(request.getIdKieuDang()).orElse(null));
-//                    spct1.setMauSac(adMauSacRepository.findById(request.getIdMauSac()).orElse(null));
-//                    spct1.setTayAo(adTayAoRepository.findById(request.getIdTayAo()).orElse(null));
-//                    spct1.setThuongHieu(adThuongHieuRepository.findById(request.getIdThuongHieu()).orElse(null));
-//                    spct1.setTinhNang(adTinhNangRepository.findById(request.getIdTinhNang()).orElse(null));
                     spct1.setSanPham(request.getIdSanPham() != null ? adminProductRepository.findById(request.getIdSanPham()).orElse(null) : null);
                     spct1.setChatLieu(request.getIdChatLieu() != null ? adChatLieuRepository.findById(request.getIdChatLieu()).orElse(null) : null);
                     spct1.setCoAo(request.getIdCoAo() != null ? adCoAoRepository.findById(request.getIdCoAo()).orElse(null) : null);
