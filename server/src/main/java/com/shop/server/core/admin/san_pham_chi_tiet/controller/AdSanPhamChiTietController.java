@@ -1,7 +1,9 @@
 package com.shop.server.core.admin.san_pham_chi_tiet.controller;
 
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdUpdateSaleProductDetail;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
 import com.shop.server.core.admin.san_pham_chi_tiet.service.AdSanPhamChiTietService;
@@ -32,10 +34,42 @@ public class AdSanPhamChiTietController {
         return Helper.createResponseEntity(adSanPhamChiTietService.getALlSanPhamChiTiets(request));
     }
 
+    @GetMapping("/all-product-detail-over-zero")
+    public ResponseEntity<?> getAllSanPhamChiTietOverZero(@Valid final AdFindSpctRequest request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.getALlSanPhamChiTietOverZero(request));
+    }
+
     // Lấy danh sách toàn bộ SPCT  không phân trang
     @GetMapping("/list-product-detail")
     public ResponseEntity<?> getListSanPhamChiTiet() {
         return Helper.createResponseEntity(adSanPhamChiTietService.getListSanPhamChitiet());
+    }
+
+
+    // Check số lượng sản phẩm trong kho
+    @GetMapping("/check-quantity")
+    public ResponseEntity<?> checkQuantity(AdCheckQuantityRequest request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantity(request));
+    }
+
+    @GetMapping("/check-quantity/product-detail")
+    public ResponseEntity<?> checkQuantityByIdSPCT(AdCheckQuantityRequest request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantityByIdSPCT(request));
+    }
+
+    @PostMapping("/check-quantity/list-product-detail")
+    public ResponseEntity<?> checkQuantityInListProduct(@RequestBody List<AdCheckQuantityRequest> request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.checkQuantityInListProduct(request));
+    }
+
+    @PutMapping("/quantity/plus")
+    public ResponseEntity<?> deleteQuantityInListProduct(@RequestBody List<AdCheckQuantityRequest> request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.plusQuantityInStockByListProduct(request));
+    }
+
+    @PutMapping("/sale-product")
+    public ResponseEntity<?> updateSaleProductDetail(@RequestBody AdUpdateSaleProductDetail request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.updateProductSale(request));
     }
 
     @GetMapping("/{id}")

@@ -27,6 +27,7 @@ export type POSProductDetailResponse = ResponseList & {
     ten: string | null;
     soLuong: number | null;
     gia: number | null;
+    giaGoc: number | null;
     giaHienTai: number | null;
     tenSanPham: string | null;
     tenThuongHieu: string | null;

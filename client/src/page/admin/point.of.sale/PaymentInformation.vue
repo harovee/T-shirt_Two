@@ -180,7 +180,7 @@
           </p>
         </div>
 
-        <a-button type="primary" class="w-full" @click="handleUpdateBill"
+        <a-button type="primary" class="w-full" @click="handleUpdateBill(1)"
           >Hoàn thành đơn hàng</a-button
         >
       </a-form>
@@ -259,6 +259,7 @@ import {
   useUpdateClientAddress,
 } from "@/infrastructure/services/service/admin/client.action";
 import { log } from "console";
+import { sendPaymentConfirm } from "@/infrastructure/mobile.connect/InvoiceConnect";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
 
@@ -276,7 +277,7 @@ const props = defineProps({
   isRefresh: Boolean,
 });
 
-const emit = defineEmits(["handlePaymentInfo"]);
+const emit = defineEmits(["handlePaymentInfo", "handleChangeMbConnect"]);
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -446,14 +447,14 @@ watch(
   () => dataSourcePro.value,
   (newData) => {
     if (newData) {
-      console.log(newData);
+      // console.log(newData);
 
       paramsVoucher.value.tongTien = totalAmount.value;
       paramsNextPriceVoucher.value.tongTien = totalAmount.value;
       if (serviceIdParams.value.toDistrict !== 0) {
         refetchService().then(() => {
           shippingParams.value.serviceId = service?.value?.data[0].service_id;
-          console.log(shippingParams.value);
+          // console.log(shippingParams.value);
           shippingParams.value.toDistrictId = getCustomerAddress.value.district;
           shippingParams.value.toWardCode = getCustomerAddress.value.ward;
           if (shippingParams.value.toWardCode) {
@@ -506,7 +507,7 @@ watch(
       voucher.value =
         newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
         null;
-      console.log(dataNextPriceVouchers.value);
+      // console.log(dataNextPriceVouchers.value);
     } else {
       paymentInfo.value.voucherCode = "";
       paymentInfo.value.voucherId = null;
@@ -623,7 +624,7 @@ const changeShippingOption = (option: string) => {
 
 const { mutate: updateBillWait } = useUpdateBillWait();
 
-const handleUpdateBill = () => {
+const handleUpdateBill = (x: number) => {
   const pdfParams = {
     idKhachHang: props.selectedCustomerInfo
       ? props.selectedCustomerInfo.id
@@ -684,40 +685,74 @@ const handleUpdateBill = () => {
     warningNotiSort("Vui lòng điền thông tin người nhận!");
     return;
   }
+  if (dataSourcePro.value.length <= 0) {
+    warningNotiSort(
+      "Không có sản phẩm nào trong giỏ hàng!"
+    );
+    return;
+  }
   if (paymentedValue.value === 0) {
     warningNotiSort(
       "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"
     );
     return;
   }
-  Modal.confirm({
-    content: "Bạn chắc chắn muốn hoàn thành thanh toán?",
-    icon: createVNode(ExclamationCircleOutlined),
-    centered: true,
 
-    async onOk() {
-      try {
-        await updateBillWait({
-          idBill: props.dataSourceInfor.id,
-          params: payload,
-        });
-        await createInvoicePdf(pdfParams);
-        successNotiSort("Thanh toán thành công!");
-        router.push(
-          ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-        );
-      } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
-        if (error?.response) {
-          errorNotiSort(error?.response?.data?.message);
+  if (x === 1) {
+    Modal.confirm({
+      content: "Bạn chắc chắn muốn hoàn thành thanh toán?",
+      icon: createVNode(ExclamationCircleOutlined),
+      centered: true,
+      async onOk() {
+        try {
+          await updateBillWait({
+            idBill: props.dataSourceInfor.id,
+            params: payload,
+          });
+          await createInvoicePdf(pdfParams);
+          successNotiSort("Thanh toán thành công!");
+          router.push(
+            ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+          );
+        } catch (error: any) {
+          console.error("🚀 ~ handleCreate ~ error:", error);
+          if (error?.response) {
+            errorNotiSort(error?.response?.data?.message);
+          }
         }
+      },
+      cancelText: "Huỷ",
+      onCancel() {
+        Modal.destroyAll();
+      },
+    });
+  
+  }else if(x === 2) {
+    sendPaymentConfirm(
+      props.dataSourceInfor.ma,
+      () => {
+        async () => {
+          try {
+            await updateBillWait({
+              idBill: props.dataSourceInfor.id,
+              params: payload,
+            });
+            await createInvoicePdf(pdfParams);
+            successNotiSort("Thanh toán thành công!");
+            router.push(
+              ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+            );
+          } catch (error: any) {
+            if (error?.response) {
+              errorNotiSort(error?.response?.data?.message);
+            }
+          }
+        };
+        return true;
       }
-    },
-    cancelText: "Huỷ",
-    onCancel() {
-      Modal.destroyAll();
-    },
-  });
+      ,
+      () => { });
+  }
 };
 
 const getCustomerAddress = ref(null);
@@ -776,12 +811,12 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
   } else {
     paymentInfo.value.shippingFee = 0;
   }
-  console.log(paymentInfo.value);
+  // console.log(paymentInfo.value);
 };
 
 watch(totalAmount, (newTotal) => {
   if (newTotal !== 0) {
-    console.log(newTotal);
+    // console.log(newTotal);
     paymentInfo.value.totalProductPrice = newTotal;
   }
 });

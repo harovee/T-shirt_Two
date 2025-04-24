@@ -1,5 +1,6 @@
 package com.shop.server.core.admin.point_of_sale.service;
 
+import com.shop.server.core.admin.billdetail.repository.AdminBillDetailRepository;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSAddProductsToCartRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSFindProductRequest;
 import com.shop.server.core.admin.point_of_sale.model.request.AdPOSUpdateCartRequest;
@@ -8,8 +9,10 @@ import com.shop.server.core.admin.point_of_sale.repository.PointOfSaleRepository
 import com.shop.server.core.common.base.PageableObject;
 import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.HoaDon;
+import com.shop.server.entities.main.SanPhamChiTiet;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.repositories.HoaDonRepository;
+import com.shop.server.repositories.SanPhamChiTietRepository;
 import com.shop.server.utils.Helper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,13 +26,15 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
     private final PointOfSaleRepository pointOfSaleRepository;
     private final POSOrderDetailRepository hoaDonChiTietRepository;
     private final HoaDonRepository hoaDonRepository;
+    private final AdminBillDetailRepository adminBillDetailRepository;
 
     public PointOfSaleServiceIml(PointOfSaleRepository pointOfSaleRepository,
                                  POSOrderDetailRepository hoaDonChiTietRepository,
-                                 HoaDonRepository hoaDonRepository) {
+                                 HoaDonRepository hoaDonRepository, SanPhamChiTietRepository sanPhamChiTietRepository, AdminBillDetailRepository adminBillDetailRepository) {
         this.pointOfSaleRepository = pointOfSaleRepository;
         this.hoaDonChiTietRepository = hoaDonChiTietRepository;
         this.hoaDonRepository = hoaDonRepository;
+        this.adminBillDetailRepository = adminBillDetailRepository;
     }
 
 
@@ -78,6 +83,9 @@ public class PointOfSaleServiceIml implements PointOfSaleService {
     @Override
     public ResponseObject<?> updateQuantityProductInCart(AdPOSUpdateCartRequest request) {
         try {
+//            if (adminBillDetailRepository.checkQuantityInStock(request.getIdHoaDonChiTiet(), request.getSoLuongBanSau()) == 1) {
+//                return new ResponseObject<>(true,HttpStatus.OK, "Số lượng trong kho không đủ!");
+//            }
             hoaDonChiTietRepository.updateQuantityProductDetail(request);
             hoaDonChiTietRepository.updateQuantityOrderDetail(request);
             return ResponseObject.successForward("", Message.Success.UPDATE_SUCCESS);

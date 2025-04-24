@@ -13,4 +13,6 @@ public interface AdminSaleProductRepository extends SanPhamGiamGiaRepository {
     Optional<SanPhamGiamGia> findBySanPhamChiTietIdAndDotGiamGiaIdAndDeletedIsFalse(String spctId, String dggId);
 
     List<SanPhamGiamGia> findAllByDotGiamGiaIdAndDeletedIsFalse(String idDotGiamGia);
+
+    List<SanPhamGiamGia> findAllBySanPhamChiTietIdAndDeletedIsFalse(String idSanPhamChiTiet);
 }

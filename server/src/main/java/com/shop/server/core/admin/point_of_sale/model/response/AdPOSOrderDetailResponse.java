@@ -12,6 +12,8 @@ public interface AdPOSOrderDetailResponse extends BaseResponse {
 
     Double getGia();
 
+    Double getGiaGoc();
+
     Double getGiaHienTai();
 
     String getTenSanPham();

@@ -66,6 +66,7 @@
         :data-source="props.dataSource?.data"
         :loading="loading"
         :pagination="false"
+        :scroll="{ x: 'max-content', y: 600 }"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'ngayTao'">

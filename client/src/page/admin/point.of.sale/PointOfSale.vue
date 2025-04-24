@@ -99,6 +99,7 @@
             </template>
             <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <POSProducsInCart
+                :maHoaDon="bill.ma"
                 :idOrder="activeKey?.valueOf() || ''"
               ></POSProducsInCart>
             </div>
@@ -127,21 +128,6 @@
                     (customer) => handleCustomerSelected(customer, bill)
                   "
                 />
-                <!-- <KhachHangAddressPaymentTable
-                  :open="openCustomerAddress"
-                  @handleClose="handleCloseCustomerAddress"
-                  @cancel="openCustomerAddress = false"
-                  :dataCustomerWithId="activeTabCustomers[bill.id]"
-                  @selectCustomerAddress="
-                    (customerAddress, dataCustomerAddress) =>
-                      handleCustomerAddressSelected(
-                        customerAddress,
-                        dataCustomerAddress,
-                        bill
-                      )
-                  "
-                  class="w-[600px] h-[400px]"
-                /> -->
               </div>
               <div class="mb-6 h-100">
                 <p>
@@ -167,6 +153,7 @@
               <hr />
               <div>
                 <payment-information
+                  :maHoaDon="bill.ma"
                   :dataSourceInfor="bill"
                   :selectedCustomerInfo="activeTabCustomers[bill.id]"
                   @handlePaymentInfo="
@@ -350,13 +337,10 @@ const handleQRScan = (qrCode: string) => {
   console.log("Mã QR quét được:", qrCode);
 };
 
-// refetchProducts.value = listAttributes.refetch;
+refetchProducts.value = listAttributes.refetch;
 
 function handleOpenProductsModel() {
   openProductsModal.value = true;
-  // if (refetchProducts.value) {
-  //   refetchProducts.value();
-  // }
   refetchProducts.value();
 }
 

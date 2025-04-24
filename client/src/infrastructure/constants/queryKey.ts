@@ -29,7 +29,8 @@ export const queryKey = {
                 districtM: "adClientAddressDistrictM",
                 ward: "adClientAddressWard",
                 wardM: "adClientAddressWardM",
-            }
+            },
+            clientChatList: "adClientChatListKey",
         },
         staff: {
             staffList: "adStaffListKey",
@@ -61,7 +62,9 @@ export const queryKey = {
         productDetail: {
             productDetailList: "adProdcutDetailListKey",
             allProductDetails: "adAllProdcutDetailListKey",
+            allProductDetailOverZero: "adAllProdcutDetailOverZeroKey",
             productDetailListNoPage: "adProdcutDetailListNoPageKey",
+            checkQuantity: "adCheckQuantity"
         },
         category: {
             categoryList: "adCategoryListKey",
@@ -125,6 +128,9 @@ export const queryKey = {
             voucherDetail: "adVoucherDetailKey",
             khachHangList: "adKhachHangListKey"
         },
+        livechat: {
+            chatHistory: "adChatHistoryKey",
+        }
     },
     client :{
         product: {
@@ -141,7 +147,8 @@ export const queryKey = {
         payment: {
             invoiceOnline: "clientInvoiceOnlineKey",
             invoiceOnlineVNPay:"clientInvoiceOnlineVNpayKey",
-            invoiceOnlineMomo:"clientInvoiceOnlineMomoKey"
+            invoiceOnlineMomo:"clientInvoiceOnlineMomoKey",
+            invoiceInlineVietQr: "clientInvoiceOnlineVieQrKey"
         },
         myOrder: {
             clientBill: "clientBillList"

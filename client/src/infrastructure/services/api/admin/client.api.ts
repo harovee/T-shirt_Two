@@ -253,3 +253,12 @@ export const getClientAddressesResponseByClientId = async (clientId: string) => 
 
     return res.data;
 }
+
+export const getClientChatList = async () => {
+    const res = await request({
+      url: `${PREFIX_API_ADMIN_CLIENT}/client-chat-list`,
+      method: "GET",
+    }) as AxiosResponse<DefaultResponse<Array<ClientResponse>>>;
+  
+    return res.data;
+  };

@@ -1,9 +1,21 @@
 <template>
-  <h2 class="text-xl font-semibold">Giỏ hàng</h2>
+  <h2 class="text-xl font-semibold inline-flex">Giỏ hàng
+    <!-- <a-tooltip v-if="isMBConnected" title="Ngắt kết nối" trigger="hover">
+            <a-button
+              class="bg-purple-300 flex justify-between items-center gap-2  ms-4"
+              size="large"
+              @click="openDisConnectOrderModal(maHoaDon)"
+            >
+              <v-icon name="bi-link" />
+            </a-button>
+   </a-tooltip> -->
+  </h2>
+
   <div>
     <a-table
       :loading="isLoading"
       :columns="columns"
+      :key="tableKey"
       :data-source="dataSource"
       :pagination="false"
       :scroll="{ x: 1000, y: 400 }"
@@ -34,6 +46,7 @@
                   {{ formatCurrency(record.gia, "VND", "vi-VN") }}</a-tag
                 ></a-space
               >
+              <a-space class="text-red-500" v-if="record.gia !== record.giaGoc">Đã có sự thay đổi giá từ {{ formatCurrency(record.giaGoc, "VND", "vi-VN") }} -> {{ formatCurrency(record.gia, "VND", "vi-VN") }}</a-space>
             </a-space>
           </div>
           <div v-if="column.dataIndex === 'chiTiet'" class="text-left">
@@ -61,7 +74,8 @@
             <a-input
               type="number"
               v-model:value="record.soLuong"
-              @change="handleQuantityChange(record)"
+              @focus="focusQuantity(record.soLuong)"
+              @blur="handleQuantityChange(record)"
               min="1"
             >
             </a-input>
@@ -141,6 +155,8 @@ import {
   openNotification,
 } from "@/utils/notification.config";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { useCheckQuantityInStock } from "@/infrastructure/services/service/admin/productdetail.action";
+import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 
 const props = defineProps<{
   idOrder: string;
@@ -199,7 +215,7 @@ const columns: TableColumnType<DataType>[] = [
 
 //
 
-const { data, isLoading, refetch } = useGetOrderDetails(
+const { data, isLoading, refetch: refetchCart } = useGetOrderDetails(
   props.idOrder?.valueOf(),
   {
     refetchOnWindowFocus: false,
@@ -215,6 +231,7 @@ const dataSource: DataType[] | any = computed(() => {
       ten: e.ten || "",
       soLuong: e.soLuong || "",
       gia: e.gia || 0,
+      giaGoc: e.giaGoc || 0,
       giaHienTai: e.giaHienTai || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
@@ -232,30 +249,83 @@ const dataSource: DataType[] | any = computed(() => {
   );
 });
 
+watch (() => dataSource.value, (newData) => {
+  if (newData) {
+    console.log(newData);
+  }
+})
+
 const { mutate: updateQuantityOrderDetails } = useUpdateQuantityOrderDetails();
 const { mutate: deleteOrderDetails } = useDeleteCartById();
 
-const handleQuantityChange = (record: any) => {
+const preQuantity = ref(null);
+const tableKey = ref(0);
+
+const focusQuantity = (quantity: number) => {
+  preQuantity.value = quantity;
+}
+
+const params = ref<checkQuantityRequest>({
+  id: null,
+  quantity: null,
+});
+
+const { data: checkQuantityData, refetch: checkQuantityRefetch } =
+  useCheckQuantityInStock(params, {
+    refetchOnWindowFocus: false,
+    keepPreviousData: false,
+    enabled: false,
+  });
+
+const handleQuantityChange = async (record: any) => {
+  params.value.id = record.key;
+  params.value.quantity = record.soLuong;
+
+  if (record.soLuong > preQuantity.value && record.giaGoc !== record.gia) {
+    warningNotiSort("Sản phẩm này đã thay đổi giá, không thể thêm số lượng!");
+    reloadData();
+    return;
+  }
+
   const payload = {
     idHoaDonChiTiet: record.key,
     soLuongBanSau: record.soLuong,
     soLuongBanTruoc: null,
   };
+
   try {
-    updateQuantityOrderDetails(payload);
-    // successNotiSort("Sửa thành công")
+    // Chờ check số lượng xong trước khi tiếp tục
+    await checkQuantityRefetch();
+    const checkValue = checkQuantityData?.value?.data;
+    
+    if (!checkValue) {
+      warningNotiSort("Số lượng trong kho không đủ!");
+      reloadData();
+    } else {
+      if (payload.soLuongBanSau <= 0) {
+        warningNotiSort("Số lượng không được âm!");
+        reloadData();
+        return;
+      }
+      await updateQuantityOrderDetails(payload);
+    }
   } catch (error: any) {
-    if (error?.response) {
-      openNotification(
-        notificationType.error,
-        error?.response?.data?.message,
-        ""
-      );
-    } else if (error?.errorFields) {
-      openNotification(notificationType.warning, "", "");
+    console.log("⛔ Vào catch...");
+    console.error("🔥 Lỗi từ backend:", error.response?.data || error);
+
+    if (error.response?.status === 400) {
+      warningNotiSort(error.response.data.message);
+    } else {
+      openNotification(notificationType.error, "Lỗi không xác định!", "");
     }
   }
 };
+
+const reloadData = async () => {
+  await refetchCart();
+  tableKey.value++;
+};
+
 const handleDelete = (idHdct: string) => {
   Modal.confirm({
     content: "Bạn chắc chắn muốn xóa sản phẩm này ra khỏi giỏ?",

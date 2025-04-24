@@ -11,6 +11,8 @@ import Cart from '../component/cart/CartScreen';
 import Profile from '../component/client/ProfileScreen';
 import VoucherList from '../component/voucher/VoucherList';
 import ProductDetail from '../component/product/ProductDetail';
+import ConnectScreen from '../core/invoice.connect/ConnectScreen';
+import MbExample from '../core/invoice.connect/example/example';
 
 const Stack = createNativeStackNavigator();
 
@@ -76,8 +78,17 @@ const MainTabNavigator = () => {
           })}
         />
 
+      <Stack.Screen name="InvoiceConnect" component={ConnectScreen}
+          options={({ navigation }) => ({
+            title: 'Hóa đơn tại quầy',
+            presentation: 'fullScreenModal',
+            animation: 'fade_from_bottom', 
+            animationDuration: 10,
+          })}
+        />
 
-        <Stack.Screen name="example_screen" component={example_screen}
+
+        <Stack.Screen name="example_screen" component={MbExample}
            options={{
             title: 'Example' ,
             headerTitleAlign:  'center',

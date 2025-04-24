@@ -55,6 +55,14 @@ export const convertDateFormatTime = (inputDate: number | null): string => {
   return parsedDate.format("DD/MM/YYYY"); // Định dạng theo yêu cầu
 };
 
+export const dateFormatChatBox = (inputDate: number | null): string => {
+  if (inputDate === null) {
+    return "";
+  }
+  const parsedDate = dayjs(inputDate);
+  return parsedDate.format("HH:mm DD/MM/YYYY"); // Định dạng theo yêu cầu
+};
+
 export const formatCurrency = (
   amount: number,
   currency: string,

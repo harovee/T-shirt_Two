@@ -246,7 +246,7 @@ watch(
       } catch (error) {
         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
       }
-      modelRef.email = {... newDataSource}
+      modelRef.email = useAuthStore().user?.email || "";
       emit("handleGetAddress", newDataSource, fullAddress.value, false);
     }
   },
@@ -288,6 +288,7 @@ watch(
       } catch (error) {
         console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
       }
+      modelRef.email = useAuthStore().user.email || "";
       emit("handleGetAddress", newDataSource, fullAddress.value, false);
     }
   },
