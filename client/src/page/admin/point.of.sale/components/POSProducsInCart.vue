@@ -155,11 +155,13 @@ import {
   openNotification,
 } from "@/utils/notification.config";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { currentInvoice, InvoiceData, invoices, Item, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 import { useCheckQuantityInStock } from "@/infrastructure/services/service/admin/productdetail.action";
 import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 
 const props = defineProps<{
   idOrder: string;
+  maHoaDon: string;
 }>();
 
 interface DataType extends POSProductDetailResponse {
@@ -214,6 +216,8 @@ const columns: TableColumnType<DataType>[] = [
 ];
 
 //
+
+const tableKey = ref(0); // Define tableKey as a ref
 
 const { data, isLoading, refetch: refetchCart } = useGetOrderDetails(
   props.idOrder?.valueOf(),
@@ -345,5 +349,37 @@ const handleDelete = (idHdct: string) => {
     },
   });
 };
+
+
+watch(
+  () => data.value,
+  (newData) => {
+    console.log("Data changed:", newData?.data);
+    if (props.maHoaDon === currentInvoice.value.id) {
+        const products : Item[] = newData?.data?.map((e: any) => ({
+            id: e.maSanPhamChiTiet,
+            name: e.ten,
+            quantity: e.soLuong, 
+            price: e.giaHienTai ? e.giaHienTai : e.gia,
+            image: e.linkAnh,
+            color: e.tenMauSac,
+            size: e.kichCo,
+            sku: e.id,
+            total: e.giaHienTai ? e.giaHienTai * e.soLuong : e.gia * e.soLuong,
+        })) || [];
+        
+        invoices.value.forEach((item) => {
+            if (item.id === props.maHoaDon) {
+                item.items = products;
+                item.subtotal = item.items.reduce((total: number, item: any) => total + (item.giaHienTai ? item.giaHienTai : item.gia) * item.soLuong, 0);
+                currentInvoice.value.items = products;
+                currentInvoice.value.subtotal = item.subtotal
+                sendCartInfo(currentInvoice.value);
+            }
+        });
+    }
+  }, {deep: true}
+);
+
 </script>
   

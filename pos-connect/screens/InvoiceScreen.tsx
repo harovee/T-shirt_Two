@@ -284,7 +284,7 @@ const InvoiceScreen = () => {
                   >
                     <Image source={{ uri: item.image }} style={styles.itemImage} />
                     <View style={styles.itemInfo}>
-                      <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                      <Text style={[styles.itemName, { color: colors.text }]}>{item.id} - {item.name}</Text>
                       <View style={styles.itemDetails}>
                         {item.size && (
                           <Text style={[styles.itemDetail, { color: colors.muted }]}>Size: {item.size}</Text>
@@ -430,11 +430,18 @@ const InvoiceScreen = () => {
               <View style={[styles.paymentCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Phương thức thanh toán</Text>
                 <View style={styles.paymentMethod}>
-                  <Ionicons
-                    name={invoiceData.paymentMethod.includes("Tiền mặt") ? "cash-outline" : "card-outline"}
-                    size={24}
-                    color={colors.primary}
-                  />
+                  {invoiceData.paymentMethod.includes("Cả hai") ? (
+                    <>
+                      <Ionicons name="cash-outline" size={24} color={colors.primary} />
+                      <Ionicons name="card-outline" size={24} color={colors.primary} />
+                    </>
+                  ) : (
+                    <Ionicons
+                      name={invoiceData.paymentMethod.includes("Tiền mặt") ? "cash-outline" : "card-outline"}
+                      size={24}
+                      color={colors.primary}
+                    />
+                  )}
                   <Text style={[styles.paymentText, { color: colors.text }]}>{invoiceData.paymentMethod}</Text>
                 </View>
               </View>
@@ -448,10 +455,15 @@ const InvoiceScreen = () => {
                   {formatCurrency(invoiceData.subtotal)}
                 </Text>
               </View>
+              {/* 
+
               <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: colors.muted }]}>Thuế:</Text>
                 <Text style={[styles.summaryValue, { color: colors.text }]}>{formatCurrency(invoiceData.tax)}</Text>
               </View>
+              
+              */}
+              
               {invoiceData.shipping && (
                 <View style={styles.summaryRow}>
                   <Text style={[styles.summaryLabel, { color: colors.muted }]}>Phí vận chuyển:</Text>
@@ -468,8 +480,50 @@ const InvoiceScreen = () => {
               )}
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={[styles.totalLabel, { color: colors.text }]}>Tổng cộng:</Text>
-                <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.total)}</Text>
+                <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.subtotal - (invoiceData.shipping?.cost ?? 0) - discount)}</Text>
               </View>
+              {invoiceData.paymentMethod.includes("Tiền mặt") && (
+                <>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền mặt:</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.guestMoney)}</Text>
+                  </View>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.guestMoney - invoiceData.total)}</Text>
+                  </View>
+                </>
+                
+              )}
+
+              {invoiceData.paymentMethod.includes("Chuyển khoản") && (
+                <>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Chuyển khoản</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}> {formatCurrency(invoiceData.transferMoney ?? 0)}</Text>
+                  </View>
+                </>
+                
+              )}
+
+            {invoiceData.paymentMethod.includes("Cả hai") && (
+                <>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Chuyển khoản</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}> {formatCurrency(invoiceData.transferMoney ?? 0)}</Text>
+                  </View>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền mặt:</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.guestMoney)}</Text>
+                  </View>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
+                    <Text style={[styles.totalValue, { color: colors.danger }]}> {formatCurrency((invoiceData.guestMoney ?? 0) + (invoiceData.transferMoney ?? 0) - invoiceData.total)} </Text>
+                  </View>
+                </>
+                
+              )}
+              
             </View>
           </Animated.View>
         </ScrollView>

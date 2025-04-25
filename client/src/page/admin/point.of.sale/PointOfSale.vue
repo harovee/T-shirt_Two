@@ -222,6 +222,7 @@ import {
   getDateFormat,
   getDateTimeMinutesFormat,
 } from "@/utils/common.helper";
+import { currentInvoice, InvoiceData, sendCartInfo, addInvoice, getInvoiceById, invoices } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 const { data, isLoading, isFetching } = useGetBillsWait();
 
@@ -229,6 +230,7 @@ const { data: listProductDetail } = useGetListProductDetail();
 
 const dataSource = computed(() => data?.value?.data || []);
 const activeKey = ref<string | null>(null);
+const maHoaDon = ref<string | null>(null);
 const isAddProduct = ref(0);
 const isChange = ref(0);
 
@@ -251,16 +253,31 @@ watch(
 );
 
 
-// watch(
-//   activeKey,
-//   (newActiveKey) => {
-//     if (newActiveKey) {
-//       localStorage.setItem("activeKey", newActiveKey);
-//       // refetchPro();
-//     }
-//   },
-//   { immediate: true }
-// );
+watch(
+  activeKey,
+  (newActiveKey) => {
+    if (newActiveKey) {
+      // localStorage.setItem("activeKey", newActiveKey);
+      // refetchPro();
+      dataSource.value.forEach((item) => {
+        if (item.id === newActiveKey) {
+          maHoaDon.value = item.ma;
+        }
+      });
+    if ( currentInvoice.value.id !== maHoaDon.value ) {
+      const addOk = addInvoice(maHoaDon.value || "");
+      if (!addOk) {
+        const invocie = getInvoiceById(maHoaDon.value || "");
+        if (invocie) {
+          currentInvoice.value = invocie;
+        }
+      }
+    }
+    sendCartInfo(currentInvoice.value);
+    }
+  },
+  { immediate: true }
+);
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -564,10 +581,27 @@ const selectedCustomer = ref<{
 // };
 
 const handleCustomerSelected = (customer: any, bill: any) => {
+
   if (!activeTabCustomers[bill.id]) {
     activeTabCustomers[bill.id] = {};
   }
   activeTabCustomers[bill.id] = { ...customer };
+
+  console.log("activeTabCustomers", bill);
+
+  invoices.value.forEach((invoice: InvoiceData) => {
+    if (invoice.id === bill.ma) {
+      invoice.customerInfo = {
+        name: customer.name,
+        phone: customer.phoneNumber,
+        email: customer.email,
+        address: customer.address? customer.address : null,
+      };
+      currentInvoice.value = invoice;
+      sendCartInfo(currentInvoice.value);
+    }
+  });
+  
 };
 
 const handleChangePaymentInfo = (paymentInfo: any, bill: any) => {

@@ -3,15 +3,13 @@ import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { AppProvider } from "./context/AppContext"
 import { ThemeProvider } from "./context/ThemeContext"
-import ConnectionScreen from "./screens/ConnectionScreen"
 import InvoiceScreen from "./screens/InvoiceScreen"
 import SettingsScreen from "./screens/SettingsScreen"
 import PaymentScreen from "./screens/PaymentScreen"
 import HomeScreen from "./screens/HomeScreen"
 
-// Định nghĩa kiểu cho Stack Navigator - xóa PaymentConfirmation
+// Định nghĩa kiểu cho Stack Navigator
 export type RootStackParamList = {
-  Connection: undefined
   Invoice: undefined
   Settings: undefined
   Payment: undefined
@@ -27,13 +25,12 @@ export default function App() {
         <AppProvider>
           <StatusBar style="auto" />
           <Stack.Navigator
-            initialRouteName="Connection"
+            initialRouteName="Home"
             screenOptions={{
               headerShown: false,
               animation: "slide_from_right",
             }}
           >
-            <Stack.Screen name="Connection" component={ConnectionScreen} />
             <Stack.Screen name="Invoice" component={InvoiceScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="Payment" component={PaymentScreen} />
