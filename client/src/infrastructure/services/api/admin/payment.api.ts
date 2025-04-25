@@ -4,6 +4,7 @@ import request from "@/infrastructure/services/request.ts";
 import {API_ADMIN_PAYMENT, API_ADMIN_POINT_OF_SALE} from "@/infrastructure/constants/url.ts";
 import {API_ADMIN_PAYMENT, GHN_API_URL, GHN_TOKEN, GHN_API_SERVICES} from "@/infrastructure/constants/url.ts";
 import {AxiosResponse} from "axios";
+import { invoices, currentInvoice, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 export interface PropertyVoucherParams {
     keyword: string | null;
@@ -330,6 +331,18 @@ export const calculateShippingFee = async (params: Ref<ShippingFeeRequest>) => {
         })) as AxiosResponse<DefaultResponse<ShippingFeeResponse>>;
 
         console.log("Response API GHN:", res.data); // Kiểm tra response
+        
+        invoices.value.forEach((item) => {
+            if (item.id === currentInvoice.value.id) {
+            item.shipping = {
+                method: 'GHN',
+                cost: res.data.data.total,
+                estimatedDelivery: '' ,
+            }
+            currentInvoice.value = item
+            sendCartInfo(item);
+            }
+        });
 
         return res.data;
     } catch (error) {
@@ -356,6 +369,8 @@ export const getServiceId = async (params: Ref<ServiceIdRequest>) => {
         console.error("Lỗi khi gọi API GHN Services:", error);
     }
 };
+
+
 
 
 

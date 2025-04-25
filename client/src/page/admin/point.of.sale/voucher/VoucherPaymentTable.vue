@@ -78,6 +78,7 @@ import {
 import { useGetListVoucher } from "@/infrastructure/services/service/admin/payment.action";
 import { convertDateFormatTime } from "@/utils/common.helper";
 import { useRoute } from "vue-router";
+import { currentInvoice, invoices, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -147,6 +148,22 @@ watch(current1, () => {
 
 const handleSelectVoucher = (voucher: VoucherResponse) => {
   emit("selectVoucher", voucher);
+  currentInvoice.value.vouchers = [
+    {
+      id: voucher.id,
+      code: voucher.ma,
+      name: voucher.ten,
+      discount: Number(voucher.loaiGiam ? voucher.giaTriGiam : voucher.giaTri),
+      type: voucher.loaiGiam ?  "fixed" : "percent",
+    },
+  ]
+  invoices.value.forEach((item) => {
+    if (item.id === currentInvoice.value.id) {
+      item.vouchers = currentInvoice.value.vouchers;
+      sendCartInfo(currentInvoice.value);
+    }
+  });
+
   handleClose();
 };
 

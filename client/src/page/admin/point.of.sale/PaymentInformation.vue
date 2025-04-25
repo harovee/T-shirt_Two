@@ -259,7 +259,7 @@ import {
   useUpdateClientAddress,
 } from "@/infrastructure/services/service/admin/client.action";
 import { log } from "console";
-import { sendPaymentConfirm } from "@/infrastructure/mobile.connect/InvoiceConnect";
+import { invoices, currentInvoice, sendCartInfo, sendPaymentConfirm } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
 
@@ -498,6 +498,7 @@ const voucher = ref(null);
 watch(
   () => dataListVoucher.value,
   (newData) => {
+    console.log("newVouchers", newData);
     if (newData && newData.length > 0) {
       paymentInfo.value.voucherCode = newData[0].ma;
       paymentInfo.value.voucherId = newData[0].id;
@@ -508,6 +509,23 @@ watch(
         newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
         null;
       // console.log(dataNextPriceVouchers.value);
+
+      invoices.value.forEach((item) => {
+            if (item.id === currentInvoice.value.id) {
+            item.vouchers = [
+                {
+                  id: newData[0].id,
+                  code: newData[0].ma,
+                  name: newData[0].ten,
+                  discount: Number(newData[0].loaiGiam ? newData[0].giaTriGiam : newData[0].giaTri),
+                  type: newData[0].loaiGiam ? "fixed" : "percent",
+                },
+              ];
+            currentInvoice.value = item
+            sendCartInfo(item);
+            }
+        });
+
     } else {
       paymentInfo.value.voucherCode = "";
       paymentInfo.value.voucherId = null;
@@ -615,6 +633,13 @@ const handleNotVoucher = () => {
   paymentInfo.value.voucherId = null;
   paymentInfo.value.discount = 0;
   paymentInfo.value.totalProductPrice = totalAmount.value;
+  invoices.value.forEach((item) => {
+    if (item.id === currentInvoice.value.id) {
+      item.vouchers = [];
+      currentInvoice.value = item
+      sendCartInfo(item);
+    }
+  });
 };
 
 const changeShippingOption = (option: string) => {
