@@ -18,7 +18,7 @@ public interface AdminProductDetailSaleModuleResponse extends BaseResponse {
 
     String getTenThuongHieu();
 
-    Boolean getGioiTinh();
+    String getGioiTinh();
 
     String getKichCo();
 

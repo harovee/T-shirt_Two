@@ -11,5 +11,5 @@ public class AdCreateUpdateAnhRequest {
 
     private String url;
 
-
+    private String idSanPhamChiTiet;
 }

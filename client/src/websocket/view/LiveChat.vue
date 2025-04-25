@@ -203,8 +203,6 @@ const subscribeToRoom = (roomId) => {
   );
 };
 
-
-
 //xử lý gửi tin nhắn
 const sendMessage = () => {
   if (message.value.trim() && stompClient.value) {

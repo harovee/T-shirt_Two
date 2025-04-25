@@ -36,6 +36,11 @@ public class AdAnhController {
     public ResponseEntity<?> updateAnh(@PathVariable String id, @Valid @RequestBody final AdCreateUpdateAnhRequest request) {
         return Helper.createResponseEntity(adAnhService.updateAnh(id, request));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAnh(@PathVariable String id ) {
+        return Helper.createResponseEntity(adAnhService.deleteAnh(id));
+    }
 //
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<?> deleteDanhMuc(@PathVariable String id) {

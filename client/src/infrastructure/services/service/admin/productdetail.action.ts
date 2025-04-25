@@ -9,6 +9,8 @@ import {
     getAllProductDetails,
     FindAllProductDetailRequest,
     getListProductDetail,
+    getListSanPhamChiTiet,
+    getListSanPhamChiTietByIdSanPham,
     checkQuantityRequest,
     checkQuantityInStock,
     getAllProductDetailOverZero,
@@ -181,5 +183,25 @@ export const useUpdateProductDetail = () => {
         onError: (error: any) => {
             console.log(queryKey.admin.productDetail.productDetailList + "🚀 ~ productDetailUpdate ~ error:", error);
         },
+    });
+};
+
+// Lấy danh sách sản phẩm chi tiết không phân trang
+export const useGetListSanPhamChiTiet = (
+): UseQueryReturnType<Awaited<ReturnType<typeof getListSanPhamChiTiet>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.productDetail.productDetailListNoPage],
+        queryFn: () => getListSanPhamChiTiet()
+    });
+};
+
+// lấy danh sách sản phẩm chi tiết theo sản phẩm không phân trang 
+export const useGetSanPhamChiTietByIdSanPham = (
+    id: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getListSanPhamChiTietByIdSanPham>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.productDetail.productDetailList, id,],
+        queryFn: () => getListSanPhamChiTietByIdSanPham(id.value),
+        ...options,
     });
 };

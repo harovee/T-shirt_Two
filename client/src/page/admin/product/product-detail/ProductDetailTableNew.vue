@@ -5,6 +5,9 @@
         <h3 class="text-xl font-semibold text-gray-800">
           Danh sách sản phẩm chi tiết {{ changeFill ? "" : " - " + findTenSanPham(productId) }}
         </h3>
+        <p class="text-sm text-gray-500">
+          Hiển thị danh sách sản phẩm chi tiết T-Shirts Two
+        </p>
       </div>
       <div v-if="selectedRowKeyNews.length > 0">
         <a-button type="primary" class="ml-auto" @click="handleEdit">
@@ -25,8 +28,8 @@
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'soLuong'" class="text-center">
-          <a-input type="number" v-model:value="record.soLuong" min="0">
-          </a-input>
+          <a-input-number type="number" v-model:value="record.soLuong" min="0">
+          </a-input-number>
         </div>
         <div v-if="column.key === 'gia'" class="text-center">
           <a-input-number

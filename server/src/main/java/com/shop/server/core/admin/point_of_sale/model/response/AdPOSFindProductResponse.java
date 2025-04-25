@@ -17,7 +17,7 @@ public interface AdPOSFindProductResponse  extends BaseResponse {
 
     String getTenThuongHieu();
 
-    Boolean getGioiTinh();
+    String getGioiTinh();
 
     String getKichCo();
 

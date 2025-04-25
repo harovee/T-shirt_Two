@@ -184,7 +184,7 @@ import type { UploadProps } from "ant-design-vue";
 import { ListProductResponse } from "@/infrastructure/services/api/admin/product.api";
 import { ListSizeResponse } from "@/infrastructure/services/api/admin/size.api";
 import { ListColorResponse } from "@/infrastructure/services/api/admin/color.api";
-import { warningNotiSort, successNotiSort, errorNotiSort } from "@/utils/notification.config";
+import { warningNotiSort, successNotiSort, errorNotiSort, openNotification, notificationType } from "@/utils/notification.config";
 import { useCreateProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { Form, message, Modal, Upload } from "ant-design-vue";
@@ -295,6 +295,7 @@ interface DataType {
   idThuongHieu: string | null;
   idTinhNang: string | null;
   idSanPham: string | null;
+  gioiTinh: string | null;
 }
 
 
@@ -504,6 +505,7 @@ const dataSource: RenProductDetailResponse[] | any = computed(() => {
       idThuongHieu: e.idThuongHieu || null,
       idTinhNang: e.idTinhNang || null,
       idSanPham: e.idSanPham || null,
+      gioiTinh: e.gioiTinh || "Nam và Nữ",
     })) || []
   );
 });
@@ -560,7 +562,14 @@ const handleCreateProduct = async () => {
               item.listAnh = [];
             }
           }
-          create(item);
+          create(item,{
+          onSuccess: (result) => {
+            openNotification(notificationType.success, result?.data.message, '');
+          },
+          onError: (error: any) => {
+            openNotification(notificationType.error, error?.response?.data?.message, '');
+          },
+        });
         } catch (error: any) {
           console.error("🚀 ~ handleCreate ~ error:", error);
           if (error?.response) {

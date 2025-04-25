@@ -147,6 +147,27 @@ public interface AdminSaleRepository extends DotGiamGiaRepository {
             """, nativeQuery = true)
     void saveSaleProductDetails(AdminSaleProductRequest req);
 
+//    @Modifying
+//    @Transactional
+//    @Query(value = """
+//            INSERT INTO san_pham_giam_gia
+//            (id, id_san_pham_chi_tiet, id_dot_giam_gia, gia_sau_giam,
+//            san_pham_giam_gia.deleted, san_pham_giam_gia.ngay_tao, san_pham_giam_gia.nguoi_tao)
+//            SELECT
+//                UUID(),
+//                spct.id,
+//                :#{#req.idDotGiamGia},
+//                CASE
+//                    WHEN :#{#req.loaiGiamGia} = 'PERCENT' THEN spct.gia - (spct.gia * :#{#req.giaTriGiamGia} / 100)
+//                    WHEN (:#{#req.loaiGiamGia} = 'VND' AND spct.gia >= :#{#req.giaTriGiamGia}) THEN spct.gia - :#{#req.giaTriGiamGia}
+//                    WHEN (:#{#req.loaiGiamGia} = 'VND' AND spct.gia < :#{#req.giaTriGiamGia} AND spct.gia > :#{#req.giaTriGiamToiDa}) THEN spct.gia - :#{#req.giaTriGiamToiDa}
+//                    ELSE spct.gia/2
+//                END AS gia_sau_giam,
+//                false, UNIX_TIMESTAMP()*1000, :#{#req.nhanVien}
+//            FROM san_pham_chi_tiet spct
+//            WHERE spct.id IN (:#{#req.idSanPhamChiTiets})
+//            """, nativeQuery = true)
+//    void updateSaleProductDetails(AdminSaleProductRequest req);
 
     @Query(value = """
             select

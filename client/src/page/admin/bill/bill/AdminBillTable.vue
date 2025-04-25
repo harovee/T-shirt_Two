@@ -85,6 +85,11 @@
 
           <a-tag v-else color="secondary">Không xác định</a-tag>
         </div>
+        <div v-else-if="column.key === 'tenKhachHang'" class="text-center">
+          <span v-if="record.tenKhachHang === '' || record.tenKhachHang === null" 
+            >Khách lẻ</span
+          >
+        </div>
         <div
           v-else-if="column.key === 'action'"
           class="flex items-center justify-center space-x-2"

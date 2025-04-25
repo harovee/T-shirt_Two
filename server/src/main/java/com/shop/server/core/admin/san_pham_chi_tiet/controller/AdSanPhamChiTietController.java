@@ -3,6 +3,7 @@ package com.shop.server.core.admin.san_pham_chi_tiet.controller;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCheckQuantityRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdCreateUpdateSpctRequest;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdFindSpctRequest;
+import com.shop.server.core.admin.san_pham_chi_tiet.model.request.AdUpdateSaleProductDetail;
 import com.shop.server.core.admin.san_pham_chi_tiet.model.response.AdSanPhamChiTietResponse;
 import com.shop.server.core.admin.san_pham_chi_tiet.repository.AdSanPhamChiTietRepository;
 import com.shop.server.core.admin.san_pham_chi_tiet.service.AdSanPhamChiTietService;
@@ -66,6 +67,11 @@ public class AdSanPhamChiTietController {
         return Helper.createResponseEntity(adSanPhamChiTietService.plusQuantityInStockByListProduct(request));
     }
 
+    @PutMapping("/sale-product")
+    public ResponseEntity<?> updateSaleProductDetail(@RequestBody AdUpdateSaleProductDetail request) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.updateProductSale(request));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getDetailSanPhamChiTiet(@PathVariable final String id) {
         return Helper.createResponseEntity(adSanPhamChiTietService.getSanPhamChiTietById(id));
@@ -84,5 +90,14 @@ public class AdSanPhamChiTietController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSanPhamChiTiet(@PathVariable final String id) {
         return Helper.createResponseEntity(adSanPhamChiTietService.deleted(id));
+    }
+
+    @GetMapping("/all-productdetail")
+    public ResponseEntity<?> getAllProduct() {
+        return Helper.createResponseEntity(adSanPhamChiTietService.getAllProductDetail());
+    }
+    @GetMapping("/product-detail-by-id/{id}")
+    public ResponseEntity<?> getSanPhamChiTietByProductId(@PathVariable String id) {
+        return Helper.createResponseEntity(adSanPhamChiTietService.getAllProductDetailByIdSanPham(id));
     }
 }

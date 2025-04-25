@@ -3,6 +3,9 @@
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-xl font-semibold text-gray-800">Danh sách tính năng</h3>
+        <p class="text-sm text-gray-500">
+          Hiển thị danh sách tính năng T-Shirts Two
+        </p>
       </div>
       <div class="p-2.5">
         <a-tooltip title="Thêm tính năng" trigger="hover">

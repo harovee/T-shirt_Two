@@ -12,13 +12,15 @@ public interface AdPOSOrderDetailResponse extends BaseResponse {
 
     Double getGia();
 
+    Double getGiaGoc();
+
     Double getGiaHienTai();
 
     String getTenSanPham();
 
     String getTenThuongHieu();
 
-    Boolean getGioiTinh();
+    String getGioiTinh();
 
     String getKichCo();
 

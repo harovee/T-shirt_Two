@@ -31,7 +31,7 @@ public class SanPhamChiTiet extends PrimaryEntity implements Serializable {
     private String ten;
 
     @Column(name = "gioi_tinh")
-    private Boolean gioiTinh;
+    private String gioiTinh;
 
     @Column(name = "gia")
     private BigDecimal gia;

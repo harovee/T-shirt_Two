@@ -82,7 +82,10 @@ const rulesRef = reactive({
     },
     {
       validator: (_, value) => {
-        
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (specialCharRegex.test(value)) {
+          return Promise.reject("Tên hoạ tiết không được chứa ký tự đặc biệt");
+        }
         const allPatternDatas = Array.isArray(props.allPatternData) ? props.allPatternData : [];
         if (props.PatternDetail && props.PatternDetail.ten.toLowerCase() === value.toLowerCase()) {
             return Promise.resolve();
@@ -160,6 +163,7 @@ const formFields = computed(() => [
 ]);
 
 const handleAddOrUpdate = async () => {
+  await validate();
   const payload = {
     ten: modelRef.ten
   };
@@ -174,7 +178,7 @@ const handleAddOrUpdate = async () => {
     async onOk() {
 
   try {
-    await validate();
+    
     if (props.PatternDetail) {
       await updatePattern({
         id: props.PatternDetail.id,

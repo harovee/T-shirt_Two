@@ -17,7 +17,7 @@ import {
     getCustomerByPhoneNumber, 
     ServiceIdRequest,
     getServiceId, voucherRequest,
-    getVoucherByCode
+    getVoucherByCode, createInvoicePdfWithId
 } from "@/infrastructure/services/api/admin/payment.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";

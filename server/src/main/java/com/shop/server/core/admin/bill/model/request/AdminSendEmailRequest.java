@@ -11,6 +11,8 @@ import java.util.List;
 @Getter
 
 public class AdminSendEmailRequest {
+    String idHoaDon;
+
     String email;
 
     String maHoaDon;

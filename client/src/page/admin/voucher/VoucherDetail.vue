@@ -190,17 +190,27 @@ const rules: Record<string, Rule[]> = {
   giaTriGiam: [
       { required: true, message: 'Vui lòng nhập giá trị giảm', trigger: 'change' },
       {
-          validator: (rule, value) => {
-              if (formState.loaiGiam === true && value != null && value <= 0) {
-                  return Promise.reject('Giá trị giảm phải lớn hơn 0');
-              }
-              if (formState.loaiGiam === false && value > 100 || formState.loaiGiam === false && value <=0 ) {
-                  return Promise.reject('Giá trị giảm phải lớn hơn 0 và nhỏ hơn 100');
-              }
-              return Promise.resolve();
-          },
-          trigger: 'change',
-      },
+        validator: (rule, value) => {
+            // Check if value contains only digits, decimal point, or is empty
+            if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
+                return Promise.reject('Giá trị giảm phải là số');
+            }
+            
+            const numValue = parseFloat(value);
+            if (formState.loaiGiam === true) {
+                if (numValue <= 0) {
+                    return Promise.reject('Giá trị giảm phải lớn hơn 0');
+                }
+            } else {
+                if (numValue < 1 || numValue > 100) {
+                    return Promise.reject('Giá trị giảm phải từ 1% đến 100%');
+                }
+            }
+            
+            return Promise.resolve();
+        },
+        trigger: 'change',
+    },
   ],
   dieuKienGiam: [
   {
@@ -253,6 +263,15 @@ const rules: Record<string, Rule[]> = {
           const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
           dayjs(date).valueOf()
           );
+          if (!value || value.length !== 2) return Promise.resolve();
+          
+          // Format to remove millisecond precision for comparison
+          const startStr = dayjs(value[0]).format('YYYY-MM-DD HH:mm');
+          const endStr = dayjs(value[1]).format('YYYY-MM-DD HH:mm');
+          
+          if (startStr === endStr) {
+            return Promise.reject('Ngày kết thúc không được trùng ngày bắt đầu');
+          }
           const now = dayjs().valueOf();
           if (ngayBatDau < now) {
             return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
