@@ -34,23 +34,24 @@
           </a-form-item>
 
           <a-form-item  class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" v-if="formState.loaiGiam">
-            <a-input v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa" disabled>
+            <a-input-number v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa" disabled :formater="formater">
               <template #addonAfter>đ</template>
-            </a-input>
+            </a-input-number>
           </a-form-item>
 
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
-            <a-input-number v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu || isExpired"  />
+            <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu || isExpired"  />
           </a-form-item>
 
           <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required >
-            <a-input v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu" :disabled="isExpired">
+            <a-input-number v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu" :disabled="isExpired" :formater="formater">
               <template #addonAfter>đ</template>
-            </a-input>
+            </a-input-number>
           </a-form-item>
 
           <a-form-item class="mb-4" label="Thời gian" name="ngayBatDauVaKetThuc" required>
             <a-range-picker
+            class="w-full"
               size="large"
               show-time
               format="DD/MM/YYYY HH:mm"
@@ -161,6 +162,11 @@ const voucherRequest = ref<PhieuGiamGiaRequest>(defaultVoucherRequest)
 const isExpired = computed(() => {
   return formState.ngayBatDauVaKetThuc[1] && dayjs(formState.ngayBatDauVaKetThuc[1]).isBefore(dayjs());
 });
+
+const formatter = (value: any) => {
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 const formRef = ref();
 
@@ -424,8 +430,8 @@ watch(() => dataDetail.value?.data.data, (detail) => {
             giaTriGiam: detail.giaTriGiam || "",
             kieu: detail.kieu,
             soLuong :detail.soLuong || 0,
-            giamToiDa: detail.giamToiDa || "",
-            dieuKienGiam : detail.dieuKienGiam || "",
+            giamToiDa: formatter(detail.giamToiDa) || "",
+            dieuKienGiam : formatter(detail.dieuKienGiam) || "",
             ngayBatDauVaKetThuc: [
             detail.ngayBatDau ? dayjs(detail.ngayBatDau) : null,
             detail.ngayKetThuc ? dayjs(detail.ngayKetThuc) : null,

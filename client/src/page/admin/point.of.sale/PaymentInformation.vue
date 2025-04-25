@@ -109,7 +109,6 @@
             @cancel="open = false"
             class="w-[600px] h-[400px]"
             @handleOpenKhachHang="openVoucherModal"
-            @selectVoucher="handleVoucherSelected"
           />
         </a-form-item>
         <div class="flex justify-between items-center w-[300px]">
@@ -400,14 +399,6 @@ const paymentInfo = ref({
   phoneNumber: "" || null,
 });
 
-// watch(
-//   () => shippingParams.value,
-//   (newValues) => {
-//     console.log(newValues);
-//   },
-//   { deep: true }
-// );
-
 // Lấy service ID GHN
 const { data: service, refetch: refetchService } = useGetServiceId(
   serviceIdParams,
@@ -447,7 +438,7 @@ watch(
   () => dataSourcePro.value,
   (newData) => {
     if (newData) {
-      // console.log(newData);
+      // console.log(newData);selectVoucher
 
       paramsVoucher.value.tongTien = totalAmount.value;
       paramsNextPriceVoucher.value.tongTien = totalAmount.value;
@@ -577,23 +568,23 @@ const handleCheckPaymented = (totalAmountAfter: number) => {
   paymentedValue.value = totalAmountAfter;
 };
 
-const handleVoucherSelected = (voucher) => {
-  if (paymentedValue.value !== 0) {
-    warningNotiSort("Bạn đã thanh toán không thể thay đổi phiếu giảm giá!");
-    return;
-  }
-  paymentInfo.value.voucherCode = voucher.ma;
-  paymentInfo.value.voucherId = voucher.id;
-  if (!voucher.loaiGiam) {
-    paymentInfo.value.discount = voucher.giaTriGiam;
-    paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
-  } else {
-    paymentInfo.value.discount = voucher.giaTriGiam;
-    paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
-  }
-};
+// const handleVoucherSelected = (voucher) => {
+//   if (paymentedValue.value !== 0) {
+//     warningNotiSort("Bạn đã thanh toán không thể thay đổi phiếu giảm giá!");
+//     return;
+//   }
+//   paymentInfo.value.voucherCode = voucher.ma;
+//   paymentInfo.value.voucherId = voucher.id;
+//   if (!voucher.loaiGiam) {
+//     paymentInfo.value.discount = voucher.giaTriGiam;
+//     paymentInfo.value.totalProductPrice =
+//       totalAmount.value - paymentInfo.value.discount;
+//   } else {
+//     paymentInfo.value.discount = voucher.giaTriGiam;
+//     paymentInfo.value.totalProductPrice =
+//       totalAmount.value - paymentInfo.value.discount;
+//   }
+// };
 
 watch(
   () => paymentInfo.value,
@@ -691,7 +682,7 @@ const handleUpdateBill = (x: number) => {
     );
     return;
   }
-  if (paymentedValue.value === 0) {
+  if (paymentedValue.value === 0 || Math.floor(paymentedValue.value) < Math.floor(paymentInfo.value.totalProductPrice)) {
     warningNotiSort(
       "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"
     );

@@ -10,7 +10,7 @@
     <h1 class="text-xl">Thanh toán</h1>
     <div class="flex justify-between">
       <p>Số tiền phải thanh toán:</p>
-      <p class="text-lg">{{ formatCurrencyVND(totalAmount) }}</p>
+      <p class="text-lg">{{ formatCurrencyVND(totalAmount - totalAmountAfter) }}</p>
       <!-- <p v-if="dataPaymentMethodDetails && dataPaymentMethodDetails.length && (totalAmountAfter >= totalAmount)" class="text-lg">{{ formatCurrencyVND(0) }}</p> -->
     </div>
     <a-form :model="params" :rules="rulesRef" layout="vertical">
@@ -242,10 +242,13 @@ const dataPaymentMethodDetails = computed(
 
 const totalAmountAfter = ref(0);
 
+const currentAmount = ref(0);
+
 watch(
   () => dataPaymentMethodDetails.value,
   (newData) => {
     totalAmountAfter.value = newData.reduce((sum, item) => sum + (item.soTien || 0), 0);
+    currentAmount.value = props.totalAmount - totalAmountAfter.value;
     emit("handlePaymented", totalAmountAfter.value)
     if (params.value.tienKhachDua === null) {
       params.value.soTienDu = 0;
@@ -254,15 +257,16 @@ watch(
       params.value.idPhuongThucThanhToan === "tienmat" &&
       params.value.tienKhachDua > 0
     ) {
-      params.value.soTienDu = params.value.tienKhachDua - props.totalAmount;
+      params.value.soTienDu = Math.floor(params.value.tienKhachDua - currentAmount.value);
+      
     } else if (params.value.idPhuongThucThanhToan === "chuyenkhoan") {
-      params.value.tienKhachDua = props.totalAmount;
+      params.value.tienKhachDua = props.totalAmount - totalAmountAfter.value;
     } else {
       
       if (params.value.tienKhachDua > 0 && params.value.tienChuyenKhoan === 0) {
-        params.value.soTienDu = params.value.tienKhachDua - props.totalAmount;
+        params.value.soTienDu = Math.floor(params.value.tienKhachDua - currentAmount.value);
       }
-      params.value.tienChuyenKhoan = props.totalAmount - params.value.tienKhachDua;
+      params.value.tienChuyenKhoan = Math.floor(props.totalAmount - totalAmountAfter.value - params.value.tienKhachDua);
       if (params.value.tienChuyenKhoan < 0) {
         params.value.tienChuyenKhoan = 0;
       }
@@ -284,13 +288,12 @@ const handlePayment = () => {
     async onOk() {
       try {
         await validate();
-        console.log(props.totalAmount);
         
         if (props.totalAmount === 0) {
           warningNotiSort("Bạn chưa thêm sản phẩm vào giỏ, không thể thanh toán!");
           return;
         }
-        if (totalAmountAfter.value - props.totalAmount >= 0) {
+        if (Math.floor(props.totalAmount) - Math.floor(totalAmountAfter.value) <= 0) {
           warningNotiSort("Đơn hàng này đã hoàn thành thanh toán!");
           return;
         }
@@ -299,7 +302,7 @@ const handlePayment = () => {
           return;
         }
         if (params.value.tienKhachDua > props.totalAmount) {
-          params.value.tienKhachDua = props.totalAmount
+          params.value.tienKhachDua = props.totalAmount - totalAmountAfter.value
         }
         createPaymentMethodDetail(params.value, {
           onSuccess: (result) => {

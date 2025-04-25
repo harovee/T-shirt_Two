@@ -106,7 +106,7 @@ import {
 import { ItemType, MenuProps } from "ant-design-vue";
 import NotificationList from "@/websocket/view/NotificationList.vue";
 
-const selectedKeys = ref([ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name]);
+const selectedKeys = ref([ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name]);
 const openKeys = ref(["sub1"]);
 
 function getItem(

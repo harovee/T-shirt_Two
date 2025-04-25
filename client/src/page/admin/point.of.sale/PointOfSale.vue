@@ -10,43 +10,43 @@
           <h3 class="text-left text-xl ms-5">Danh sách đơn</h3>
           <div class="flex justify-between gap-3">
             <a-tooltip title="Thêm sản phẩm vào giỏ" trigger="hover">
-            <a-button
-              class="bg-purple-300 flex justify-between items-center gap-2"
-              size="large"
-              @click="handleOpenProductsModel"
-            >
-              <v-icon name="md-addcircle" />
-            </a-button>
+              <a-button
+                class="bg-purple-300 flex justify-between items-center gap-2"
+                size="large"
+                @click="handleOpenProductsModel"
+              >
+                <v-icon name="md-addcircle" />
+              </a-button>
 
-            <a-modal
-              v-model:open="openProductsModal"
-              title="Danh sách sản phẩm có sẵn"
-              width="80%"
-              @ok="handleOk"
-              @cancel="handleCancel"
-            >
-              <template #footer>
-                <div class="text-center">
-                  <a-button key="back" @click="handleCancel">Đóng</a-button>
-                  <a-button
-                    key="submit"
-                    type="primary"
-                    :loading="loadingSubmitProductTable"
-                    @click="handleOk"
-                    >Thêm</a-button
-                  >
+              <a-modal
+                v-model:open="openProductsModal"
+                title="Danh sách sản phẩm có sẵn"
+                width="80%"
+                @ok="handleOk"
+                @cancel="handleCancel"
+              >
+                <template #footer>
+                  <div class="text-center">
+                    <a-button key="back" @click="handleCancel">Đóng</a-button>
+                    <a-button
+                      key="submit"
+                      type="primary"
+                      :loading="loadingSubmitProductTable"
+                      @click="handleOk"
+                      >Thêm</a-button
+                    >
+                  </div>
+                </template>
+                <div>
+                  <POSProductTable
+                    :attributes="listAttributes.data.value?.data"
+                    :idSanPhamChiTiets="idSanPhamChiTiets"
+                    @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"
+                    @update:refetch="setRefetch"
+                  />
                 </div>
-              </template>
-              <div>
-                <POSProductTable
-                  :attributes="listAttributes.data.value?.data"
-                  :idSanPhamChiTiets="idSanPhamChiTiets"
-                  @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"
-                  @update:refetch="setRefetch"
-                />
-              </div>
-            </a-modal>
-            <!-- <a-modal
+              </a-modal>
+              <!-- <a-modal
               v-model:open="openQuantityModal"
               title="Chọn số lượng"
               width="500px"
@@ -61,22 +61,22 @@
                 v-model:value="quantityProduct"
               ></a-input-number
             ></a-modal> -->
-          </a-tooltip>
-          <a-tooltip title="Quét QR" trigger="hover">
-            <a-button
-              class="bg-purple-300 flex justify-between items-center gap-2"
-              size="large"
-              @click="openQRModal"
-            >
-              <v-icon name="bi-qr-code-scan" />
-            </a-button>
-          </a-tooltip>
-          <scan-qr-code
-            :openModal="isModalOpen"
-            @update:open="isModalOpen = $event"
-            @update:idSanPhamChitiet="handleUpdateIdSanPhamChiTietQr"
-            @ok="handleQRScan"
-          />
+            </a-tooltip>
+            <a-tooltip title="Quét QR" trigger="hover">
+              <a-button
+                class="bg-purple-300 flex justify-between items-center gap-2"
+                size="large"
+                @click="openQRModal"
+              >
+                <v-icon name="bi-qr-code-scan" />
+              </a-button>
+            </a-tooltip>
+            <scan-qr-code
+              :openModal="isModalOpen"
+              @update:open="isModalOpen = $event"
+              @update:idSanPhamChitiet="handleUpdateIdSanPhamChiTietQr"
+              @ok="handleQRScan"
+            />
           </div>
         </div>
         <a-tabs
@@ -123,9 +123,12 @@
                   @handleClose="handleClose"
                   @cancel="open = false"
                   class="w-[600px] h-[400px]"
-                  @handleOpenKhachHang="handleOpenKhachHang"
                   @selectCustomer="
-                    (customer) => handleCustomerSelected(customer, bill)
+                    (customer) =>
+                      handleCustomerSelected(
+                        customer,
+                        activeKey?.valueOf() || ''
+                      )
                   "
                 />
               </div>
@@ -179,7 +182,7 @@ import {
   createVNode,
   reactive,
   watchEffect,
-  nextTick
+  nextTick,
 } from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
@@ -250,7 +253,6 @@ watch(
   { immediate: true, deep: true }
 );
 
-
 // watch(
 //   activeKey,
 //   (newActiveKey) => {
@@ -289,21 +291,20 @@ watch(
   { immediate: true, deep: true }
 );
 
-
 watch(
   () => isAddProduct.value,
   async (newDataSource) => {
     const results = await Promise.all(
-        dataSource.value.map(async (id) => {
-          const response = await getOrderDetailsAll(id.id);
-          const length = response?.data.length || 0;
-          return { id, length };
-        })
-      );
-      lengthMap.value = results.reduce((acc, { id, length }) => {
-        acc[id.id] = length;
-        return acc;
-      }, {});
+      dataSource.value.map(async (id) => {
+        const response = await getOrderDetailsAll(id.id);
+        const length = response?.data.length || 0;
+        return { id, length };
+      })
+    );
+    lengthMap.value = results.reduce((acc, { id, length }) => {
+      acc[id.id] = length;
+      return acc;
+    }, {});
   },
   { immediate: true, deep: true }
 );
@@ -380,8 +381,6 @@ const handleCancel = () => {
   quantityProduct.value = 1;
 };
 
-
-
 const { mutate: createOrderDetails } = useCreateOrderDetails();
 const handleOk = (e: MouseEvent) => {
   // openQuantityModal.value = true;
@@ -391,7 +390,6 @@ const handleOk = (e: MouseEvent) => {
     userEmail: useAuthStore().user?.email || null,
     soLuong: 1,
   });
-  
 };
 
 // modal thêm số lượgn
@@ -448,7 +446,7 @@ const handleCreateOrderDetails = (data: POSAddProductsToCartRequest) => {
             openNotification(notificationType.success, result?.message, "");
             openQuantityModal.value = false;
             openProductsModal.value = false;
-            isAddProduct.value = isAddProduct.value + 1
+            isAddProduct.value = isAddProduct.value + 1;
           },
           onError: (error: any) => {
             openNotification(
@@ -542,10 +540,6 @@ const handleClose = () => {
   open.value = false;
 };
 
-// const handleCloseCustomerAddress = () => {
-//   openCustomerAddress.value = false;
-// };
-
 const selectedCustomer = ref<{
   id: string;
   name: string;
@@ -553,21 +547,11 @@ const selectedCustomer = ref<{
   email: string;
 } | null>(null);
 
-// const handleCustomerSelected = (
-//   customer: any,
-//   dataCustomer: any,
-//   bill: any
-// ) => {
-//   const billWait = dataSources.value.find((data: any) => data.id === bill.id);
-//   billWait.idKhachHang = customer.key;
-//   dataCustomers.value = dataCustomer;
-// };
-
 const handleCustomerSelected = (customer: any, bill: any) => {
-  if (!activeTabCustomers[bill.id]) {
-    activeTabCustomers[bill.id] = {};
+  if (!activeTabCustomers[bill]) {
+    activeTabCustomers[bill] = {};
   }
-  activeTabCustomers[bill.id] = { ...customer };
+  activeTabCustomers[bill] = { ...customer };
 };
 
 const handleChangePaymentInfo = (paymentInfo: any, bill: any) => {
@@ -621,8 +605,6 @@ const getPhoneNumberCustomer = (id: string) => {
     }
   }
 };
-
-
 
 const add = async () => {
   const payload = {

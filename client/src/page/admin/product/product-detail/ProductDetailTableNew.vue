@@ -114,6 +114,7 @@ const emit = defineEmits([
   "update:paginationParams",
   "handleOpenModalCreate",
   "handleCloseModalCreate",
+  "handleRefetch"
 ]);
 
 // Interface dùng để inject các thuộc tính
@@ -208,6 +209,7 @@ const handleOpenModalUpdateProductDetail = (productDetail) => {
 
 const handleCloseModalUpdateProductDetail = () => {
   isOpenModalUpdateProductDetail.value = false;
+  emit('handleRefetch');
 };
 // ---------------------------------------
 

@@ -84,7 +84,7 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             try {
                 BigDecimal dieuKienGiam = BigDecimal.valueOf(Long.parseLong(request.getDieuKienGiam()));
                 BigDecimal giaTriGiam = BigDecimal.valueOf(request.getGiaTriGiam());
-                request.setGiamToiDa(String.valueOf(Long.parseLong(request.getDieuKienGiam())));
+                request.setGiamToiDa(String.valueOf(Long.parseLong(String.valueOf(request.getGiaTriGiam()))));
             } catch (Exception e) {
                 return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm và giảm tối đa sai kiểu dữ liệu");
             }

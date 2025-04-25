@@ -160,6 +160,7 @@ import { checkQuantityRequest } from "@/infrastructure/services/api/admin/produc
 
 const props = defineProps<{
   idOrder: string;
+  maHoaDon: string
 }>();
 
 interface DataType extends POSProductDetailResponse {

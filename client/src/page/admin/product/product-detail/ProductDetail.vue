@@ -29,6 +29,7 @@
         :loading="computedLoading"
         :pagination-params="computedPaginationParams"
         @update:pagination-params="computedPaginationHandler"
+        @handleRefetch="refetchData"
         :product-id="productId"
         :change-fill="changeProductDetail"
       />
@@ -109,6 +110,7 @@ const {
   data,
   isLoading: productDetailsLoading,
   isFetching: productDetailsFetching,
+  refetch
 } = useGetProductDetail(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
@@ -133,7 +135,7 @@ const paramsAll = ref<FindAllProductDetailRequest>({
 const {
   data: allProductDetail,
   isLoading: allProductDetailsLoading,
-  isFetching: allProductDetailsFetching,
+  isFetching: allProductDetailsFetching
 } = useGetAllProductDetail(paramsAll, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
@@ -414,6 +416,10 @@ const formatter = (value: any) => {
   if (!value) return "";
   return `${Math.round(value)} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
+
+const refetchData = () => {
+  refetch();
+}
 
 // provide để truyền dữ liệu sang component con
 provide("listProduct", dataProduct);
