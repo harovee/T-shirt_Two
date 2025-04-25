@@ -142,6 +142,7 @@ import {
   successNotiSort,
   errorNotiSort,
 } from "@/utils/notification.config";
+import { currentInvoice, InvoiceData, invoices, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -304,6 +305,19 @@ const handlePayment = () => {
         if (params.value.tienKhachDua > props.totalAmount) {
           params.value.tienKhachDua = props.totalAmount - totalAmountAfter.value
         }
+        console.log("🚀 ~ handlePayment ~ params:", params.value);
+        invoices.value.forEach((item: InvoiceData) => {
+          if (item.id === currentInvoice.value.id) {
+            item.paymentMethod = params.value.idPhuongThucThanhToan === 'tienmat' ?
+             'Tiền mặt' : params.value.idPhuongThucThanhToan === 'chuyenkhoan' ?
+              'Chuyển khoản' : 'Cả hai';
+            item.guestMoney = params.value.tienKhachDua;
+            item.transferMoney = params.value.tienChuyenKhoan;
+
+            currentInvoice.value = item;
+            sendCartInfo(item);
+          }
+        });
         createPaymentMethodDetail(params.value, {
           onSuccess: (result) => {
             successNotiSort(result?.message);

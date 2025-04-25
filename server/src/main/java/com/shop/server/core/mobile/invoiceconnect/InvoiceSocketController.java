@@ -1,7 +1,7 @@
 package com.shop.server.core.mobile.invoiceconnect;
 
 import com.shop.server.core.admin.point_of_sale.service.PointOfSaleServiceIml;
-import com.shop.server.core.mobile.invoiceconnect.model.InvoiceInfo;
+import com.shop.server.core.mobile.invoiceconnect.businessmodel.InvoiceInfo;
 import lombok.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
