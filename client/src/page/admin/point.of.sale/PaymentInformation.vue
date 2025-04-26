@@ -141,11 +141,10 @@
             @change="updateTotal"
             :formatter="formatter"
           />
-          
         </div>
-        <p v-if=" totalAmount >= 2000000" class="mt-1 ms-16 text-red-500">
-            (Free ship cho hóa đơn từ 2.000.000đ.)
-          </p>
+        <p v-if="totalAmount >= 2000000" class="mt-1 ms-16 text-red-500">
+          (Free ship cho hóa đơn từ 2.000.000đ.)
+        </p>
         <a-form-item label="Phương thức thanh toán" class="text-xl">
           <div class="flex items-center space-x-2">
             <a-tooltip title="Chọn phương thức thanh toán" trigger="hover">
@@ -258,7 +257,12 @@ import {
   useUpdateClientAddress,
 } from "@/infrastructure/services/service/admin/client.action";
 import { log } from "console";
-import { invoices, currentInvoice, sendCartInfo, sendPaymentConfirm } from "@/infrastructure/mobile.connect/InvoiceConnect2";
+import {
+  invoices,
+  currentInvoice,
+  sendCartInfo,
+  sendPaymentConfirm,
+} from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
 
@@ -493,7 +497,7 @@ watch(
     if (newData && newData.length > 0) {
       paymentInfo.value.voucherCode = newData[0].ma;
       paymentInfo.value.voucherId = newData[0].id;
-      paymentInfo.value.discount = parseFloat(newData[0].giaTriGiam);
+      paymentInfo.value.discount = parseFloat(newData[0].giaTri);
       paymentInfo.value.totalProductPrice =
         totalAmount.value - paymentInfo.value.discount;
       voucher.value =
@@ -502,21 +506,22 @@ watch(
       // console.log(dataNextPriceVouchers.value);
 
       invoices.value.forEach((item) => {
-            if (item.id === currentInvoice.value.id) {
-            item.vouchers = [
-                {
-                  id: newData[0].id,
-                  code: newData[0].ma,
-                  name: newData[0].ten,
-                  discount: Number(newData[0].loaiGiam ? newData[0].giaTriGiam : newData[0].giaTri),
-                  type: newData[0].loaiGiam ? "fixed" : "percent",
-                },
-              ];
-            currentInvoice.value = item
-            sendCartInfo(item);
-            }
-        });
-
+        if (item.id === currentInvoice.value.id) {
+          item.vouchers = [
+            {
+              id: newData[0].id,
+              code: newData[0].ma,
+              name: newData[0].ten,
+              discount: Number(
+                newData[0].loaiGiam ? newData[0].giaTri : newData[0].giaTri
+              ),
+              type: newData[0].loaiGiam ? "fixed" : "percent",
+            },
+          ];
+          currentInvoice.value = item;
+          sendCartInfo(item);
+        }
+      });
     } else {
       paymentInfo.value.voucherCode = "";
       paymentInfo.value.voucherId = null;
@@ -627,7 +632,7 @@ const handleNotVoucher = () => {
   invoices.value.forEach((item) => {
     if (item.id === currentInvoice.value.id) {
       item.vouchers = [];
-      currentInvoice.value = item
+      currentInvoice.value = item;
       sendCartInfo(item);
     }
   });
@@ -636,6 +641,11 @@ const handleNotVoucher = () => {
 const changeShippingOption = (option: string) => {
   paymentInfo.value.shippingOption = option;
   emit("handlePaymentInfo", paymentInfo.value);
+};
+
+const openLocalPdf = (maHoaDon) => {
+  const filePath = "/hoa_don/HD.pdf"; // Đường dẫn file PDF trong thư mục public hoặc được serve bởi server
+  window.open(filePath, "_blank");
 };
 
 const { mutate: updateBillWait } = useUpdateBillWait();
@@ -691,6 +701,8 @@ const handleUpdateBill = (x: number) => {
     xa: getCustomerAddress?.value?.ward || null,
     huyen: getCustomerAddress?.value?.district || null,
     tinh: getCustomerAddress?.value?.province || null,
+    phuongThucNhan:
+      paymentInfo.value.shippingOption === "true" ? "Giao hàng" : "Tại quầy",
   };
   if (
     paymentInfo.value.shippingOption === "true" &&
@@ -702,12 +714,14 @@ const handleUpdateBill = (x: number) => {
     return;
   }
   if (dataSourcePro.value.length <= 0) {
-    warningNotiSort(
-      "Không có sản phẩm nào trong giỏ hàng!"
-    );
+    warningNotiSort("Không có sản phẩm nào trong giỏ hàng!");
     return;
   }
-  if (paymentedValue.value === 0 || Math.floor(paymentedValue.value) < Math.floor(paymentInfo.value.totalProductPrice)) {
+  if (
+    paymentedValue.value === 0 ||
+    Math.floor(paymentedValue.value) <
+      Math.floor(paymentInfo.value.totalProductPrice)
+  ) {
     warningNotiSort(
       "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"
     );
@@ -725,7 +739,14 @@ const handleUpdateBill = (x: number) => {
             idBill: props.dataSourceInfor.id,
             params: payload,
           });
-          await createInvoicePdf(pdfParams);
+          await createInvoicePdf(pdfParams)
+            .then(() => {
+              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
+              window.open(url, "_blank");
+            })
+            .catch((error) => {
+              console.error("Tạo hóa đơn PDF thất bại", error);
+            });
           successNotiSort("Thanh toán thành công!");
           router.push(
             ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
@@ -742,8 +763,7 @@ const handleUpdateBill = (x: number) => {
         Modal.destroyAll();
       },
     });
-  
-  }else if(x === 2) {
+  } else if (x === 2) {
     sendPaymentConfirm(
       props.dataSourceInfor.ma,
       () => {
@@ -753,7 +773,14 @@ const handleUpdateBill = (x: number) => {
               idBill: props.dataSourceInfor.id,
               params: payload,
             });
-            await createInvoicePdf(pdfParams);
+            await createInvoicePdf(pdfParams)
+            .then(() => {
+              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
+              window.open(url, "_blank");
+            })
+            .catch((error) => {
+              console.error("Tạo hóa đơn PDF thất bại", error);
+            });
             successNotiSort("Thanh toán thành công!");
             router.push(
               ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
@@ -765,9 +792,9 @@ const handleUpdateBill = (x: number) => {
           }
         };
         return true;
-      }
-      ,
-      () => { });
+      },
+      () => {}
+    );
   }
 };
 

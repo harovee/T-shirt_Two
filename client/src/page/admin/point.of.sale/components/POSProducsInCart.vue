@@ -217,7 +217,7 @@ const columns: TableColumnType<DataType>[] = [
 
 //
 
-const tableKey = ref(0); // Define tableKey as a ref
+// const tableKey = ref(0); // Define tableKey as a ref
 
 const { data, isLoading, refetch: refetchCart } = useGetOrderDetails(
   props.idOrder?.valueOf(),

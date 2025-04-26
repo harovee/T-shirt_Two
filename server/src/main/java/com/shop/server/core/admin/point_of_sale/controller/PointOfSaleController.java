@@ -11,6 +11,8 @@ import com.shop.server.core.admin.point_of_sale.service.PointOfSaleServiceIml;
 import com.shop.server.infrastructure.constants.module.MappingConstant;
 import com.shop.server.utils.Helper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -36,6 +42,8 @@ public class PointOfSaleController {
     private final PointOfSaleServiceIml pointOfSaleService;
 
     private final InvoicePdfService invoicePdfService;
+
+    private final PdfStorageService pdfStorageService;
 
     private final PointOfSaleRepository pointOfSaleRepository;
 
@@ -129,6 +137,23 @@ public class PointOfSaleController {
         }
     }
 
+    @GetMapping("/invoices/{invoiceId}")
+    public ResponseEntity<Resource> viewInvoice(@PathVariable String invoiceId) throws IOException {
+        String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(invoiceId);
+        File file = new File("D:/DATN/TShirtShop/hoa-don/" + maHoaDon + ".pdf");
+
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + maHoaDon)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(resource);
+    }
+
     private byte[] generateInvoicePdf(AdPOSInvoicePdfRequest request) {
         try {
             return new byte[0];
@@ -136,4 +161,6 @@ public class PointOfSaleController {
             throw new RuntimeException("Lỗi khi tạo PDF", e);
         }
     }
+
+
 }

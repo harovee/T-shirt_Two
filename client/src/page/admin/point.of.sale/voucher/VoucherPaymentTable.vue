@@ -26,9 +26,9 @@
       :scroll="{ x: 300, y: 300 }"
     >
       <template #bodyCell="{ column, record }">
-        <div v-if="column.key === 'giaTriGiam'" class="text-left">
+        <div v-if="column.key === 'giaTri'" class="text-left">
           <span>
-            {{ formatCurrencyVND(record.giaTriGiam) }}
+            {{ formatCurrencyVND(record.giaTri) }}
           </span>
         </div>
         <div v-if="column.key === 'dieuKienGiam'" class="text-left">
@@ -163,7 +163,8 @@ const handleSelectVoucher = (voucher: VoucherResponse) => {
       sendCartInfo(currentInvoice.value);
     }
   });
-
+  console.log(voucher);
+  
   handleClose();
 };
 
@@ -202,8 +203,8 @@ const columns: TableColumnType<VoucherResponse>[] = [
   },
   {
     title: "Giá trị giảm",
-    dataIndex: "giaTriGiam",
-    key: "giaTriGiam",
+    dataIndex: "giaTri",
+    key: "giaTri",
     ellipsis: true,
     width: 100,
     resizable: true,

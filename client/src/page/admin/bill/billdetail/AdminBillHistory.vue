@@ -1,5 +1,5 @@
 <template>
-  <step-history-bill 
+  <step-history-bill-copy 
   :data-source="dataHistory || {}"
   :loading="isHistoryLoading || isHistoryFetching"
   :data-payment-info="dataPaymentInfo"
@@ -11,7 +11,8 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, watch, ref } from "vue";
-import StepHistoryBill from "./StepHistoryBill.vue";
+import  StepHistoryBill from "./StepHistoryBill.vue";
+import  StepHistoryBillCopy from "./StepHistoryBillCopy.vue";
 import { FindBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
 import { useGetBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
 import { keepPreviousData } from "@tanstack/vue-query";

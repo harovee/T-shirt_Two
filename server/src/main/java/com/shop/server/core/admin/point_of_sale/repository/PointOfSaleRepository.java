@@ -146,6 +146,7 @@ public interface PointOfSaleRepository extends SanPhamChiTietRepository {
                 and (:#{#req.idChatLieu} is null or spct.id_chat_lieu = :#{#req.idChatLieu})
                 and (:#{#req.idKieuDang} is null or spct.id_kieu_dang = :#{#req.idKieuDang})
                 and (:#{#req.idTinhNang} is null or spct.id_tinh_nang = :#{#req.idTinhNang})
+                order by spct.ngay_tao desc
             """, countQuery = """
                 select COUNT(spct.id)
                 from san_pham_chi_tiet spct

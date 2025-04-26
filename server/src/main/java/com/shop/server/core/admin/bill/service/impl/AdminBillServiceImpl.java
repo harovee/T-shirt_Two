@@ -352,6 +352,7 @@ public class AdminBillServiceImpl implements AdminBillService {
         hoaDon.setXa(request.getXa());
         hoaDon.setHuyen(request.getHuyen());
         hoaDon.setTinh(request.getTinh());
+        hoaDon.setPhuongThucNhan(request.getPhuongThucNhan());
 
         HoaDon hd1 = adminBillRepository.save(hoaDon);
         if (request.getIdPhieuGiamGia() != null) {

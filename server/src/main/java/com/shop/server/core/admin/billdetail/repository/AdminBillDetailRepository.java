@@ -42,7 +42,7 @@ public interface AdminBillDetailRepository extends HoaDonChiTietRepository {
             kc.ten AS tenKichCo,
             ms.ten AS tenMau,
             pgg.loai_giam AS loaiGiam,
-            pgg.giam_toi_da AS giamToiDa,
+            pgg.giam_toi_da AS giamToiDa,   
             pgg.gia_tri_giam AS giaTriGiam,
             pgg.dieu_kien_giam AS dieuKienGiam,
             pgg.ten AS tenPhieuGiam
