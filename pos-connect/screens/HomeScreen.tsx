@@ -47,14 +47,14 @@ const BANNERS = [
 
 // Dữ liệu mẫu cho thông tin cửa hàng
 const STORE_INFO = {
-  name: "Fashion Store",
-  address: "123 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh",
+  name: "T-Shirt Two",
+  address: "Trịnh Văn Bô, Phương Canh, Nam Từ Liêm, Hà Nội",
   phone: "0123 456 789",
-  email: "contact@fashionstore.com",
-  website: "www.fashionstore.com",
+  email: "contact@tshirttwo.com",
+  website: "www.tshirttwo.com",
   openHours: "8:00 - 22:00 (Thứ 2 - Chủ nhật)",
   description:
-    "Fashion Store là điểm đến lý tưởng cho những người yêu thời trang. Chúng tôi cung cấp các sản phẩm chất lượng cao với giá cả hợp lý, đảm bảo sự hài lòng cho mọi khách hàng.",
+    "T-Shirt Two là điểm đến lý tưởng cho những người yêu thời trang. Chúng tôi cung cấp các sản phẩm chất lượng cao với giá cả hợp lý, đảm bảo sự hài lòng cho mọi khách hàng.",
 }
 
 const HomeScreen = () => {
