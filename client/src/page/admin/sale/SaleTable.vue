@@ -39,10 +39,10 @@
           <span v-else="record.loai === 'PHAN_TRAM'">{{ record.giaTri + ' %' }}</span>
         </div>
         <div v-if="column.key === 'ngayBatDau'" class="text-center">
-          {{ getDateFormatMinute(record.ngayBatDau, true) }}
+          {{ convertDateFormatter(record.ngayBatDau) }}
         </div>
         <div v-if="column.key === 'ngayKetThuc'" class="text-center">
-          {{ getDateFormatMinute(record.ngayKetThuc, true) }}
+          {{ convertDateFormatter(record.ngayKetThuc) }}
         </div>
         <div v-else-if="column.key === 'trangThai'" class="text-center">
           <a-tag v-if="record.trangThai === 'IN_PROGRESS'" color="success">Đang diễn ra</a-tag>
@@ -77,7 +77,7 @@
           </a-popconfirm>
 
           <a-tooltip
-              title="Sửa đợt giảm giá"
+              title="Chi tiết đợt giảm giá"
               trigger="hover"
           >
             <a-button
@@ -86,7 +86,7 @@
                 shape="round"
                 @Click="handleRedirectSaleDetail(record.id)"
             >
-              <v-icon name="fa-pen"></v-icon>
+            <v-icon name="fa-eye"/>
             </a-button>
           </a-tooltip>
         </div>
@@ -101,7 +101,7 @@ import {ColumnType} from "ant-design-vue/es/table";
 import {defineEmits} from "vue";
 import {useChangeStatusSale} from "@/infrastructure/services/service/admin/sale.action.ts";
 import router from "@/infrastructure/routes/router.ts";
-import { formatCurrency, getDateFormatMinute} from "@/utils/common.helper.ts";
+import { convertDateFormat, convertDateFormatter, formatCurrency, getDateFormatMinute} from "@/utils/common.helper.ts";
 import { errorNotiSort, successNotiSort } from "@/utils/notification.config";
 
 const emit = defineEmits([

@@ -349,11 +349,11 @@ const dataSourcePro: DataType[] | any = computed(() => {
       giaHienTai: e.giaHienTai || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
-      gioiTinh: e.gioiTinh
-        ? "Nam"
-        : e.gioiTinh == false
-        ? "Nữ"
-        : "Không xác định",
+      gioiTinh: e.gioiTinh,
+        // ? "Nam"
+        // : e.gioiTinh == false
+        // ? "Nữ"
+        // : "Không xác định",
       kichCo: e.kichCo || "",
       phongCach: e.phongCach || "",
       maMauSac: e.maMauSac || "",

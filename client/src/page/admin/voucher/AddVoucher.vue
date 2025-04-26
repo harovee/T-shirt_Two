@@ -240,8 +240,9 @@ const rules: Record<string, Rule[]> = {
       required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho phiếu giảm giá',
       trigger: 'change', type: 'array'
     },
-            {validator: (rule, value) => {
-          if (!value || value.length !== 2) return Promise.resolve();
+      {   validator: (rule, value) => {
+          
+        if (!value || value.length !== 2) return Promise.resolve();
           
           // Format to remove millisecond precision for comparison
           const startStr = dayjs(value[0]).format('YYYY-MM-DD HH:mm');

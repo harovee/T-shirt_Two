@@ -40,10 +40,10 @@
             </span>
             <span v-else-if="record.loaiGiam === false || record.loaiGiam === 'false'">
                 {{ record.giaTriGiam }} %
-          </span>
+            </span>
             <span v-else>
                 Không xác định
-          </span>
+            </span>
         </div>
         <div v-if="column.key === 'dieuKienGiam'" class="text-left">
                 {{ formatCurrencyVND(record.dieuKienGiam) }}
@@ -61,41 +61,56 @@
             <span v-else color="secondary">Không xác định</span>
         </div>
         <div v-if="column.key === 'ngayBatDau'" class="text-left">
-            <span>{{ getDateFormat(record.ngayBatDau) }}</span>
+            <span>{{ convertDateFormatter(record.ngayBatDau) }}</span>
         </div>
         <div v-if="column.key === 'ngayKetThuc'" class="text-left">
-            <span>{{ getDateFormat(record.ngayKetThuc) }}</span>
+            <span>{{ convertDateFormatter(record.ngayKetThuc) }}</span>
         </div>
         <div v-else-if="column.key === 'action'" class="flex items-center justify-center space-x-2">
+          <!-- Fix: Add condition to disable the entire popconfirm component -->
           <a-popconfirm
-            :title=" record.trangThai =='ACTIVE' ? 'Vô hiệu hóa phiếu giảm giá này?': 'Kích hoạt phiếu giảm giá này' "
+            v-if="!isExpired(record.ngayKetThuc)"
+            :title="record.trangThai =='ACTIVE' ? 'Vô hiệu hóa phiếu giảm giá này?': 'Kích hoạt phiếu giảm giá này'"
             ok-text="Có"
             cancel-text="Hủy"
             @confirm="handleChangeStatusVoucher(record.id, record.trangThai == 'INACTIVE' ? 'ACTIVE' : 'INACTIVE')"
           >
             <a-tooltip
-              :title="record.ngayKetThuc <= Date.now() ? 'Không thể chuyển trạng thái khi đã kết thúc' : 'Đổi trạng thái phiếu giảm giá'"
+              title="Đổi trạng thái phiếu giảm giá"
               trigger="hover"
             >
               <a-button
                 class="bg-purple-100"
                 size="middle"
                 shape="round"
-                :disabled="record.ngayKetThuc <= Date.now()"
               >
                 <v-icon name="fa-exchange-alt" />
               </a-button>
             </a-tooltip>
           </a-popconfirm>
+          <!-- Disabled button when expired -->
+          <a-tooltip
+            v-else
+            title="Không thể chuyển trạng thái khi đã kết thúc"
+            trigger="hover"
+          >
+            <a-button
+              class="bg-purple-100"
+              size="middle"
+              shape="round"
+              disabled
+            >
+              <v-icon name="fa-exchange-alt" />
+            </a-button>
+          </a-tooltip>
           <a-tooltip
             title="Chi tiết phiếu giảm giá"
             trigger="hover">
-            <a-button  class="bg-blue-100"  size="middle" shape="round"
+            <a-button class="bg-blue-100" size="middle" shape="round"
               @click="handleRedirectVoucherDetail(record.id)">
               <v-icon name="fa-eye" />
             </a-button>
           </a-tooltip>
-          
         </div>
       </template>
     </table-spotify>
@@ -108,8 +123,9 @@ import { ColumnType } from "ant-design-vue/es/table";
 import { toast } from "vue3-toastify";
 import { defineEmits, watch } from "vue";
 import { useChangeStatusVoucher } from "@/infrastructure/services/service/admin/voucher/voucher.action";
-import router from "@/infrastructure/routes/router.ts";
-import { formatCurrencyVND, getDateFormat, getDateTimeMinutesFormat } from "@/utils/common.helper";
+import { formatCurrencyVND, getDateFormat, convertDateFormat, convertDateFormatter } from "@/utils/common.helper";
+import { useRouter } from "vue-router";
+import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path";
 
 const emit = defineEmits([
   "update:paginationParams"
@@ -121,44 +137,52 @@ const props = defineProps({
   paginationParams: Object,
 });
 
-// watch(
-//   () => props.dataSource,
-//   (newData) => {
-//     console.log(newData);
-//   }
-// );
- const { mutate : changeStatusVoucher} = useChangeStatusVoucher();
+const { mutate: changeStatusVoucher } = useChangeStatusVoucher();
 
-const handleChangeStatusVoucher = async (id: string,trangThaiMoi: string) => {
+// Helper function to check if a voucher is expired
+const isExpired = (endDate: string | number) => {
+  if (!endDate) return false;
+  
+  // If endDate is a string, convert it to a Date object
+  const endDateTime = typeof endDate === 'string' ? new Date(endDate).getTime() : endDate;
+  return endDateTime <= Date.now();
+};
+
+const handleChangeStatusVoucher = async (id: string, trangThaiMoi: string) => {
   try {
     changeStatusVoucher(
       {voucherId: id, trangThai: trangThaiMoi},
-      {onSuccess: (res: any) => {
-        toast.success(res.data.message);
-      },
-      onError: (error: any) => {
-        toast.error(
+      {
+        onSuccess: (res: any) => {
+          toast.success(res.data.message);
+        },
+        onError: (error: any) => {
+          toast.error(
             error?.response?.data?.message
-        )
-      },
-    })
+          )
+        },
+      }
+    )
   } catch (error: any) {
     console.error("🚀 ~ handleChangeStatus ~ error:", error);
     toast.error(
-        error?.response?.data?.message
+      error?.response?.data?.message
     );
   }
 }
 
+const router = useRouter(); 
+
 const handleRedirectVoucherAdd = () => {
-    router.push({ name: 'admin-voucher-add' });
+  router.push(ROUTES_CONSTANTS.ADMIN.children.VOUCHER_ADD.path);
 }
 
 const handleRedirectVoucherDetail = (id: string) => {
-    router.push({ name: 'admin-voucher-detail', params: { id: id } });
+  router.push({ name: 'admin-voucher-detail', params: { id: id } });
 }
+
 const columnsVoucher: ColumnType[] = [
-{
+  {
     title: "#",
     dataIndex: "catalog",
     key: "catalog",

@@ -160,6 +160,8 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
         hoaDon.setTrangThai("Đã thanh toán");
         HoaDon hd1 = hoaDonRepository.save(hoaDon);
 
+
+
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);
         ls.setHanhDong("Thanh toán thành công, chuyển trạng thái hóa đơn -> 'Đã thanh toán'");

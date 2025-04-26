@@ -30,6 +30,7 @@
         :pagination-params="computedPaginationParams"
         @update:pagination-params="computedPaginationHandler"
         :product-id="productId"
+        @refreshData="refreshProductDetails"
         :change-fill="changeProductDetail"
       />
     </div>
@@ -109,6 +110,7 @@ const {
   data,
   isLoading: productDetailsLoading,
   isFetching: productDetailsFetching,
+  refetch: refetchProductDetails
 } = useGetProductDetail(params, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
@@ -134,6 +136,7 @@ const {
   data: allProductDetail,
   isLoading: allProductDetailsLoading,
   isFetching: allProductDetailsFetching,
+  refetch: refetchAllProductDetails
 } = useGetAllProductDetail(paramsAll, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
@@ -148,6 +151,8 @@ const dataSourceAll = computed(() => allProductDetail?.value?.data || []);
 const handlePaginationChangeAll = (newParams: FindAllProductDetailRequest) => {
   paramsAll.value = { ...paramsAll.value, ...newParams };
 };
+
+
 // --------------------------------------------------------------------
 
 const colorItem = ref([]);
@@ -311,6 +316,13 @@ const handleAllProductDetail = (changeProductDetails) => {
   // console.log(changeProductDetail.value);
 };
 
+const refreshProductDetails = () => {
+  if (changeProductDetail.value) {
+    refetchAllProductDetails();
+  } else {
+    refetchProductDetails();
+  }
+};
 const computedFilter = computed(() => {
   return changeProductDetail.value ? handleFilterAll : handleFilter;
 });

@@ -24,7 +24,7 @@
     </a-form-item>
 
     <a-form-item label="Tìm trong khoảng thời gian" class="col-span-4 md:col-span-3 lg:col-span-1">
-        <a-range-picker size="" style="" show-time format="DD/MM/YYYY HH:mm" :presets="rangePresets"
+        <a-range-picker size="" style="" show-time format="HH:mm DD/MM/YYYY" :presets="rangePresets"
           :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
           v-model:value="selectedDateRange"
           @change="onRangeChange" />

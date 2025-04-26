@@ -47,6 +47,11 @@ export const convertDateFormat = (inputDate: number | null): string => {
   return parsedDate.format("HH:mm:ss DD/MM/YYYY");
 }; // Định dạng theo yêu cầu
 
+export const convertDateFormatter = (inputDate: number | null): string => {
+  const parsedDate = dayjs(inputDate);
+  return parsedDate.format("DD/MM/YYYY HH:mm");
+};
+
 export const convertDateFormatTime = (inputDate: number | null): string => {
   if (inputDate === null) {
     return "";

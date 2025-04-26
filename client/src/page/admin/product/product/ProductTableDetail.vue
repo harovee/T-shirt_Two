@@ -4,28 +4,26 @@
     class="mb-2"
     style="display: flex; justify-content: flex-end"
   >
-    <div class="me-10">
-      <a-input
-        class="me-1"
-        v-model:value="newPrice"
-        type="number"
-        min="0"
-        style="width: 100px"
-      />
-      <a-button type="primary" @click="updateValuesGia">Sửa giá</a-button>
-    </div>
-    <div>
-      <a-input
-        class="me-1"
-        v-model:value="newQuantity"
-        type="number"
-        min="0"
-        style="width: 100px"
-      />
-      <a-button type="primary" @click="updateValuesSoLuong"
-        >Sửa số lượng</a-button
-      >
-    </div>
+    <div class="me-10" style="display: flex; align-items: center">
+        <a-input-number
+          class="me-1"
+          v-model:value="newPrice"
+          min="0"
+          style="width: 140px"
+          :formatter="formatter"
+        />
+        <a-button style="margin-top: 0" type="primary" @click="updateValuesGia">Sửa giá</a-button>
+      </div>
+      <div style="display: flex; align-items: center">
+        <a-input
+          class="me-1"
+          v-model:value="newQuantity"
+          type="number"
+          min="0"
+          style="width: 120px"
+        />
+        <a-button type="primary" @click="updateValuesSoLuong">Sửa số lượng</a-button>
+      </div>
   </div>
   <a-table
     v-if="dataSource.length > 0"
@@ -61,12 +59,12 @@
         </a-input>
       </div>
       <div v-if="column.key === 'gia'" class="text-center">
-        <a-input
-          type="number"
+        <a-input-number
           min="0"
           v-model:value="record.gia"
-        >
-        </a-input>
+          :formatter="formatter"
+          class="w-40"
+        />
       </div>
       <div
         v-else-if="column.key === 'action'"
@@ -306,7 +304,7 @@ const columns: TableColumnType<RenProductDetailResponse>[] = [
     dataIndex: "stt",
     key: "stt",
     align: "center",
-    width: 100,
+    width: 60,
   },
   {
     title: "Tên sản phẩm",
@@ -341,7 +339,7 @@ const columns: TableColumnType<RenProductDetailResponse>[] = [
     dataIndex: "anh",
     key: "anh",
     align: "center",
-    width: 500,
+    width: 400,
   },
 ];
 

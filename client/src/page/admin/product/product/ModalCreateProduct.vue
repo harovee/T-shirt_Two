@@ -105,10 +105,10 @@ const rulesRef = reactive({
           if (!value) {
             return Promise.resolve();
           }
-          const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
-          if (specialCharRegex.test(value)) {
-            return Promise.reject("Tên sản phẩm không được chứa ký tự đặc biệt");
-          }
+          // const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+          // if (specialCharRegex.test(value)) {
+          //   return Promise.reject("Tên sản phẩm không được chứa ký tự đặc biệt");
+          // }
 
           const existingProducts = allProducts.value;
           const isNameExists = existingProducts.some(

@@ -71,6 +71,7 @@
     @handleClose="handleCloseModalUpdateProductDetail"
     @onCancel="isOpenModalUpdateProductDetail = false"
     :ProductDetail="productDetail || null"
+    @refreshData="handleRefreshData"
     :is-loading-detail="isLoadingDetail || false"
   />
 </template>
@@ -109,12 +110,18 @@ const props = defineProps({
   productId: String,
   changeFill: Boolean,
 });
+const handleRefreshData = () => {
+  emit('refreshData');
+}
 
+// Update your emits array to include refreshData
 const emit = defineEmits([
   "update:paginationParams",
   "handleOpenModalCreate",
   "handleCloseModalCreate",
+  "refreshData"  // Add this
 ]);
+
 
 // Interface dùng để inject các thuộc tính
 interface Trademark {
@@ -365,6 +372,7 @@ const columnsProduct: ColumnType[] = [
     key: "maSanPhamChiTiet",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Chất liệu",
@@ -372,6 +380,7 @@ const columnsProduct: ColumnType[] = [
     key: "chatLieu",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Thương hiệu",
@@ -379,6 +388,7 @@ const columnsProduct: ColumnType[] = [
     key: "thuongHieu",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Cổ áo",
@@ -386,6 +396,7 @@ const columnsProduct: ColumnType[] = [
     key: "coAo",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Tay áo",
@@ -393,6 +404,7 @@ const columnsProduct: ColumnType[] = [
     key: "tayAo",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Kiểu dáng",
@@ -400,6 +412,7 @@ const columnsProduct: ColumnType[] = [
     key: "kieuDang",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Họa tiết",
@@ -407,6 +420,7 @@ const columnsProduct: ColumnType[] = [
     key: "hoaTiet",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Tính năng",
@@ -414,6 +428,7 @@ const columnsProduct: ColumnType[] = [
     key: "tinhNang",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Màu sắc",
@@ -421,6 +436,7 @@ const columnsProduct: ColumnType[] = [
     key: "mauSac",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Kích cỡ",
@@ -428,6 +444,7 @@ const columnsProduct: ColumnType[] = [
     key: "kichCo",
     ellipsis: true,
     width: 70,
+    align: "center"
   },
   {
     title: "Số lượng",
@@ -435,6 +452,7 @@ const columnsProduct: ColumnType[] = [
     key: "soLuong",
     ellipsis: true,
     width: 100,
+    align: "center"
   },
   {
     title: "Giá",
@@ -442,6 +460,7 @@ const columnsProduct: ColumnType[] = [
     key: "gia",
     ellipsis: true,
     width: 130,
+    align: "center"
   },
   {
     title: "Trạng thái",
