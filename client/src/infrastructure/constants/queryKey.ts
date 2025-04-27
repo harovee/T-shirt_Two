@@ -1,3 +1,5 @@
+import { notification } from "ant-design-vue";
+
 export const queryKey = {
     common: {
         upload: {
@@ -158,6 +160,10 @@ export const queryKey = {
         another: {},
 
     },
-
+    websocket: {
+        notification: {
+            notification: "notificationKey"
+        }
+    }
 };
 

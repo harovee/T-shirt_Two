@@ -12,6 +12,4 @@ public interface NotificationResponse extends BaseResponse {
     String getContent();
 
     Boolean getIsRead();
-
-    String getNotificationType();
 }

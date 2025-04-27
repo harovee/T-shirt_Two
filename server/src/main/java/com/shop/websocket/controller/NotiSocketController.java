@@ -1,15 +1,16 @@
 package com.shop.websocket.controller;
 
+import com.shop.websocket.model.entity.OrderNotification;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class NotiController {
+public class NotiSocketController {
 
     @MessageMapping("/sendNoti")
     @SendTo("/topic/notification")
-    public String sendNortification(String message) {
-        return message;
+    public OrderNotification sendNortification(OrderNotification notification) {
+        return notification;
     }
 }
