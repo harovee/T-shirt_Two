@@ -12,6 +12,7 @@ export interface CreateDeliveryPaymentRequest {
     tienKhachDua: number | null,
     soTienDu: number | null,
     ghiChu: string | null,
+    moTa: string | null
 }
 
 export const createDeliveryPayment = async (data: CreateDeliveryPaymentRequest) => {

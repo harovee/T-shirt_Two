@@ -28,7 +28,7 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'giaTri'" class="text-left">
           <span>
-            {{ formatCurrencyVND(record.giaTri) }}
+             {{ record.loaiGiam ? formatCurrencyVND(record.giaTri) : record.giaTri + "%" }}
           </span>
         </div>
         <div v-if="column.key === 'dieuKienGiam'" class="text-left">
@@ -148,6 +148,8 @@ watch(current1, () => {
 
 const handleSelectVoucher = (voucher: VoucherResponse) => {
   emit("selectVoucher", voucher);
+
+  // Thảo
   currentInvoice.value.vouchers = [
     {
       id: voucher.id,
@@ -163,7 +165,7 @@ const handleSelectVoucher = (voucher: VoucherResponse) => {
       sendCartInfo(currentInvoice.value);
     }
   });
-  console.log(voucher);
+  // console.log(voucher);
   
   handleClose();
 };

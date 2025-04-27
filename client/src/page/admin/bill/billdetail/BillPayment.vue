@@ -9,7 +9,7 @@
     destroyOnClose
     centered
   >
-    <h1>Tổng tiền: {{formatCurrencyVND(modelRef.tongTien)}}</h1>
+    <h1>Tổng tiền: {{ formatCurrencyVND(modelRef.tongTien) }}</h1>
     <a-form layout="vertical" class="pt-3">
       <template v-for="field in formFields" :key="field.name">
         <a-form-item
@@ -67,7 +67,6 @@
   </a-modal>
 </template>
 <script lang="ts" setup>
-
 import { CreateDeliveryPaymentRequest } from "@/infrastructure/services/api/admin/deliverypayment.api";
 import { useCreateDeliveryPayment } from "@/infrastructure/services/service/admin/deliverypayment.action";
 import { useGetPaymentMethod } from "@/infrastructure/services/service/admin/payhistory.action";
@@ -76,14 +75,19 @@ import { keepPreviousData } from "@tanstack/vue-query";
 import { Form, Modal } from "ant-design-vue";
 import { computed, createVNode, reactive, ref, watchEffect, watch } from "vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { errorNotiSort, successNotiSort, warningNotiSort } from "@/utils/notification.config";
+import {
+  errorNotiSort,
+  successNotiSort,
+  warningNotiSort,
+} from "@/utils/notification.config";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 const props = defineProps({
   open: Boolean,
   totalPrice: Number,
 });
 
-const {mutate: createPayment} = useCreateDeliveryPayment();
+const { mutate: createPayment } = useCreateDeliveryPayment();
 
 const isPaymentDisabled = ref(false); // Biến trạng thái để disable nút thanh toán
 
@@ -95,10 +99,11 @@ const handleCreatePayment = () => {
     async onOk() {
       try {
         await validate();
-        console.log("API", modelRef);
 
         isPaymentDisabled.value = true; // Disable nút khi bắt đầu thanh toán
-
+        modelRef.moTa = `Nhân viên ${
+          useAuthStore().user?.email || "Không xác định"
+        } chuyển trạng thái hóa đơn -> "Đã thanh toán"`;
         createPayment(modelRef, {
           onSuccess: (result) => {
             successNotiSort(result?.message);
@@ -118,7 +123,7 @@ const handleCreatePayment = () => {
     cancelText: "Hủy",
     onCancel() {
       Modal.destroyAll();
-    }
+    },
   });
 };
 
@@ -137,6 +142,7 @@ const modelRef = reactive<CreateDeliveryPaymentRequest>({
   soTienDu: 0,
   ghiChu: null,
   maGiaoDich: null,
+  moTa: null,
 });
 
 const rulesRef = reactive({
@@ -149,7 +155,9 @@ const rulesRef = reactive({
     {
       validator: (_, value) => {
         if (modelRef.tongTien && value < modelRef.tongTien) {
-          return Promise.reject("Tiền khách đưa phải lớn hơn hoặc bằng tổng tiền");
+          return Promise.reject(
+            "Tiền khách đưa phải lớn hơn hoặc bằng tổng tiền"
+          );
         }
         return Promise.resolve();
       },
@@ -164,7 +172,6 @@ const rulesRef = reactive({
     },
   ],
 });
-
 
 const { resetFields, validate, validateInfos } = Form.useForm(
   modelRef,
@@ -227,7 +234,6 @@ const handleBeforeInput = (event: InputEvent) => {
 };
 
 const handleInput = (event: Event, field: string) => {
-
   const target = event.target as HTMLInputElement | null;
   if (!target) return;
 
@@ -235,12 +241,12 @@ const handleInput = (event: Event, field: string) => {
   let cursorPosition = target.selectionStart || 0; // Lưu vị trí con trỏ trước khi format
 
   // Kiểm tra nếu toàn bộ văn bản bị bôi đen
-  let isAllSelected = target.selectionStart === 0 && target.selectionEnd === rawValue.length;
+  let isAllSelected =
+    target.selectionStart === 0 && target.selectionEnd === rawValue.length;
 
   // Chỉ giữ lại số
   let numericValue = rawValue.replace(/\D/g, "");
   // console.log(numericValue);
-  
 
   // Nếu nhập sai (chỉ toàn chữ) hoặc bôi đen toàn bộ rồi nhập chữ
   if (numericValue === "") {
@@ -280,13 +286,19 @@ const handleInput = (event: Event, field: string) => {
   // Điều chỉnh lại vị trí con trỏ trước chữ "đ"
   setTimeout(() => {
     let positionBeforeCurrencySymbol = formattedValue.length - 2; // Vị trí trước chữ "đ"
-    target.selectionStart = target.selectionEnd = Math.min(cursorPosition, positionBeforeCurrencySymbol);
+    target.selectionStart = target.selectionEnd = Math.min(
+      cursorPosition,
+      positionBeforeCurrencySymbol
+    );
   }, 0);
 };
 
-watch (() => modelRef.tienKhachDua, (newValue) => {
-  modelRef.soTienDu = Math.max(0,newValue - modelRef.tongTien);
-})
+watch(
+  () => modelRef.tienKhachDua,
+  (newValue) => {
+    modelRef.soTienDu = Math.max(0, newValue - modelRef.tongTien);
+  }
+);
 
 const handleClose = () => {
   emit("handleClose");

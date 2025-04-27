@@ -109,7 +109,7 @@ const columnsBill: ColumnType[] = [
     align: "center",
   },
   {
-    title: "PT thanh toán",
+    title: "Phương thức thanh toán",
     dataIndex: "tenPhuongThuc",
     key: "tenPhuongThuc",
     ellipsis: true,

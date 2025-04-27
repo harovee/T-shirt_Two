@@ -54,6 +54,7 @@ public interface AdminBillHistoryRepository extends LichSuHoaDonRepository {
             LEFT JOIN nhan_vien nv ON nv.id = ls.nguoi_tao
             WHERE
                 (:#{#req.idHoaDon} IS NULL OR :#{#req.idHoaDon} = ls.id_hoa_don)
+            ORDER BY ls.ngay_tao
         """, countQuery = """
             SELECT
                 COUNT(ls.id)

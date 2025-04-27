@@ -63,7 +63,7 @@
           <!-- dataNextPriceVouchers > 0 && paymentInfo.value && paymentInfo.value.discount > 0 -->
           <div
             v-if="voucher"
-            class="text-red-500 text-xs border border-red-400 rounded-lg p-3 mt-3"
+            class="text-xs border rounded-lg p-3 mt-3"
           >
             <div class="flex items-center">
               <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
@@ -105,6 +105,7 @@
             :dataCustomer="selectedCustomerInfo"
             :totalAmount="totalAmount"
             :dataVoucher="dataListVoucher"
+            @selectVoucher="handleSelectVoucher"
             @handleClose="handleClose"
             @cancel="open = false"
             class="w-[600px] h-[400px]"
@@ -493,11 +494,12 @@ const voucher = ref(null);
 watch(
   () => dataListVoucher.value,
   (newData) => {
-    console.log("newVouchers", newData);
+    console.log(newData);
+    
     if (newData && newData.length > 0) {
       paymentInfo.value.voucherCode = newData[0].ma;
       paymentInfo.value.voucherId = newData[0].id;
-      paymentInfo.value.discount = parseFloat(newData[0].giaTri);
+      paymentInfo.value.discount = newData[0].loaiGiam ? parseFloat(newData[0].giaTri) : (totalAmount.value * parseFloat(newData[0].giaTri) / 100);
       paymentInfo.value.totalProductPrice =
         totalAmount.value - paymentInfo.value.discount;
       voucher.value =
@@ -505,6 +507,7 @@ watch(
         null;
       // console.log(dataNextPriceVouchers.value);
 
+      // Thảo
       invoices.value.forEach((item) => {
         if (item.id === currentInvoice.value.id) {
           item.vouchers = [
@@ -591,23 +594,25 @@ const handleCheckPaymented = (totalAmountAfter: number) => {
   paymentedValue.value = totalAmountAfter;
 };
 
-// const handleVoucherSelected = (voucher) => {
-//   if (paymentedValue.value !== 0) {
-//     warningNotiSort("Bạn đã thanh toán không thể thay đổi phiếu giảm giá!");
-//     return;
-//   }
-//   paymentInfo.value.voucherCode = voucher.ma;
-//   paymentInfo.value.voucherId = voucher.id;
-//   if (!voucher.loaiGiam) {
-//     paymentInfo.value.discount = voucher.giaTriGiam;
-//     paymentInfo.value.totalProductPrice =
-//       totalAmount.value - paymentInfo.value.discount;
-//   } else {
-//     paymentInfo.value.discount = voucher.giaTriGiam;
-//     paymentInfo.value.totalProductPrice =
-//       totalAmount.value - paymentInfo.value.discount;
-//   }
-// };
+const handleSelectVoucher = (voucher) => {
+  //Loai giảm = true: tiền, false: %
+  // Kiểu true: công khai, false: cá nhân
+  if (paymentedValue.value !== 0) {
+    warningNotiSort("Bạn đã thanh toán không thể thay đổi phiếu giảm giá!");
+    return;
+  }
+  paymentInfo.value.voucherCode = voucher.ma;
+  paymentInfo.value.voucherId = voucher.id;
+  if (!voucher.loaiGiam) {
+    paymentInfo.value.discount = totalAmount.value * (voucher.giaTri  / 100);
+    paymentInfo.value.totalProductPrice =
+      totalAmount.value - paymentInfo.value.discount;
+  } else {
+    paymentInfo.value.discount = voucher.giaTri;
+    paymentInfo.value.totalProductPrice =
+      totalAmount.value - paymentInfo.value.discount;
+  }
+};
 
 watch(
   () => paymentInfo.value,
@@ -629,6 +634,8 @@ const handleNotVoucher = () => {
   paymentInfo.value.voucherId = null;
   paymentInfo.value.discount = 0;
   paymentInfo.value.totalProductPrice = totalAmount.value;
+
+  // Thảo
   invoices.value.forEach((item) => {
     if (item.id === currentInvoice.value.id) {
       item.vouchers = [];

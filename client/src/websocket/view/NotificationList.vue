@@ -55,13 +55,13 @@ const handleDeleteNotification = async (id) => {
   }
 };
 
-const goToNotification = (orderId) => {
+const goToNotification = (idHoaDon) => {
   const path = {
     path:
       ROUTES_CONSTANTS.ADMIN.path +
       "/" +
       ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.path,
-    query: { orderId },
+    query: { idHoaDon },
   };
   router.push(path);
 }

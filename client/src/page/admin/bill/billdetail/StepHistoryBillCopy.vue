@@ -1,27 +1,34 @@
-<template>
+<template v-if="isDataReady">
   <div>
-    <a-steps :current="current" class="step-interface">
-      <a-step
-        v-for="item in selectedSteps"
-        :key="item.title"
-        :title="item.title"
-        :icon="item.icon"
-        :loading="loading"
+    <div style="overflow-x: auto; white-space: nowrap">
+      <a-steps
+        :current="stepsTmp.length"
+        class="step-interface"
+        direction="horizontal"
+        style="min-width: max-content"
       >
-        <template #title>
-          <div class="step-title">{{ item.title }}</div>
-        </template>
-        <template #description>
-          <div class="step-time">{{ item.time || "Chưa có thông tin" }}</div>
-        </template>
-      </a-step>
-    </a-steps>
+        <a-step
+          v-for="(item, index) in stepsTmp"
+          :key="index"
+          :title="item?.title"
+          :icon="item.icon"
+        >
+          <template #title>
+            <div class="step-title">{{ item.title }}</div>
+          </template>
+          <template #description>
+            <div class="step-time">{{ item.time || "Chưa có thông tin" }}</div>
+          </template>
+        </a-step>
+      </a-steps>
+    </div>
+
     <div class="steps-action">
       <div class="left-buttons">
         <a-button
           v-if="
-            current == 0 &&
-            statusIndexStart !== 'Đã hủy' &&
+            stepsTmp.length > 0 &&
+            stepsTmp[stepsTmp.length - 1]?.title === 'Chờ xác nhận' &&
             dataPaymentInfo.refund > 0
           "
           type="primary"
@@ -30,45 +37,56 @@
           Xác nhận đơn và hoàn lại tiền
         </a-button>
         <a-button
-          v-else-if="current == 0 && statusIndexStart !== 'Đã hủy'"
+          v-if="
+            stepsTmp.length > 0 &&
+            stepsTmp[stepsTmp.length - 1]?.title === 'Chờ xác nhận'
+          "
           type="primary"
           @click="confirmBill()"
         >
           Xác nhận đơn
         </a-button>
 
-        <a-button v-if="current == 1" type="primary" @click="confirmDelivery()">
+        <a-button
+          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Chờ giao hàng'"
+          type="primary"
+          @click="confirmDelivery()"
+        >
           Xác nhận lấy hàng
         </a-button>
 
-        <a-button v-if="current == 2" type="primary" @click="confirmArrived()">
+        <a-button
+          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Đang vận chuyển'"
+          type="primary"
+          @click="confirmArrived()"
+        >
           Xác nhận đã giao hàng
         </a-button>
 
         <a-button
-          v-if="current == 4"
+          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Đã thanh toán'"
           type="primary"
           @click="confirmCompleted()"
         >
           Hoàn thành
         </a-button>
 
+        <!-- Quay lại trạng thái -->
         <a-button
           v-if="
-            statusIndexStart !== 'Đã hủy' &&
-            statusIndexStart !== 'Chờ xác nhận' &&
-            statusIndexStart !== 'Thành công'
+            stepsTmp[stepsTmp.length - 1]?.title !== 'Đã hủy' &&
+            stepsTmp[stepsTmp.length - 1]?.title !== 'Chờ xác nhận' &&
+            stepsTmp[stepsTmp.length - 1]?.title !== 'Thành công'
           "
           style="margin-left: 8px"
-          @click="rollBack(statusIndexStart)"
+          @click="rollBack(stepsTmp[stepsTmp.length - 1]?.title)"
         >
           Quay lại trạng thái trước
         </a-button>
 
         <a-button
           v-if="
-            current == 0 &&
-            statusIndexStart !== 'Đã hủy' &&
+            stepsTmp[stepsTmp.length - 1]?.title === 'Chờ xác nhận' &&
             dataPaymentInfo.paid > 0
           "
           danger
@@ -78,7 +96,7 @@
           Hủy đơn và hoàn lại tiền
         </a-button>
         <a-button
-          v-else-if="current == 0 && statusIndexStart !== 'Đã hủy'"
+          v-else-if="stepsTmp[stepsTmp.length - 1]?.title === 'Chờ xác nhận'"
           danger
           style="margin-left: 10px"
           @click="handleCancelBill"
@@ -96,7 +114,7 @@
           Chi tiết
         </a-button>
         <a-button
-          v-if="statusIndexStart === 'Thành công'"
+          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Thành công'"
           class="border border-orange-500 bg-transparent text-orange-500 hover:border-orange-300"
           style="margin-right: 15px"
           @click="createInvoicePdf"
@@ -128,7 +146,7 @@
             </span>
           </template>
           <template v-if="column.key === 'hanhDongChiTiet'">
-            {{ record.nguoiTao }} {{ record.hanhDong }}
+            {{ record.hanhDong }}
           </template>
           <template v-if="column.key === 'trangThai'">
             <a-tag>{{ record.trangThai }}</a-tag>
@@ -140,7 +158,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, h, onMounted, computed, nextTick, createVNode } from "vue";
+import {
+  ref,
+  watch,
+  h,
+  onMounted,
+  computed,
+  nextTick,
+  createVNode,
+  watchEffect,
+} from "vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import {
   CarOutlined,
@@ -181,10 +208,18 @@ interface DataSource {
   }[];
 }
 
-interface Step {
-  title: string;
-  time: string;
-  icon: ReturnType<typeof h>;
+interface Product {
+  catalog: number | null;
+  tenMau: string | null;
+  tenKichCo: string | null;
+  tenSanPham: string | null;
+  gia: number | null;
+  soLuong: number | null;
+}
+
+interface ProductTemp {
+  idSanPhamChiTiet: string | null,
+  soLuong: number | null
 }
 
 // Props
@@ -192,7 +227,7 @@ const props = defineProps({
   dataSource: {
     type: Object as PropType<DataSource>,
   },
-  loading: Boolean,
+  loading: { type: Boolean, default: true },
   dataPaymentInfo: Object,
   dataProduct: {
     type: Array,
@@ -201,53 +236,29 @@ const props = defineProps({
   billData: Object,
 });
 
-const selectedStepsTmp = ref([]);
-const currentTmp = ref(0);
-const loading = ref(false);
+const isLoading = ref(true);
 
-// Hàm thêm bước mới
-function addStep(title, icon, time = null) {
-  selectedStepsTmp.value.push({
-    title,
-    icon,
-    time: time || new Date().toLocaleString(),
-  });
+const stepsTmp = ref([
+  { title: "Chờ xác nhận", time: "2025-04-27 10:00" },
+  { title: "Đang giao", time: "2025-04-27 15:00" },
+]);
 
-  current.value = selectedStepsTmp.value.length - 1;
-}
-
-function confirmOrder() {
-  loading.value = true;
-
-  setTimeout(() => {
-    addStep("Xác nhận đơn", h(IssuesCloseOutlined), new Date().toLocaleString());
-    loading.value = false;
-  }, 2000);
-}
+const currentCopy = ref(stepsTmp.value.length);
 
 const listProduct = ref(null);
 
 watch(
   () => props?.dataProduct,
   (newData) => {
-    listProduct.value = newData.map((item) => ({
+    listProduct.value = newData.map((item: ProductTemp) => ({
       id: item.idSanPhamChiTiet,
       quantity: item.soLuong,
     }));
-    console.log(props.dataProduct);
   }
 );
 
 const emit = defineEmits(["update:bill"]);
 
-const selectedSteps = computed(() => {
-  return props.dataSource?.data?.[0]?.trangThai === "Đã hủy"
-    ? stepsCancel
-    : steps;
-});
-
-// Reactive state
-const current = ref<number>(0);
 const isModalVisible = ref(false);
 
 const { mutate: changeStatus } = useChangeBillStatus();
@@ -256,105 +267,36 @@ const { mutate: plusQuantityListProduct } = usePlusQuantityListProduct();
 
 const { mutate: checkQuantity, data, error } = useCheckQuantityListProduct();
 
-// Khai báo các bước khi hủy hóa đơn thành công
-const stepsCancel: Step[] = [
-  {
-    title: "Đã hủy",
-    time: "",
-    icon: h(IssuesCloseOutlined),
-  },
-];
+const isDataReady = ref(false);
 
-// Khai báo các bước
-const steps: Step[] = [
-  {
-    title: "Chờ xác nhận",
-    time: "",
-    icon: h(IssuesCloseOutlined),
-  },
-  {
-    title: "Chờ giao hàng",
-    time: "",
-    icon: h(IssuesCloseOutlined),
-  },
-  {
-    title: "Đang vận chuyển",
-    time: "",
-    icon: h(CarOutlined),
-  },
-  {
-    title: "Đã giao hàng",
-    time: "",
-    icon: h(CheckCircleOutlined),
-  },
-  {
-    title: "Đã thanh toán",
-    time: "",
-    icon: h(FileTextOutlined),
-  },
-  {
-    title: "Thành công",
-    time: "",
-    icon: h(CheckCircleOutlined),
-  },
-];
+onMounted(async () => {
+  params.value.idHoaDon = getIdHoaDonFromUrl();
+  billId.value = getIdHoaDonFromUrl();
 
-onMounted(() => {
-  if (props.dataSource?.data?.length > 0) {
-    updateCurrentStep(props.dataSource);
-    updateStepTimes(props.dataSource);
-  }
+  // đợi Vue cập nhật reactive xong
+  await nextTick();
 });
 
-const statusIndexStart = ref("");
-
-const updateCurrentStep = (dataSource: DataSource) => {
-  const status = dataSource?.data?.[0]?.trangThai;
-  statusIndexStart.value = dataSource?.data?.[0]?.trangThai;
-  if (status === "Đã hủy") {
-    const statusMap: Record<string, number> = {
-      "Đã hủy": 0,
-    };
-    current.value = statusMap[status] || 0;
-  } else {
-    const statusMap: Record<string, number> = {
-      "Chờ xác nhận": 0,
-      "Chờ giao hàng": 1,
-      "Đang vận chuyển": 2,
-      "Đã giao hàng": 3,
-      "Đã thanh toán": 4,
-      "Thành công": 5,
-    };
-    current.value = statusMap[status] || 0;
-  }
-};
-
-const updateStepTimes = (dataSource: DataSource) => {
-  if (!dataSource?.data || dataSource.data.length === 0) return;
-
-  selectedSteps.value.forEach((step) => {
-    const records = dataSource.data.filter(
-      (item) => item.trangThai === step.title
-    );
-
-    if (records.length > 0) {
-      records.sort((a, b) => b.ngayTao - a.ngayTao);
-      step.time = convertDateFormat(records[0].ngayTao);
-    } else {
-      step.time = "Chưa có thông tin";
-    }
-  });
-};
-
-// Watch để cập nhật time khi dataSource thay đổi
 watch(
-  () => props.dataSource,
-  (newValue) => {
-    // console.log("📊 dataSource updated:", newValue);
-    updateCurrentStep(newValue);
-    updateStepTimes(newValue);
+  () => [props.loading, props.dataSource],
+  ([loading, dataSource]) => {
+    if (
+      !loading &&
+      typeof dataSource === "object" &&
+      Array.isArray(dataSource.data) &&
+      dataSource.data.length > 0
+    ) {
+      stepsTmp.value = dataSource.data.map((item) => ({
+        title: item.trangThai,
+        time: convertDateFormat(item.ngayTao),
+      }));
+      isDataReady.value = true;
+      // console.log("StepsTmp đã có dữ liệu:", stepsTmp.value);
+    } else {
+      console.warn("Không có dữ liệu stepsTmp:", { loading, dataSource });
+    }
   },
-  { deep: true, immediate: true }
+  { immediate: true }
 );
 
 // Các hàm điều hướng giữa các bước
@@ -371,18 +313,11 @@ const params = ref<FindPayHistoryRequest>({
   idHoaDon: "",
 });
 
-onMounted(() => {
-  params.value.idHoaDon = getIdHoaDonFromUrl();
-  billId.value = getIdHoaDonFromUrl();
-});
-
 //dữ liệu lshd
 const { data: PaymentData } = useGetPayHistory(params, {
   refetchOnWindowClose: false,
   placeholderData: keepPreviousData,
 });
-
-// console.log(PaymentData);
 
 const { data: billData } = useGetBillById(billId, {
   refetchOnWindowFocus: false,
@@ -399,31 +334,20 @@ watch(
 
 // hàm xác nhận không hoàn tiền
 const confirmBill = async () => {
-  const payload = {
-    soDienThoai: props.billData.soDienThoai,
-    diaChiNguoiNhan: props.billData.diaChiNguoiNhan,
-    tenNguoiNhan: props.billData.tenNguoiNhan,
-    ghiChu: props.billData.ghiChu,
-    tinh: props.billData.tinh,
-    huyen: props.billData.huyen,
-    xa: props.billData.xa,
-    idPhieuGiamGia: props.billData.idPhieuGiamGia,
-    tienShip: props.dataProduct[0]?.tienShip || 0,
-    tienGiam: props.dataProduct[0]?.tienGiamHD || 0,
-    tongTien: props.dataProduct[0]?.tongTienHD || 0,
-  };
-
   // Lấy trạng thái tiếp theo từ mảng steps
-  const nextStep = steps[current.value + 1];
+  const nextStep = stepsTmp.value[stepsTmp.value.length - 1];
   const stepTitle = nextStep.title;
 
   // API tạo lịch sử hóa đơn
   const params = {
     status: stepTitle, // Trạng thái mới từ bước tiếp theo
+    moTa: `Nhân viên ${
+      useAuthStore().user?.email || "Không xác định"
+    } chuyển trạng thái hóa đơn -> 'Chờ giao hàng'`,
     trangThai: "Chờ giao hàng",
     email: props.billData.emailNguoiNhan || null,
     idHoaDon: idBill,
-    nhanVien: useAuthStore().user?.email || null,
+    nhanVien: useAuthStore().user?.id || null,
     ghiChu: "Xác nhận trạng thái đơn hàng -> Chờ giao hàng",
   };
 
@@ -443,7 +367,7 @@ const confirmBill = async () => {
           // modal confirm có thay đổi trạng thái k
           Modal.confirm({
             title: "Xác nhận thay đổi trạng thái",
-            content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
+            content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${params.trangThai}"?`,
             onOk: async () => {
               try {
                 if (props.dataProduct.length === 0) {
@@ -456,9 +380,6 @@ const confirmBill = async () => {
                 changeStatus({ idBill, params });
                 emit("update:bill");
                 successNotiSort("Cập nhật trạng thái thành công!");
-
-                // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-                current.value++;
               } catch (error) {
                 console.error("Cập nhật trạng thái thất bại:", error);
                 errorNotiSort(
@@ -479,7 +400,7 @@ const confirmBill = async () => {
   } else {
     Modal.confirm({
       title: "Xác nhận thay đổi trạng thái",
-      content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
+      content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${params.trangThai}"?`,
       onOk: async () => {
         try {
           if (props.dataProduct.length === 0) {
@@ -492,9 +413,6 @@ const confirmBill = async () => {
           changeStatus({ idBill, params });
           emit("update:bill");
           successNotiSort("Cập nhật trạng thái thành công!");
-
-          // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-          current.value++;
         } catch (error) {
           console.error("Cập nhật trạng thái thất bại:", error);
           errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -510,7 +428,7 @@ const confirmBill = async () => {
 // hàm xác nhận và hoàn lại tiền
 const confirmBillRefund = () => {
   // Lấy trạng thái tiếp theo từ mảng steps
-  const nextStep = steps[current.value + 1];
+  const nextStep = stepsTmp.value[stepsTmp.value.length - 1];
   const stepTitle = nextStep.title;
   const description = ref("");
   // API tạo lịch sử hóa đơn
@@ -549,12 +467,14 @@ const confirmBillRefund = () => {
               const params = {
                 status: stepTitle,
                 trangThai: "Chờ giao hàng",
-                moTa: `Hoàn trả: ${formatCurrencyVND(
+                moTa: `Nhân viên ${
+                  useAuthStore().user?.email || "Không xác định"
+                } thay đổi trạng thái -> "Chờ giao hàng" và hoàn trả: ${formatCurrencyVND(
                   props.dataPaymentInfo.refund
                 )} - Mã giao dịch: ${description.value}`,
                 email: props.billData.emailNguoiNhan || null,
                 idHoaDon: idBill,
-                nhanVien: useAuthStore().user?.email || null,
+                nhanVien: useAuthStore().user?.id || null,
                 ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
                   props.dataPaymentInfo.refund
                 )}`,
@@ -564,8 +484,6 @@ const confirmBillRefund = () => {
                 changeStatus({ idBill, params });
                 successNotiSort("Cập nhật trạng thái thành công!");
                 emit("update:bill");
-                // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-                current.value++;
               } catch (error) {
                 console.error("Cập nhật trạng thái thất bại:", error);
                 errorNotiSort(
@@ -605,12 +523,14 @@ const confirmBillRefund = () => {
         const params = {
           status: stepTitle,
           trangThai: "Chờ giao hàng",
-          moTa: `Hoàn trả: ${formatCurrencyVND(
+          moTa: `Nhân viên ${
+            useAuthStore().user?.email || "Không xác định"
+          } thay đổi trạng thái -> "Chờ giao hàng" và hoàn trả: ${formatCurrencyVND(
             props.dataPaymentInfo.refund
           )} - Mã giao dịch: ${description.value}`,
           email: props.billData.emailNguoiNhan || null,
           idHoaDon: idBill,
-          nhanVien: useAuthStore().user?.email || null,
+          nhanVien: useAuthStore().user?.id || null,
           ghiChu: `Xác nhận trạng thái đơn hàng -> Chờ giao hàng và hoàn trả ${formatCurrencyVND(
             props.dataPaymentInfo.refund
           )}`,
@@ -620,8 +540,6 @@ const confirmBillRefund = () => {
           changeStatus({ idBill, params });
           successNotiSort("Cập nhật trạng thái thành công!");
           emit("update:bill");
-          // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-          current.value++;
         } catch (error) {
           console.error("Cập nhật trạng thái thất bại:", error);
           errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -636,30 +554,30 @@ const confirmBillRefund = () => {
 
 const confirmDelivery = () => {
   // Lấy trạng thái tiếp theo từ mảng steps
-  const nextStep = steps[current.value + 1];
+  const nextStep = stepsTmp.value[stepsTmp.value.length - 1];
   const stepTitle = nextStep.title;
 
   // Chuẩn bị tham số cho API
   const params = {
     status: stepTitle, // Trạng thái mới từ bước tiếp theo
     trangThai: "Đang vận chuyển",
+    moTa: `Nhân viên ${
+      useAuthStore().user?.email || "Không xác định"
+    } chuyển trạng thái hóa đơn -> "Đang vận chuyển"`,
     email: props.billData.emailNguoiNhan || null,
     idHoaDon: idBill,
-    nhanVien: useAuthStore().user?.email || null,
+    nhanVien: useAuthStore().user?.id || null,
     ghiChu: "Xác nhận trạng thái đơn hàng -> Đang vận chuyển",
   };
 
   Modal.confirm({
     title: "Xác nhận thay đổi trạng thái",
-    content: `Bạn muốn xác nhận giao hàng cho đơn này"?`,
+    content: `Bạn muốn xác nhận giao hàng cho đơn này?`,
     onOk: async () => {
       try {
         // Gọi API để thay đổi trạng thái đơn hàng
         changeStatus({ idBill, params });
         successNotiSort("Cập nhật trạng thái thành công!");
-
-        // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-        current.value++;
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -677,34 +595,32 @@ const confirmArrived = () => {
       (sum, payment) => sum + payment.tienKhachDua,
       0
     ) || 0;
-  // console.log(tienKhachDua);
 
-  // const tongTienHD =
-  // console.log(tongTienHD);
   if (props.dataPaymentInfo.amountPayable == 0) {
     // Nếu khách đã thanh toán đủ -> Chuyển trực tiếp sang trạng thái "Đã thanh toán"
-    const nextStep = steps[4]; // "Đã thanh toán"
-    const stepTitle = nextStep.title;
+    const nextStep = "Đã thanh toán";
 
     const params = {
-      status: stepTitle,
-      trangThai: "Đã thanh toán",
+      status: nextStep,
+      trangThai: nextStep,
+      moTa: `Nhân viên ${
+        useAuthStore().user?.email || "Không xác định"
+      } chuyển trạng thái hóa đơn -> "Đã thanh toán"`,
       email: props.billData.emailNguoiNhan || null,
       idHoaDon: idBill,
-      nhanVien: useAuthStore().user?.email || null,
+      nhanVien: useAuthStore().user?.id || null,
       ghiChu: "Xác nhận trạng thái đơn hàng -> Đã thanh toán",
     };
 
     Modal.confirm({
       title: "Xác nhận đơn hàng đã thanh toán",
-      content: `Khách đã thanh toán đủ ${tienKhachDua.toLocaleString()} VND. Chuyển trạng thái sang "${stepTitle}"?`,
+      content: `Khách đã thanh toán đủ ${tienKhachDua.toLocaleString()} VND. Chuyển trạng thái sang "${nextStep}"?`,
       onOk: async () => {
         try {
           changeStatus({ idBill, params });
           successNotiSort(
             "Đơn hàng đã chuyển sang trạng thái 'Đã thanh toán'!"
           );
-          current.value = 4; // Cập nhật trạng thái về 'Đã thanh toán'
         } catch (error) {
           console.error("Cập nhật trạng thái thất bại:", error);
           errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -721,15 +637,18 @@ const confirmArrived = () => {
   }
 
   // Nếu chưa đủ tiền, chỉ chuyển sang trạng thái tiếp theo bình thường
-  const nextStep = steps[current.value + 1];
+  const nextStep = stepsTmp.value[stepsTmp.value.length];
   const stepTitle = nextStep.title;
 
   const params = {
     status: stepTitle,
+    moTa: `Nhân viên ${
+      useAuthStore().user?.email || "Không xác định"
+    } chuyển trạng thái hóa đơn -> "Đã giao hàng"`,
     trangThai: "Đã giao hàng",
     email: props.billData.emailNguoiNhan || null,
     idHoaDon: idBill,
-    nhanVien: useAuthStore().user?.email || null,
+    nhanVien: useAuthStore().user?.id || null,
     ghiChu: "Xác nhận trạng thái đơn hàng -> Đã giao hàng",
   };
 
@@ -740,7 +659,6 @@ const confirmArrived = () => {
       try {
         changeStatus({ idBill, params });
         successNotiSort("Cập nhật trạng thái thành công!");
-        current.value++;
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -751,30 +669,30 @@ const confirmArrived = () => {
 
 const confirmCompleted = () => {
   // Lấy trạng thái tiếp theo từ mảng steps
-  const nextStep = steps[current.value + 1];
+  const nextStep = stepsTmp.value[stepsTmp.value.length - 1];
   const stepTitle = nextStep.title;
 
   // API tạo lịch sử hóa đơn
   const params = {
     status: stepTitle, // Trạng thái mới từ bước tiếp theo
+    moTa: `Nhân viên ${
+      useAuthStore().user?.email || "Không xác định"
+    } chuyển trạng thái hóa đơn -> "Thành công"`,
     trangThai: "Thành công",
     email: props.billData.emailNguoiNhan || null,
     idHoaDon: idBill,
-    nhanVien: useAuthStore().user?.email || null,
+    nhanVien: useAuthStore().user?.id || null,
     ghiChu: "Xác nhận trạng thái đơn hàng -> Thành công. Hoàn tất đơn hàng.",
   };
 
   Modal.confirm({
     title: "Xác nhận thay đổi trạng thái",
-    content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${stepTitle}"?`,
+    content: `Bạn muốn thay đổi trạng thái của đơn hàng này sang "${params.trangThai}"?`,
     onOk: async () => {
       try {
         // Gọi API để thay đổi trạng thái đơn hàng
         changeStatus({ idBill, params });
         successNotiSort("Cập nhật trạng thái thành công!");
-
-        // Sau khi cập nhật trạng thái thành công, di chuyển đến bước tiếp theo
-        current.value++;
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -788,8 +706,7 @@ const confirmCompleted = () => {
 
 // Hàm hủy đơn chưa thanh toán
 const handleCancelBill = () => {
-  const nextStep = stepsCancel[current.value];
-  const stepTitle = nextStep.title;
+  const stepTitle = stepsTmp.value[0].title;
   const description = ref("");
 
   Modal.confirm({
@@ -806,24 +723,25 @@ const handleCancelBill = () => {
     },
     onOk: async () => {
       if (!description.value || !description.value.trim()) {
-        errorNotiSort("Vui lòng nhập lý do quay lại");
+        errorNotiSort("Vui lòng nhập lý do hủy");
         return Promise.reject();
       }
 
       const params = {
         status: stepTitle,
         trangThai: "Đã hủy",
-        moTa: description.value,
+        moTa: `Nhân viên ${
+          useAuthStore().user?.email || "Không xác định"
+        } đã hủy đơn hàng!`,
         email: props.billData.emailNguoiNhan || null,
         idHoaDon: idBill,
-        nhanVien: useAuthStore().user?.email || null,
+        nhanVien: useAuthStore().user?.id || null,
         ghiChu: "Đơn hàng đã bị hủy!",
       };
 
       try {
         await changeStatus({ idBill, params });
         successNotiSort("Đã hủy đơn thành công!");
-        current.value++;
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -835,7 +753,7 @@ const handleCancelBill = () => {
 
 // Hàm hủy đơn đã thanh toán
 const handleCancelBillPaid = () => {
-  const nextStep = stepsCancel[current.value];
+  const nextStep = stepsTmp.value[stepsTmp.value.length - 1];
   const stepTitle = nextStep.title;
   const description = ref("");
 
@@ -865,12 +783,14 @@ const handleCancelBillPaid = () => {
       const params = {
         status: stepTitle,
         trangThai: "Đã hủy",
-        moTa: `Hoàn trả: ${formatCurrencyVND(
+        moTa: `Nhân viên ${
+          useAuthStore().user?.email || "Không xác định"
+        } đã hủy và hoàn trả: ${formatCurrencyVND(
           props.dataPaymentInfo.paid
         )} - Mã giao dịch: ${description.value}`,
         email: props.billData.emailNguoiNhan || null,
         idHoaDon: idBill,
-        nhanVien: useAuthStore().user?.email || null,
+        nhanVien: useAuthStore().user?.id || null,
         ghiChu: `Đơn hàng đã bị hủy và hoàn trả ${formatCurrencyVND(
           props.dataPaymentInfo.paid
         )}`,
@@ -879,17 +799,6 @@ const handleCancelBillPaid = () => {
       try {
         await changeStatus({ idBill, params });
         successNotiSort("Đã hủy đơn thành công!");
-
-        // const stepIndex = steps.findIndex((step) => step.title === stepTitle);
-        // if (stepIndex !== -1) {
-        //   steps[stepIndex].time = new Date().toLocaleString("vi-VN", {
-        //     hour12: false,
-        //   });
-        // }
-
-        // // Quay lại trạng thái trước
-        // current.value--;
-        current.value++;
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -900,10 +809,25 @@ const handleCancelBillPaid = () => {
 };
 
 const rollBack = (stepStatus: string) => {
-  if (current.value > 0) {
-    const prevStep = steps[current.value - 1];
-    const stepTitle = prevStep.title;
-    const description = ref();
+  let prevStep = "";
+  const stepTitle = prevStep;
+  const description = ref();
+  if (stepStatus) {
+    switch (stepStatus) {
+      case "Chờ giao hàng":
+        prevStep = "Chờ xác nhận";
+        break;
+
+      case "Đang vận chuyển":
+        prevStep = "Chờ giao hàng";
+        break;
+      case "Đã thanh toán":
+        prevStep = "Đang vận chuyển";
+        break;
+      default:
+        console.log("Bước không xác định hoặc không có title");
+        break;
+    }
 
     Modal.confirm({
       title: "Xác nhận quay lại trạng thái trước",
@@ -911,7 +835,7 @@ const rollBack = (stepStatus: string) => {
         return h("div", [
           h(
             "p",
-            `Bạn có chắc chắn muốn quay lại trạng thái "${stepTitle}" không?`
+            `Bạn có chắc chắn muốn quay lại trạng thái "${prevStep}" không?`
           ),
           h(Input.TextArea, {
             placeholder: "Nhập lý do quay lại...",
@@ -927,14 +851,20 @@ const rollBack = (stepStatus: string) => {
         }
 
         const params = {
-          status: stepTitle,
-          trangThai: stepTitle,
-          moTa: description.value,
+          status: prevStep,
+          trangThai: prevStep,
+          moTa: `Nhân viên ${
+            useAuthStore().user?.email || "Không xác định"
+          } đã quay lại trạng thái ${prevStep}`,
+          email: props.billData.emailNguoiNhan || null,
+          idHoaDon: idBill,
+          nhanVien: useAuthStore().user?.id || null,
+          ghiChu: "Quay lai trạng thái",
         };
 
         try {
           await changeStatus({ idBill, params });
-          successNotiSort(`Trạng thái đã quay lại: ${stepTitle}`);
+          successNotiSort(`Trạng thái đã quay lại: ${prevStep}`);
           // Hoàn lại số lượng
           if (
             props.billData.loaiHD === "Online" &&
@@ -952,17 +882,6 @@ const rollBack = (stepStatus: string) => {
               }
             );
           }
-
-          // 🔄 Cập nhật lại thời gian của trạng thái rollback
-          const stepIndex = steps.findIndex((step) => step.title === stepTitle);
-          if (stepIndex !== -1) {
-            steps[stepIndex].time = new Date().toLocaleString("vi-VN", {
-              hour12: false,
-            });
-          }
-
-          // Quay lại trạng thái trước
-          current.value--;
         } catch (error) {
           console.error("Cập nhật trạng thái thất bại:", error);
           errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -973,20 +892,12 @@ const rollBack = (stepStatus: string) => {
   }
 };
 
-// const listProducts = computed(() => {
-//   return props.dataProduct.map(item => ({
-//     catalog: item.catalog,
-//     tenMauSac: item.tenMau,
-//     kichCo: item.tenKichCo,
-//     tenSanPham: item.tenSanPham,
-//     giaHienTai: item.gia,
-//     SoLuong: item.soLuong
-//   }));
-// });
+
+
 // Hàm in hóa đơn
 const createInvoicePdf = async () => {
   const listProducts = computed(() => {
-    return props.dataProduct.map((item) => ({
+    return props.dataProduct.map((item: Product) => ({
       catalog: item.catalog,
       tenMauSac: item.tenMau,
       kichCo: item.tenKichCo,
@@ -1020,7 +931,7 @@ const createInvoicePdf = async () => {
       try {
         await createInvoicePdfWithId(billId.value, pdfParams);
         console.log(props.dataProduct);
-        
+
         console.log(billId.value);
         console.log(pdfParams);
       } catch (error: any) {
