@@ -17,12 +17,12 @@
       >
     </div>
     <div>
-      <a-input
+      <a-input-number
         class="me-1"
         v-model:value="newPrice"
-        type="number"
         min="0"
         style="width: 100px"
+        :formatter="formatter"
       />
       <a-button type="primary" @click="updateValuesGia">Sửa giá</a-button>
     </div>
@@ -161,6 +161,12 @@ const router = useRouter();
 const copiedData = ref<ProductDetailRequest[]>([]);
 
 const selectedRows = ref<string[]>([]);
+
+// convert tiền sang VND
+const formatter = (value: any) => {
+      if (!value) return '';
+      return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
 
 // Computed property để kiểm tra xem tất cả hàng đã được chọn chưa
 const isAllSelected = computed(

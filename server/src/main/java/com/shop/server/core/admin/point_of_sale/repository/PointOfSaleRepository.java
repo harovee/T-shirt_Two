@@ -100,7 +100,7 @@ public interface PointOfSaleRepository extends SanPhamChiTietRepository {
 //    Page<AdPOSFindProductResponse> getProductDetails(AdPOSFindProductRequest req, Pageable pageable);
 
     @Query(value = """
-                select ROW_NUMBER() OVER(ORDER BY spct.id DESC) AS catalog,
+                select ROW_NUMBER() OVER(ORDER BY spct.ngay_tao DESC) AS catalog,
                     spct.id,
                     spct.ma_san_pham_chi_tiet,
                     spct.ten,

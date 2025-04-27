@@ -69,11 +69,16 @@ const range = (start: number, end: number) => {
 
 
 export const defaultSaleDatePickerRules = [
-    { label: 'Bây giờ', value: [dayjs().add(1, 'minute').startOf('minute'), dayjs().add(16, 'minute').startOf('minute')] },
     { label: 'Ngày mai', value: [dayjs().startOf('d').add(1, 'd'), dayjs().endOf('d').add(1, 'd')] },
-    { label: '7 ngày tiếp theo', value: [dayjs(), dayjs().add(7, 'd')] },
-    { label: '15 ngày tiếp theo', value: [dayjs(), dayjs().add(15, 'd')] },
-    { label: '30 ngày tiếp theo', value: [dayjs(), dayjs().add(30, 'd')] },
+    { 
+        label: '7 ngày tiếp theo', 
+        value: [
+            dayjs().startOf('d').add(1, 'd'), // Tomorrow at 00:00
+            dayjs().startOf('d').add(1, 'd').add(7, 'd') // Tomorrow + 7 days
+        ] 
+    },
+    { label: '15 ngày tiếp theo', value: [dayjs().startOf('d').add(1, 'd'), dayjs().startOf('d').add(1, 'd').add(15, 'd')] },
+    { label: '30 ngày tiếp theo', value: [dayjs().startOf('d').add(1, 'd'), dayjs().startOf('d').add(1, 'd').add(30, 'd')] },
     {
         label: 'Tuần sau',
         value: [
@@ -88,7 +93,6 @@ export const defaultSaleDatePickerRules = [
             dayjs().endOf('month').add(1, 'month'),
         ]
     },
-
 ]
 
 

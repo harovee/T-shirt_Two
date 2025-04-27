@@ -279,30 +279,30 @@ const rules: Record<string, Rule[]> = {
         },
     ],
     ngayBatDauVaKetThuc: [{ required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', trigger: 'change', type: 'array' },
-    {
-          validator: (rule, value) => {
-            if (value != null) {
-                const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
-                dayjs(date).valueOf()
-                );
-                const now = dayjs().valueOf();
-                if (validStartDate.value != null){
-                    if (now > validStartDate.value) {
-                        if (ngayBatDau < validStartDate.value) {
-                            return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm bắt đầu đã thêm ban đầu: ' + getDateFormat(validStartDate.value));
-                        }    
-                    }else if (ngayBatDau < now) {
-                        return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
-                    }
-                }
-                if (ngayKetThuc < ngayBatDau) {
-                    return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
-                }
+    {   
+        validator: (rule, value) => {
+          
+          if (!value || value.length !== 2) return Promise.resolve();
+            const startStr = dayjs(value[0]).format('YYYY-MM-DD HH:mm');
+            const endStr = dayjs(value[1]).format('YYYY-MM-DD HH:mm');
+            
+            if (startStr === endStr) {
+              return Promise.reject('Ngày kết thúc không được trùng ngày bắt đầu');
             }
-          return Promise.resolve();
-          },
-          trigger: 'change',
-    }
+            
+            const ngayBatDau = value[0].valueOf();
+            const ngayKetThuc = value[1].valueOf();
+            const now = dayjs().valueOf();
+            
+            if (ngayBatDau < now) {
+              return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+            }
+            if (ngayKetThuc < ngayBatDau) {
+              return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
+            }
+            return Promise.resolve();
+          }
+      },
     ],
     loai: [{ required: true, message: 'Vui lòng chọn loại đợt giảm giá', trigger: 'change' }],
 };
