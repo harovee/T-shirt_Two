@@ -35,17 +35,17 @@
             </a-input>
           </a-form-item>
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
-            <a-input-number v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu"/>
+            <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu"/>
           </a-form-item>
 
           <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
-            <a-input v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu">
-              <template #addonAfter>đ</template>
-            </a-input>
+            <a-input-number class="w-full" v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu" :formatter="formatter">
+            </a-input-number>
           </a-form-item>
 
           <a-form-item class="mb-4" label="Thời gian" name="ngayBatDauVaKetThuc" required>
             <a-range-picker
+              class="w-full"
               size="large"
               show-time
               :disabled-date="disabledDate"
@@ -139,6 +139,7 @@ const dataSource = computed(() => data?.value?.data|| []);
 const voucherRequest = ref<PhieuGiamGiaRequest>(defaultVoucherRequest)
 
 const formRef = ref();
+
 
 const formState: UnwrapRef<FormState> = reactive( {
     ten: "",

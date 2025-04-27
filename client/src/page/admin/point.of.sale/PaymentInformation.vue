@@ -109,7 +109,6 @@
             @cancel="open = false"
             class="w-[600px] h-[400px]"
             @handleOpenKhachHang="openVoucherModal"
-            @selectVoucher="handleVoucherSelected"
           />
         </a-form-item>
         <div class="flex justify-between items-center w-[300px]">
@@ -142,11 +141,10 @@
             @change="updateTotal"
             :formatter="formatter"
           />
-          
         </div>
-        <p v-if=" totalAmount >= 2000000" class="mt-1 ms-16 text-red-500">
-            (Free ship cho hóa đơn từ 2.000.000đ.)
-          </p>
+        <p v-if="totalAmount >= 2000000" class="mt-1 ms-16 text-red-500">
+          (Free ship cho hóa đơn từ 2.000.000đ.)
+        </p>
         <a-form-item label="Phương thức thanh toán" class="text-xl">
           <div class="flex items-center space-x-2">
             <a-tooltip title="Chọn phương thức thanh toán" trigger="hover">
@@ -259,7 +257,12 @@ import {
   useUpdateClientAddress,
 } from "@/infrastructure/services/service/admin/client.action";
 import { log } from "console";
-import { sendPaymentConfirm } from "@/infrastructure/mobile.connect/InvoiceConnect";
+import {
+  invoices,
+  currentInvoice,
+  sendCartInfo,
+  sendPaymentConfirm,
+} from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
 
@@ -400,14 +403,6 @@ const paymentInfo = ref({
   phoneNumber: "" || null,
 });
 
-// watch(
-//   () => shippingParams.value,
-//   (newValues) => {
-//     console.log(newValues);
-//   },
-//   { deep: true }
-// );
-
 // Lấy service ID GHN
 const { data: service, refetch: refetchService } = useGetServiceId(
   serviceIdParams,
@@ -447,7 +442,7 @@ watch(
   () => dataSourcePro.value,
   (newData) => {
     if (newData) {
-      // console.log(newData);
+      // console.log(newData);selectVoucher
 
       paramsVoucher.value.tongTien = totalAmount.value;
       paramsNextPriceVoucher.value.tongTien = totalAmount.value;
@@ -498,16 +493,35 @@ const voucher = ref(null);
 watch(
   () => dataListVoucher.value,
   (newData) => {
+    console.log("newVouchers", newData);
     if (newData && newData.length > 0) {
       paymentInfo.value.voucherCode = newData[0].ma;
       paymentInfo.value.voucherId = newData[0].id;
-      paymentInfo.value.discount = parseFloat(newData[0].giaTriGiam);
+      paymentInfo.value.discount = parseFloat(newData[0].giaTri);
       paymentInfo.value.totalProductPrice =
         totalAmount.value - paymentInfo.value.discount;
       voucher.value =
         newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
         null;
       // console.log(dataNextPriceVouchers.value);
+
+      invoices.value.forEach((item) => {
+        if (item.id === currentInvoice.value.id) {
+          item.vouchers = [
+            {
+              id: newData[0].id,
+              code: newData[0].ma,
+              name: newData[0].ten,
+              discount: Number(
+                newData[0].loaiGiam ? newData[0].giaTri : newData[0].giaTri
+              ),
+              type: newData[0].loaiGiam ? "fixed" : "percent",
+            },
+          ];
+          currentInvoice.value = item;
+          sendCartInfo(item);
+        }
+      });
     } else {
       paymentInfo.value.voucherCode = "";
       paymentInfo.value.voucherId = null;
@@ -577,23 +591,23 @@ const handleCheckPaymented = (totalAmountAfter: number) => {
   paymentedValue.value = totalAmountAfter;
 };
 
-const handleVoucherSelected = (voucher) => {
-  if (paymentedValue.value !== 0) {
-    warningNotiSort("Bạn đã thanh toán không thể thay đổi phiếu giảm giá!");
-    return;
-  }
-  paymentInfo.value.voucherCode = voucher.ma;
-  paymentInfo.value.voucherId = voucher.id;
-  if (!voucher.loaiGiam) {
-    paymentInfo.value.discount = voucher.giaTriGiam;
-    paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
-  } else {
-    paymentInfo.value.discount = voucher.giaTriGiam;
-    paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
-  }
-};
+// const handleVoucherSelected = (voucher) => {
+//   if (paymentedValue.value !== 0) {
+//     warningNotiSort("Bạn đã thanh toán không thể thay đổi phiếu giảm giá!");
+//     return;
+//   }
+//   paymentInfo.value.voucherCode = voucher.ma;
+//   paymentInfo.value.voucherId = voucher.id;
+//   if (!voucher.loaiGiam) {
+//     paymentInfo.value.discount = voucher.giaTriGiam;
+//     paymentInfo.value.totalProductPrice =
+//       totalAmount.value - paymentInfo.value.discount;
+//   } else {
+//     paymentInfo.value.discount = voucher.giaTriGiam;
+//     paymentInfo.value.totalProductPrice =
+//       totalAmount.value - paymentInfo.value.discount;
+//   }
+// };
 
 watch(
   () => paymentInfo.value,
@@ -615,11 +629,23 @@ const handleNotVoucher = () => {
   paymentInfo.value.voucherId = null;
   paymentInfo.value.discount = 0;
   paymentInfo.value.totalProductPrice = totalAmount.value;
+  invoices.value.forEach((item) => {
+    if (item.id === currentInvoice.value.id) {
+      item.vouchers = [];
+      currentInvoice.value = item;
+      sendCartInfo(item);
+    }
+  });
 };
 
 const changeShippingOption = (option: string) => {
   paymentInfo.value.shippingOption = option;
   emit("handlePaymentInfo", paymentInfo.value);
+};
+
+const openLocalPdf = (maHoaDon) => {
+  const filePath = "/hoa_don/HD.pdf"; // Đường dẫn file PDF trong thư mục public hoặc được serve bởi server
+  window.open(filePath, "_blank");
 };
 
 const { mutate: updateBillWait } = useUpdateBillWait();
@@ -675,6 +701,8 @@ const handleUpdateBill = (x: number) => {
     xa: getCustomerAddress?.value?.ward || null,
     huyen: getCustomerAddress?.value?.district || null,
     tinh: getCustomerAddress?.value?.province || null,
+    phuongThucNhan:
+      paymentInfo.value.shippingOption === "true" ? "Giao hàng" : "Tại quầy",
   };
   if (
     paymentInfo.value.shippingOption === "true" &&
@@ -686,12 +714,14 @@ const handleUpdateBill = (x: number) => {
     return;
   }
   if (dataSourcePro.value.length <= 0) {
-    warningNotiSort(
-      "Không có sản phẩm nào trong giỏ hàng!"
-    );
+    warningNotiSort("Không có sản phẩm nào trong giỏ hàng!");
     return;
   }
-  if (paymentedValue.value === 0) {
+  if (
+    paymentedValue.value === 0 ||
+    Math.floor(paymentedValue.value) <
+      Math.floor(paymentInfo.value.totalProductPrice)
+  ) {
     warningNotiSort(
       "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"
     );
@@ -709,7 +739,14 @@ const handleUpdateBill = (x: number) => {
             idBill: props.dataSourceInfor.id,
             params: payload,
           });
-          await createInvoicePdf(pdfParams);
+          await createInvoicePdf(pdfParams)
+            .then(() => {
+              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
+              window.open(url, "_blank");
+            })
+            .catch((error) => {
+              console.error("Tạo hóa đơn PDF thất bại", error);
+            });
           successNotiSort("Thanh toán thành công!");
           router.push(
             ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
@@ -726,8 +763,7 @@ const handleUpdateBill = (x: number) => {
         Modal.destroyAll();
       },
     });
-  
-  }else if(x === 2) {
+  } else if (x === 2) {
     sendPaymentConfirm(
       props.dataSourceInfor.ma,
       () => {
@@ -737,7 +773,14 @@ const handleUpdateBill = (x: number) => {
               idBill: props.dataSourceInfor.id,
               params: payload,
             });
-            await createInvoicePdf(pdfParams);
+            await createInvoicePdf(pdfParams)
+            .then(() => {
+              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
+              window.open(url, "_blank");
+            })
+            .catch((error) => {
+              console.error("Tạo hóa đơn PDF thất bại", error);
+            });
             successNotiSort("Thanh toán thành công!");
             router.push(
               ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
@@ -749,9 +792,9 @@ const handleUpdateBill = (x: number) => {
           }
         };
         return true;
-      }
-      ,
-      () => { });
+      },
+      () => {}
+    );
   }
 };
 

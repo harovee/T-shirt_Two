@@ -9,15 +9,23 @@
         <span class="font-medium">Mã:</span>
         <span class="ml-2">{{ copiedBillData?.ma }}</span>
       </div>
+      
+      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
+        <span class="font-medium">SĐT người nhận:</span>
+        <span class="ml-2">{{ copiedBillData?.soDienThoai }}</span>
+      </div>
       <div class="flex items-center">
         <span class="font-medium">Tên khách hàng:</span>
         <span class="ml-2">{{
           copiedBillData?.tenKhachHang || "Khách lẻ"
         }}</span>
       </div>
-      <div class="flex items-center">
-        <span class="font-medium">SĐT người nhận:</span>
-        <span class="ml-2">{{ copiedBillData?.soDienThoai }}</span>
+      
+      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
+        <span class="font-medium">Địa chỉ người nhận:</span>
+        <span class="ml-2" color="blue">{{
+          copiedBillData?.diaChiNguoiNhan || ""
+        }}</span>
       </div>
       <div class="flex items-center">
         <span class="font-medium">Trạng thái:</span>
@@ -25,17 +33,11 @@
           copiedBillData?.trangThai
         }}</a-tag>
       </div>
-      <div class="flex items-center">
-        <span class="font-medium">Địa chỉ người nhận:</span>
-        <span class="ml-2" color="blue">{{
-          copiedBillData?.diaChiNguoiNhan || ""
-        }}</span>
-      </div>
-      <div class="flex items-center">
+      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
         <span class="font-medium">Tên người nhận:</span>
         <span class="ml-2">{{ copiedBillData?.tenNguoiNhan || "" }}</span>
       </div>
-      <div class="flex items-center">
+      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
         <span class="font-medium">Ghi chú:</span>
         <span class="ml-2">{{ copiedBillData?.ghiChu || "" }}</span>
       </div>
@@ -357,6 +359,8 @@ watch(
   (newBillData) => {
     copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
     // console.log(copiedBillData.value);
+    console.log(newBillData);
+    
   }
 );
 
@@ -455,34 +459,6 @@ const { data: checkQuantityDataByIdProduct, refetch: checkQuantityByProductIdRef
 
 const copiedDataSource = ref(null);
 
-// watch(
-//   () => props?.billData,
-//   (newBillData) => {
-//     copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
-//     // voucherId.value = newBillData.idPhieuGiamGia;
-//     if (copiedBillData.value && copiedBillData.value.huyen) {
-//       serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
-//       if (serviceIdParams.value.toDistrict !== 0) {
-//         refetchService().then(() => {
-//           shippingParams.value.serviceId = service?.value?.data[0].service_id;
-//           // console.log(shippingParams.value);
-//           shippingParams.value.toDistrictId = copiedBillData.value.huyen;
-//           shippingParams.value.toWardCode = copiedBillData.value.xa;
-//           if (shippingParams.value.toWardCode) {
-//             refetchShipping().then(() => {
-//               copiedDataSource.value[0].tienShip = shipping?.value?.data.total;
-//               copiedBillData.value.tienShip =
-//                 copiedDataSource.value[0].tienShip;
-//             });
-//           }
-//         });
-//       } else {
-//         copiedDataSource.value[0].tienShip = 0;
-//       }
-//     }
-//   }
-// );
-
 const { mutate: deleteOrderDetails } = useDeleteCartById();
 
 const { data: PaymentData } = useGetPayHistory(params, {
@@ -563,7 +539,7 @@ watch(
     if (newData) {
       // console.log(newData);
       copiedDataSource.value = JSON.parse(JSON.stringify(newData));
-
+      
       // totalProductPrice.value = newData.reduce(
       //   (total, item) => total + item.thanhTien,
       //   0
@@ -702,7 +678,7 @@ const handleChangeQuantity = async (record: any) => {
 
   if (record.soLuong > 0) {
     record.previousQuantity = record.soLuong;
-    console.log("previousQuantity:", record.previousQuantity);
+    // console.log("previousQuantity:", record.previousQuantity);
   }
 
   if (record.soLuong === 0) {

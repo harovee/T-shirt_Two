@@ -120,6 +120,7 @@ const emit = defineEmits([
   "handleOpenModalCreate",
   "handleCloseModalCreate",
   "refreshData"  // Add this
+  "handleRefetch"
 ]);
 
 
@@ -215,6 +216,7 @@ const handleOpenModalUpdateProductDetail = (productDetail) => {
 
 const handleCloseModalUpdateProductDetail = () => {
   isOpenModalUpdateProductDetail.value = false;
+  emit('handleRefetch');
 };
 // ---------------------------------------
 

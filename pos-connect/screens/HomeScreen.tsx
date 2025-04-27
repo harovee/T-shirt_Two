@@ -11,6 +11,7 @@ import {
   Dimensions,
   FlatList,
   Animated,
+  ActivityIndicator,
 } from "react-native"
 import { StatusBar } from "expo-status-bar"
 import { Ionicons } from "@expo/vector-icons"
@@ -18,7 +19,6 @@ import { useTheme } from "../context/ThemeContext"
 import { useAppContext } from "../context/AppContext"
 import { useNavigation } from "@react-navigation/native"
 import type { AppNavigationProp } from "../types/navigation"
-// Thêm import PaymentConfirmationModal
 import PaymentConfirmationModal from "../components/PaymentConfirmationModal"
 
 const { width } = Dimensions.get("window")
@@ -48,25 +48,28 @@ const BANNERS = [
 // Dữ liệu mẫu cho thông tin cửa hàng
 const STORE_INFO = {
   name: "T-Shirt Two",
-  address: "Trịnh Văn Bô, Nam Từ Liêm, Hà Nội",
+  address: "Trịnh Văn Bô, Phương Canh, Nam Từ Liêm, Hà Nội",
   phone: "0123 456 789",
-  email: "tshirttwo@store.com",
+  email: "contact@tshirttwo.com",
   website: "www.tshirttwo.com",
   openHours: "8:00 - 22:00 (Thứ 2 - Chủ nhật)",
   description:
-    "T-Shirt Two cung cấp các sản phẩm chất lượng cao với giá cả hợp lý," 
-    + " đảm bảo sự hài lòng cho mọi khách hàng.",
+    "T-Shirt Two là điểm đến lý tưởng cho những người yêu thời trang. Chúng tôi cung cấp các sản phẩm chất lượng cao với giá cả hợp lý, đảm bảo sự hài lòng cho mọi khách hàng.",
 }
 
 const HomeScreen = () => {
   const { colors, isDark } = useTheme()
-  const { invoiceData, disconnectFromPOS, connectionStatus } = useAppContext()
+  const { invoiceData, disconnectFromPOS, connectionStatus, reconnectToPOS } = useAppContext()
   const navigation = useNavigation<AppNavigationProp>()
 
   // State cho banner slider
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const bannerScrollRef = useRef<FlatList>(null)
   const fadeAnim = useRef(new Animated.Value(0)).current
+
+  // Lấy thông tin server từ biến môi trường
+  const SERVER_IP = process.env.SERVER_IP || "192.168.1.100"
+  const SERVER_PORT = process.env.SERVER_PORT || "8080"
 
   // Auto scroll banner
   useEffect(() => {
@@ -111,6 +114,10 @@ const HomeScreen = () => {
     const contentOffset = event.nativeEvent.contentOffset.x
     const index = Math.round(contentOffset / width)
     setCurrentBannerIndex(index)
+  }
+
+  const handleReconnect = () => {
+    reconnectToPOS()
   }
 
   return (
@@ -171,6 +178,49 @@ const HomeScreen = () => {
             </View>
           </View>
 
+          {/* Connection Info */}
+          <View style={[styles.connectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Thông tin kết nối</Text>
+            <View style={styles.connectionInfo}>
+              <View style={styles.connectionRow}>
+                <Ionicons name="server-outline" size={20} color={colors.primary} />
+                <Text style={[styles.connectionText, { color: colors.text }]}>
+                  Máy chủ: {SERVER_IP}:{SERVER_PORT}
+                </Text>
+              </View>
+              <View style={styles.connectionRow}>
+                <Ionicons
+                  name={connectionStatus === "connected" ? "checkmark-circle-outline" : "alert-circle-outline"}
+                  size={20}
+                  color={connectionStatus === "connected" ? colors.success : colors.danger}
+                />
+                <Text
+                  style={[
+                    styles.connectionText,
+                    {
+                      color:
+                        connectionStatus === "connected"
+                          ? colors.success
+                          : connectionStatus === "connecting"
+                            ? colors.primary
+                            : colors.danger,
+                    },
+                  ]}
+                >
+                  Trạng thái:{" "}
+                  {connectionStatus === "connected"
+                    ? "Đã kết nối"
+                    : connectionStatus === "connecting"
+                      ? "Đang kết nối..."
+                      : "Chưa kết nối"}
+                </Text>
+              </View>
+              {connectionStatus === "connecting" && (
+                <ActivityIndicator size="small" color={colors.primary} style={styles.connectionLoader} />
+              )}
+            </View>
+          </View>
+
           {/* Store Information */}
           <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Thông tin cửa hàng</Text>
@@ -208,11 +258,40 @@ const HomeScreen = () => {
           </View>
 
           {/* Status Message */}
-          <View style={[styles.statusCard, { backgroundColor: colors.primary + "20", borderColor: colors.primary }]}>
-            <Ionicons name="checkmark-circle-outline" size={24} color={colors.primary} />
-            <Text style={[styles.statusText, { color: colors.primary }]}>
-              Đã kết nối với máy quầy. Đang chờ hóa đơn mới...
+          <View
+            style={[
+              styles.statusCard,
+              {
+                backgroundColor: connectionStatus === "connected" ? colors.success + "20" : colors.danger + "20",
+                borderColor: connectionStatus === "connected" ? colors.success : colors.danger,
+              },
+            ]}
+          >
+            <Ionicons
+              name={connectionStatus === "connected" ? "checkmark-circle-outline" : "alert-circle-outline"}
+              size={24}
+              color={connectionStatus === "connected" ? colors.success : colors.danger}
+            />
+            <Text
+              style={[styles.statusText, { color: connectionStatus === "connected" ? colors.success : colors.danger }]}
+            >
+              {connectionStatus === "connected"
+                ? "Đã kết nối với máy quầy. Đang chờ hóa đơn mới..."
+                : connectionStatus === "connecting"
+                  ? "Đang kết nối với máy quầy..."
+                  : "Chưa kết nối với máy quầy. Vui lòng kiểm tra kết nối."}
             </Text>
+
+            {/* Thêm nút kết nối lại khi trạng thái là disconnected */}
+            {connectionStatus === "disconnected" && (
+              <TouchableOpacity
+                style={[styles.reconnectButton, { backgroundColor: colors.primary }]}
+                onPress={handleReconnect}
+              >
+                <Ionicons name="refresh-outline" size={16} color="#FFFFFF" />
+                <Text style={styles.reconnectText}>Kết nối lại</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </Animated.View>
       </ScrollView>
@@ -297,11 +376,35 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginHorizontal: 4,
   },
+  connectionCard: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  connectionInfo: {
+    marginTop: 8,
+  },
+  connectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  connectionText: {
+    fontSize: 14,
+    marginLeft: 12,
+  },
+  connectionLoader: {
+    marginTop: 8,
+    alignSelf: "center",
+  },
   infoCard: {
     margin: 16,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
+    marginTop: 8,
   },
   sectionTitle: {
     fontSize: 18,
@@ -342,6 +445,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 12,
     flex: 1,
+  },
+  reconnectButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    marginLeft: 8,
+  },
+  reconnectText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "500",
+    marginLeft: 4,
   },
 })
 

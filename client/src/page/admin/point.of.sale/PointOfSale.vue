@@ -10,43 +10,43 @@
           <h3 class="text-left text-xl ms-5">Danh sách đơn</h3>
           <div class="flex justify-between gap-3">
             <a-tooltip title="Thêm sản phẩm vào giỏ" trigger="hover">
-            <a-button
-              class="bg-purple-300 flex justify-between items-center gap-2"
-              size="large"
-              @click="handleOpenProductsModel"
-            >
-              <v-icon name="md-addcircle" />
-            </a-button>
+              <a-button
+                class="bg-purple-300 flex justify-between items-center gap-2"
+                size="large"
+                @click="handleOpenProductsModel"
+              >
+                <v-icon name="md-addcircle" />
+              </a-button>
 
-            <a-modal
-              v-model:open="openProductsModal"
-              title="Danh sách sản phẩm có sẵn"
-              width="80%"
-              @ok="handleOk"
-              @cancel="handleCancel"
-            >
-              <template #footer>
-                <div class="text-center">
-                  <a-button key="back" @click="handleCancel">Đóng</a-button>
-                  <a-button
-                    key="submit"
-                    type="primary"
-                    :loading="loadingSubmitProductTable"
-                    @click="handleOk"
-                    >Thêm</a-button
-                  >
+              <a-modal
+                v-model:open="openProductsModal"
+                title="Danh sách sản phẩm có sẵn"
+                width="80%"
+                @ok="handleOk"
+                @cancel="handleCancel"
+              >
+                <template #footer>
+                  <div class="text-center">
+                    <a-button key="back" @click="handleCancel">Đóng</a-button>
+                    <a-button
+                      key="submit"
+                      type="primary"
+                      :loading="loadingSubmitProductTable"
+                      @click="handleOk"
+                      >Thêm</a-button
+                    >
+                  </div>
+                </template>
+                <div>
+                  <POSProductTable
+                    :attributes="listAttributes.data.value?.data"
+                    :idSanPhamChiTiets="idSanPhamChiTiets"
+                    @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"
+                    @update:refetch="setRefetch"
+                  />
                 </div>
-              </template>
-              <div>
-                <POSProductTable
-                  :attributes="listAttributes.data.value?.data"
-                  :idSanPhamChiTiets="idSanPhamChiTiets"
-                  @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"
-                  @update:refetch="setRefetch"
-                />
-              </div>
-            </a-modal>
-            <!-- <a-modal
+              </a-modal>
+              <!-- <a-modal
               v-model:open="openQuantityModal"
               title="Chọn số lượng"
               width="500px"
@@ -61,22 +61,22 @@
                 v-model:value="quantityProduct"
               ></a-input-number
             ></a-modal> -->
-          </a-tooltip>
-          <a-tooltip title="Quét QR" trigger="hover">
-            <a-button
-              class="bg-purple-300 flex justify-between items-center gap-2"
-              size="large"
-              @click="openQRModal"
-            >
-              <v-icon name="bi-qr-code-scan" />
-            </a-button>
-          </a-tooltip>
-          <scan-qr-code
-            :openModal="isModalOpen"
-            @update:open="isModalOpen = $event"
-            @update:idSanPhamChitiet="handleUpdateIdSanPhamChiTietQr"
-            @ok="handleQRScan"
-          />
+            </a-tooltip>
+            <a-tooltip title="Quét QR" trigger="hover">
+              <a-button
+                class="bg-purple-300 flex justify-between items-center gap-2"
+                size="large"
+                @click="openQRModal"
+              >
+                <v-icon name="bi-qr-code-scan" />
+              </a-button>
+            </a-tooltip>
+            <scan-qr-code
+              :openModal="isModalOpen"
+              @update:open="isModalOpen = $event"
+              @update:idSanPhamChitiet="handleUpdateIdSanPhamChiTietQr"
+              @ok="handleQRScan"
+            />
           </div>
         </div>
         <a-tabs
@@ -125,7 +125,11 @@
                   class="w-[600px] h-[400px]"
                   @handleOpenKhachHang="handleOpenKhachHang"
                   @selectCustomer="
-                    (customer) => handleCustomerSelected(customer, bill)
+                    (customer) =>
+                      handleCustomerSelected(
+                        customer,
+                        activeKey?.valueOf() || ''
+                      )
                   "
                 />
               </div>
@@ -222,6 +226,7 @@ import {
   getDateFormat,
   getDateTimeMinutesFormat,
 } from "@/utils/common.helper";
+import { currentInvoice, InvoiceData, sendCartInfo, addInvoice, getInvoiceById, invoices } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 const { data, isLoading, isFetching } = useGetBillsWait();
 
@@ -229,6 +234,7 @@ const { data: listProductDetail } = useGetListProductDetail();
 
 const dataSource = computed(() => data?.value?.data || []);
 const activeKey = ref<string | null>(null);
+const maHoaDon = ref<string | null>(null);
 const isAddProduct = ref(0);
 const isChange = ref(0);
 
@@ -251,16 +257,31 @@ watch(
 );
 
 
-// watch(
-//   activeKey,
-//   (newActiveKey) => {
-//     if (newActiveKey) {
-//       localStorage.setItem("activeKey", newActiveKey);
-//       // refetchPro();
-//     }
-//   },
-//   { immediate: true }
-// );
+watch(
+  activeKey,
+  (newActiveKey) => {
+    if (newActiveKey) {
+      // localStorage.setItem("activeKey", newActiveKey);
+      // refetchPro();
+      dataSource.value.forEach((item) => {
+        if (item.id === newActiveKey) {
+          maHoaDon.value = item.ma;
+        }
+      });
+    if ( currentInvoice.value.id !== maHoaDon.value ) {
+      const addOk = addInvoice(maHoaDon.value || "");
+      if (!addOk) {
+        const invocie = getInvoiceById(maHoaDon.value || "");
+        if (invocie) {
+          currentInvoice.value = invocie;
+        }
+      }
+    }
+    sendCartInfo(currentInvoice.value);
+    }
+  },
+  { immediate: true }
+);
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -294,16 +315,16 @@ watch(
   () => isAddProduct.value,
   async (newDataSource) => {
     const results = await Promise.all(
-        dataSource.value.map(async (id) => {
-          const response = await getOrderDetailsAll(id.id);
-          const length = response?.data.length || 0;
-          return { id, length };
-        })
-      );
-      lengthMap.value = results.reduce((acc, { id, length }) => {
-        acc[id.id] = length;
-        return acc;
-      }, {});
+      dataSource.value.map(async (id) => {
+        const response = await getOrderDetailsAll(id.id);
+        const length = response?.data.length || 0;
+        return { id, length };
+      })
+    );
+    lengthMap.value = results.reduce((acc, { id, length }) => {
+      acc[id.id] = length;
+      return acc;
+    }, {});
   },
   { immediate: true, deep: true }
 );
@@ -553,21 +574,27 @@ const selectedCustomer = ref<{
   email: string;
 } | null>(null);
 
-// const handleCustomerSelected = (
-//   customer: any,
-//   dataCustomer: any,
-//   bill: any
-// ) => {
-//   const billWait = dataSources.value.find((data: any) => data.id === bill.id);
-//   billWait.idKhachHang = customer.key;
-//   dataCustomers.value = dataCustomer;
-// };
-
 const handleCustomerSelected = (customer: any, bill: any) => {
-  if (!activeTabCustomers[bill.id]) {
-    activeTabCustomers[bill.id] = {};
+  if (!activeTabCustomers[bill]) {
+    activeTabCustomers[bill] = {};
   }
-  activeTabCustomers[bill.id] = { ...customer };
+  activeTabCustomers[bill] = { ...customer };
+
+  console.log("activeTabCustomers", bill);
+
+  invoices.value.forEach((invoice: InvoiceData) => {
+    if (invoice.id === bill.ma) {
+      invoice.customerInfo = {
+        name: customer.name,
+        phone: customer.phoneNumber,
+        email: customer.email,
+        address: customer.address? customer.address : null,
+      };
+      currentInvoice.value = invoice;
+      sendCartInfo(currentInvoice.value);
+    }
+  });
+
 };
 
 const handleChangePaymentInfo = (paymentInfo: any, bill: any) => {

@@ -1,4 +1,4 @@
-package com.shop.server.core.mobile.invoiceconnect.model;
+package com.shop.server.core.mobile.invoiceconnect.businessmodel;
 
 import lombok.*;
 

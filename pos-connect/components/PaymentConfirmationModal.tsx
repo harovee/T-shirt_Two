@@ -124,14 +124,14 @@ const PaymentConfirmationModal = () => {
 
           <Text style={[styles.message, { color: colors.muted }]}>Vui lòng xác nhận thanh toán cho hóa đơn</Text>
 
-          <ScrollView style={styles.summaryContainer}>
+          {/* <ScrollView style={styles.summaryContainer}>
             <View style={[styles.amountContainer, { backgroundColor: colors.background }]}>
               <Text style={[styles.amountLabel, { color: colors.muted }]}>Tổng tiền:</Text>
-              <Text style={[styles.amount, { color: colors.primary }]}>{formatCurrency(invoiceData.total)}</Text>
-            </View>
+              <Text style={[styles.amount, { color: colors.primary }]}>{formatCurrency(invoiceData.subtotal + (invoiceData.shipping?.cost ?? 0) - discount)}</Text>
+            </View> */}
 
             {/* Thông tin tóm tắt */}
-            <View style={styles.summaryDetails}>
+            {/* <View style={styles.summaryDetails}>
               <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: colors.muted }]}>Số lượng sản phẩm:</Text>
                 <Text style={[styles.summaryValue, { color: colors.text }]}>{invoiceData.items.length}</Text>
@@ -158,28 +158,37 @@ const PaymentConfirmationModal = () => {
                   <Text style={[styles.summaryLabel, { color: colors.success }]}>Giảm giá:</Text>
                   <Text style={[styles.summaryValue, { color: colors.success }]}>-{formatCurrency(discount)}</Text>
                 </View>
-              )}
+              )} */}
 
-              <View style={styles.summaryRow}>
+              {/* <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: colors.muted }]}>Thuế:</Text>
                 <Text style={[styles.summaryValue, { color: colors.text }]}>{formatCurrency(invoiceData.tax)}</Text>
-              </View>
-            </View>
+              </View> */}
+            {/* </View> */}
 
             {/* Phương thức thanh toán */}
-            {invoiceData.paymentMethod && (
+            {/* {invoiceData.paymentMethod && (
               <View style={[styles.paymentMethod, { borderColor: colors.border }]}>
-                <Ionicons
-                  name={invoiceData.paymentMethod.includes("Tiền mặt") ? "cash-outline" : "card-outline"}
-                  size={20}
-                  color={colors.primary}
-                />
-                <Text style={[styles.paymentText, { color: colors.text }]}>{invoiceData.paymentMethod}</Text>
+                <View style={styles.paymentMethod}>
+                    {invoiceData.paymentMethod.includes("Cả hai") ? (
+                      <>
+                        <Ionicons name="cash-outline" size={24} color={colors.primary} />
+                        <Ionicons name="card-outline" size={24} color={colors.primary} />
+                      </>
+                    ) : (
+                      <Ionicons
+                        name={invoiceData.paymentMethod.includes("Tiền mặt") ? "cash-outline" : "card-outline"}
+                        size={24}
+                        color={colors.primary}
+                      />
+                    )}
+                    <Text style={[styles.paymentText, { color: colors.text }]}>{invoiceData.paymentMethod}</Text>
+                  </View>
               </View>
             )}
-          </ScrollView>
+          </ScrollView> */}
 
-          <View style={styles.timerContainer}>
+          {/* <View style={styles.timerContainer}>
             <Animated.View
               style={[
                 styles.progressBar,
@@ -193,7 +202,7 @@ const PaymentConfirmationModal = () => {
               ]}
             />
             <Text style={[styles.timer, { color: colors.text }]}>Tự động xác nhận sau {countdown}s</Text>
-          </View>
+          </View> */}
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity

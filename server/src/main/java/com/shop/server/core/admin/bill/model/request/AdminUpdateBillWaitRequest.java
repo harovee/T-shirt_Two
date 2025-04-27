@@ -42,4 +42,6 @@ public class AdminUpdateBillWaitRequest {
     private String huyen;
 
     private String xa;
+
+    private String phuongThucNhan;
 }

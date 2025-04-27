@@ -59,6 +59,7 @@ export interface BillWaitRequest {
   tinh: string | null;
   huyen: string | null;
   xa: string | null;
+  phuongThucNhan: string | null;
 }
 
 export interface ChangeStatusBillRequest {

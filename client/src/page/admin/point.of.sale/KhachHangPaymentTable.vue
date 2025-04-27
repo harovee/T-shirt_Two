@@ -2,7 +2,6 @@
   <a-modal
     :open="open"
     @ok="handleClose"
-    key=""
     :width="'800px'"
     :okText="'Xác nhận'"
     :cancelText="'Hủy bỏ'"

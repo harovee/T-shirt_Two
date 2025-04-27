@@ -32,18 +32,60 @@
 
           <div class="flex items-center gap-4 justify-end">
             <!-- chuông thông báo -->
-            <a-dropdown
+            <!-- <a-dropdown
               placement="bottomRight"
               arrow
-              :overlay-style="{ marginTop: '100px' }"
+              :overlay-style="{
+                width: '350px',
+                padding: '0',
+              }"
             >
               <template #overlay>
-                <div class="custom-dropdown-notification">
+                <div
+                  class="rounded-lg overflow-hidden shadow-lg bg-white custom-dropdown-notification"
+                >
+                  <div
+                    class="flex items-center justify-between px-4 py-2 border-b"
+                  >
+                    <span class="font-medium text-gray-700">Thông báo</span>
+                    <button
+                      class="text-sm text-gray-400 hover:text-red-500"
+                      @click="messages = []"
+                    >
+                      Xóa tất cả
+                    </button>
+                  </div>
+                  <notification-list class="m-5" :messages="messages" />
+                </div>
+              </template>
+              <BellOutlined class="text-xl cursor-pointer" />
+            </a-dropdown> -->
+
+            <a-popover
+              trigger="click"
+              placement="bottomRight"
+              overlay-class-name="custom-popover"
+            >
+              <template #content>
+                <div
+                  class="w-[350px] max-h-[400px] overflow-auto rounded-lg"
+                >
+                  <div
+                    class="flex items-center justify-between px-4 py-2 border-b"
+                  >
+                    <span class="font-medium text-gray-700">Thông báo</span>
+                    <button
+                      class="text-sm text-gray-400 hover:text-red-500"
+                      @click="handleDeleteAllNotification"
+                    >
+                      Xóa tất cả
+                    </button>
+                  </div>
                   <notification-list :messages="messages" />
                 </div>
               </template>
               <BellOutlined class="text-xl cursor-pointer" />
-            </a-dropdown>
+            </a-popover>
 
             <!-- user info -->
             <a-dropdown placement="bottomRight" arrow>
@@ -104,9 +146,10 @@ import {
   BellOutlined,
 } from "@ant-design/icons-vue";
 import { ItemType, MenuProps } from "ant-design-vue";
+import { useDeleteAllNotification } from "@/websocket/services/notification.action";
 import NotificationList from "@/websocket/view/NotificationList.vue";
 
-const selectedKeys = ref([ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name]);
+const selectedKeys = ref([ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name]);
 const openKeys = ref(["sub1"]);
 
 function getItem(
@@ -129,6 +172,8 @@ const auth = useAuthStore();
 const userInfo = computed(() => auth.user);
 const collapsed = ref<boolean>(false);
 const router = useRouter();
+
+const { mutate: deleteAllNotification } = useDeleteAllNotification();
 
 const handleLogout = () => {
   auth.logout();
@@ -330,13 +375,17 @@ const handleClick: MenuProps["onClick"] = (e) => {
   }
 };
 
+const handleDeleteAllNotification = async () => {
+  await deleteAllNotification();
+}
+
 import { useNotificationSocket } from "@/websocket/config/useNotificationSocket";
 const { messages } = useNotificationSocket();
-console.log(messages);
+// console.log(messages);
 </script>
 
 <style scoped>
-.custom-dropdown-notification {
+/* .custom-dropdown-notification {
   width: 320px;
   max-height: 400px;
   overflow-y: auto;
@@ -344,10 +393,10 @@ console.log(messages);
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   padding: 12px;
-}
+} */
 
 /* Trong component notification-list.vue */
-.notification-item {
+/* .notification-item {
   padding: 10px;
   border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
@@ -367,5 +416,5 @@ console.log(messages);
 .notification-content {
   font-size: 13px;
   color: #666;
-}
+} */
 </style>

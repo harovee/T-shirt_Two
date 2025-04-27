@@ -196,7 +196,7 @@ public class InvoicePdfService {
                     .setFontSize(13)
                     .setTextAlignment(TextAlignment.CENTER);
 
-            Paragraph camOn = new Paragraph("Cảm ơn quý khách ! Hẹn gặp lại.")
+            Paragraph camOn = new Paragraph("Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!")
                     .setFont(vietnameseFont)
                     .setFontSize(13)
                     .setTextAlignment(TextAlignment.CENTER);

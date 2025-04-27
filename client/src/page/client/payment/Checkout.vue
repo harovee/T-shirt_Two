@@ -61,6 +61,7 @@ import {
   useGetServiceId,
 } from "@/infrastructure/services/service/admin/payment.action";
 import { keepPreviousData } from "@tanstack/vue-query";
+import { currentInvoice, invoices, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 const cartStore = useCartStore();
 
@@ -181,6 +182,15 @@ watch(
         });
       } else {
         paymentInfo.value.shippingFee = 0;
+        invoices.value.forEach((item) => {
+              if (item.id === currentInvoice.value.id) {
+                if (item.shipping) {
+                  item.shipping.cost = 0;
+                  currentInvoice.value.shipping = item.shipping;
+                  sendCartInfo(item);
+                }
+              }
+            });
       }
     }
   }, {deep: true}

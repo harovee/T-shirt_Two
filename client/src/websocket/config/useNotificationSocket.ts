@@ -2,7 +2,11 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import SockJS from 'sockjs-client';
 import Stomp, { Client, Message, Subscription } from 'stompjs';
 
-const messages = ref<string[]>([]);
+interface OrderNotification {
+  orderId: number;
+  content: string;
+}
+const messages = ref<OrderNotification[]>([]);
 let stompClient: Client | null = null;
 let subscription: Subscription | null = null;
 
@@ -13,8 +17,9 @@ export function useNotificationSocket() {
     stompClient.connect({}, () => {
       console.log("✅ WebSocket connected");
       subscription = stompClient!.subscribe("/topic/notification", (message: Message) => {
-        console.log("🔔 Received:", message.body);
-        messages.value.push(message.body);
+      const data = JSON.parse(message.body) as OrderNotification;
+        console.log("🔔 Received:", data);
+        messages.value.push(data);
       });
     });
   });

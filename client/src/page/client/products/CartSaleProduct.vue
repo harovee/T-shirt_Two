@@ -3,7 +3,7 @@
     <a-row class="mb-8 mt-2">
       <!-- Lặp qua danh sách sản phẩm -->
       <a-col
-        :span="5"
+        :span="6"
         v-for="product in products"
         :key="product.id"
         class="p-3"

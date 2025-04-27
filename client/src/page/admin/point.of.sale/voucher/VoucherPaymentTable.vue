@@ -26,9 +26,9 @@
       :scroll="{ x: 300, y: 300 }"
     >
       <template #bodyCell="{ column, record }">
-        <div v-if="column.key === 'giaTriGiam'" class="text-left">
+        <div v-if="column.key === 'giaTri'" class="text-left">
           <span>
-            {{ formatCurrencyVND(record.giaTriGiam) }}
+            {{ formatCurrencyVND(record.giaTri) }}
           </span>
         </div>
         <div v-if="column.key === 'dieuKienGiam'" class="text-left">
@@ -78,6 +78,7 @@ import {
 import { useGetListVoucher } from "@/infrastructure/services/service/admin/payment.action";
 import { convertDateFormatTime } from "@/utils/common.helper";
 import { useRoute } from "vue-router";
+import { currentInvoice, invoices, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -147,6 +148,23 @@ watch(current1, () => {
 
 const handleSelectVoucher = (voucher: VoucherResponse) => {
   emit("selectVoucher", voucher);
+  currentInvoice.value.vouchers = [
+    {
+      id: voucher.id,
+      code: voucher.ma,
+      name: voucher.ten,
+      discount: Number(voucher.loaiGiam ? voucher.giaTriGiam : voucher.giaTri),
+      type: voucher.loaiGiam ?  "fixed" : "percent",
+    },
+  ]
+  invoices.value.forEach((item) => {
+    if (item.id === currentInvoice.value.id) {
+      item.vouchers = currentInvoice.value.vouchers;
+      sendCartInfo(currentInvoice.value);
+    }
+  });
+  console.log(voucher);
+  
   handleClose();
 };
 
@@ -185,8 +203,8 @@ const columns: TableColumnType<VoucherResponse>[] = [
   },
   {
     title: "Giá trị giảm",
-    dataIndex: "giaTriGiam",
-    key: "giaTriGiam",
+    dataIndex: "giaTri",
+    key: "giaTri",
     ellipsis: true,
     width: 100,
     resizable: true,

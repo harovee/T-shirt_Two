@@ -60,6 +60,18 @@ const InvoiceScreen = () => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount)
   }
 
+  const realShippingCost = () => {
+      if (invoiceData && invoiceData.shipping && invoiceData.shipping.cost) {
+        const tienHang = invoiceData.subtotal;
+        if (tienHang > 2000000) {
+          return 0;
+        } else {
+          return invoiceData.shipping.cost;
+        }
+      }
+      return 0; // Default value if conditions are not met
+    }
+
   useEffect(() => {
     // Start animations
     Animated.parallel([
@@ -219,7 +231,16 @@ const InvoiceScreen = () => {
     return voucher.discount
   }
 
-  const discount = calculateDiscount()
+  const discount = calculateDiscount();
+
+  const getCurrentChanges = () => {
+    if (invoiceData.paymentMethod.includes("Tiền mặt")) {
+    return invoiceData.guestMoney - (invoiceData.subtotal + (realShippingCost()) - discount);
+    }else if (invoiceData.paymentMethod.includes("Chuyển khoản")) {
+      return 0;
+    }
+    return 0;
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -284,7 +305,7 @@ const InvoiceScreen = () => {
                   >
                     <Image source={{ uri: item.image }} style={styles.itemImage} />
                     <View style={styles.itemInfo}>
-                      <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                      <Text style={[styles.itemName, { color: colors.text }]}>{item.id} - {item.name}</Text>
                       <View style={styles.itemDetails}>
                         {item.size && (
                           <Text style={[styles.itemDetail, { color: colors.muted }]}>Size: {item.size}</Text>
@@ -306,50 +327,69 @@ const InvoiceScreen = () => {
             </View>
 
             {/* Voucher */}
-            <View style={[styles.voucherCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              {showVoucherInput ? (
-                <View style={styles.voucherInputContainer}>
-                  <TextInput
-                    style={[styles.voucherInput, { backgroundColor: colors.background, color: colors.text }]}
-                    placeholder="Nhập mã voucher"
-                    placeholderTextColor={colors.muted}
-                    value={voucherCode}
-                    onChangeText={setVoucherCode}
-                    autoCapitalize="characters"
-                  />
-                  <View style={styles.voucherButtons}>
-                    <TouchableOpacity
-                      style={[styles.voucherButton, { backgroundColor: colors.muted }]}
-                      onPress={() => setShowVoucherInput(false)}
-                    >
-                      <Text style={styles.voucherButtonText}>Hủy</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.voucherButton, { backgroundColor: colors.primary }]}
-                      onPress={handleApplyVoucher}
-                    >
-                      <Text style={styles.voucherButtonText}>Áp dụng</Text>
-                    </TouchableOpacity>
+            {(invoiceData.vouchers ?? []).length > 0 && (
+                <View style={[styles.voucherCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {showVoucherInput ? (
+                  <View style={styles.voucherInputContainer}>
+                    <TextInput
+                      style={[styles.voucherInput, { backgroundColor: colors.background, color: colors.text }]}
+                      placeholder="Nhập mã voucher"
+                      placeholderTextColor={colors.muted}
+                      value={voucherCode}
+                      onChangeText={setVoucherCode}
+                      autoCapitalize="characters"
+                    />
+                    <View style={styles.voucherButtons}>
+                      <TouchableOpacity
+                        style={[styles.voucherButton, { backgroundColor: colors.muted }]}
+                        onPress={() => setShowVoucherInput(false)}
+                      >
+                        <Text style={styles.voucherButtonText}>Hủy</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.voucherButton, { backgroundColor: colors.primary }]}
+                        onPress={handleApplyVoucher}
+                      >
+                        <Text style={styles.voucherButtonText}>Áp dụng</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={styles.voucherRow}
-                  onPress={() => setShowVoucherInput(true)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.voucherLeft}>
-                    <Ionicons name="ticket-outline" size={20} color={colors.primary} />
-                    <Text style={[styles.voucherText, { color: colors.text }]}>
-                      {invoiceData.vouchers && invoiceData.vouchers.length > 0
-                        ? `Voucher: ${invoiceData.vouchers[0].code}`
-                        : "Thêm Voucher"}
+                ) : (
+                  // <TouchableOpacity
+                  //   style={styles.voucherRow}
+                  //   onPress={() => setShowVoucherInput(true)}
+                  //   activeOpacity={0.7}
+                  // >
+                  //   <View style={styles.voucherLeft}>
+                  //     <Ionicons name="ticket-outline" size={20} color={colors.primary} />
+                  //     <Text style={[styles.voucherText, { color: colors.text }]}>
+                  //       {invoiceData.vouchers && invoiceData.vouchers.length > 0
+                  //         ? `Voucher: ${invoiceData.vouchers[0].code}`
+                  //         : "Thêm Voucher"}
+                  //     </Text>
+                  //   </View>
+                  //   <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+                  // </TouchableOpacity>
+  
+                  <View style={styles.voucherRow}>
+                    <View style={styles.voucherLeft}>
+                      <Ionicons name="ticket-outline" size={20} color={colors.primary} />
+                      <Text style={[styles.voucherText, { color: colors.text }]}>
+                        {invoiceData.vouchers && invoiceData.vouchers.length > 0
+                          ? `Voucher: ${invoiceData.vouchers[0].code}`
+                          : "Thêm Voucher"}
+                      </Text>
+                    </View>
+                    <Text>
+                      ― {invoiceData.vouchers && invoiceData.vouchers.length > 0
+                          ? `${invoiceData.vouchers[0].discount} %`
+                          : formatCurrency((invoiceData.vouchers?.[0]?.discount ?? 0))}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-                </TouchableOpacity>
-              )}
-            </View>
+                )}
+              </View>
+            )}
+            
 
             {/* Customer info */}
             {invoiceData.customerInfo && (
@@ -379,62 +419,76 @@ const InvoiceScreen = () => {
             )}
 
             {/* Shipping Address */}
-            <View style={[styles.addressCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.cardHeader}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Địa chỉ giao hàng</Text>
-                <TouchableOpacity
-                  style={[styles.editButton, { backgroundColor: colors.primary + "20" }]}
-                  onPress={() => setShowAddressModal(true)}
-                >
-                  <Text style={[styles.editButtonText, { color: colors.primary }]}>Sửa</Text>
-                </TouchableOpacity>
-              </View>
+            {invoiceData.customerInfo?.address && 
+              <>
+                  <View style={[styles.addressCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={styles.cardHeader}>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Địa chỉ giao hàng</Text>
+                  {/* <TouchableOpacity
+                    style={[styles.editButton, { backgroundColor: colors.primary + "20" }]}
+                    onPress={() => setShowAddressModal(true)}
+                  >
+                    <Text style={[styles.editButtonText, { color: colors.primary }]}>Sửa</Text>
+                  </TouchableOpacity> */}
+                </View>
 
-              {invoiceData.customerInfo?.address ? (
-                <View style={styles.addressInfo}>
-                  <View style={styles.addressRow}>
-                    <Ionicons name="location-outline" size={20} color={colors.muted} />
-                    <Text style={[styles.addressText, { color: colors.text }]}>
-                      {invoiceData.customerInfo.address.detail}, {invoiceData.customerInfo.address.ward},{" "}
-                      {invoiceData.customerInfo.address.district}, {invoiceData.customerInfo.address.province}
-                    </Text>
-                  </View>
-                  {invoiceData.shipping && (
-                    <View style={styles.shippingInfo}>
-                      <View style={styles.shippingRow}>
-                        <Ionicons name="car-outline" size={20} color={colors.muted} />
-                        <Text style={[styles.shippingText, { color: colors.text }]}>
-                          {invoiceData.shipping.method} ({invoiceData.shipping.estimatedDelivery})
-                        </Text>
-                      </View>
-                      <Text style={[styles.shippingCost, { color: colors.primary }]}>
-                        {formatCurrency(invoiceData.shipping.cost)}
+                {invoiceData.customerInfo?.address ? (
+                  <View style={styles.addressInfo}>
+                    <View style={styles.addressRow}>
+                      <Ionicons name="location-outline" size={20} color={colors.muted} />
+                      <Text style={[styles.addressText, { color: colors.text }]}>
+                        {invoiceData.customerInfo.address.detail}, {invoiceData.customerInfo.address.ward},{" "}
+                        {invoiceData.customerInfo.address.district}, {invoiceData.customerInfo.address.province}
                       </Text>
                     </View>
-                  )}
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={styles.addAddressButton}
-                  onPress={() => setShowAddressModal(true)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
-                  <Text style={[styles.addAddressText, { color: colors.primary }]}>Thêm địa chỉ giao hàng</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+                    {invoiceData.shipping && (
+                      <View style={styles.shippingInfo}>
+                        <View style={styles.shippingRow}>
+                          <Ionicons name="car-outline" size={20} color={colors.muted} />
+                          <Text style={[styles.shippingText, { color: colors.text }]}>
+                            {invoiceData.shipping.method} ({invoiceData.shipping.estimatedDelivery})
+                          </Text>
+                        </View>
+                        <Text style={[styles.shippingCost, { color: colors.primary }]}>
+                          {formatCurrency(invoiceData.shipping.cost)}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                ) : (
+                  <></>
+                  // <TouchableOpacity
+                  //   style={styles.addAddressButton}
+                  //   onPress={() => setShowAddressModal(true)}
+                  //   activeOpacity={0.7}
+                  // >
+                  //   <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
+                  //   <Text style={[styles.addAddressText, { color: colors.primary }]}>Thêm địa chỉ giao hàng</Text>
+                  // </TouchableOpacity>
+                )}
+              </View>
+              
+              </>
+            }
+            
 
             {/* Payment method */}
             {invoiceData.paymentMethod && (
               <View style={[styles.paymentCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Phương thức thanh toán</Text>
                 <View style={styles.paymentMethod}>
-                  <Ionicons
-                    name={invoiceData.paymentMethod.includes("Tiền mặt") ? "cash-outline" : "card-outline"}
-                    size={24}
-                    color={colors.primary}
-                  />
+                  {invoiceData.paymentMethod.includes("Cả hai") ? (
+                    <>
+                      <Ionicons name="cash-outline" size={24} color={colors.primary} />
+                      <Ionicons name="card-outline" size={24} color={colors.primary} />
+                    </>
+                  ) : (
+                    <Ionicons
+                      name={invoiceData.paymentMethod.includes("Tiền mặt") ? "cash-outline" : "card-outline"}
+                      size={24}
+                      color={colors.primary}
+                    />
+                  )}
                   <Text style={[styles.paymentText, { color: colors.text }]}>{invoiceData.paymentMethod}</Text>
                 </View>
               </View>
@@ -448,15 +502,20 @@ const InvoiceScreen = () => {
                   {formatCurrency(invoiceData.subtotal)}
                 </Text>
               </View>
+              {/* 
+
               <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: colors.muted }]}>Thuế:</Text>
                 <Text style={[styles.summaryValue, { color: colors.text }]}>{formatCurrency(invoiceData.tax)}</Text>
               </View>
+              
+              */}
+              
               {invoiceData.shipping && (
                 <View style={styles.summaryRow}>
                   <Text style={[styles.summaryLabel, { color: colors.muted }]}>Phí vận chuyển:</Text>
                   <Text style={[styles.summaryValue, { color: colors.text }]}>
-                    {formatCurrency(invoiceData.shipping.cost)}
+                    {formatCurrency(realShippingCost())}
                   </Text>
                 </View>
               )}
@@ -468,8 +527,61 @@ const InvoiceScreen = () => {
               )}
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={[styles.totalLabel, { color: colors.text }]}>Tổng cộng:</Text>
-                <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.total)}</Text>
+                <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.subtotal + (realShippingCost()) - discount)}</Text>
               </View>
+              {invoiceData.paymentMethod.includes("Tiền mặt") && (
+                <>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền khách đưa:</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.guestMoney)}</Text>
+                  </View>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    { getCurrentChanges() < 0 ? (
+                      <>
+                        <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền còn thiếu:</Text>
+                        <Text style={[styles.totalValue, { color: colors.danger }]}>{formatCurrency( -(getCurrentChanges()))}</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
+                        <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(getCurrentChanges())}</Text>
+                      </>
+                    ) }
+                    
+                  </View>
+                </>
+                
+              )}
+
+              {/* {invoiceData.paymentMethod.includes("Chuyển khoản") && (
+                <>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Chuyển khoản</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}> {formatCurrency(invoiceData.transferMoney ?? 0)}</Text>
+                  </View>
+                </>
+                
+              )} */}
+
+            {invoiceData.paymentMethod.includes("Cả hai") && (
+                <>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Chuyển khoản</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}> {formatCurrency(invoiceData.transferMoney ?? 0)}</Text>
+                  </View>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền mặt:</Text>
+                    <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.guestMoney)}</Text>
+                  </View>
+                  <View style={[styles.summaryRow, styles.totalRow]}>
+                    
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
+                    <Text style={[styles.totalValue, { color: colors.danger }]}> {formatCurrency(getCurrentChanges())} </Text>
+                  </View>
+                </>
+                
+              )}
+              
             </View>
           </Animated.View>
         </ScrollView>
@@ -967,6 +1079,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     marginTop: 8,
+  },
+  redText: {
+    color: "red",
   },
   loadingIndicator: {
     marginBottom: 16,

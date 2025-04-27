@@ -29,6 +29,7 @@
         :loading="computedLoading"
         :pagination-params="computedPaginationParams"
         @update:pagination-params="computedPaginationHandler"
+        @handleRefetch="refetchData"
         :product-id="productId"
         @refreshData="refreshProductDetails"
         :change-fill="changeProductDetail"
@@ -426,6 +427,10 @@ const formatter = (value: any) => {
   if (!value) return "";
   return `${Math.round(value)} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
+
+const refetchData = () => {
+  refetch();
+}
 
 // provide để truyền dữ liệu sang component con
 provide("listProduct", dataProduct);

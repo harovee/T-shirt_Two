@@ -438,7 +438,7 @@ const handleUpdateProductDetail = () => {
     listAnh: modelRef.listAnh,
     gioiTinh: modelRef.gioiTinh
   };
-  console.log(payload);
+  // console.log(payload);
 
   Modal.confirm({
     content: "Bạn chắc chắn muốn cập nhật?",
