@@ -61,7 +61,7 @@ public class AdminDeliveryPaymentServiceImpl implements AdminDeliveryPaymentServ
 
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);
-        ls.setHanhDong("Thanh toán thành công, chuyển trạng thái hóa đơn -> 'Đã thanh toán'");
+        ls.setHanhDong("Chuyển trạng thái hóa đơn");
         ls.setMoTa(request.getMoTa());
         ls.setTrangThai(hoaDon.getTrangThai());
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);

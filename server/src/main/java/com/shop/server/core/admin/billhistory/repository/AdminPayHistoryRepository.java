@@ -17,7 +17,7 @@ public interface AdminPayHistoryRepository extends ChiTietPhuongThucThanhToanRep
                 pt.ten_phuong_thuc  tenPhuongThuc,
                 cttt.ghi_chu AS ghiChu,
                 cttt.ngay_tao AS ngayTao,
-                CONCAT(nv.sub_code,nv.ma_nhan_vien) AS nguoiTao,
+                nv.email AS nguoiTao,
                 cttt.tien_khach_dua AS tienKhachDua,
                 hd.tong_tien AS tongTienHD
             FROM chi_tiet_phuong_thuc_thanh_toan cttt

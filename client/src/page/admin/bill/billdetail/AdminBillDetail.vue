@@ -354,73 +354,59 @@ watch(
   (newData) => {
     let newObject = [];
     newObject = newData;
-    // console.log(newObject);  
-    // detailDataSources.value = [];
-
-    // detailDataSources.value = shallowCopy(newData);
-    // Tạo bản sao dữ liệu mới từ API để tránh readonly
-    detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
-    // for (let i = 0; i < newData.length; i++) {
-    //   const product = newData[i];
-    //   // Tạo bản sao mới của đối tượng
-    //   const copiedProduct: BillDetailResponse = { ...product };
-    //   detailDataSources.value[i] = (copiedProduct);
-    // }
     if (newData) {
-      console.log(newObject);
-      
-      // detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
-      for (let i = 0; i < newObject.length; i++) {
-        const product = newObject[i];
-        const copiedProduct: BillDetailResponse = {
-          catalog: null,
-          id: null,
-          maHoaDon: null,
-          tenSanPhamChiTiet: null,
-          tenSanPham: null,
-          imgUrl: null,
-          soLuong: 0,
-          gia: null,
-          thanhTien: 0,
-          tienGiamHD: 0,
-          tienShip: 0,
-          tongTienHD: null,
-          loaiGiam: null,
-          giamToiDa: null,
-          giaTriGiam: 0,
-          dieuKienGiam: null,
-          tenPhieuGiam: null,
-        };
-
-        // Set từng trường một
-        copiedProduct.catalog = product.catalog;
-        copiedProduct.id = product.id;
-        copiedProduct.maHoaDon = product.maHoaDon;
-        copiedProduct.tenSanPhamChiTiet = product.tenSanPhamChiTiet;
-        copiedProduct.tenSanPham = product.tenSanPham;
-        copiedProduct.imgUrl = product.imgUrl;
-        copiedProduct.soLuong = product.soLuong;
-        copiedProduct.gia = product.gia;
-        copiedProduct.thanhTien = product.thanhTien;
-        copiedProduct.tienGiamHD = product.tienGiamHD;
-        copiedProduct.tienShip = product.tienShip;
-        copiedProduct.tongTienHD = product.tongTienHD;
-        copiedProduct.loaiGiam = product.loaiGiam;
-        copiedProduct.giamToiDa = product.giamToiDa;
-        copiedProduct.giaTriGiam = product.giaTriGiam;
-        copiedProduct.dieuKienGiam = product.dieuKienGiam;
-        copiedProduct.tenPhieuGiam = product.tenPhieuGiam;
-
-        // Thêm đối tượng vào mảng sao chép
-        detailDataSources[i].value = copiedProduct;
-        
-      }
-      console.log(detailDataSources.value);
+      detailDataSources.value = JSON.parse(JSON.stringify(newData || []));
     }
-    
 
-    // Khởi tạo một đối tượng mới
-    //
+    // if (newData && detailDataSources.value) {
+    //   for (let i = 0; i < newObject.length; i++) {
+    //     const product = newObject[i];
+    //     const copiedProduct: BillDetailResponse = {
+    //       catalog: null,
+    //       id: null,
+    //       maHoaDon: null,
+    //       tenSanPhamChiTiet: null,
+    //       tenSanPham: null,
+    //       imgUrl: null,
+    //       soLuong: 0,
+    //       gia: null,
+    //       thanhTien: 0,
+    //       tienGiamHD: 0,
+    //       tienShip: 0,
+    //       tongTienHD: null,
+    //       loaiGiam: null,
+    //       giamToiDa: null,
+    //       giaTriGiam: 0,
+    //       dieuKienGiam: null,
+    //       tenPhieuGiam: null,
+    //     };
+
+    //     // Set từng trường một
+    //     copiedProduct.catalog = product.catalog;
+    //     copiedProduct.id = product.id;
+    //     copiedProduct.maHoaDon = product.maHoaDon;
+    //     copiedProduct.tenSanPhamChiTiet = product.tenSanPhamChiTiet;
+    //     copiedProduct.tenSanPham = product.tenSanPham;
+    //     copiedProduct.imgUrl = product.imgUrl;
+    //     copiedProduct.soLuong = product.soLuong;
+    //     copiedProduct.gia = product.gia;
+    //     copiedProduct.thanhTien = product.thanhTien;
+    //     copiedProduct.tienGiamHD = product.tienGiamHD;
+    //     copiedProduct.tienShip = product.tienShip;
+    //     copiedProduct.tongTienHD = product.tongTienHD;
+    //     copiedProduct.loaiGiam = product.loaiGiam;
+    //     copiedProduct.giamToiDa = product.giamToiDa;
+    //     copiedProduct.giaTriGiam = product.giaTriGiam;
+    //     copiedProduct.dieuKienGiam = product.dieuKienGiam;
+    //     copiedProduct.tenPhieuGiam = product.tenPhieuGiam;
+
+    //     // Thêm đối tượng vào mảng sao chép
+    //     detailDataSources[i].value = copiedProduct;
+    //     // console.log(detailDataSources.value[i]);
+    //   }
+    //   // console.log(detailDataSources.value);
+    // }
+    console.log(detailDataSources.value);
 
     serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
     if (copiedBillData.value && copiedBillData.value.huyen) {
@@ -447,8 +433,8 @@ watch(
         copiedDataSource.value[0].tienShip = 0;
       }
     }
-  },
-  { immediate: true }
+  }
+  // { immediate: true }
 );
 
 // Theo dõi cái bản sao của detail data
@@ -456,7 +442,7 @@ watch(
   () => detailDataSources.value,
   (newData) => {
     // console.log(newData);
-
+    console.log(newData);
     if (newData[0]) {
       // Tính toán lại phí giảm sau khi thêm sản phẩm hoặc thay đổi số lượng
       if (detail.value) {
@@ -565,12 +551,12 @@ watch(
   { immediate: true }
 );
 
-watch(
-  () => paid.value,
-  (data) => {
-    paymentInfo.value.paid = data;
-  }
-);
+// watch(
+//   () => paid.value,
+//   (data) => {
+//     paymentInfo.value.paid = data;
+//   }
+// );
 
 // Tính toán totalPages
 const totalPage = computed(() => detailData?.value?.data?.totalPages || 1);

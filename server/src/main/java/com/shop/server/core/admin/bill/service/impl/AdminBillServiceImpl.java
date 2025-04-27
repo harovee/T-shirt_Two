@@ -261,6 +261,11 @@ public class AdminBillServiceImpl implements AdminBillService {
         HoaDon hoaDon = adminBillRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
         hoaDon.setTrangThai(request.getTrangThai());
+        if (request.getNhanVien() != null) {
+            NhanVien nhanVien = nhanVienRepository.findById(request.getNhanVien())
+                    .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại"));
+            hoaDon.setNhanVien(nhanVien);
+        }
 
         HoaDon hd1 = adminBillRepository.save(hoaDon);
         AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
@@ -273,7 +278,7 @@ public class AdminBillServiceImpl implements AdminBillService {
 
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);
-        ls.setHanhDong("Chuyển trạng thái hóa đơn -> '" + request.getTrangThai() + "'");
+        ls.setHanhDong("Chuyển trạng thái hóa đơn");
         ls.setMoTa(request.getMoTa());
         ls.setTrangThai(hoaDon.getTrangThai());
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);

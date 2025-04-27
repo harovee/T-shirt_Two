@@ -125,8 +125,6 @@ watch(
   () => props.billData,
   (newBillData) => {
     if (newBillData) {
-      
-      
       modelRef.soDienThoai = newBillData.soDienThoai || null;
       modelRef.diaChiNguoiNhan = newBillData.diaChiNguoiNhan || null;
       modelRef.tenNguoiNhan = newBillData.tenNguoiNhan || null;
