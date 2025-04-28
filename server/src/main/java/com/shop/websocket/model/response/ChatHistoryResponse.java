@@ -11,5 +11,7 @@ public interface ChatHistoryResponse extends BaseResponse {
 
     String getContent();
 
+    Boolean getIsRead();
+
     String getRoomId();
 }

@@ -6,6 +6,7 @@ import com.shop.websocket.service.ChatService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,5 +25,10 @@ public class ChatHistoryController {
     @GetMapping("/messages/{roomId}")
     public List<ChatHistoryResponse> getMessages(@PathVariable String roomId) {
         return chatService.getMessageByRoomId(roomId);
+    }
+
+    @PostMapping("/messages/{roomId}/read")
+    public void markMessagesAsRead(@PathVariable String roomId) {
+        chatService.markMessagesAsRead(roomId);
     }
 }

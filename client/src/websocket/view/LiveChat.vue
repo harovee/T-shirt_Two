@@ -12,7 +12,7 @@ import { useAuthStore } from "@/infrastructure/stores/auth";
 import { Client } from "@stomp/stompjs";
 import { useGetClientChatList } from "../../infrastructure/services/service/admin/client.action";
 import { keepPreviousData } from "@tanstack/vue-query";
-import { useGetChatHistory } from "../../infrastructure/services/service/admin/chathistory.action";
+import { useGetChatHistory, useMarkMessageAsRead } from "../../infrastructure/services/service/admin/chathistory.action";
 import { dateFormatChatBox } from "../../utils/common.helper";
 import { WechatOutlined } from "@ant-design/icons-vue";
 import { useChatToggleStore } from "../../infrastructure/stores/chatToggle";
@@ -26,7 +26,11 @@ const chatVisible = computed(() => chatToggleStore.activeChat === "livechat");
 const renderKey = ref(0);
 const chatBodyRef = ref(null);
 const previousMessages = ref({});
-const newMessagesCount = ref(0);
+const subscribedRooms = ref(new Set());
+const roomsWithNewMessages = ref(new Set());
+
+
+// const newMessagesCount = ref(0);
 
 const colors = [
   "#2196F3",
@@ -47,20 +51,13 @@ const getAvatarColor = (name) => {
   return colors[Math.abs(hash % colors.length)];
 };
 
-// Bỏ phần đếm tin nhắn mới
-watch(messages, (newMessages) => {
-  if (newMessages.length > 0 && !chatVisible.value) {
-    // Khi có tin nhắn mới và cửa sổ chat chưa mở
-    newMessagesCount.value = 1; // Đánh dấu là có tin nhắn mới
-  }
-});
 
 const chatToggleStore = useChatToggleStore();
 
 const toggleChat = () => {
   chatToggleStore.toggleChat("livechat");
   if (chatVisible.value) {
-    newMessagesCount.value = 0;  // Reset đếm khi mở chat
+    markAsRead(selectedRoom.value)
   }
   nextTick(scrollToBottom);
 };
@@ -88,8 +85,10 @@ const {
   placeholderData: keepPreviousData,
 });
 
+// const {mutate: markAsRead} = useMarkMessageAsRead();
+
 // list phòng chat cho admin theo danh sách người dùng còn hoạt động (chưa bị deleted)
-const { data, isLoading, isFetching } = useGetClientChatList({
+const { data, isLoading, isFetching, refetch: refetchClientChatList } = useGetClientChatList({
   refetchOnWindowClose: false,
   placeholderData: keepPreviousData,
 });
@@ -98,6 +97,16 @@ watch(chatHistory, (newHistory) => {
   if (newHistory?.data) {
     messages.value = newHistory.data;
     previousMessages.value[selectedRoom.value] = newHistory.data;
+
+    // Nếu có tin nhắn chưa đọc
+    const hasUnread = newHistory.data.some(msg => msg.isRead === false);
+    
+    if (hasUnread) {
+      roomsWithNewMessages.value.add(selectedRoom.value);
+    } else {
+      roomsWithNewMessages.value.delete(selectedRoom.value);
+    }
+
     scrollToBottom();
   }
 });
@@ -106,17 +115,13 @@ watch(
   () => [authStore.user, data.value],
   ([newUser, newData]) => {
     if (newData && Array.isArray(newData.data)) {
-      if (newUser?.roleName === "ADMIN") {
+      if (authStore.user?.roleName === "ADMIN") {
+        chatRooms.value = [{ id: "public", name: "Phòng Chung" }];
         newData.data.forEach((client) => {
-          const roomExists = chatRooms.value.some(
-            (room) => room.id === `private-${client.id}`
-          );
-          if (!roomExists) {
-            chatRooms.value.push({
-              id: `private-${client.id}`,
-              name: `Chat với ${client.name}`,
-            });
-          }
+          chatRooms.value.push({
+            id: `private-${client.id}`,
+            name: `Chat với ${client.name}`,
+          });
         });
       }
     }
@@ -134,6 +139,8 @@ watch(
   { immediate: true }
 );
 
+
+
 //kết nối ws
 const connectWebSocket = () => {
   stompClient.value = new Client({
@@ -141,6 +148,13 @@ const connectWebSocket = () => {
     onConnect: (frame) => {
       console.log("Đã kết nối: " + frame);
       subscribeToRoom(selectedRoom.value);
+
+      stompClient.value.subscribe("/topic/client-chat-update", (message) => {
+        console.log("Received client chat update event:", message.body);
+        refetchClientChatList();
+        // console.log(data);
+        
+      });
 
       stompClient.value.publish({
         destination: "/app/addUser",
@@ -162,8 +176,6 @@ const connectWebSocket = () => {
   stompClient.value.activate();
 };
 
-const subscribedRooms = ref(new Set());
-
 // Hủy đăng ký phòng trước khi đăng ký lại
 const unsubscribeFromRoom = (roomId) => {
   if (!stompClient.value) return;
@@ -174,7 +186,6 @@ const unsubscribeFromRoom = (roomId) => {
   subscribedRooms.value.delete(roomId);
 };
 
-const roomsWithNewMessages = ref(new Set());
 
 //chuyển phòng
 const subscribeToRoom = (roomId) => {
@@ -278,16 +289,40 @@ const handleRoomChange = () => {
   if (previousMessages.value[selectedRoom.value]) {
     messages.value = previousMessages.value[selectedRoom.value];
   }
-  // messages.value = [];
+
+  // Xóa badge của phòng vừa chọn (nếu có)
+  if (roomsWithNewMessages.value.has(selectedRoom.value)) {
+    roomsWithNewMessages.value.delete(selectedRoom.value);
+  }
+  
+  // Đánh dấu tất cả tin nhắn trong phòng là đã đọc
+  messages.value = messages.value.map((msg) => {
+    if (!msg.isRead) {
+      return { ...msg, isRead: true };
+    }
+    return msg;
+  });
+
+  // Xóa badge phòng này
+  roomsWithNewMessages.value.delete(selectedRoom.value);
+
   subscribeToRoom(selectedRoom.value);
 };
 
 watchEffect(async () => {
   if (chatHistory.value) {
     messages.value = [...chatHistory.value]; // Gán lịch sử tin nhắn vào messages
+    console.log(roomsWithNewMessages.value);
+    
     scrollToBottom();
   }
 });
+
+const clearBadgeOnFocus = () => {
+  if (roomsWithNewMessages.value.has(selectedRoom.value)) {
+    roomsWithNewMessages.value.delete(selectedRoom.value);
+  }
+};
 </script>
 
 <template>
@@ -295,7 +330,7 @@ watchEffect(async () => {
     <a-tooltip title="Cộng đồng">
       <button class="chat-toggle" @click="toggleChat">
         <WechatOutlined class="icon-chat" />
-        <span v-if="newMessagesCount > 0" class="message-badge">Mới</span>
+        <span v-if="roomsWithNewMessages.size > 0" class="message-badge">Mới</span>
       </button>
     </a-tooltip>
 
@@ -306,10 +341,12 @@ watchEffect(async () => {
           <select
             v-model="selectedRoom"
             @change="handleRoomChange"
+            @focus="clearBadgeOnFocus"
             class="room-select"
           >
             <option v-for="room in chatRooms" :key="room.id" :value="room.id">
               {{ room.name }}
+              <span v-if="roomsWithNewMessages.has(room.id)" style="size: 2px;">🔴</span>
             </option>
           </select>
         </span>
