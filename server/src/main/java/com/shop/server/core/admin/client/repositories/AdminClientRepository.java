@@ -173,12 +173,14 @@ public interface AdminClientRepository extends KhachHangRepository {
     @Query(value = """
             SELECT
                 kh.id AS id,
-                kh.ho_va_ten as name,
-                kh.ma_khach_hang as code
+                kh.ho_va_ten AS name,
+                kh.ma_khach_hang AS code
             FROM khach_hang kh
+            LEFT JOIN message mes ON kh.id = REPLACE(mes.ma_phong, 'private-', '')
             WHERE
                 kh.deleted = 0
-            ORDER BY kh.ngay_tao DESC
+            GROUP BY kh.id, kh.ho_va_ten, kh.ma_khach_hang
+            ORDER BY MAX(mes.ngay_tao) DESC
             """, nativeQuery = true)
     List<AdminClientResponse> getClientListInChat();
 }

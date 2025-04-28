@@ -29,4 +29,8 @@ public class ChatService {
     public List<ChatHistoryResponse> getMessageByRoomId(String roomId) {
         return chatMessageRepository.findByRoomIdOrderByCreatedDateAsc(roomId);
     }
+
+//    public void markMessagesAsRead(String roomId) {
+//        chatMessageRepository.markMessagesAsReadByRoomId(roomId);
+//    }
 }

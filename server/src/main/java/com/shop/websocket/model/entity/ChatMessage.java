@@ -25,6 +25,9 @@ public class ChatMessage extends PrimaryEntity implements Serializable {
     @Column(name = "noi_dung")
     private String content;
 
+    @Column(name = "da_xem")
+    private Boolean isRead = false;
+
     @Column(name = "nguoi_gui")
     private String sender;
 

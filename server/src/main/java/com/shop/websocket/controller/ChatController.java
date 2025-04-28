@@ -27,6 +27,7 @@ public class ChatController {
         message.setRoomId("public");
         chatService.saveMessage(message.getSender(), message.getReceiver(), message.getContent(), message.getRoomId());
         messagingTemplate.convertAndSend("/topic/public", message);
+        messagingTemplate.convertAndSend("/topic/client-chat-update", "refresh");
     }
 
     @MessageMapping("/addUser")
@@ -45,5 +46,6 @@ public class ChatController {
         message.setRoomId(roomId);
         chatService.saveMessage(message.getSender(), message.getReceiver(), message.getContent(), message.getRoomId());
         messagingTemplate.convertAndSend("/topic/private/" + roomId, message);
+        messagingTemplate.convertAndSend("/topic/client-chat-update", "refresh");
     }
 }
