@@ -19,56 +19,53 @@ import java.util.Optional;
 public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
 
     @Query(value = """
-    SELECT DISTINCT
-        pgg.id AS id,
-        pgg.ma_phieu_giam_gia AS ma,
-        pgg.ten AS ten,
-        pgg.so_luong AS soLuong,
-        pgg.dieu_kien_giam AS dieuKienGiam,
-        pgg.giam_toi_da AS giamToiDa,
-        pgg.loai_giam AS loaiGiam,
-        pgg.ngay_bat_dau AS ngayBatDau,
-        pgg.ngay_ket_thuc AS ngayKetThuc,
-        pgg.loai_phieu as kieu,
-        pgg.gia_tri_giam as giaTri,
-        CAST(
-            CASE
-                WHEN :#{#request.tongTien} IS NULL THEN
+            SELECT DISTINCT
+                pgg.id AS id,
+                pgg.ma_phieu_giam_gia AS ma,
+                pgg.ten AS ten,
+                pgg.so_luong AS soLuong,
+                pgg.dieu_kien_giam AS dieuKienGiam,
+                pgg.giam_toi_da AS giamToiDa,
+                pgg.loai_giam AS loaiGiam,
+                pgg.ngay_bat_dau AS ngayBatDau,
+                pgg.ngay_ket_thuc AS ngayKetThuc,
+                pgg.loai_phieu as kieu,
+                pgg.gia_tri_giam as giaTri,
+                CAST(
                     CASE
-                        WHEN pgg.loai_giam = TRUE THEN pgg.gia_tri_giam
-                        ELSE pgg.gia_tri_giam
-                    END
-                WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
-                    CASE
-                        WHEN pgg.loai_giam = FALSE THEN
-                            LEAST((pgg.gia_tri_giam / 100) * :#{#request.tongTien}, pgg.giam_toi_da)
-                        ELSE
-                            LEAST(pgg.gia_tri_giam, pgg.giam_toi_da)
-                    END
-                ELSE 0
-            END AS DECIMAL(10,2)
-        ) AS giaTriGiam
-    FROM phieu_giam_gia pgg
-    WHERE
-        (:#{#request.keyword} IS NULL
-            OR pgg.ma_phieu_giam_gia LIKE CONCAT('%', :#{#request.keyword}, '%')
-            OR pgg.ten LIKE CONCAT('%', :#{#request.keyword}, '%')
-        )
-        AND pgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000
-        AND pgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
-        AND pgg.trang_thai = 'ACTIVE'
-        AND (
-            (:#{#request.idKhachHang} IS NULL AND pgg.loai_phieu = false)
-                       \s
-                        OR (EXISTS (
-                                           SELECT 1 FROM khach_hang_phieu_giam_gia khpgg_check
-                                           WHERE khpgg_check.id_khach_hang = :#{#request.idKhachHang}
-                                           AND khpgg_check.id_phieu_giam_gia = pgg.id
-                                       ) OR pgg.loai_phieu = false)
-        )
-        AND :#{#request.tongTien} >= pgg.dieu_kien_giam
-        AND pgg.so_luong > 0
-    ORDER BY giaTriGiam DESC
+                        WHEN :#{#request.tongTien} IS NULL THEN pgg.gia_tri_giam
+                        WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
+                            CASE
+                                WHEN pgg.loai_giam = FALSE THEN
+                                    CASE
+                                        WHEN pgg.giam_toi_da IS NULL THEN (pgg.gia_tri_giam / 100) * :#{#request.tongTien}
+                                        ELSE LEAST((pgg.gia_tri_giam / 100) * :#{#request.tongTien}, pgg.giam_toi_da)
+                                    END
+                                ELSE
+                                    CASE
+                                        WHEN pgg.giam_toi_da IS NULL THEN pgg.gia_tri_giam
+                                        ELSE LEAST(pgg.gia_tri_giam, pgg.giam_toi_da)
+                                    END
+                                    END
+                                ELSE 0
+                            END AS DECIMAL(10,2)
+                        ) AS giaTriGiam
+                    FROM phieu_giam_gia pgg
+                    LEFT JOIN khach_hang_phieu_giam_gia khpgg 
+                        ON khpgg.id_phieu_giam_gia = pgg.id 
+                        AND khpgg.id_khach_hang = :#{#request.idKhachHang}
+                    WHERE
+                        (:#{#request.keyword} IS NULL
+                            OR pgg.ma_phieu_giam_gia LIKE CONCAT('%', :#{#request.keyword}, '%')
+                            OR pgg.ten LIKE CONCAT('%', :#{#request.keyword}, '%')
+                        )
+                        AND pgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000
+                        AND pgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
+                        AND pgg.trang_thai = 'ACTIVE'
+                        AND pgg.so_luong > 0
+                        AND :#{#request.tongTien} >= pgg.dieu_kien_giam
+                        AND (pgg.loai_phieu = FALSE OR khpgg.id_khach_hang IS NOT NULL)
+                    ORDER BY giaTriGiam DESC
 """, nativeQuery = true)
     Page<AdminVoucherResponse> getPhieuGiamGia(AdminHoaDonKhachHangRequest request, Pageable pageable);
 

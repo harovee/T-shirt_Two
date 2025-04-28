@@ -87,7 +87,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                   LEFT JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
                   WHERE sp.trang_thai = 0
                   AND spct.so_luong > 0
-                  AND spct.so_luong IS NOT NULL\s
+                  AND spct.so_luong IS NOT NULL
                   AND (spct.gia <= :#{#request.max} OR :#{#request.max} IS NULL)
                   AND (spct.gia >= :#{#request.min} OR :#{#request.min} IS NULL)
                   AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
@@ -285,8 +285,8 @@ public interface ClientProductRepository extends SanPhamRepository {
                                                             AND dgg_inner.deleted = 0)) / spct.gia * 100, 1), '%')
                                         ELSE NULL
                                     END
-                                    ORDER BY\s
-                                        CASE\s
+                                    ORDER BY
+                                        CASE
                                             WHEN (SELECT MIN(spgg_inner.gia_sau_giam) FROM san_pham_giam_gia spgg_inner\s
                                                  JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
                                                  WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
@@ -339,7 +339,7 @@ public interface ClientProductRepository extends SanPhamRepository {
 
 
     @Query(value = """
-            SELECT \s
+            SELECT 
                 sp.id as id,
                 sp.ma_san_pham as maSanPham,
                 sp.ten as ten,
@@ -414,7 +414,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                 GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,
                 GROUP_CONCAT(DISTINCT CONCAT(ms.id,':' ,ms.ma_mau_sac, ':', ms.ten)) AS colors,
                 GROUP_CONCAT(DISTINCT anh.url) AS anhs
-            FROM san_pham sp\s
+            FROM san_pham sp
             JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham\s
             JOIN danh_muc dm ON dm.id = sp.id_danh_muc
             JOIN chat_lieu cl ON cl.id = spct.id_chat_lieu

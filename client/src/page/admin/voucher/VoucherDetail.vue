@@ -1,101 +1,112 @@
 <template>
-    <div class="flex justify-between items-center bg-white rounded-md shadow p-4">
-      <div class="flex items-center gap-4">
-        <v-icon name="io-pricetag-outline" size="x-large" width="48" height="48" />
-        <h3 class="text-2xl font-semibold m-0">Cập nhật phiếu giảm giá</h3>
-      </div>
-      <div 
-        class="flex items-center gap-2 cursor-pointer text-gray-500 transition hover:scale-105 hover:text-red-500" 
-        @click="handleRedirectClient()">
-        <v-icon name="gi-fast-backward-button" size="x-large" width="48" height="48" />
-        <h3 class="text-lg m-0">Quay lại</h3>
-      </div>
+  <div class="flex justify-between items-center bg-white rounded-md shadow p-4">
+    <div class="flex items-center gap-4">
+      <v-icon name="io-pricetag-outline" size="x-large" width="48" height="48" />
+      <h3 class="text-2xl font-semibold m-0">Cập nhật phiếu giảm giá</h3>
     </div>
+    <div 
+      class="flex items-center gap-2 cursor-pointer text-gray-500 transition hover:scale-105 hover:text-red-500" 
+      @click="handleRedirectClient()">
+      <v-icon name="gi-fast-backward-button" size="x-large" width="48" height="48" />
+      <h3 class="text-lg m-0">Quay lại</h3>
+    </div>
+  </div>
 
-    <!-- Main Content -->
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-      <!-- Form Section -->
-      <div class="col-span-5 lg:col-span-2 bg-white rounded-md shadow-md p-6">
-        <h4 class="text-lg font-semibold mb-4">Chi tiết phiếu giảm giá</h4>
-        <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
-          <a-form-item class="mb-4" label="Tên" name="ten" required>
-            <a-input v-model:value="formState.ten" placeholder="Nhập tên đợt giảm giá" :disabled="isExpired"/>
-          </a-form-item>
+  <!-- Main Content -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+    <!-- Form Section -->
+    <div class="col-span-5 lg:col-span-2 bg-white rounded-md shadow-md p-6">
+      <h4 class="text-lg font-semibold mb-4">Chi tiết phiếu giảm giá</h4>
+      <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
+        <a-form-item class="mb-4" label="Tên" name="ten" required>
+          <a-input v-model:value="formState.ten" placeholder="Nhập tên đợt giảm giá" :disabled="isExpired"/>
+        </a-form-item>
 
-          <a-form-item class="mb-4" label="Giá trị giảm" name="giaTriGiam" required>
-            <a-input v-model:value="formState.giaTriGiam" min="0" :disabled="isExpired">
-              <template #addonAfter>
-                <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid" :disabled="isExpired">
-                  <a-radio :value="false">%</a-radio>
-                  <a-radio :value="true">Tiền</a-radio>
-                </a-radio-group>
-              </template>
-            </a-input>
-          </a-form-item>
+        <a-form-item class="mb-4" label="Giá trị giảm" name="giaTriGiam" required>
+          <a-input v-model:value="formState.giaTriGiam" min="0" :disabled="isExpired">
+            <template #addonAfter>
+              <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid" :disabled="isExpired">
+                <a-radio :value="false">%</a-radio>
+                <a-radio :value="true">Tiền</a-radio>
+              </a-radio-group>
+            </template>
+          </a-input>
+        </a-form-item>
 
-          <a-form-item  class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" v-if="formState.loaiGiam">
-            <a-input-number v-model:value="formState.giamToiDa" min="0" step="10" placeholder="Nhập giá trị giảm tối đa" disabled :formater="formater">
-              <template #addonAfter>đ</template>
-            </a-input-number>
-          </a-form-item>
-
-          <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
-            <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu || isExpired"  />
-          </a-form-item>
-
-          <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required >
-            <a-input-number v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu" :disabled="isExpired" :formater="formater">
-              <template #addonAfter>đ</template>
-            </a-input-number>
-          </a-form-item>
-
-          <a-form-item class="mb-4" label="Thời gian" name="ngayBatDauVaKetThuc" required>
-            <a-range-picker
+        <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
+          <a-input-number 
             class="w-full"
-              size="large"
-              show-time
-              format="DD/MM/YYYY HH:mm"
-              :disabled-date="disabledDate"
-              :disabled-date-time="disabledDateTime"
-              v-model:value="formState.ngayBatDauVaKetThuc"
-              :disabled="isExpired"
-              :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
-              :presets="rangePresets"
-            />
-          </a-form-item>
+            v-model:value="formState.giamToiDa" 
+            :disabled="formState.loaiGiam || isExpired" 
+            min="0"
+            placeholder="Nhập giá trị giảm tối đa"
+            :formatter="formatter"
+          >
+          </a-input-number>
+        </a-form-item>
 
-          <a-form-item class="mb-4" label="Loại phiếu giảm giá" name="kieu">
-            <a-radio-group v-model:value="formState.kieu" option-type="default" button-style="solid" :disabled="isExpired">
-              <a-radio :value="false">Công khai</a-radio>
-              <a-radio :value="true">Cá nhân<nav></nav></a-radio>
-            </a-radio-group>
-          </a-form-item>
+        <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
+          <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu || isExpired" />
+        </a-form-item>
 
-          <a-form-item class="mt-6">
-            <div class="flex gap-4">
-              <a-button type="primary" @click="onSubmit(formState.kieu ? 2 : 1)" :disabled="isExpired">Cập nhật</a-button >
-              <a-button @click="resetForm" :disabled="isExpired">Xóa form</a-button>
-            </div>
-          </a-form-item>
-        </a-form>
-        <span v-if="isExpired" class="text-red-500 italic mt-2">
-          Phiếu giảm giá đã kết thúc vào ngày {{ dayjs(formState.ngayBatDauVaKetThuc[1]).format('DD/MM/YYYY HH:mm') }}
-        </span>
-      </div>
+        <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
+          <a-input-number 
+            class="w-full" 
+            v-model:value="formState.dieuKienGiam" 
+            min="0" 
+            step="10" 
+            placeholder="Nhập đơn tối thiểu" 
+            :disabled="isExpired" 
+            :formatter="formatter">
+          </a-input-number>
+        </a-form-item>
 
-      <!-- Khách Hàng Section -->
-      <div class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu && !isExpired">
-        <h4 class="text-lg font-semibold mb-4">Danh sách khách hàng</h4>
-        <div class="h-100 overflow-y-auto">
-          <khach-hang-table-in-voucher
-            :data="dataSource"
-            :id-khach-hangs="idKhachHangs"
-            @update:idKhachHangs="handleUpdateIdKhachHangs"
+        <a-form-item class="mb-4" label="Thời gian" name="ngayBatDauVaKetThuc" required>
+          <a-range-picker
+            class="w-full"
+            size="large"
+            show-time
+            format="DD/MM/YYYY HH:mm"
+            :disabled-date="disabledDate"
+            :disabled-date-time="disabledDateTime"
+            v-model:value="formState.ngayBatDauVaKetThuc"
+            :disabled="isExpired"
+            :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
+            :presets="rangePresets"
           />
-        </div>
+        </a-form-item>
+
+        <a-form-item class="mb-4" label="Loại phiếu giảm giá" name="kieu">
+          <a-radio-group v-model:value="formState.kieu" option-type="default" button-style="solid" :disabled="isExpired">
+            <a-radio :value="false">Công khai</a-radio>
+            <a-radio :value="true">Cá nhân</a-radio>
+          </a-radio-group>
+        </a-form-item>
+
+        <a-form-item class="mt-6">
+          <div class="flex gap-4">
+            <a-button type="primary" @click="onSubmit(formState.kieu ? 2 : 1)" :disabled="isExpired">Cập nhật</a-button>
+            <a-button @click="resetForm" :disabled="isExpired">Xóa form</a-button>
+          </div>
+        </a-form-item>
+      </a-form>
+      <span v-if="isExpired" class="text-red-500 italic mt-2">
+        Phiếu giảm giá đã kết thúc vào ngày {{ dayjs(formState.ngayBatDauVaKetThuc[1]).format('DD/MM/YYYY HH:mm') }}
+      </span>
+    </div>
+
+    <!-- Khách Hàng Section -->
+    <div class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu && !isExpired">
+      <h4 class="text-lg font-semibold mb-4">Danh sách khách hàng</h4>
+      <div class="h-100 overflow-y-auto">
+        <khach-hang-table-in-voucher
+          :data="dataSource"
+          :id-khach-hangs="idKhachHangs"
+          @update:idKhachHangs="handleUpdateIdKhachHangs"
+        />
       </div>
     </div>
-  
+  </div>
 </template>
 
 
@@ -143,7 +154,7 @@ onMounted(() => {
     voucherId.value = useRoute().params.id as string;
 });
 
-const { data: dataDetail , isLoading, isFetching} = useGetVoucherById(
+const { data: dataDetail, isLoading, isFetching} = useGetVoucherById(
     voucherId,
     {
       refetchOnWindowFocus: false,
@@ -170,7 +181,7 @@ const formatter = (value: any) => {
 
 const formRef = ref();
 
-const formState: UnwrapRef<FormState> = reactive( {
+const formState: UnwrapRef<FormState> = reactive({
     ten: "",
     loaiGiam: false,
     giaTriGiam: "",
@@ -218,6 +229,34 @@ const rules: Record<string, Rule[]> = {
         trigger: 'change',
     },
   ],
+  giamToiDa: [
+    {
+      required: true,
+      message: 'Vui lòng nhập giá trị giảm tối đa',
+      trigger: 'change'
+    },
+    {
+      validator: (rule, value) => {
+        // Nếu loại giảm là tiền (loaiGiam = true), bỏ qua validate
+        if (formState.loaiGiam === true) {
+          return Promise.resolve();
+        }
+        
+        // Kiểm tra nếu giá trị không phải số hợp lệ
+        if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
+          return Promise.reject('Giá trị giảm tối đa phải là số');
+        }
+        
+        const maxDiscountValue = parseFloat(value);
+        if (maxDiscountValue <= 0) {
+          return Promise.reject('Giá trị giảm tối đa phải lớn hơn 0');
+        }
+        
+        return Promise.resolve();
+      },
+      trigger: 'change'
+    }
+  ],
   dieuKienGiam: [
   {
     required: true,
@@ -251,24 +290,25 @@ const rules: Record<string, Rule[]> = {
     }
   ],
   soLuong: [
-      { required: true, message: 'Vui lòng nhập số lượng', 
-      trigger: 'change' },
-      { 
-        validator: (_, value) => 
-          value > 0 
-            ? Promise.resolve() 
-            : Promise.reject("Số lượng phải lớn hơn 0"),
-        trigger: "blur"
+  {
+    required: true,
+    message: 'Vui lòng nhập số lượng',
+    trigger: 'change',
+    validator: (_, value) => {
+      if (formState.kieu) {
+        return Promise.resolve(); // Bỏ qua kiểm tra nếu là "Cá nhân"
       }
-  ],
+      return value > 0
+        ? Promise.resolve()
+        : Promise.reject("Số lượng phải lớn hơn 0");
+    }
+  }
+],
   ngayBatDauVaKetThuc: [{ 
       required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho phiếu giảm giá', 
       trigger: 'change', type: 'array' },
       {
           validator: (rule, value) => {
-          const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
-          dayjs(date).valueOf()
-          );
           if (!value || value.length !== 2) return Promise.resolve();
           
           // Format to remove millisecond precision for comparison
@@ -278,7 +318,11 @@ const rules: Record<string, Rule[]> = {
           if (startStr === endStr) {
             return Promise.reject('Ngày kết thúc không được trùng ngày bắt đầu');
           }
+          
+          const ngayBatDau = value[0].valueOf();
+          const ngayKetThuc = value[1].valueOf();
           const now = dayjs().valueOf();
+          
           if (ngayBatDau < now) {
             return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
           }
@@ -296,7 +340,7 @@ const { mutate: updateVoucher } = useUpdateVoucher();
 const { mutate: updateCustomerVoucher} = useUpdateCustomerVoucher();
 
 
-const handleUpdateVoucher = (id :string | any,dataRequest: PhieuGiamGiaRequest) => {
+const handleUpdateVoucher = (id :string | any, dataRequest: PhieuGiamGiaRequest) => {
     Modal.confirm({
     icon: createVNode(ExclamationCircleOutlined),
     title: "Xác nhận cập nhật phiếu giảm giá",
@@ -338,8 +382,7 @@ const handleUpdateVoucher = (id :string | any,dataRequest: PhieuGiamGiaRequest) 
   });
 };
 
-const handleUpdateVoucherAndCustomerVoucher = (id: string | any ,dataRequest: VoucherAndCustomerVoucherRequest) => {
-  console.log(dataRequest);
+const handleUpdateVoucherAndCustomerVoucher = (id: string | any, dataRequest: VoucherAndCustomerVoucherRequest) => {
     Modal.confirm({
     content: "Bạn chắc chắn có muốn thêm phiếu giảm giá cho khách hàng không?",
     icon: createVNode(ExclamationCircleOutlined),
@@ -387,16 +430,17 @@ const onSubmit = (x: number) => {
           voucherRequest.value.soLuong = formState.kieu ? idKhachHangs.value.length : formState.soLuong;
           voucherRequest.value.ngayBatDau = formState.ngayBatDauVaKetThuc[0]?.valueOf() || null;
           voucherRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
-          if ( x == 1 ) {
-                 handleUpdateVoucher(voucherId.value, voucherRequest.value)
-            }else{
-                handleUpdateVoucherAndCustomerVoucher(voucherId.value || '',{
+          if (x == 1) {
+              handleUpdateVoucher(voucherId.value, voucherRequest.value)
+          } else {
+              handleUpdateVoucherAndCustomerVoucher(voucherId.value || '',{
                 phieuGiamGiaRequest: voucherRequest.value,
                 voucherKhachHangRequest: {idKhachHangs: idKhachHangs.value}
-            });
-            }          
+              });
+          }          
       });
 };
+
 const resetForm = () => {
   formRef.value.resetFields();
 };
@@ -405,22 +449,32 @@ const handleUpdateIdKhachHangs = (newIdKhachHangs: string[]) => {
     idKhachHangs.value = newIdKhachHangs;
 };
 
+const handleRedirectClient = () => {
+    router.push({ name: 'admin-voucher' });
+}
 
-// watch(
-//   () => formState.kieu,
-//   (newValue) => {
-//     if (newValue) {
-//       // Nếu đổi sang "Cá nhân"
-//       //console.log("Đã chuyển sang phiếu giảm giá Cá nhân");
-//       idKhachHangs.value = []; // Reset danh sách khách hàng được chọn
-//     } else {
-//       // Nếu đổi về "Công khai"
-//      // console.log("Đã chuyển sang phiếu giảm giá Công khai");
-//       idKhachHangs.value = []; // Reset danh sách khách hàng
-//     }
-//   }
-// );
-// console.log(dataDetail.value?.data?.data);
+watch(
+  () => formState.kieu,
+  (newValue) => {
+    if (newValue) {
+      // Nếu đổi sang "Cá nhân"
+      idKhachHangs.value = []; // Reset danh sách khách hàng được chọn
+    } else {
+      // Nếu đổi về "Công khai"
+      idKhachHangs.value = []; // Reset danh sách khách hàng
+    }
+  }
+);
+
+// Thêm watch để tự động cập nhật giá trị giảm tối đa khi loại giảm hoặc giá trị giảm thay đổi
+watch(
+  [() => formState.loaiGiam, () => formState.giaTriGiam],
+  ([newLoaiGiam, newGiaTriGiam]) => {
+    if (newLoaiGiam === true) {
+      formState.giamToiDa = newGiaTriGiam;
+    }
+  }
+);
 
 watch(() => dataDetail.value?.data.data, (detail) => {
     if (detail) {
@@ -429,17 +483,16 @@ watch(() => dataDetail.value?.data.data, (detail) => {
             loaiGiam: detail.loaiGiam,
             giaTriGiam: detail.giaTriGiam || "",
             kieu: detail.kieu,
-            soLuong :detail.soLuong || 0,
-            giamToiDa: formatter(detail.giamToiDa) || "",
-            dieuKienGiam : formatter(detail.dieuKienGiam) || "",
+            soLuong: detail.soLuong || 0,
+            giamToiDa: detail.giamToiDa || "",
+            dieuKienGiam: detail.dieuKienGiam || "",
             ngayBatDauVaKetThuc: [
-            detail.ngayBatDau ? dayjs(detail.ngayBatDau) : null,
-            detail.ngayKetThuc ? dayjs(detail.ngayKetThuc) : null,
+              detail.ngayBatDau ? dayjs(detail.ngayBatDau) : null,
+              detail.ngayKetThuc ? dayjs(detail.ngayKetThuc) : null,
             ],
         });
     }
-},  { immediate: true }
-);
+}, { immediate: true });
 
 watch(
   () => customerData.value?.data,
@@ -447,12 +500,7 @@ watch(
     if (Array.isArray(listKhachHang)) {
       idKhachHangs.value.splice(0, idKhachHangs.value.length, ...listKhachHang.map(khachHang => khachHang.id));
     }
-  //console.log(idKhachHangs.value);
   },
   { immediate: true }
-  
 );
-const handleRedirectClient = () => {
-    router.push({ name: 'admin-voucher' });
-}
 </script>

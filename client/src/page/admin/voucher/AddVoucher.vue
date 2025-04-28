@@ -34,6 +34,18 @@
               </template>
             </a-input>
           </a-form-item>
+
+          <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
+            <a-input-number class="w-full"
+              v-model:value="formState.giamToiDa" 
+              :disabled="formState.loaiGiam" 
+              min="0"
+              placeholder="Nhập giá trị giảm tối đa"
+              :formatter="formatter"  
+            >
+            </a-input-number> 
+          </a-form-item>
+          
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
             <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu"/>
           </a-form-item>
@@ -145,7 +157,7 @@ const formState: UnwrapRef<FormState> = reactive( {
     ten: "",
     loaiGiam: false,
     giaTriGiam: "0",  
-    giamToiDa: "",
+    giamToiDa: "0",
     soLuong: 0,
     dieuKienGiam: "0",
     ngayBatDauVaKetThuc: [],
@@ -189,6 +201,34 @@ const rules: Record<string, Rule[]> = {
         },
         trigger: 'change',
     },
+  ],
+  giamToiDa: [
+    {
+      required: true,
+      message: 'Vui lòng nhập giá trị giảm tối đa',
+      trigger: 'change'
+    },
+    {
+      validator: (rule, value) => {
+        // Nếu loại giảm là tiền (loaiGiam = true), bỏ qua validate
+        if (formState.loaiGiam === true) {
+          return Promise.resolve();
+        }
+        
+        // Kiểm tra nếu giá trị không phải số hợp lệ
+        if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
+          return Promise.reject('Giá trị giảm tối đa phải là số');
+        }
+        
+        const maxDiscountValue = parseFloat(value);
+        if (maxDiscountValue <= 0) {
+          return Promise.reject('Giá trị giảm tối đa phải lớn hơn 0');
+        }
+        
+        return Promise.resolve();
+      },
+      trigger: 'change'
+    }
   ],
   dieuKienGiam: [
   {
@@ -387,15 +427,22 @@ watch(
   () => formState.kieu,
   (newValue) => {
     if (newValue) {
-      // Nếu đổi sang "Cá nhân"
-      //console.log("Đã chuyển sang phiếu giảm giá Cá nhân");
+
       idKhachHangs.value = []; // Reset danh sách khách hàng được chọn
     } else {
-      // Nếu đổi về "Công khai"
-     // console.log("Đã chuyển sang phiếu giảm giá Công khai");
       idKhachHangs.value = []; // Reset danh sách khách hàng
     }
   }
 );
 
+// Thêm watch để tự động cập nhật giá trị giảm tối đa khi loại giảm hoặc giá trị giảm thay đổi
+watch(
+  [() => formState.loaiGiam, () => formState.giaTriGiam],
+  ([newLoaiGiam, newGiaTriGiam]) => {
+    if (newLoaiGiam === true) {
+      formState.giamToiDa = newGiaTriGiam;
+    }
+  },
+  { immediate: true } 
+);
 </script>

@@ -152,7 +152,7 @@
     /> -->
   <div class="mt-10" v-if="dataSource.length > 0">
     <a-button type="primary" class="w-full" @click="handleCreateProduct()">
-      Hoàn thành
+      Tạo sản phẩm chi tiết
     </a-button>
   </div>
 </template>
