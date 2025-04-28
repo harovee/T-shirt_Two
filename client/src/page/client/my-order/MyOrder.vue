@@ -56,7 +56,7 @@ const params = ref<ClientBillParams>({
 
 const { data, isLoading, isFetching } = useGetClientBills(params, {
   refetchOnWindowFocus: false,
-  placeholderData: keepPreviousData,
+  placeholderData: keepPreviousData
 });
 
 const dataSource = computed(() => data?.value?.data || []);

@@ -15,7 +15,7 @@ public interface ClientBillRepository extends HoaDonRepository {
 
     @Query(value = """
         SELECT
-            ROW_NUMBER() OVER(ORDER BY hd.ngay_tao ) AS catalog,
+            ROW_NUMBER() OVER(ORDER BY hd.ngay_tao DESC) AS catalog,
             hd.id AS id,
             hd.ma_hoa_don AS ma,
             hd.tong_tien AS tongTien,
@@ -38,6 +38,7 @@ public interface ClientBillRepository extends HoaDonRepository {
             hd.trang_thai LIKE CONCAT('%', :#{#req.trangThai},'%')))
          AND hd.trang_thai NOT LIKE 'Hóa đơn chờ'
         AND hd.id_khach_hang = :#{#req.idKhachHang}
+        
         GROUP BY hd.id, hd.ma_hoa_don, hd.tong_tien, hd.loai_hoa_don, hd.tien_giam, pg.gia_tri_giam,
                  hd.tien_ship, hd.trang_thai, hd.phuong_thuc_nhan
      """, countQuery = """
