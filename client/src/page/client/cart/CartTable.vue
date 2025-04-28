@@ -1,3 +1,4 @@
+<!-- CartTable.vue -->
 <template>
   <div class="flex items-center">
     <h1 class="text-2xl font-bold m-5">GIỎ HÀNG</h1>
@@ -32,8 +33,6 @@
             </a-typography-text>
           </div>
           <div v-if="column.dataIndex === 'soLuong'" class="center">
-            <!-- <a-space>{{ record.soLuong }}</a-space>
-                 -->
             <a-input
               type="number"
               v-model:value="record.soLuong"
@@ -93,11 +92,12 @@ import {
   defineEmits,
   ref,
   watch,
-  createVNode,
+  inject
 } from "vue";
 
 const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } =
   useCartStorageBL();
+const emitCartUpdate = inject('emitCartUpdate', () => {});
 
 const props = defineProps({
   dataSource: {
@@ -107,6 +107,7 @@ const props = defineProps({
 });
 
 const localData = ref(JSON.parse(JSON.stringify(props.dataSource)));
+const prevQuantity = ref(0);
 
 watch(
   () => props.dataSource,
@@ -135,6 +136,10 @@ const { data: checkQuantityData, refetch: checkQuantityRefetch } =
     enabled: false,
   });
 
+const getPreQuantity = (quantity) => {
+  prevQuantity.value = quantity;
+};
+
 const handleQuantityChange = async (record: any) => {
   params.value.id = record.id;
   params.value.quantity = record.soLuong;
@@ -144,13 +149,17 @@ const handleQuantityChange = async (record: any) => {
   const checkValue = checkQuantityData?.value?.data;
   if (!checkValue) {
     warningNotiSort("Số lượng trong kho không đủ!");
+    record.soLuong = prevQuantity.value; // Restore previous quantity
     emit("updateCart");
-    return
+    return;
   }
   if (record.soLuong >= 1) {
     updateProductQuantity(record.id, record.soLuong);
     emit("updateCart");
+    // Trigger cart update event to update badge
+    emitCartUpdate();
   } else {
+    record.soLuong = prevQuantity.value; // Restore previous quantity
     emit("updateCart");
     warningNotiSort("Số lượng phải lớn hơn 0!");
   }
@@ -159,6 +168,8 @@ const handleQuantityChange = async (record: any) => {
 const handleDelete = (record: any) => {
   removeProduct(record.id);
   emit("updateCart");
+  // Trigger cart update event to update badge
+  emitCartUpdate();
 };
 
 const columns: TableColumnType<DataType>[] = [

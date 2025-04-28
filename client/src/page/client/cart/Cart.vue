@@ -1,3 +1,4 @@
+<!-- CartPage.vue -->
 <template>
   <div class="mx-auto p-10">
     <h1 class="text-4xl font-bold text-center flex items-center justify-center gap-4 text-red-700">
@@ -59,7 +60,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/infrastructure/stores/cart";
 import { formatCurrencyVND } from "@/utils/common.helper";
@@ -69,6 +70,7 @@ import { getCartFromLocalStorage } from "../products/business.logic/CartLocalSto
 import { warningNotiSort } from "@/utils/notification.config";
 
 const { cart, totalAmount, addProduct, removeProduct, updateProductQuantity } = useCartStorageBL();
+const emitCartUpdate = inject('emitCartUpdate', () => {});
 
 const router = useRouter();
 const cartStore = useCartStore();
@@ -77,9 +79,8 @@ const cartStore = useCartStore();
 const listProducts = computed(() =>
   cart.value.map((item) => ({
     id: item.id,
-    // tenHang: `Sản phẩm ${item.id?.slice(0, 5) || "?"}`, // Giả sử không có tên sản phẩm, đặt tạm ID, gọi API lấy thông tin ra nhé
     tenHang: `${item.name} [ ${item.colorName} - ${item.sizeName} ]`,
-    anh: `${item.anh}`, // Chưa có ảnh, dùng ảnh placeholder
+    anh: `${item.anh}`,
     gia: item.price || 0,
     soLuong: item.quantity || 1,
     tongTien: (item.price || 0) * (item.quantity || 1),
@@ -89,6 +90,8 @@ const listProducts = computed(() =>
 // Load lấy lại cart từ local
 const reloadCart = () => {
   cart.value = [...getCartFromLocalStorage()];
+  // Trigger cart update event to update badge
+  emitCartUpdate();
 };
 
 const tongTien = computed(() => {
@@ -108,6 +111,11 @@ const redirectPayment = () => {
     router.push({ name: "client-check-out" });
   }
 };
+
+// Ensure badge is updated when component mounts
+onMounted(() => {
+  emitCartUpdate();
+});
 </script>
 
 <style scoped>

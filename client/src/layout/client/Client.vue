@@ -49,16 +49,18 @@
               />
           </div>
           <a-tooltip placement="bottom">
-            <template #title>
-              <span>Giỏ hàng</span>
-            </template>
-            <a-button
-              class="me-6 w-10 h-10 flex justify-center items-center"
-              type="text" @click="redirectCart"
-            >
-              <v-icon name="bi-cart3" class="w-8 h-8"></v-icon>
-            </a-button>
-          </a-tooltip>
+              <template #title>
+                <span>Giỏ hàng</span>
+              </template>
+              <a-badge :count="cartItemCount" :offset="[-25, 5]" showZero="true">
+                <a-button
+                  class="me-6 w-10 h-10 flex justify-center items-center"
+                  type="text" @click="redirectCart"
+                >
+                  <v-icon name="bi-cart3" class="w-8 h-8"></v-icon>
+                </a-button>
+              </a-badge>
+            </a-tooltip>
 
           <div v-if="userInfo" class="me-10 user-info flex items-center justify-between">
             <a-dropdown placement="bottomRight" arrow>
@@ -112,13 +114,17 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch,onMounted, provide} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path.ts";
 import { useAuthStore } from "@/infrastructure/stores/auth.ts";
 import FooterView from "@/page/client/FooterView.vue"
 import { useSearchStore } from '@/infrastructure/stores/search';
 
+import { useCartStorageBL } from "@/page/client/products/business.logic/useCartLocalStorageBL";
+import { getCartFromLocalStorage } from "@/page/client/products/business.logic/CartLocalStorageBL";
+
+const { cart } = useCartStorageBL();
 const auth = useAuthStore();
 const searchStore = useSearchStore();
 const router = useRouter();
@@ -130,28 +136,53 @@ const searchKey = ref("");
 // Theo dõi thay đổi route và xóa searchKey khi không ở trang products
 watch(() => route.path, (newPath) => {
   if (!newPath.includes('/products')) {
-    // Nếu không phải trang products, xóa giá trị tìm kiếm
     searchStore.setSearchKey("");
     searchKey.value = "";
   } else {
-    // Nếu đang ở trang products, lấy giá trị từ store (để hiển thị trong ô tìm kiếm)
     searchKey.value = searchStore.searchKey || "";
   }
-}, { immediate: true });
+}, 
+{ immediate: true });
 
 const handleSearch = () => {
-  // Cập nhật giá trị tìm kiếm trong store
   searchStore.setSearchKey(searchKey.value);
   router.push({ path: 'products' });
 };
 
-// Hàm mới để xử lý khi nhấp vào "SẢN PHẨM"
+const forceCartUpdate = ref(0);
+const emitCartUpdate = () => {
+  forceCartUpdate.value++;
+};
+
+provide('emitCartUpdate', emitCartUpdate);
+
+// theo dõi tìm kiếm
+watch(() => route.path, (newPath) => {
+  if (!newPath.includes('/products')) {
+    searchStore.setSearchKey("");
+    searchKey.value = "";
+  } else {
+
+    searchKey.value = searchStore.searchKey || "";
+  }
+}, { immediate: true });
+
+// hiển thị badge cho giỏ hàng
+const cartItemCount = computed(() => {
+  if (forceCartUpdate.value >= 0) {
+    const latestCart = getCartFromLocalStorage();
+    return latestCart.length || 0;
+  }
+  return 0;
+});
+
+onMounted(() => {
+  emitCartUpdate();
+});
+
 const goToProducts = () => {
-  // Xóa giá trị tìm kiếm
   searchStore.setSearchKey("");
   searchKey.value = "";
-  
-  // Điều hướng đến trang products
   router.push({ path: '/products' });
 };
 

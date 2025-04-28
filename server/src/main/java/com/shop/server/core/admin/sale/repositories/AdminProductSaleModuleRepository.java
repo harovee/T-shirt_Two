@@ -74,7 +74,7 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
     List<AdminProductSaleModuleResponse> getProducts(AdminFindProductSaleModuleRequest req);
 
     @Query(value = """
-            select ROW_NUMBER() OVER(ORDER BY sp.id DESC) AS catalog,
+            select ROW_NUMBER() OVER(ORDER BY sp.ngay_tao DESC) AS catalog,
             sp.id, sp.ten, dm.ten as ten_danh_muc, sum(spct.so_luong) as tong_so_luong
             from san_pham sp
             join danh_muc dm on dm.id = sp.id_danh_muc
@@ -99,7 +99,7 @@ public interface AdminProductSaleModuleRepository extends SanPhamRepository {
 
 
     @Query(value = """
-                select ROW_NUMBER() OVER(ORDER BY spct.id DESC) AS catalog,
+                select ROW_NUMBER() OVER(ORDER BY spct.ngay_tao DESC) AS catalog,
                     spct.id,
                     spct.ma_san_pham_chi_tiet,
                     spct.gia,

@@ -20,7 +20,7 @@
       <h3 class="text-xl font-semibold mb-4">Thông tin thanh toán</h3>
       <a-form layout="vertical">
         <div class="flex gap-4">
-          <a-form-item label="Hình thức mua hàng">
+          <a-form-item >
             <a-radio-group
               v-model:value="paymentInfo.shippingOption"
               option-type="button"

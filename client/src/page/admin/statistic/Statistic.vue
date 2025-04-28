@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick, computed } from "vue";
 import { Radio, Table, Card , Row, Col, Statistic } from "ant-design-vue";
 import * as echarts from "echarts";
 import dayjs, { Dayjs, OpUnitType } from "dayjs";
@@ -94,6 +94,33 @@ const chartData = ref<ChartData>({
   values: [100, 200, 150],
 });
 
+// Tạo computed property cho tiêu đề biểu đồ chính
+const chartTitle = computed(() => {
+  const unitMapping = {
+    'day': 'ngày',
+    'week': 'tuần',
+    'month': 'tháng',
+    'year': 'năm'
+  };
+  return `Doanh thu theo ${unitMapping[timeUnit.value] || ''}`;
+});
+
+// Tạo computed property cho phụ đề hiển thị khoảng thời gian đã chọn
+const chartSubtitle = computed(() => {
+  if (!dateRange.value) return '';
+  
+  // Format hiển thị phụ thuộc vào timeUnit
+  const formatPattern = {
+    'day': 'DD/MM/YYYY',
+    'week': 'DD/MM/YYYY',
+    'month': 'MM/YYYY',
+    'year': 'YYYY'
+  };
+  
+  const format = formatPattern[timeUnit.value] || 'DD/MM/YYYY';
+  return `Từ ${dateRange.value[0].format(format)} đến ${dateRange.value[1].format(format)}`;
+});
+
 onMounted(() => {
   if (!chartRef.value) return; // Đảm bảo chartRef không null
   chartInstance.value = echarts.init(chartRef.value);
@@ -114,7 +141,8 @@ const updateChart = () => {
 
   const options: echarts.EChartsOption = {
     title: {
-      text: "Doanh thu theo ???",
+      text: chartTitle.value,
+      subtext: chartSubtitle.value, // Thêm phụ đề hiển thị khoảng thời gian
       left: "center",
     },
     tooltip: {
@@ -149,12 +177,10 @@ const updateChart = () => {
   chartInstance.value.setOption(options);
 };
 
-watch(chartData, () => {
+// Theo dõi cả chartData, timeUnit và dateRange để cập nhật biểu đồ
+watch([chartData, timeUnit, dateRange], () => {
   nextTick(updateChart); // Cập nhật chart sau khi DOM cập nhật
 }, { deep: true });
-
-
-
 
 const pieChartOptions = ref({
   tooltip: { trigger: "item" },
@@ -265,10 +291,6 @@ watch(
     { deep: true }
 );
 
-
-
-
-
 </script>
 
 <template>
@@ -289,6 +311,7 @@ watch(
                     v-model:value="dateRange"
                     :placeholder="placeholderDateRangePicker"
                     @change="onRangeChange"
+                    format="DD/MM/YYYY"
                   />
 
                   <!-- Chọn đơn vị thời gian -->

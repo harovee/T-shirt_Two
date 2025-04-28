@@ -537,6 +537,8 @@ const effectivePhanTramGiam = computed(() => {
 });
 
 watch(dataDetail, (newDetail) => {
+  console.log(dataDetail.value);
+  
   if (newDetail && newDetail.data && newDetail?.data?.data) {
     const detailData = newDetail?.data?.data;
     if (detailData.gia && detailData.gia.length > 0) {
