@@ -20,10 +20,10 @@ export const getChatHistories = async (roomId: string | null) => {
     return res.data;
 }
 
-export const markMessageAsRead = async (roomId: string) => {
-    return (await request({
-      url: `${API_ADMIN_CHAT_HISTORY}/${roomId}/read`,
-      method: "POST",
-    })) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
-  };
+// export const markMessageAsRead = async (roomId: string) => {
+//     return (await request({
+//       url: `${API_ADMIN_CHAT_HISTORY}/${roomId}/read`,
+//       method: "PUT",
+//     })) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+//   };
 

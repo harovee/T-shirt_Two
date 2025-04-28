@@ -30,7 +30,7 @@ public class ChatService {
         return chatMessageRepository.findByRoomIdOrderByCreatedDateAsc(roomId);
     }
 
-    public void markMessagesAsRead(String roomId) {
-        chatMessageRepository.markMessagesAsReadByRoomId(roomId);
-    }
+//    public void markMessagesAsRead(String roomId) {
+//        chatMessageRepository.markMessagesAsReadByRoomId(roomId);
+//    }
 }

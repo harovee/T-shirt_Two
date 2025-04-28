@@ -28,12 +28,12 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, String
     """, nativeQuery = true)
     List<ChatHistoryResponse> findByRoomIdOrderByCreatedDateAsc(String roomId);
 
-    @Transactional
-    @Modifying
-    @Query(value = """
-        UPDATE message m
-            SET m.da_xem = true
-                WHERE m.ma_phong = :#{#roomId} AND m.da_xem = false
-    """, nativeQuery = true)
-    void markMessagesAsReadByRoomId(@Param("roomId") String roomId);
+//    @Transactional
+//    @Modifying
+//    @Query(value = """
+//        UPDATE message m
+//            SET m.da_xem = true
+//                WHERE m.ma_phong = :#{#roomId} AND m.da_xem = false
+//    """, nativeQuery = true)
+//    void markMessagesAsReadByRoomId(@Param("roomId") String roomId);
 }
