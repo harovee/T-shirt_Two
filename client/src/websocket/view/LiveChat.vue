@@ -234,6 +234,7 @@ const sendMessage = () => {
       });
 
       messages.value.push(chatMessage);
+      clearBadgeOnFocus();
       scrollToBottom(); 
     }
 
