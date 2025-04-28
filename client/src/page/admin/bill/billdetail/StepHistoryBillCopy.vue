@@ -742,6 +742,21 @@ const handleCancelBill = () => {
       try {
         await changeStatus({ idBill, params });
         successNotiSort("Đã hủy đơn thành công!");
+        if (
+            props.billData.loaiHD === "Online"
+          ) {
+            plusQuantityListProduct(
+              { params: listProduct.value },
+              {
+                onSuccess: (result) => {
+                  console.log("Đã hoàn lại số lượng của hóa đơn onl");
+                },
+                onError: (error: any) => {
+                  console.log("Lỗi khi hoàn số lượng");
+                },
+              }
+            );
+          }
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
@@ -799,6 +814,21 @@ const handleCancelBillPaid = () => {
       try {
         await changeStatus({ idBill, params });
         successNotiSort("Đã hủy đơn thành công!");
+        if (
+            props.billData.loaiHD === "Online"
+          ) {
+            plusQuantityListProduct(
+              { params: listProduct.value },
+              {
+                onSuccess: (result) => {
+                  console.log("Đã hoàn lại số lượng của hóa đơn onl");
+                },
+                onError: (error: any) => {
+                  console.log("Lỗi khi hoàn số lượng");
+                },
+              }
+            );
+          }
       } catch (error) {
         console.error("Cập nhật trạng thái thất bại:", error);
         errorNotiSort("Cập nhật trạng thái thất bại. Vui lòng thử lại.");
