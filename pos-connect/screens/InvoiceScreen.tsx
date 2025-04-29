@@ -60,17 +60,7 @@ const InvoiceScreen = () => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount)
   }
 
-  const realShippingCost = () => {
-      if (invoiceData && invoiceData.shipping && invoiceData.shipping.cost) {
-        const tienHang = invoiceData.subtotal;
-        if (tienHang > 2000000) {
-          return 0;
-        } else {
-          return invoiceData.shipping.cost;
-        }
-      }
-      return 0; // Default value if conditions are not met
-    }
+
 
   useEffect(() => {
     // Start animations
@@ -223,21 +213,35 @@ const InvoiceScreen = () => {
   // Tính tổng tiền giảm giá từ voucher
   const calculateDiscount = () => {
     if (!invoiceData.vouchers || invoiceData.vouchers.length === 0) return 0
-
     const voucher = invoiceData.vouchers[0]
     if (voucher.type === "percent") {
       return (invoiceData.subtotal * voucher.discount) / 100
     }
     return voucher.discount
   }
-
   const discount = calculateDiscount();
 
+  // Tính phí vận chuyển thực tế
+  const realShippingCost = () => {
+    if (invoiceData && invoiceData.shipping && invoiceData.shipping.cost) {
+      const tienHang = invoiceData.subtotal;
+      if (tienHang > 2000000) {
+        return 0;
+      } else {
+        return invoiceData.shipping.cost;
+      }
+    }
+    return 0; // Default value if conditions are not met
+  }
+
+  // Tính tiền thừa hoặc thiếu của khách hàng
   const getCurrentChanges = () => {
     if (invoiceData.paymentMethod.includes("Tiền mặt")) {
     return invoiceData.guestMoney - (invoiceData.subtotal + (realShippingCost()) - discount);
     }else if (invoiceData.paymentMethod.includes("Chuyển khoản")) {
       return 0;
+    }else if (invoiceData.paymentMethod.includes("Cả hai")) {
+      return invoiceData.guestMoney - (-(invoiceData.transferMoney ?? 0) + invoiceData.subtotal + (realShippingCost()) - discount);
     }
     return 0;
   }
@@ -570,7 +574,7 @@ const InvoiceScreen = () => {
                     <Text style={[styles.totalValue, { color: colors.primary }]}> {formatCurrency(invoiceData.transferMoney ?? 0)}</Text>
                   </View>
                   <View style={[styles.summaryRow, styles.totalRow]}>
-                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền mặt:</Text>
+                    <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền khách đưa:</Text>
                     <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.guestMoney)}</Text>
                   </View>
                   <View style={[styles.summaryRow, styles.totalRow]}>

@@ -647,7 +647,24 @@ const handleNotVoucher = () => {
 
 const changeShippingOption = (option: string) => {
   paymentInfo.value.shippingOption = option;
-  emit("handlePaymentInfo", paymentInfo.value);
+   // Thảo
+   invoices.value.forEach((item) => {
+    if (item.id === currentInvoice.value.id) {
+      if (option === 'true') {
+          item.customerInfo.address = {
+            province: getCustomerAddress.value ? getCustomerAddress.value.province || '' : '',
+            district: getCustomerAddress.value ? getCustomerAddress.value.district ?? '' : '',
+            ward: getCustomerAddress.value ? getCustomerAddress.value.ward || '' : '',
+            detail: getCustomerAddress.value ? getCustomerAddress.value.line : '',
+          };
+      } else {
+          item.customerInfo.address = null;
+      }
+      currentInvoice.value = item;
+      sendCartInfo(item);
+    }
+  });
+  emit("handleChangeMbConnect", paymentInfo.value);
 };
 
 const openLocalPdf = (maHoaDon) => {
@@ -805,7 +822,16 @@ const handleUpdateBill = (x: number) => {
   }
 };
 
-const getCustomerAddress = ref(null);
+interface CustomerAddress {
+  line: string;
+  province?: string;
+  district?: string;
+  ward?: string;
+  name?: string;
+  phoneNumber?: string;
+}
+
+const getCustomerAddress = ref<CustomerAddress | null>(null);
 
 const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
   getCustomerAddress.value = modelRef;

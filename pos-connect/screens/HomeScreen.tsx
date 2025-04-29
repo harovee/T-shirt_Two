@@ -48,9 +48,9 @@ const BANNERS = [
 // Dữ liệu mẫu cho thông tin cửa hàng
 const STORE_INFO = {
   name: "T-Shirt Two",
-  address: "Trịnh Văn Bô, Phương Canh, Nam Từ Liêm, Hà Nội",
-  phone: "0123 456 789",
-  email: "contact@tshirttwo.com",
+  address: "FPT Polytechnic, Trịnh Văn Bô, Phương Canh, Nam Từ Liêm, Hà Nội",
+  phone: "098 7654 321",
+  email: "tshirttwo2@gmail.com",
   website: "www.tshirttwo.com",
   openHours: "8:00 - 22:00 (Thứ 2 - Chủ nhật)",
   description:

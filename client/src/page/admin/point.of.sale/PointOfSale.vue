@@ -583,7 +583,7 @@ const handleCustomerSelected = (customer: any, bill: any) => {
   console.log("activeTabCustomers", bill);
 
   invoices.value.forEach((invoice: InvoiceData) => {
-    if (invoice.id === bill.ma) {
+    if (invoice.id === currentInvoice.value.id) {
       invoice.customerInfo = {
         name: customer.name,
         phone: customer.phoneNumber,
