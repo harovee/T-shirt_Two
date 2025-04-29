@@ -411,6 +411,8 @@ watch(
     serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
     if (copiedBillData.value && copiedBillData.value.huyen) {
       serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
+      console.log(serviceIdParams.value.toDistrict);
+      
       if (serviceIdParams.value.toDistrict !== 0) {
         refetchService().then(() => {
           shippingParams.value.serviceId = service?.value?.data[0].service_id;
@@ -420,21 +422,26 @@ watch(
             refetchShipping().then(() => {
               // Miễn phí ship cho hóa đơn từ 2.000.000đ
               detailDataSources.value[0].tienShip = shipping?.value?.data.total;
-              if (totalPrice.value <= 2000000) {
+              if (totalPrice.value < 2000000) {
                 detailDataSources.value[0].tienShip =
                   shipping?.value?.data.total;
               } else {
                 detailDataSources.value[0].tienShip = 0;
               }
+              console.log(totalPrice.value);
+              console.log(detailDataSources.value[0].tienShip);
+              
             });
           }
         });
       } else {
-        copiedDataSource.value[0].tienShip = 0;
+        detailDataSources.value[0].tienShip = 0;
       }
     }
-  }
-  // { immediate: true }
+    console.log(detailDataSources.value);
+    
+  },
+  { immediate: true }
 );
 
 // Theo dõi cái bản sao của detail data
@@ -462,7 +469,7 @@ watch(
         }
       } else {
         newData[0].tienGiamHD = 0;
-        newData[0].tienShip = 0;
+        // newData[0].tienShip = 0;
         newData[0].tongTienHD =
           totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
       }
@@ -504,7 +511,7 @@ watch(
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
               // Miễn phí ship cho hóa đơn từ 2.000.000đ
-              if (totalPrice.value <= 2000000) {
+              if (totalPrice.value < 2000000) {
                 detailDataSources.value[0].tienShip =
                   shipping?.value?.data.total;
               } else {
@@ -514,7 +521,7 @@ watch(
           }
         });
       } else {
-        copiedDataSource.value[0].tienShip = 0;
+        detailDataSources.value[0].tienShip = 0;
       }
     }
   }
