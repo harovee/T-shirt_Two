@@ -119,7 +119,7 @@ const emit = defineEmits([
   "update:paginationParams",
   "handleOpenModalCreate",
   "handleCloseModalCreate",
-  "refreshData"  // Add this
+  "refreshData",  // Add this
   "handleRefetch"
 ]);
 
