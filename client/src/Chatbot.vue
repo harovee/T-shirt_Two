@@ -356,7 +356,7 @@ const extractProductInfo = (text) => {
   console.log("Normalized text:", normalizedText); // Debug log
 
   const patterns = {
-    sanPham: /(?:sản phẩm|sp|mua|bán|tìm|áo)\s*(\S+)/i,
+    sanPham: /(?:sản phẩm|sp|mua|bán|tìm|áo)\s*((?:(?!\b(màu|size|giá|kích|chất|vải|kiểu|dáng|hiệu|tay|tính|họa|cổ)\b).)+)/i,
     mauSac: /(?:màu|sắc)\s*([^,.\d]+)/i,
     kichCo: /(?:size|kích cỡ|kích thước)\s*(\S+)/i,
     maxPrice:
