@@ -143,7 +143,7 @@
             :formatter="formatter"
           />
         </div>
-        <p v-if="totalAmount >= 2000000" class="mt-1 ms-16 text-red-500">
+        <p v-if="totalAmount >= 2000000 && paymentInfo.shippingOption === 'true'" class="mt-1 ms-16 text-red-500">
           (Free ship cho hóa đơn từ 2.000.000đ.)
         </p>
         <a-form-item label="Phương thức thanh toán" class="text-xl">

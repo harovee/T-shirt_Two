@@ -447,6 +447,7 @@ watch(
 const handleUpdateBill = async () => {
   try {
     await validate(); // Chờ validate hoàn tất
+    updateFullAddress();
     const fullAddress = modelRef.line + ", " + fullAddressRef.value;
     emit("handleGetAddress", fullAddress, modelRef);
     handleClose();

@@ -2,13 +2,13 @@
   <div>
     <div style="overflow-x: auto; white-space: nowrap">
       <a-steps
-        :current="stepsTmp.length"
+        :current="uniqueStepsTmp.length"
         class="step-interface"
         direction="horizontal"
         style="min-width: max-content"
       >
         <a-step
-          v-for="(item, index) in stepsTmp"
+          v-for="(item, index) in uniqueStepsTmp"
           :key="index"
           :title="item?.title"
           :icon="item.icon"
@@ -298,6 +298,17 @@ watch(
   },
   { immediate: true }
 );
+
+// Hàm chỉ hiển thị 1 step khi có nhiều step giống nhau
+const uniqueStepsTmp = computed(() => {
+  const seen = new Set();
+  return stepsTmp.value.filter(item => {
+    const key = item.title; // Hoặc item.trangThai nếu dùng trường đó
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+});
 
 // Các hàm điều hướng giữa các bước
 // Hàm để lấy idBill từ URL
