@@ -43,6 +43,8 @@ public interface ClientProductProjectionResponse extends BaseResponse {
 
     String getTenThuongHieu();
 
+    String getGioiTinh();
+
     String getdiscount();
 
     String getGia();

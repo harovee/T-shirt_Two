@@ -7,4 +7,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface IMomoService {
     MomoResponse createMomo(ClientMomoRequest request);
+
+    MomoResponse createUrlMomo(ClientMomoRequest request);
 }

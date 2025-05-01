@@ -61,9 +61,12 @@
       <div v-if="column.key === 'gia'" class="text-center">
         <a-input-number
           min="0"
+          max="100000000"
           v-model:value="record.gia"
           :formatter="formatter"
           class="w-40"
+          @blur="handleInputChangeGia(record, index)"
+          @change="(value) => { record.gia = value }"
         />
       </div>
       <div
@@ -354,13 +357,31 @@ const newQuantity = ref(0);
 const newPrice = ref(0);
 
 // Cập nhật giá trị trong copiedData cho tất cả các dòng được chọn
-const updateValuesGia = (field: string) => {
+// const updateValuesGia = (field: string) => {
+//   if (dataSource.value.length > 0) {
+//     selectedRowKeyNews.value.forEach((selectedKey) => {
+//       dataSource.value.forEach((item) => {
+//         if (item.id === selectedKey) {
+//           if (newPrice.value !== null) {
+//             item.gia = parseFloat(newPrice.value + "");
+//           }
+//         }
+//       });
+//     });
+//   }
+//   newPrice.value = 0;
+//   emit("updatePrice", dataSource.value);
+//   // console.log(dataSource.value);
+// };
+
+const updateValuesGia = () => {
   if (dataSource.value.length > 0) {
     selectedRowKeyNews.value.forEach((selectedKey) => {
-      dataSource.value.forEach((item) => {
+      dataSource.value.forEach((item, index) => {
         if (item.id === selectedKey) {
           if (newPrice.value !== null) {
-            item.gia = parseFloat(newPrice.value + "");
+            item.gia = parseFloat(newPrice.value.toString());
+            dataSource.value[index] = { ...item };
           }
         }
       });
@@ -368,7 +389,6 @@ const updateValuesGia = (field: string) => {
   }
   newPrice.value = 0;
   emit("updatePrice", dataSource.value);
-  // console.log(dataSource.value);
 };
 
 const updateValuesSoLuong = (field: string) => {
@@ -406,22 +426,43 @@ const handleInputChangeSoLuong = (
   // console.log(dataSource.value);
 };
 
+// const handleInputChangeGia = (
+//   record: RenProductDetailResponse,
+//   index: number
+// ) => {
+//   let value = record["gia"].toString();
+//   value = value.replace(/[^0-9.]/g, "");
+//   if (value.split(".").length > 2) {
+//     value = value.substring(0, value.lastIndexOf("."));
+//   }
+//   if (value === "") {
+//     value = "0";
+//   }
+//   record["gia"] = parseFloat(value);
+//   dataSource.value[index] = { ...dataSource.value[index], ...record };
+//   // console.log(dataSource.value);
+// };
+
 const handleInputChangeGia = (
   record: RenProductDetailResponse,
   index: number
-) => {
-  let value = record["gia"].toString();
-  value = value.replace(/[^0-9.]/g, "");
-  if (value.split(".").length > 2) {
-    value = value.substring(0, value.lastIndexOf("."));
-  }
-  if (value === "") {
-    value = "0";
-  }
-  record["gia"] = parseFloat(value);
-  dataSource.value[index] = { ...dataSource.value[index], ...record };
-  // console.log(dataSource.value);
-};
+  ) => {
+      let value = record["gia"].toString();
+      value = value.replace(/[^0-9.]/g, "");
+      
+      if (value.split(".").length > 2) {
+        value = value.substring(0, value.lastIndexOf("."));
+      }
+      
+      if (value === "") {
+        value = "0";
+      }
+    
+    const numValue = parseFloat(value);
+    record["gia"] = numValue;
+    dataSource.value[index] = { ...record };
+    emit("updatePrice", dataSource.value);
+}
 // -----------------------------------------------------
 
 
@@ -561,9 +602,9 @@ const handleCreateProduct = async () => {
             }
           }
           create(item,{
-          onSuccess: (result) => {
-            openNotification(notificationType.success, result?.data.message, '');
-          },
+          // onSuccess: (result) => {
+          //   openNotification(notificationType.success, "Tất cả sản phẩm chi tiết đã được tạo thành công", '');
+          // },
           onError: (error: any) => {
             openNotification(notificationType.error, error?.response?.data?.message, '');
           },
@@ -580,7 +621,11 @@ const handleCreateProduct = async () => {
         }
       });
       await Promise.all(promises);
-      successNotiSort("Tất cả sản phẩm đã được tạo thành công!");
+      const successMessage = dataSource.value.length > 1 
+        ? "Tất cả các sản phẩm chi tiết đã được tạo thành công" 
+        : "Sản phẩm chi tiết đã được tạo thành công";
+      
+      successNotiSort(successMessage);
       handleRedirectProductDetail(dataSource.value[0].idSanPham);
     },
   });

@@ -342,6 +342,7 @@ const handleUpdateSale = (id: string | any, dataRequest: SaleRequest) => {
           onSuccess: (result) => {
             openNotification(notificationType.success, result?.data.message, '');
             activeTabKey.value =  '1';
+            
           },
           onError: (error: any) => {
             openNotification(notificationType.error, error?.response?.data?.message, '');
@@ -376,12 +377,13 @@ const onSubmit = (x: number) => {
             saleRequest.value.nguoiSua = userInfo.value?.email || null;
             saleRequest.value.trangThai = formState.trangThai ? 'ACTIVE' : 'INACTIVE';
             if ( x == 1 ) {
-                 handleUpdateSale(saleId.value, saleRequest.value)
+                handleUpdateSale(saleId.value, saleRequest.value)
+                handleRedirectClient();
             }else if ( x == 2 ){
                 handleUpdateSaleProduct(saleId.value || '',{
                 saleRequest: saleRequest.value,
-                saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value}
-            });
+                saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value}});
+                handleRedirectClient();
             }else {
                 const saleStore = useSaleStore();
                 saleStore.setSaleData(saleRequest.value);

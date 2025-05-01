@@ -38,6 +38,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                           th.ten as tenThuongHieu,
                           kd.id as idKieuDang,
                           kd.ten as tenKieuDang,
+                          spct.gioi_tinh as gioiTinh,
                           GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
                           GROUP_CONCAT(DISTINCT best_discounts.gia_sau_giam ORDER BY best_discounts.gia_sau_giam ASC) AS discount,
                           GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
@@ -96,7 +97,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                   AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
                   AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
                   GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,   
-                           ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta
+                           ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta,spct.gioi_tinh
             """, nativeQuery = true)
     Page<ClientProductProjectionResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request);
 
@@ -169,6 +170,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                 th.ten as tenThuongHieu,
                                 kd.id as idKieuDang,
                                 kd.ten as tenKieuDang,
+                                spct.gioi_tinh as gioiTinh,
                                 GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
                                 GROUP_CONCAT(DISTINCT best_discounts.gia_sau_giam ORDER BY best_discounts.gia_sau_giam ASC) AS discount,
                                 GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
@@ -224,7 +226,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                         AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
                         AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
                         AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
-                        GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,\s
+                        GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,spct.gioi_tinh,
                                  ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta
                         LIMIT 8
             """, nativeQuery = true)
@@ -253,6 +255,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                 th.ten as tenThuongHieu,
                                 kd.id as idKieuDang,
                                 kd.ten as tenKieuDang,
+                                spct.gioi_tinh as gioiTinh,
                                 GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
                                 GROUP_CONCAT(DISTINCT 
                                         CASE 
@@ -333,7 +336,9 @@ public interface ClientProductRepository extends SanPhamRepository {
                                 AND  kd.id =  :#{#request.idKieuDang}
                                 AND  th.id =  :#{#request.idThuongHieu}
                                 AND  ta.id =  :#{#request.idTayAo}
-                        GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham
+                                AND  spct.gioi_tinh = :#{#request.gioiTinh}
+                                AND spct.so_luong > 0
+                        GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham,spct.gioi_tinh  
             """, nativeQuery = true)
     ClientProductProjectionResponse getProductById(String idSanPham, ClientProductRequest request);
 
@@ -360,6 +365,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                 th.ten as tenThuongHieu,
                 kd.id as idKieuDang,
                 kd.ten as tenKieuDang,
+                spct.gioi_tinh as gioiTinh,
                 GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
                 GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
                 GROUP_CONCAT(DISTINCT\s
@@ -428,6 +434,7 @@ public interface ClientProductRepository extends SanPhamRepository {
             JOIN kich_co kc ON kc.id = spct.id_kich_co
             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
             WHERE sp.trang_thai = 0
+                AND spct.so_luong >0
                 AND (sp.id = :#{#idSanPham} OR :#{#idSanPham} IS NULL)
                 AND (dm.id = :#{#request.idDanhMuc} OR :#{#request.idDanhMuc} IS NULL)
                 AND (cl.id = :#{#request.idChatLieu} OR :#{#request.idChatLieu} IS NULL)
@@ -439,8 +446,9 @@ public interface ClientProductRepository extends SanPhamRepository {
                 AND (ta.id = :#{#request.idTayAo} OR :#{#request.idTayAo} IS NULL)
                 AND (kc.id = :#{#request.idKichCo} OR :#{#request.idKichCo} IS NULL)
                 AND (ms.id = :#{#request.idMauSac} OR :#{#request.idMauSac} IS NULL)
+                AND (spct.gioi_tinh = :#{#request.gioiTinh} OR :#{#request.gioiTinh} IS NULL)
             GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,
-                     ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta
+                     ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta,spct.gioi_tinh
             """, nativeQuery = true)
     ClientProductProjectionResponse getProductDetailById(String idSanPham, ClientProductDetailRequest request);
 
@@ -487,6 +495,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                 th.ten as tenThuongHieu,
                                 kd.id as idKieuDang,
                                 kd.ten as tenKieuDang,
+                                spct.gioi_tinh as gioiTinh,
                                 GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
                                 GROUP_CONCAT(DISTINCT 
                                     CASE 
@@ -531,7 +540,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                         LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
                         LEFT JOIN san_pham_giam_gia spgg ON spgg.id_san_pham_chi_tiet = spct.id
                         LEFT JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia 
-                        GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten, ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, rp.tongSoLuongBan
+                        GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten, ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, rp.tongSoLuongBan, spct.gioi_tinh
             """, nativeQuery = true)
     List<ClientProductProjectionResponse> getTopProductBestSale();
 
@@ -558,6 +567,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             th.ten as tenThuongHieu,
                             kd.id as idKieuDang,
                             kd.ten as tenKieuDang,
+                            spct.gioi_tinh as gioiTinh,
                             GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
                             GROUP_CONCAT(DISTINCT best_discounts.gia_sau_giam ORDER BY best_discounts.gia_sau_giam ASC) AS discount,
                             GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
@@ -602,7 +612,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                         WHERE sp.trang_thai = 0
                             AND spct.so_luong > 0
                             AND spct.so_luong IS NOT NULL
-                        GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,
+                        GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,spct.gioi_tinh,
                                  ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta
             """, nativeQuery = true)
     Page<ClientProductProjectionResponse> getSaleProduct(ClientProductSearchRequest request, Pageable pageable);

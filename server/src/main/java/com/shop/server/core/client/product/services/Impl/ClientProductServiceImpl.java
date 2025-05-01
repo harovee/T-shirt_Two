@@ -109,6 +109,7 @@ public class ClientProductServiceImpl implements ClientProductService {
         response.setMaSanPham(projection.getMaSanPham());
         response.setTen(projection.getTen());
         response.setMoTa(projection.getMoTa());
+        response.setGioiTinh(projection.getGioiTinh());
         response.setDanhMuc(new DanhMucResponse(projection.getIdDanhMuc(),projection.getTenDanhMuc()));
         response.setChatLieu(new ChatLieuResponse(projection.getIdChatLieu(),projection.getTenChatLieu()));
         response.setTayAo(new TayAoResponse(projection.getIdTayAo(),projection.getTenTayAo()));

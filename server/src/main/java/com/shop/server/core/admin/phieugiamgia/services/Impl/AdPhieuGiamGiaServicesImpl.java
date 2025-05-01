@@ -71,9 +71,6 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Dữ liệu không được để trống");
         }
         request.setMa(Helper.generateCode("PGG"));
-//        if (adPhieuGiamGiaRepository.existsPhieuGiamGiaByTen(request.getTen().trim()) != null) {
-//            return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên phiếu giảm giá đã tồn tại");
-//        }
         if (adPhieuGiamGiaRepository.existsByTen(request.getTen().trim())) {
             return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Tên phiếu giảm giá đã tồn tại");
         }
@@ -81,24 +78,19 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
             return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
         }
         if (request.getLoaiGiam()) {
-            try {
-                BigDecimal dieuKienGiam = BigDecimal.valueOf(Long.parseLong(request.getDieuKienGiam()));
-                BigDecimal giaTriGiam = BigDecimal.valueOf(request.getGiaTriGiam());
-                request.setGiamToiDa(String.valueOf(Long.parseLong(String.valueOf(request.getGiaTriGiam()))));
-            } catch (Exception e) {
-                return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm và giảm tối đa sai kiểu dữ liệu");
-            }
+                request.setGiamToiDa(String.valueOf(Math.round(request.getGiaTriGiam())));
         } else {
-            try {
-                // request.setGiamToiDa(request.getGiaTriGiam());
                 Long dieuKienGiam = Long.parseLong(request.getDieuKienGiam());
+                Long giamToiDa = Long.parseLong(request.getGiamToiDa());
                 Double giaTriGiam = request.getGiaTriGiam();
-                if (giaTriGiam < 0 || giaTriGiam > 100) {
-                    return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "GiaTriGiam % nằm trong khoảng 0-100% ");
+                if (giaTriGiam < 1 || giaTriGiam > 100) {
+                    return new ResponseObject<>(null, HttpStatus.BAD_REQUEST,
+                            "Giá trị giảm % nằm trong khoảng 1-100% ");
                 }
-            } catch (Exception e) {
-                return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm, giá trị giảm và giảm tối đa sai kiểu dữ liệu");
-            }
+                if (dieuKienGiam*(giaTriGiam/100) > giamToiDa) {
+                    return new ResponseObject<>(null, HttpStatus.BAD_REQUEST,
+                            "Giá trị tối đa phải lớn giá trị giảm tối thiểu");
+                }
         }
         PhieuGiamGia phieuGiamGia = new PhieuGiamGia();
         BeanUtils.copyProperties(request, phieuGiamGia);
@@ -127,23 +119,20 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
                 return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "So luong phai lon hon 0");
             }
             if (request.getLoaiGiam()) {
-                try {
-                    BigDecimal dieuKienGiam = BigDecimal.valueOf(Long.parseLong(request.getDieuKienGiam()));
-                    BigDecimal giaTriGiam = BigDecimal.valueOf(request.getGiaTriGiam());
-                    request.setGiamToiDa(String.valueOf(Long.parseLong(request.getDieuKienGiam())));
-                } catch (Exception e) {
-                    return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm và giảm tối đa sai kiểu dữ liệu");
-                }
+                request.setGiamToiDa(String.valueOf(Math.round(request.getGiaTriGiam())));
             } else {
-                try {
+
                     Long dieuKienGiam = Long.parseLong(request.getDieuKienGiam());
+                    Long giamToiDa = Long.parseLong(request.getGiamToiDa());
                     Double giaTriGiam = request.getGiaTriGiam();
-                    if (giaTriGiam < 0 || giaTriGiam > 100) {
-                        return new ResponseObject<>(null, HttpStatus.OK, "GiaTriGiam % nằm trong khoảng 0-100% ");
+                    if (giaTriGiam < 1 || giaTriGiam > 100) {
+                        return new ResponseObject<>(null, HttpStatus.BAD_REQUEST,
+                                "Giá trị giảm % nằm trong khoảng 1-100% ");
                     }
-                } catch (Exception e) {
-                    return new ResponseObject<>(null, HttpStatus.BAD_REQUEST, "Điều kiện giảm, giá trị giảm và giảm tối đa sai kiểu dữ liệu");
-                }
+                    if (dieuKienGiam*(giaTriGiam/100) > giamToiDa) {
+                        return new ResponseObject<>(null, HttpStatus.BAD_REQUEST,
+                                "Giá trị tối đa phải lớn hơn giá trị giảm tối thiểu");
+                    }
             }
             PhieuGiamGia phieuGiamGia = optionalPhieuGiamGia.get();
             phieuGiamGia.setGiamToiDa(request.getGiamToiDa());

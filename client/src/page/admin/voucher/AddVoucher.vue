@@ -21,40 +21,41 @@
         <h4 class="text-lg font-semibold mb-4">Chi tiết phiếu giảm giá</h4>
         <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
           <a-form-item class="mb-4" label="Tên" name="ten" required>
-            <a-input v-model:value="formState.ten" placeholder="Nhập tên đợt giảm giá" />
+            <a-input v-model:value="formState.ten" placeholder="Nhập tên phiếu giảm giá" />
           </a-form-item>
 
           <a-form-item class="mb-4" label="Giá trị giảm" name="giaTriGiam" required>
-            <a-input v-model:value="formState.giaTriGiam" min="0">
+            <a-input-number v-model:value="formState.giaTriGiam" min="0"
+                    :formatter="formState.loaiGiam ? formatter : undefined"
+                    class="w-full"
+            >
               <template #addonAfter>
                 <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid">
                   <a-radio :value="false">%</a-radio>
                   <a-radio :value="true">Tiền</a-radio>
                 </a-radio-group>
               </template>
-            </a-input>
+            </a-input-number>
           </a-form-item>
 
-          <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
+          <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa"  v-if="!formState.loaiGiam" required>
             <a-input-number class="w-full"
               v-model:value="formState.giamToiDa" 
-              :disabled="formState.loaiGiam" 
               min="0"
               placeholder="Nhập giá trị giảm tối đa"
               :formatter="formatter"  
             >
             </a-input-number> 
+            
           </a-form-item>
-          
-          <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
-            <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu"/>
-          </a-form-item>
-
           <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
             <a-input-number class="w-full" v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu" :formatter="formatter">
             </a-input-number>
           </a-form-item>
 
+          <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
+            <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu"/>
+          </a-form-item>
           <a-form-item class="mb-4" label="Thời gian" name="ngayBatDauVaKetThuc" required>
             <a-range-picker
               class="w-full"
@@ -178,7 +179,9 @@ const rules: Record<string, Rule[]> = {
      }],
 
   giaTriGiam: [
-      { required: true, message: 'Vui lòng nhập giá trị giảm', trigger: 'change' },
+      { required: true, message: 'Vui lòng nhập giá trị giảm', 
+        trigger: 'change' 
+      },
       {
         validator: (rule, value) => {
             // Check if value contains only digits, decimal point, or is empty
@@ -316,7 +319,8 @@ const { mutate: createCustomerVoucher } = useCreateCustomerVoucher();
 
 
 const handleCreateVoucher = (dataRequest: PhieuGiamGiaRequest) => {
-
+    console.log(dataRequest);
+    
     Modal.confirm({
     content: "Bạn chắc chắn muốn thêm?",
     icon: createVNode(ExclamationCircleOutlined),

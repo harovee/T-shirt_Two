@@ -23,17 +23,19 @@
         </a-form-item>
 
         <a-form-item class="mb-4" label="Giá trị giảm" name="giaTriGiam" required>
-          <a-input v-model:value="formState.giaTriGiam" min="0" :disabled="isExpired">
+          <a-input-number v-model:value="formState.giaTriGiam" min="0" :disabled="isExpired"
+                    :formatter="formState.loaiGiam ? formatter : undefined"
+          >
             <template #addonAfter>
               <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid" :disabled="isExpired">
                 <a-radio :value="false">%</a-radio>
                 <a-radio :value="true">Tiền</a-radio>
               </a-radio-group>
             </template>
-          </a-input>
+          </a-input-number>
         </a-form-item>
 
-        <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" required>
+        <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" v-if="!formState.loaiGiam" required>
           <a-input-number 
             class="w-full"
             v-model:value="formState.giamToiDa" 
@@ -45,9 +47,7 @@
           </a-input-number>
         </a-form-item>
 
-        <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
-          <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu || isExpired" />
-        </a-form-item>
+        
 
         <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
           <a-input-number 
@@ -59,6 +59,11 @@
             :disabled="isExpired" 
             :formatter="formatter">
           </a-input-number>
+        </a-form-item>
+
+        <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
+          <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" 
+          placeholder="Nhập số lượng" :disabled="formState.kieu || isExpired" />
         </a-form-item>
 
         <a-form-item class="mb-4" label="Thời gian" name="ngayBatDauVaKetThuc" required>

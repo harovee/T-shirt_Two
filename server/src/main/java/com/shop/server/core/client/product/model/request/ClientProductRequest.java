@@ -22,4 +22,6 @@ public class ClientProductRequest {
     private String idChatLieu;
 
     private String idDanhMuc;
+
+    private String gioiTinh;
 }
