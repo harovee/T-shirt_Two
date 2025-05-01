@@ -241,6 +241,10 @@ export const ROUTES_CONSTANTS = {
             COMPLETE_PAYMENT: {
                 path: "complete-payment",
                 name: "client-complete-payment"
+            },
+            MY_PAGE: {
+                path: "my-page",
+                name: "client-my-page"
             }
         },
     },
