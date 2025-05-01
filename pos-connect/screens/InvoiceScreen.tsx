@@ -42,6 +42,9 @@ const InvoiceScreen = () => {
     district: "",
     ward: "",
     detail: "",
+    receiver: "",
+    phone: "",
+    note: "",
   })
 
   // State cho voucher
@@ -223,7 +226,12 @@ const InvoiceScreen = () => {
 
   // Tính phí vận chuyển thực tế
   const realShippingCost = () => {
-    if (invoiceData && invoiceData.shipping && invoiceData.shipping.cost) {
+    if (invoiceData &&
+       invoiceData.customerInfo?.address &&
+       invoiceData.customerInfo?.address?.ward &&
+       invoiceData.customerInfo?.address?.ward != '' &&
+       invoiceData.shipping &&
+       invoiceData.shipping.cost) {
       const tienHang = invoiceData.subtotal;
       if (tienHang > 2000000) {
         return 0;
@@ -438,6 +446,14 @@ const InvoiceScreen = () => {
 
                 {invoiceData.customerInfo?.address ? (
                   <View style={styles.addressInfo}>
+                     <View style={styles.addressRow}>
+                        <Ionicons name="person-outline" size={20} color={colors.muted} />
+                        <Text style={[styles.addressText, { color: colors.text }]}>{invoiceData.customerInfo.address.receiver}</Text>
+                     </View>
+                    <View style={styles.addressRow}>
+                        <Ionicons name="call-outline" size={20} color={colors.muted} />
+                        <Text style={[styles.addressText, { color: colors.text }]}>{invoiceData.customerInfo.address.phone}</Text>
+                    </View>
                     <View style={styles.addressRow}>
                       <Ionicons name="location-outline" size={20} color={colors.muted} />
                       <Text style={[styles.addressText, { color: colors.text }]}>
@@ -445,7 +461,7 @@ const InvoiceScreen = () => {
                         {invoiceData.customerInfo.address.district}, {invoiceData.customerInfo.address.province}
                       </Text>
                     </View>
-                    {invoiceData.shipping && (
+                    {invoiceData.customerInfo?.address?.ward && invoiceData.shipping && (
                       <View style={styles.shippingInfo}>
                         <View style={styles.shippingRow}>
                           <Ionicons name="car-outline" size={20} color={colors.muted} />
@@ -515,7 +531,7 @@ const InvoiceScreen = () => {
               
               */}
               
-              {invoiceData.shipping && (
+              {invoiceData.customerInfo?.address && invoiceData.shipping && (
                 <View style={styles.summaryRow}>
                   <Text style={[styles.summaryLabel, { color: colors.muted }]}>Phí vận chuyển:</Text>
                   <Text style={[styles.summaryValue, { color: colors.text }]}>
@@ -531,7 +547,7 @@ const InvoiceScreen = () => {
               )}
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={[styles.totalLabel, { color: colors.text }]}>Tổng cộng:</Text>
-                <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(invoiceData.subtotal + (realShippingCost()) - discount)}</Text>
+                <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(Math.floor(invoiceData.subtotal + (realShippingCost()) - discount))}</Text>
               </View>
               {invoiceData.paymentMethod.includes("Tiền mặt") && (
                 <>

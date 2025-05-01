@@ -580,7 +580,7 @@ const handleCustomerSelected = (customer: any, bill: any) => {
   }
   activeTabCustomers[bill] = { ...customer };
 
-  console.log("activeTabCustomers", bill);
+  // console.log("activeTabCustomers", bill);
 
   invoices.value.forEach((invoice: InvoiceData) => {
     if (invoice.id === currentInvoice.value.id) {

@@ -341,7 +341,7 @@ export const calculateShippingFee = async (params: Ref<ShippingFeeRequest>) => {
             },
         })) as AxiosResponse<DefaultResponse<ShippingFeeResponse>>;
 
-        console.log("Response API GHN:", res.data); // Kiểm tra response
+        // console.log("Response API GHN:", res.data); // Kiểm tra response
         
         invoices.value.forEach((item) => {
             if (item.id === currentInvoice.value.id) {

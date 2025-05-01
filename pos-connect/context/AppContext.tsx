@@ -12,6 +12,9 @@ interface Address {
   district: string
   ward: string
   detail: string
+  receiver: string
+  phone: string
+  note: string
 }
 
 interface CustomerInfo {

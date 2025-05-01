@@ -8,4 +8,8 @@ public class Address {
     private String district;
     private String ward;
     private String detail;
+
+    private String receiver;
+    private String phone;
+    private String note;
 }

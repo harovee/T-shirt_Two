@@ -17,6 +17,9 @@ interface Address {
   district: string
   ward: string
   detail: string
+  receiver?: string
+  phone: string
+  note?: string
 }
 
 interface CustomerInfo {
@@ -195,6 +198,40 @@ export const sendCartInfo = (cartInfo: InvoiceData) => {
   console.log("Gửi thông tin giỏ hàng đến app:", cartInfo);
   stompClient.publish({ destination:"/app/cart-info", body: JSON.stringify(cartInfo) });
 };
+
+// Hàm lấy đối tượng địa chỉ START
+export const convertAddressForApp = (response: any) => {
+  const parts = response.split(',').map(s => s.trim()).filter(s => s !== '');
+
+  let ward = '';
+  let district = '';
+  let province = '';
+  let detail = '';
+  let receiver = '';
+  let phone = '';
+  let note = '';
+
+  if (parts.length > 0) {
+    province = parts[parts.length - 1];
+  }
+  if (parts.length > 1 && !parts[parts.length - 2].includes('-- Chọn')) {
+    district = parts[parts.length - 2];
+  }
+  if (parts.length > 2 && !parts[parts.length - 3].includes('-- Chọn')) {
+    ward = parts[parts.length - 3];
+  }
+  detail = parts.slice(0, parts.length - 3).filter(p => !p.includes('-- Chọn')).join(', ');
+
+  return {
+    province,
+    district,
+    ward,
+    detail,
+    receiver,
+    phone,
+    note
+  };
+}
 
 ///////////////
 let subscriptions: { [key: string]: any } = {}; // Lưu trữ các subscription cho mỗi invoiceId

@@ -862,6 +862,22 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
     } catch (error) {
       console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
     }
+
+    invoices.value.forEach((invoice: InvoiceData) => {
+    if (invoice.id === currentInvoice.value.id) {
+      invoice.customerInfo.address = {
+        province: provinceInfo.value,
+        district: districtInfo.value,
+        ward: wardInfo.value,
+        detail: modelRef.line,
+        receiver: modelRef.name,
+        phone: modelRef.phoneNumber,
+        note: '',
+      };
+      currentInvoice.value = invoice;
+      sendCartInfo(currentInvoice.value);
+    }
+    });
   }
 
   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
