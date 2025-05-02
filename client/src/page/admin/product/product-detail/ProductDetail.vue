@@ -429,7 +429,7 @@ const formatter = (value: any) => {
 };
 
 const refetchData = () => {
-  refetch();
+  refreshProductDetails();
 }
 
 // provide để truyền dữ liệu sang component con

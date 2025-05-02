@@ -90,6 +90,7 @@
             type="number"
             style="width: 100px"
             :min="0"
+            :max="100000000"
             @blur="handleInputChangeGia(item, index)"
           />
         </td>

@@ -54,7 +54,7 @@
       <a-space direction="vertical" class="m-1 ms-0">
         <div>Giới tính</div>
         <a-select
-          style="width: 100px"
+          style="width: 110px"
           v-model:value="params.gioiTinh"
           size="small"
         >

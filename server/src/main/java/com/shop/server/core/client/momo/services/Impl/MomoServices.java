@@ -71,6 +71,7 @@ public class MomoServices implements IMomoService {
         } catch (Exception e) {
             extraData = "";
         }
+        //String orderId = UUID.randomUUID().toString();
         String requestId = UUID.randomUUID().toString();
         String orderInfo = "Thanh toán đơn hàng: "+ request.getOrderId();
         String rawSignature = "accessKey=" + ACCESS_KEY +
@@ -136,5 +137,70 @@ public class MomoServices implements IMomoService {
 //            log.error("Error calling Momo API via WebClient: {}", e.getMessage());
 //            return null;
 //        }
+    }
+
+    @Override
+    public MomoResponse createUrlMomo(ClientMomoRequest request) {
+        MomoRequest momoRequest = new MomoRequest();
+        String extraData = "";
+        try {
+            extraData = Base64.getEncoder().encodeToString("".getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            extraData = "";
+        }
+        String orderId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
+        String orderInfo = "Thanh toán đơn hàng: "+ orderId;
+        String rawSignature = "accessKey=" + ACCESS_KEY +
+                "&amount=" + request.getAmount() +
+                "&extraData=" + extraData +
+                "&ipnUrl=" + IPN_URL +
+                "&orderId=" + orderId +
+                "&orderInfo=" + orderInfo +
+                "&partnerCode=" + PARTNER_CODE +
+                "&redirectUrl=" + REDIRECT_URL +
+                "&requestId=" + requestId +
+                "&requestType=" + REQUEST_TYPE;
+
+        String prettySignature = "";
+
+        try{
+            prettySignature = signHmacSHA256(rawSignature,SECRET_KEY);
+        } catch (Exception e) {
+            log.error(">>>>Co loi khi hash code: {}"+ e);
+            return null;
+        }
+        if (prettySignature.isBlank()){
+            log.error(">>>>Signature is blank");
+            return null;
+        }
+        momoRequest.setPartnerCode(PARTNER_CODE);
+        momoRequest.setRequestType(REQUEST_TYPE);
+        momoRequest.setIpnUrl(IPN_URL);
+        momoRequest.setRedirectUrl(REDIRECT_URL);
+        momoRequest.setOrderId(orderId);
+        momoRequest.setOrderInfo(orderInfo);
+        momoRequest.setRequestId(requestId);
+        momoRequest.setExtraData(extraData);
+        momoRequest.setAmount(request.getAmount());
+        momoRequest.setSignature(prettySignature);
+        momoRequest.setLang("vi");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<MomoRequest> entity = new HttpEntity<>(momoRequest, headers);
+
+        try {
+            ResponseEntity<MomoResponse> response = restTemplate.exchange(
+                    END_POINT + "/create",
+                    HttpMethod.POST,
+                    entity,
+                    MomoResponse.class
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error calling Momo API: {}", e.getMessage());
+            return null;
+        }
     }
 }

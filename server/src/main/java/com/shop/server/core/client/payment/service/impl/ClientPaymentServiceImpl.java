@@ -1,6 +1,5 @@
 package com.shop.server.core.client.payment.service.impl;
 
-import com.shop.server.core.admin.ban_hang.model.response.AdminPhuongThucThanhToanResponse;
 import com.shop.server.core.admin.ban_hang.repository.AdminChiTietPhuongThucThanhToanRepository;
 import com.shop.server.core.admin.ban_hang.repository.AdminHoaDonRepository;
 import com.shop.server.core.admin.bill.model.request.AdminSendEmailRequest;
@@ -8,7 +7,6 @@ import com.shop.server.core.admin.bill.repository.AdminBillRepository;
 import com.shop.server.core.admin.bill.service.AdminBillSendMailService;
 import com.shop.server.core.admin.billdetail.repository.AdminBillDetailRepository;
 import com.shop.server.core.client.momo.model.request.ClientMomoRequest;
-import com.shop.server.core.client.momo.services.IMomoService;
 import com.shop.server.core.client.momo.services.Impl.MomoServices;
 import com.shop.server.core.client.payment.model.request.ClientInvoiceDetailRequest;
 import com.shop.server.core.client.payment.model.request.ClientPaymentRequest;
@@ -22,7 +20,6 @@ import com.shop.server.core.common.base.ResponseObject;
 import com.shop.server.entities.main.*;
 import com.shop.server.infrastructure.constants.module.Message;
 import com.shop.server.repositories.*;
-import com.shop.server.utils.DateTimeUtil;
 import com.shop.server.utils.VNPayUtil;
 import com.shop.websocket.model.entity.OrderNotification;
 import com.shop.websocket.repository.NotificationRepository;
@@ -400,6 +397,97 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
     }
 
     @Transactional
+    public ResponseObject<?> handlePayMentVnPaySuccess(ClientPaymentRequest request) {
+        try {
+            String maHD;
+            Random random = new Random();
+            do {
+                int number = random.nextInt(10000);
+                maHD = String.format("HD%04d", number);
+            } while (adminBillRepository.existsHoaDonByMa(maHD));
+
+            HoaDon hoaDon = new HoaDon();
+            hoaDon.setMa(maHD);
+            hoaDon.setLoaiHD("Online");
+            hoaDon.setTrangThai("Chờ xác nhận");
+
+            KhachHang kh = request.getIdKhachHang() != null ? khachHangRepository.findById(request.getIdKhachHang())
+                    .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại")) : null;
+            hoaDon.setKhachHang(kh);
+
+            NhanVien nv = request.getIdNhanVien() != null ? nhanVienRepository.findById(request.getIdNhanVien())
+                    .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại")) : null;
+            hoaDon.setNhanVien(nv);
+
+            PhieuGiamGia pgg = request.getIdPhieuGiamGia() != null ? phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia())
+                    .orElseThrow(() -> new RuntimeException("Phiếu giảm giá không tồn tại")) : null;
+            hoaDon.setPhieuGiamGia(pgg);
+
+            hoaDon.setDiaChiNguoiNhan(request.getDiaChiNguoiNhan());
+            hoaDon.setGhiChu(request.getGhiChu());
+            hoaDon.setSoDienThoai(request.getSoDienThoai());
+            hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());
+            hoaDon.setTienGiam(request.getTienGiam());
+            hoaDon.setTienShip(request.getTienShip());
+            hoaDon.setTongTien(request.getTongTien());
+            hoaDon.setPhuongThucNhan("Giao hàng");
+            hoaDon.setTinh(request.getTinh());
+            hoaDon.setXa(request.getXa());
+            hoaDon.setHuyen(request.getHuyen());
+            hoaDon.setEmailNguoiNhan(request.getEmail());
+
+            adminBillRepository.save(hoaDon);
+            AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
+            adminSendEmailRequest.setEmail(request.getEmail());
+            adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
+            adminSendEmailRequest.setTrangThai("Chờ xác nhận");
+            adminSendEmailRequest.setGhiChu(request.getGhiChu() == null ? "" : request.getGhiChu());
+            adminSendEmailRequest.setIdHoaDon(hoaDon.getId());
+            adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
+            if (request.getIdPhieuGiamGia() != null) {
+                adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
+            }
+
+            for(ClientInvoiceDetailRequest req : request.getListSanPhamChiTiets()) {
+                clientPaymentRepository.saveProductDetailsToInvoice(req, hoaDon.getId(), request.getIdNhanVien());
+//            clientPaymentRepository.updateSoLuong(req);
+            }
+
+            // lưu thông báo - gửi thông báo
+            OrderNotification orderNotification = new OrderNotification();
+            orderNotification.setOrderId(hoaDon.getId());
+            orderNotification.setContent("Hóa đơn " + hoaDon.getMa() + " cần xác nhận");
+            OrderNotification noti  = notificationRepository.save(orderNotification);
+            messagingTemplate.convertAndSend("/topic/notification", noti);
+
+            LichSuHoaDon ls = new LichSuHoaDon();
+            ls.setIdHoaDon(hoaDon);
+            ls.setHanhDong("Tạo hóa đơn");
+            ls.setMoTa("Tạo hóa đơn online");
+            ls.setNguoiTao(request.getIdNhanVien());
+            ls.setTrangThai(hoaDon.getTrangThai());
+            LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
+            ChiTietPhuongThucThanhToan chiTietPTTT = new ChiTietPhuongThucThanhToan();
+            chiTietPTTT.setHoaDon(hoaDon);
+            chiTietPTTT.setMaGiaoDich(request.getMaGiaoDich());
+            chiTietPTTT.setTienKhachDua(request.getTongTien());
+            chiTietPTTT.setGhiChu("VNPay Payment - Transaction");
+            PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
+            chiTietPTTT.setPhuongThucThanhToan(pttt);
+            chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
+            log.info("VNPay payment processed successfully: Invoice {}, Amount {}, Transaction {}",hoaDon.getId());
+            return new ResponseObject<>(
+                    null,
+                    HttpStatus.OK,
+                    Message.Success.CREATE_SUCCESS
+            );
+        } catch (Exception e) {
+            log.error("Error processing VNPay payment: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to process payment", e);
+        }
+    }
+
+    @Transactional
     public void handleMomoSuccess(Map<String, String> params, String invoiceId) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(invoiceId)
@@ -415,15 +503,11 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
                 chiTietPTTT.setHoaDon(hoaDon);
                 chiTietPTTT.setMaGiaoDich(transId);
                 chiTietPTTT.setTienKhachDua(paymentAmount);
-                chiTietPTTT.setGhiChu("Momo Payment - Transaction Successful");
+                chiTietPTTT.setGhiChu("Momo Payment - Thanh toán qua MoMo");
 
                 PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
                 chiTietPTTT.setPhuongThucThanhToan(pttt);
-
                 chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
-//                hoaDon.setTrangThai("Chờ xác nhận");
-//                hoaDonRepository.save(hoaDon);
-
                 log.info("Momo payment processed successfully: Invoice {}, Amount {}, Transaction {}",
                         invoiceId, paymentAmount, transId);
             } else {
@@ -437,6 +521,93 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         }
     }
 
+    @Transactional
+    public ResponseObject<?> handlePayMentMomoSuccess(ClientPaymentRequest request) {
+        try {
+            String maHD;
+            Random random = new Random();
+            do {
+                int number = random.nextInt(10000);
+                maHD = String.format("HD%04d", number);
+            } while (adminBillRepository.existsHoaDonByMa(maHD));
+
+            HoaDon hoaDon = new HoaDon();
+            hoaDon.setMa(maHD);
+            hoaDon.setLoaiHD("Online");
+            hoaDon.setTrangThai("Chờ xác nhận");
+
+            KhachHang kh = request.getIdKhachHang() != null ? khachHangRepository.findById(request.getIdKhachHang())
+                    .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại")) : null;
+            hoaDon.setKhachHang(kh);
+
+            NhanVien nv = request.getIdNhanVien() != null ? nhanVienRepository.findById(request.getIdNhanVien())
+                    .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại")) : null;
+            hoaDon.setNhanVien(nv);
+
+            PhieuGiamGia pgg = request.getIdPhieuGiamGia() != null ? phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia())
+                    .orElseThrow(() -> new RuntimeException("Phiếu giảm giá không tồn tại")) : null;
+            hoaDon.setPhieuGiamGia(pgg);
+
+            hoaDon.setDiaChiNguoiNhan(request.getDiaChiNguoiNhan());
+            hoaDon.setGhiChu(request.getGhiChu());
+            hoaDon.setSoDienThoai(request.getSoDienThoai());
+            hoaDon.setTenNguoiNhan(request.getTenNguoiNhan());
+            hoaDon.setTienGiam(request.getTienGiam());
+            hoaDon.setTienShip(request.getTienShip());
+            hoaDon.setTongTien(request.getTongTien());
+            hoaDon.setPhuongThucNhan("Giao hàng");
+            hoaDon.setTinh(request.getTinh());
+            hoaDon.setXa(request.getXa());
+            hoaDon.setHuyen(request.getHuyen());
+            hoaDon.setEmailNguoiNhan(request.getEmail());
+
+            adminBillRepository.save(hoaDon);
+            AdminSendEmailRequest adminSendEmailRequest = new AdminSendEmailRequest();
+            adminSendEmailRequest.setEmail(request.getEmail());
+            adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
+            adminSendEmailRequest.setTrangThai("Chờ xác nhận");
+            adminSendEmailRequest.setGhiChu(request.getGhiChu() == null ? "" : request.getGhiChu());
+            adminSendEmailRequest.setIdHoaDon(hoaDon.getId());
+            adminBillSendMailService.sendMailCreateBill(adminSendEmailRequest);
+            if (request.getIdPhieuGiamGia() != null) {
+                adminBillRepository.updateQuantityVoucher(request.getIdPhieuGiamGia());
+            }
+
+            for(ClientInvoiceDetailRequest req : request.getListSanPhamChiTiets()) {
+                clientPaymentRepository.saveProductDetailsToInvoice(req, hoaDon.getId(), request.getIdNhanVien());
+//            clientPaymentRepository.updateSoLuong(req);
+            }
+
+            // lưu thông báo - gửi thông báo
+            OrderNotification orderNotification = new OrderNotification();
+            orderNotification.setOrderId(hoaDon.getId());
+            orderNotification.setContent("Hóa đơn " + hoaDon.getMa() + " cần xác nhận");
+            OrderNotification noti  = notificationRepository.save(orderNotification);
+            messagingTemplate.convertAndSend("/topic/notification", noti);
+
+            LichSuHoaDon ls = new LichSuHoaDon();
+            ls.setIdHoaDon(hoaDon);
+            ls.setHanhDong("Tạo hóa đơn");
+            ls.setMoTa("Tạo hóa đơn online");
+            ls.setNguoiTao(request.getIdNhanVien());
+            ls.setTrangThai(hoaDon.getTrangThai());
+            LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
+            ChiTietPhuongThucThanhToan chiTietPTTT = new ChiTietPhuongThucThanhToan();
+            chiTietPTTT.setHoaDon(hoaDon);
+            chiTietPTTT.setMaGiaoDich(request.getMaGiaoDich());
+            chiTietPTTT.setTienKhachDua(request.getTongTien());
+            chiTietPTTT.setGhiChu("Momo Payment - Thanh toán qua MoMo");
+            PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
+            chiTietPTTT.setPhuongThucThanhToan(pttt);
+            chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
+            return new ResponseObject<>(null,
+                    HttpStatus.OK,
+                    Message.Success.CREATE_SUCCESS);
+        } catch (Exception e) {
+            log.error("Error processing Momo payment for Invoice {}: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to process Momo payment", e);
+        }
+    }
 
     @Transactional
     public void rollbackInvoiceOnVnPayFailure(String invoiceId, Map<String, String> vnpayResponse) {

@@ -1,7 +1,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { queryKey } from "@/infrastructure/constants/queryKey.ts";
-import { clientPaymentRequest, createInvoiceOnline, getVnPayLink, vnPayLinkResponse, vnPayRequest, createInvoiceOnlineWithVnPay, createInvoiceOnlineWithMoMo, vietQrRequest, getVietQrCode, createInvoiceOnlineWithVietQr } from "../../api/client/clientpayment.api";
+import { clientPaymentRequest, createInvoiceOnline, getVnPayLink, vnPayLinkResponse, vnPayRequest, createInvoiceOnlineWithVnPay, createInvoiceOnlineWithMoMo, vietQrRequest, getVietQrCode, createInvoiceOnlineWithVietQr, createUrlVnPay, createUrlVnPayCallBack, createUrlMomo, momoRequest, createUrlMomoCallBack } from "../../api/client/clientpayment.api";
 
 export const useCreateInvoiceOnline = () => {
     const queryClient = useQueryClient();
@@ -49,6 +49,7 @@ export const useCreateInvoiceOnlineWithMomo = () => {
         },
     });
 };
+
 export const useGetVietQrCode = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -75,6 +76,69 @@ export const useCreateInvoiceOnlineWithVietQR = () => {
         },
         onError: (error: any) => {
             console.log(queryKey.client.payment.invoiceInlineVietQr, "🚀 ~ createInvoiceOnlineWithVietQR ~ error:", error);
+        },
+    });
+};
+
+export const useCreateUrlVnPay = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (params: vnPayRequest) => createUrlVnPay(params),
+        onSuccess: (response) => {
+            console.log(response);
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.client.payment.invoiceOnlineVNPay],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.client.payment.invoiceOnline, "🚀 ~ createInvoiceOnline ~ error:", error);
+        },
+    });
+};
+export const useCreateUrlVnPayCallBack = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: clientPaymentRequest) => createUrlVnPayCallBack(data),
+        onSuccess: (response) => {
+            console.log(response);
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.client.payment.invoiceOnlineVNPay],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.client.payment.invoiceOnline, "🚀 ~ createInvoiceOnline ~ error:", error);
+        },
+    });
+};
+
+export const useCreateUrlMomo = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: momoRequest) => createUrlMomo(data),
+        onSuccess: (response) => {
+            console.log(response);
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.client.payment.invoiceOnlineMomo],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.client.payment.invoiceOnlineMomo, "🚀 ~ createInvoiceOnline ~ error:", error);
+        },
+    });
+};
+
+export const useCreateUrlMomoCallBack = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: clientPaymentRequest) => createUrlMomoCallBack(data),
+        onSuccess: (response) => {
+            console.log(response);
+            queryClient.invalidateQueries({
+                queryKey: [queryKey.client.payment.invoiceOnlineMomo],
+            })
+        },
+        onError: (error: any) => {
+            console.log(queryKey.client.payment.invoiceOnlineMomo, "🚀 ~ createInvoiceOnline ~ error:", error);
         },
     });
 };

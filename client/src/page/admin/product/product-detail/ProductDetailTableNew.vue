@@ -110,16 +110,16 @@ const props = defineProps({
   productId: String,
   changeFill: Boolean,
 });
+
 const handleRefreshData = () => {
   emit('refreshData');
 }
 
-// Update your emits array to include refreshData
 const emit = defineEmits([
   "update:paginationParams",
   "handleOpenModalCreate",
   "handleCloseModalCreate",
-  "refreshData",  // Add this
+  "refreshData", 
   "handleRefetch"
 ]);
 

@@ -150,10 +150,10 @@ const { mutate: updateProductDetail } = useUpdateProductDetail();
 const productImages = ref<anh[]>([]);
 const isLoadingImages = ref(false);
 
-watch(()=> props.ProductDetail, (newValue) =>{
-  console.log(newValue);
+// watch(()=> props.ProductDetail, (newValue) =>{
+//   console.log(newValue);
   
-} )
+// } )
 
 // Initialize Cloudinary widget
 let cloudinaryWidget;
@@ -454,16 +454,16 @@ const handleUpdateProductDetail = () => {
           onSuccess: (result) => {
             openNotification(notificationType.success, "Cập nhật sản phẩm thành công", '');
             emit("refreshData");
-            handleClose()
+            handleClose();
           },
           onError: (error: any) => {
-            openNotification(notificationType.error, error?.response?.data?.message, '');
+            openNotification(notificationType.error, error?.response?.data?.message || "Có lỗi xảy ra khi cập nhật sản phẩm", '');
           },
         });   
       } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
+        console.error("🚀 ~ handleUpdateProductDetail ~ error:", error);
         if (error?.response) {
-          warningNotiSort(error?.response?.data?.message);
+          openNotification(notificationType.warning, error?.response?.data?.message || "Vui lòng kiểm tra lại thông tin", '');
         }
       }
     },
