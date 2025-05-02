@@ -75,7 +75,8 @@ public interface AdminKhachHangPayRepository extends KhachHangRepository {
             FROM dia_chi_khach_hang dckh
             WHERE dckh.id_khach_hang = :#{#request.idKhachHang}
             AND (:#{#request.keyword} IS NULL OR dckh.ten LIKE CONCAT('%', :#{#request.keyword},'%')
-                        OR dckh.so_dien_thoai LIKE CONCAT('%', :#{#request.keyword},'%'))
+                        OR dckh.so_dien_thoai LIKE CONCAT('%', :#{#request.keyword},'%')
+                        OR dckh.so_nha LIKE CONCAT('%', :#{#request.keyword},'%'))
             ORDER BY dckh.mac_dinh DESC
             """, nativeQuery = true)
     Page<AdminCustomerAddressResponse> getCustomerAddressById(Pageable pageable, AdminCustomerAddressSearchRequest request);

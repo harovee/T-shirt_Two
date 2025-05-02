@@ -143,7 +143,7 @@
             :formatter="formatter"
           />
         </div>
-        <p v-if="totalAmount >= 2000000" class="mt-1 ms-16 text-red-500">
+        <p v-if="totalAmount >= 2000000 && paymentInfo.shippingOption === 'true'" class="mt-1 ms-16 text-red-500">
           (Free ship cho hóa đơn từ 2.000.000đ.)
         </p>
         <a-form-item label="Phương thức thanh toán" class="text-xl">
@@ -647,7 +647,24 @@ const handleNotVoucher = () => {
 
 const changeShippingOption = (option: string) => {
   paymentInfo.value.shippingOption = option;
-  emit("handlePaymentInfo", paymentInfo.value);
+   // Thảo
+   invoices.value.forEach((item) => {
+    if (item.id === currentInvoice.value.id) {
+      if (option === 'true') {
+          item.customerInfo.address = {
+            province: getCustomerAddress.value ? getCustomerAddress.value.province || '' : '',
+            district: getCustomerAddress.value ? getCustomerAddress.value.district ?? '' : '',
+            ward: getCustomerAddress.value ? getCustomerAddress.value.ward || '' : '',
+            detail: getCustomerAddress.value ? getCustomerAddress.value.line : '',
+          };
+      } else {
+          item.customerInfo.address = null;
+      }
+      currentInvoice.value = item;
+      sendCartInfo(item);
+    }
+  });
+  emit("handleChangeMbConnect", paymentInfo.value);
 };
 
 const openLocalPdf = (maHoaDon) => {
@@ -805,7 +822,16 @@ const handleUpdateBill = (x: number) => {
   }
 };
 
-const getCustomerAddress = ref(null);
+interface CustomerAddress {
+  line: string;
+  province?: string;
+  district?: string;
+  ward?: string;
+  name?: string;
+  phoneNumber?: string;
+}
+
+const getCustomerAddress = ref<CustomerAddress | null>(null);
 
 const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
   getCustomerAddress.value = modelRef;
@@ -836,6 +862,22 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
     } catch (error) {
       console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
     }
+
+    invoices.value.forEach((invoice: InvoiceData) => {
+    if (invoice.id === currentInvoice.value.id) {
+      invoice.customerInfo.address = {
+        province: provinceInfo.value,
+        district: districtInfo.value,
+        ward: wardInfo.value,
+        detail: modelRef.line,
+        receiver: modelRef.name,
+        phone: modelRef.phoneNumber,
+        note: '',
+      };
+      currentInvoice.value = invoice;
+      sendCartInfo(currentInvoice.value);
+    }
+    });
   }
 
   serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;

@@ -458,6 +458,14 @@ const routes: Array<RouteRecordRaw> = [
                     requiresAuth: false
                 },
             },
+            {
+                path: ROUTES_CONSTANTS.CLIENT.children.MY_PAGE.path,
+                name: ROUTES_CONSTANTS.CLIENT.children.MY_PAGE.name,
+                component: () => import('@/page/client/my-page/ClientPage.vue'),
+                meta: {
+                    requiresAuth: false
+                },
+            },
         ],
     },
     {

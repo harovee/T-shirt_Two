@@ -93,7 +93,7 @@
               : "0 VND"
           }}</span>
         </div>
-        <p v-if="totalPrice > 2000000" class="text-red-500 text-right w-full">
+        <p v-if="totalPrice >= 2000000" class="text-red-500 text-right w-full">
           Free ship cho đơn hàng từ 2.000.000đ
         </p>
         <div class="flex flex justify-between block font-semibold text-xl">
@@ -633,7 +633,7 @@ watch(
           shippingParams.value.toWardCode = copiedBillData.value.xa;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
-              if (totalPrice.value > 2000000) {
+              if (totalPrice.value >= 2000000) {
                 copiedDataSource.value[0].tienShip = 0;
                 copiedBillData.value.tienShip = 0;
               } else {
@@ -731,7 +731,7 @@ watch(
             shippingParams.value.toWardCode = copiedBillData.value.xa;
             if (shippingParams.value.toWardCode) {
               refetchShipping().then(() => {
-                if (totalPrice.value > 2000000) {
+                if (totalPrice.value >= 2000000) {
                   copiedDataSource.value[0].tienShip = 0;
                   copiedBillData.value.tienShip = 0;
                 } else {
