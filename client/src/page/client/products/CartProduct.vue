@@ -81,6 +81,9 @@
                       class="inline-block mr-2 mb-1 w-5 h-5 rounded-full cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                     ></span>
                   </p>
+                  <p class="text-gray-700 font-medium mr-2">Giới tính:  
+                    <span>  {{ product.gioiTinh }} </span>
+                  </p>
                 </div>
               </template>
             </a-card-meta>
@@ -163,6 +166,7 @@ const handleRedirectProductDetail = (product) => {
         idTayAo: product.tayAo?.id || "",
         idThuongHieu: product.thuongHieu?.id || "",
         idTinhNang: product.tinhNang?.id || "",
+        gioiTinh: product.gioiTinh || "",
     };
     localStorage.setItem('productDetailParams', JSON.stringify(detailParams));
 

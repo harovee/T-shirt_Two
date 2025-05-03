@@ -37,6 +37,8 @@ export interface ClientProductRequest {
      idChatLieu: string;
 
      idDanhMuc: string;
+
+     gioiTinh: string;
 }
 
 export interface ClientProductDetailRequest extends ClientProductRequest{

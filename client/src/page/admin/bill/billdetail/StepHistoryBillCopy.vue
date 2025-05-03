@@ -40,6 +40,7 @@
           v-if="
             stepsTmp.length > 0 &&
             stepsTmp[stepsTmp.length - 1]?.title === 'Chờ xác nhận'
+            && dataPaymentInfo.refund === 0
           "
           type="primary"
           @click="confirmBill()"

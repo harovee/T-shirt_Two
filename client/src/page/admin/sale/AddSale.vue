@@ -28,10 +28,14 @@
                             </a-radio-group>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
-                        <a-input-number v-model:value="formState.giaTri" min="1" style="width: 100%"></a-input-number>
-                    </a-form-item>
+                        <a-input-number v-model:value="formState.giaTri" min="1" style="width: 100%"
+                        :formatter="formState.loai == 'VND' ? formatter : undefined"
+                        ></a-input-number>
+                    </a-form-item>  
                     <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
-                        <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10" style="width: 100%">
+                        <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10" style="width: 100%"
+                          :formatter="formatter"
+                        >
                             <template #addonAfter>đ</template>
                         </a-input-number>
                     </a-form-item>
@@ -130,7 +134,11 @@ const listAttributes = useGetAttributes({
 });
 const idSanPhams = ref<string[]>([]);
 const idSanPhamChiTiets = ref<string[]>([]);
-
+// Hàm format tiền sang VNĐ
+const formatter = (value: any) => {
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 const saleRequest = ref<SaleRequest>(defaultSaleRequest)
 const formRef = ref();
 let formState: UnwrapRef<FormState> = reactive( {

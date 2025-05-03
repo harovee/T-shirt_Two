@@ -295,6 +295,12 @@
             </h3>
             <div class="space-y-2">
               <div class="flex">
+                <span class="w-1/3 text-gray-500">Giới tính:</span>
+                <span class="w-2/3 text-gray-800">{{
+                    product.gioiTinh
+                }}</span>
+              </div>
+              <div class="flex">
                 <span class="w-1/3 text-gray-500">Thương hiệu:</span>
                 <span class="w-2/3 text-gray-800">{{
                   getAttributeName(product.thuongHieu)
@@ -387,6 +393,7 @@ const paramsProduct = ref<ClientProductRequest>({
   idTayAo: "",
   idThuongHieu: "",
   idTinhNang: "",
+  gioiTinh: "",
 });
 
 const paramsDetail = ref<ClientProductDetailRequest>({
@@ -400,6 +407,7 @@ const paramsDetail = ref<ClientProductDetailRequest>({
   idTinhNang: "",
   idKichCo: "",
   idMauSac: "",
+  gioiTinh: ""
 });
 
 onMounted(() => {
@@ -416,6 +424,7 @@ onMounted(() => {
       paramsDetail.value.idTayAo = paramsProduct.value.idTayAo;
       paramsDetail.value.idThuongHieu = paramsProduct.value.idThuongHieu;
       paramsDetail.value.idTinhNang = paramsProduct.value.idTinhNang;
+      paramsDetail.value.gioiTinh = paramsProduct.value.gioiTinh;
     }
   } catch (e) {
     console.error("Error parsing stored params:", e);

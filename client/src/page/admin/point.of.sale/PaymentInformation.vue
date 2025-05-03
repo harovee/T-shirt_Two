@@ -755,6 +755,11 @@ const handleUpdateBill = (x: number) => {
     return;
   }
 
+  if (getTotalQuantity() > 1000) {
+    warningNotiSort("Số lượng sản phẩm trong giỏ không được quá 1000!");
+    return;
+  }
+
   currentPayloadPaymentInfo.value = payload;
   currentInvoiceUUID.value = props.dataSourceInfor.id;
 
@@ -778,7 +783,7 @@ const handleUpdateBill = (x: number) => {
       },
     });
   } else if (x === 2) {
-   
+
   }
 };
 

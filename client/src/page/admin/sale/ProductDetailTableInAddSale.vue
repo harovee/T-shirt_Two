@@ -34,10 +34,11 @@
         </a-space>
         <a-space  direction="vertical" class="m-1 ms-0">
           <div>Giới tính</div>
-          <a-select style="width: 100px;" v-model:value="params.gioiTinh" size="small">
+          <a-select style="width: 110px;" v-model:value="params.gioiTinh" size="small">
             <a-select-option key="-1" :value="null">Tất cả</a-select-option>
-            <a-select-option key="0" :value="true">Nam</a-select-option>
-            <a-select-option key="1" :value="false">Nữ</a-select-option>
+            <a-select-option key="Nam" :value="'Nam'">Nam</a-select-option>
+            <a-select-option key="Nữ" :value="'Nữ'">Nữ</a-select-option>
+            <a-select-option key="Nam và Nữ" :value="'Nam và Nữ'">Nam và Nữ</a-select-option>
           </a-select>
         </a-space>
        
@@ -94,7 +95,7 @@
         <a-image-preview-group>
             <div v-if="column.dataIndex === 'linkAnh'" class="text-center">
                 <a-image :width="140"
-                  :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
+                  :alt="record.linkAnh ? record.ten : 'T-shirt Two'"
                   :src="record.linkAnh != 'default-product-detail-image-url.jpg'
                 ? record.linkAnh : defaultProductImageSaleUrl " />
             </div>
@@ -217,7 +218,7 @@ const dataSource: DataType[] | any = computed(() => {
       giaHienTai: e.giaHienTai || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
-      gioiTinh: e.gioiTinh ? "Nam": e.gioiTinh == false ? "Nữ" : "Không xác định",
+      gioiTinh: e.gioiTinh,
       kichCo: e.kichCo || "",
       phongCach: e.phongCach || "",
       soLuong: e.soLuong || "",

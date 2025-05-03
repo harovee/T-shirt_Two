@@ -2,7 +2,7 @@
   <div class="p-6 grid grid-cols-1 gap-6">
     <div class="flex items-center gap-2">
       <v-icon name="bi-cart3" size="x-large" width="48" height="48" />
-      <h3 class="text-2xl m-0">Bán hàng tại quầy</h3>
+      <h3 class="text-2xl m-0">Bán tại quầy</h3>
     </div>
     <div>
       <div class="p-2 rounded-xl border-2">
@@ -101,6 +101,7 @@
               <POSProducsInCart
                 :maHoaDon="bill.ma"
                 :idOrder="activeKey?.valueOf() || ''"
+                @refetchLength="onDeleted"
               ></POSProducsInCart>
             </div>
 
@@ -502,6 +503,29 @@ const setRefetch = (refetch) => {
   refetchProducts.value = refetch;
 };
 
+const onDeleted = async () => {
+    // Đợi Vue cập nhật xong reactivity sau khi con emit ra
+    await nextTick();
+    await handleRefetchLength();
+};
+
+const handleRefetchLength = async () => {
+  console.log(dataSource.value);
+  
+    const results = await Promise.all(
+        dataSource.value.map(async (item) => {
+            const response = await getOrderDetailsAll(item.id);
+            const length = response?.data.length || 0;
+            return { item, length };
+        })
+    );
+    lengthMap.value = results.reduce((acc, { item, length }) => {
+        acc[item.id] = length;
+        return acc;
+    }, {});
+    console.log(lengthMap.value);
+};
+
 const { mutate: createBillWail } = useCreateBillsWait();
 const { mutate: removeBillWait } = useRemoveBillById();
 
@@ -655,7 +679,7 @@ const add = async () => {
   const payload = {
     loaiHD: "Tại quầy",
     idKhachHang: null,
-    idNhanVien: null,
+    idNhanVien: useAuthStore().user.id,
     idPhieuGiamGia: null,
   };
 

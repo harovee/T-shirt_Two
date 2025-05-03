@@ -16,7 +16,7 @@ public class AdPOSFindProductRequest extends PageableRequest {
 
     private String keyword; // ma, sp ,ten spct, ten mau
 
-    private Boolean gioiTinh;
+    private String gioiTinh;
 
     private String idThuongHieu;
     private String idKichCo;

@@ -136,7 +136,6 @@ const statusOptions = ref([
   { label: "Đang vận chuyển", value: "Đang vận chuyển" },
   { label: "Đã giao hàng", value: "Đã giao hàng" },
   { label: "Đã thanh toán", value: "Đã thanh toán" },
-  { label: "Trả hàng", value: "Trả hàng" },
   { label: "Đã hủy", value: "Đã hủy" },
 ]);
 

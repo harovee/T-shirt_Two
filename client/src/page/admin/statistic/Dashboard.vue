@@ -169,7 +169,12 @@ onUnmounted(() => {
             },
             { title: 'Số lượng bán', dataIndex: 'numberProductSold', key: 'numberProductSold' },
             { title: 'Đơn hàng', dataIndex: 'numberOrder', key: 'numberOrder' },
-            { title: 'Doanh thu (VND)', dataIndex: 'totalRevenue', key: 'totalRevenue' },
+            { 
+              title: 'Doanh thu', 
+              dataIndex: 'totalRevenue', 
+              key: 'totalRevenue',
+              customRender: ({ text }) => text.toLocaleString('vi-VN').replace(/,/g, '.') + ' đ'
+            },
           ]" bordered />
         </Card>
       </Col>

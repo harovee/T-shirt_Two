@@ -32,7 +32,6 @@ const statisticTypeOptions = [
   { label: "Nhân viên", value: "employee" },
 ];
 
-
 const dateRange = ref<RangeValue>(null); // Mặc định không có ngày
 const placeholderDateRangePicker = ref(['Ngày bắt đầu', 'Ngày kết thúc']);
 const timeUnit = ref("day");
@@ -43,8 +42,12 @@ const statisticByTypeData = ref([]);
 const statisticByTypeTableColums = ref([
               { title: 'Nhân viên', dataIndex: 'objectValue' },
               { title: 'Số hóa đơn', dataIndex: 'numberOrder' },
-              { title: 'Doanh thu', dataIndex: 'totalRevenue' }
-            ])
+              { 
+                title: 'Doanh thu', 
+                dataIndex: 'totalRevenue',
+                customRender: ({ text }) => formatCurrency(text)
+              }
+            ]);
 const summary = ref({ totalRevenue: 0, numberOrder: 0, numberProductSold: 0 });
 
 
@@ -56,6 +59,23 @@ const revenueParams = ref<RevenueRequest>({
   startTime: null,
   endTime: null
 });
+
+// Hàm định dạng tiền tệ
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 đ';
+  const numValue = Number(value);
+  if (isNaN(numValue)) return '0 đ';
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0
+  }).format(numValue);
+};
+
+// Function to format total revenue for the Statistic component
+const formatStatisticValue = (value) => {
+  return formatCurrency(value);
+};
 
 const disabledDate = (current) => {
   return current && current.isAfter(dayjs(), 'day');
@@ -147,6 +167,14 @@ const updateChart = () => {
     },
     tooltip: {
       trigger: "axis",
+      formatter: function(params) {
+        // Định dạng tooltip để hiển thị giá trị đã định dạng
+        let tooltip = params[0].name + '<br/>';
+        for (let param of params) {
+          tooltip += param.seriesName + ': ' + formatCurrency(param.value) + '<br/>';
+        }
+        return tooltip;
+      }
     },
     xAxis: {
       type: "category",
@@ -154,6 +182,17 @@ const updateChart = () => {
     },
     yAxis: {
       type: "value",
+      axisLabel: {
+        formatter: function(value) {
+          // Định dạng nhãn trục Y
+          if (value >= 1000000) {
+            return (value / 1000000).toFixed(1) + 'M';
+          } else if (value >= 1000) {
+            return (value / 1000).toFixed(0) + 'K';
+          }
+          return value;
+        }
+      }
     },
     grid: {
       left: "10%",  // Canh trái
@@ -220,22 +259,33 @@ function mapStatisticData(data : Array<RevenueResponse> | undefined){
       let chartValue = [];
 
       data.forEach((e) => {
-        totalRevenue += e.totalRevenue || 0;
-        totalProductSold += e.numberProductSold || 0;
-        totalOrderCount += e.numberOrder || 0;
+        // Đảm bảo các giá trị số là hợp lệ trước khi cộng dồn
+        const revenue = e.totalRevenue ? Number(e.totalRevenue) : 0;
+        const productSold = e.numberProductSold ? Number(e.numberProductSold) : 0; 
+        const orderCount = e.numberOrder ? Number(e.numberOrder) : 0;
+        
+        // Kiểm tra NaN
+        totalRevenue += !isNaN(revenue) ? revenue : 0;
+        totalProductSold += !isNaN(productSold) ? productSold : 0;
+        totalOrderCount += !isNaN(orderCount) ? orderCount : 0;
+        
         chartCategories.push(e.timeDisplay as never);
-        chartValue.push(e.totalRevenue as never);
+        chartValue.push((!isNaN(revenue) ? revenue : 0) as never);
       });
 
-      summary.value.totalRevenue = totalRevenue;
-      summary.value.numberProductSold = totalProductSold;
-      summary.value.numberOrder = totalOrderCount;
+      // Đảm bảo các tổng là số hợp lệ
+      summary.value.totalRevenue = !isNaN(totalRevenue) ? totalRevenue : 0;
+      summary.value.numberProductSold = !isNaN(totalProductSold) ? totalProductSold : 0;
+      summary.value.numberOrder = !isNaN(totalOrderCount) ? totalOrderCount : 0;
 
       chartData.value.categories = chartCategories;
       chartData.value.values = chartValue;
-
+  } else {
+      // Khi không có dữ liệu, thiết lập giá trị mặc định
+      summary.value.totalRevenue = 0;
+      summary.value.numberProductSold = 0;
+      summary.value.numberOrder = 0;
   }
-  
 }
 
 watch(
@@ -324,7 +374,14 @@ watch(
 
               <Col :span="13">
                 <div class="summary-cards">
-                  <Card><Statistic title="Tổng doanh thu" :value="summary.totalRevenue" suffix="đ" /></Card>
+                  <Card>
+                    <div>
+                      <div class="ant-statistic-title">Tổng doanh thu</div>
+                      <div class="ant-statistic-content">
+                        <span class="ant-statistic-content-value">{{ formatCurrency(summary.totalRevenue) }}</span>
+                      </div>
+                    </div>
+                  </Card>
                   <Card><Statistic title="Số đơn hàng" :value="summary.numberOrder" /></Card>
                   <Card><Statistic title="Số sản phẩm bán ra" :value="summary.numberProductSold" /></Card>
                 </div>
@@ -348,7 +405,11 @@ watch(
           <Table :dataSource="revenueData" :columns="[
           { title: 'STT', dataIndex: 'index', customRender: ({ index }) => index + 1},
           { title: 'Thời gian', dataIndex: 'timeDisplay' },
-          { title: 'Doanh thu', dataIndex: 'totalRevenue' },
+          { 
+            title: 'Doanh thu', 
+            dataIndex: 'totalRevenue',
+            customRender: ({ text }) => formatCurrency(text)
+          },
           { title: 'Số đơn hàng', dataIndex: 'numberOrder' },
           { title: 'Số sản phẩm', dataIndex: 'numberProductSold' }
           ]" />
@@ -368,7 +429,11 @@ watch(
           <Table :dataSource="top5Products" :pagination="false" :columns="[
               { title: 'Sản phẩm', dataIndex: 'objectValue' },
               { title: 'Số lượng bán', dataIndex: 'numberProductSold' },
-              { title: 'Doanh thu', dataIndex: 'totalRevenue' }
+              { 
+                title: 'Doanh thu', 
+                dataIndex: 'totalRevenue',
+                customRender: ({ text }) => formatCurrency(text)
+              }
             ]" />
         </Card>
       </Col>

@@ -31,6 +31,9 @@ export interface vnPayRequest  {
   amount: string | null;
   bankCode: string | null;
 }
+export interface momoRequest  {
+  amount: number | null;
+}
 
 export type vnPayLinkResponse = {
   code: string | null;
@@ -73,11 +76,12 @@ export const createInvoiceOnlineWithVnPay = async (data: clientPaymentRequest) =
     return res.data;
 };
 
+
 export const createInvoiceOnlineWithMoMo = async (data: clientPaymentRequest) => {
   const res = await request({
     url: `${API_CLIENT_PAYMENT}/momo-invoice`,
     method: "POST",
-    data: data,
+    data: data, 
   }) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
   
   return res.data;
@@ -133,5 +137,42 @@ export const createInvoiceOnlineWithVietQr = async (data: clientPaymentRequest) 
     method: "POST",
     data: data,
   })) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  return res.data;
+};
+
+export const createUrlVnPay = async (params: vnPayRequest) => {
+  const res = await request({
+    url: `${API_CLIENT_PAYMENT}/vn-pay`,
+    method: "GET",
+    params: params,
+  }) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  
+  return res.data;
+};
+
+export const createUrlVnPayCallBack = async (data: clientPaymentRequest) => {
+  const res = await request({
+    url: `${API_CLIENT_PAYMENT}/vn-pay-callback`,
+    method: "POST",
+    data: data,
+  }) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  return res.data;
+};
+
+export const createUrlMomo = async (data: momoRequest) => {
+  const res = await request({
+    url: `${API_CLIENT_PAYMENT}/mo-mo`,
+    method: "POST",
+    data: data,
+  }) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
+  return res.data;
+};
+
+export const createUrlMomoCallBack = async (data: clientPaymentRequest) => {
+  const res = await request({
+    url: `${API_CLIENT_PAYMENT}/momo-callback`,
+    method: "POST",
+    data: data,
+  }) as AxiosResponse<DefaultResponse<DefaultResponse<null>>>;
   return res.data;
 };

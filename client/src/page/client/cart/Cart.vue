@@ -101,10 +101,19 @@ const tongTien = computed(() => {
   );
 });
 
+const getTotalQuantity = computed(() => {
+  return listProducts.value.reduce(
+    (total, item) => total + item.soLuong,
+    0
+  );
+});
+
 const redirectPayment = () => {
   cartStore.setCheckoutData(listProducts);
   if (tongTien.value < 0) {
     warningNotiSort("Số tiền không được âm!");
+  } else if (getTotalQuantity.value > 1000) {
+    warningNotiSort("Tổng số lượng sản phẩm trong giỏ không được quá 1000!");
   } else if (tongTien.value > 100000000) {
     warningNotiSort("Đơn hàng không được vượt quá 100.000.000đ!");
   } else {

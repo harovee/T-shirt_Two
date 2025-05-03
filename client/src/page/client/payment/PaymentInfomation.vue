@@ -250,7 +250,7 @@ import {
   useGetServiceId,
   useGetVoucherByCode,
 } from "@/infrastructure/services/service/admin/payment.action";
-import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithMomo, useCreateInvoiceOnlineWithVietQR, useCreateInvoiceOnlineWithVnPay, useGetVietQrCode } from "@/infrastructure/services/service/client/clientPayment.action";
+import { useCreateInvoiceOnline, useCreateInvoiceOnlineWithMomo, useCreateInvoiceOnlineWithVietQR, useCreateInvoiceOnlineWithVnPay, useCreateUrlMomo, useCreateUrlVnPay, useGetVietQrCode } from "@/infrastructure/services/service/client/clientPayment.action";
 
 import VoucherPaymentModal from "@/page/client/payment/voucher/VoucherPaymentModal.vue";
 import { useAuthStore } from "@/infrastructure/stores/auth";
@@ -470,6 +470,9 @@ const createInvoiceMutation = useCreateInvoiceOnlineWithVnPay();
 const getVietQrcode = useGetVietQrCode();
 const createInvoiceMutationMomo = useCreateInvoiceOnlineWithMomo();
 
+const createUrlVnPay = useCreateUrlVnPay();
+const createUrlMomo = useCreateUrlMomo();
+
 // Function to generate a unique reference for the payment
 const generatePaymentReference = () => {
   const userId = useAuthStore().user?.id || "guest";
@@ -633,7 +636,34 @@ const handlePayment = () => {
       centered: true,
       async onOk() {
         try {
-          const response = await createInvoiceMutation.mutateAsync(payload);
+          const orderData = {
+            diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
+            ghiChu: props.memo || null,
+            soDienThoai: paymentInfo.value.phoneNumber || null,
+            tenNguoiNhan: paymentInfo.value.name || null,
+            tienGiam: paymentInfo.value.discount || null,
+            tienShip: paymentInfo.value.shippingFee || null,
+            tongTien: paymentInfo.value.total || null,
+            idKhachHang: useAuthStore().user?.id || null,
+            idPhieuGiamGia: paymentInfo.value.voucherId || null,
+            paymentMethod: "vnpay",
+            tinh: props.dataAddress.province,
+            huyen: props.dataAddress.district,
+            xa: props.dataAddress.ward,
+            email: props.dataAddress.email,
+            listSanPhamChiTiets: listProducts.value.map((product) => ({
+              idSanPhamChiTiet: product.id || null,
+              soLuong: product.soLuong || null,
+              gia: product.gia || null,
+            }))
+        };
+
+        localStorage.setItem('pendingVnPayOrder', JSON.stringify(orderData));
+          const pay = {
+              amount: Number(paymentInfo.value.total)+ "" || "",
+              bankCode: "",
+          };
+          const response = await createUrlVnPay.mutateAsync(pay);
           if (response?.data?.paymentUrl) {
             window.open(response?.data?.paymentUrl, "_blank");
           }
@@ -656,9 +686,38 @@ const handlePayment = () => {
       centered: true,
       async onOk() {
         try {
-          const response = await createInvoiceMutationMomo.mutateAsync(payload);
-          if (response?.data?.payUrl) {
-            window.open(response?.data?.payUrl, "_blank");
+
+          const orderData = {
+            diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
+            ghiChu: props.memo || null,
+            soDienThoai: paymentInfo.value.phoneNumber || null,
+            tenNguoiNhan: paymentInfo.value.name || null,
+            tienGiam: paymentInfo.value.discount || null,
+            tienShip: paymentInfo.value.shippingFee || null,
+            tongTien: paymentInfo.value.total || null,
+            idKhachHang: useAuthStore().user?.id || null,
+            idPhieuGiamGia: paymentInfo.value.voucherId || null,
+            paymentMethod: "vnpay",
+            tinh: props.dataAddress.province,
+            huyen: props.dataAddress.district,
+            xa: props.dataAddress.ward,
+            email: props.dataAddress.email,
+            listSanPhamChiTiets: listProducts.value.map((product) => ({
+              idSanPhamChiTiet: product.id || null,
+              soLuong: product.soLuong || null,
+              gia: product.gia || null,
+            }))
+        };
+        
+        localStorage.setItem('pendingVnPayOrder', JSON.stringify(orderData));
+          //const response = await createInvoiceMutationMomo.mutateAsync(payload);
+          const pay ={
+            amount: payload.tongTien
+          }
+          const response  = await createUrlMomo.mutateAsync(pay);
+          //console.log(response);    
+          if (response.payUrl) {
+            window.open(response.payUrl, "_blank");
           }
         } catch (error: any) {
           console.error("Error with MoMo:", error);

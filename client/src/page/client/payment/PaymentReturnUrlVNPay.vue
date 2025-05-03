@@ -47,107 +47,66 @@
 <script lang="ts" setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
 import { message as antMessage } from 'ant-design-vue';
-import {
-  clearCart
-} from "@/page/client/products/business.logic/CartLocalStorageBL";
+import { clearCart } from '@/page/client/products/business.logic/CartLocalStorageBL';
+import { useCreateUrlVnPayCallBack } from '@/infrastructure/services/service/client/clientPayment.action';
 
 const route = useRoute();
 const router = useRouter();
 
 const loading = ref(true);
-const status = ref('');
+const status = ref<'success'|'fail'|''>('');
 const errorMessage = ref('');
-const countdown = ref(5);
+const countdown = ref(100);
 const showCountdown = ref(false);
-let countdownInterval;
+let countdownInterval: number;
 
-onMounted(async () => {
-  loading.value = true;
-  
+// Lấy dữ liệu đơn hàng chờ từ localStorage
+const pendingOrderData = (() => {
   try {
-    const queryParams = route.query;
-    console.log('VNPay return params:', queryParams);
+    const data = localStorage.getItem('pendingVnPayOrder');
+    console.log(data);
     
-    if (!queryParams || !queryParams.vnp_ResponseCode) {
-      throw new Error('Không nhận được thông tin thanh toán từ VNPay');
-    }
-    
-    const response = await axios.get('http://localhost:6868/api/v1/client/payment/vn-pay-callback', {
-      params: queryParams
-    });
-    
-    // console.log('Backend response:', response.data);
-    
-    if (queryParams.vnp_ResponseCode ==="00" && response.data.status === 'OK') {
-      if (response.data.message && response.data.message.includes('thành công')) {
-        status.value = 'success';
-        antMessage.success('Thanh toán thành công!');
-        clearCart();
-        showCountdown.value = true;
-        startCountdown(() => {
-          if (window.opener) {
-            window.opener.location.href = '/my-order';
-            window.close();
-          } else {
-            router.push('/my-order');
-          }
-        });
-      } else {
-        status.value = 'fail';
-        errorMessage.value = response.data.message || 'Thanh toán thất bại';
-        antMessage.error(errorMessage.value);
-        showCountdown.value = true;
-        startCountdown(() => {
-          window.close();
-        });
-      }
-    } else {
-      throw new Error('Backend response format unexpected');
-    }
-  } catch (error) {
-    console.error('Error in payment return processing:', error);
-    status.value = 'fail';
-    errorMessage.value = error.response?.data?.message || 'Vui lòng thanh toán lại hoặc chọn phương thức thanh toán khác';
-    antMessage.error(errorMessage.value);
-    showCountdown.value = true;
-    startCountdown(() => {
-      window.close();
-    });
-  } finally {
-    loading.value = false;
+    return data ? JSON.parse(data) : null;
+  } catch (e) {
+    console.error('Lỗi khi đọc dữ liệu đơn hàng:', e);
+    return null;
   }
-});
+})();
 
-const startCountdown = (callback) => {
-  countdownInterval = setInterval(() => {
+const createInvoiceWithVnPay = useCreateUrlVnPayCallBack();
+
+const handlePaymentSuccess = () => {
+  status.value = 'success';
+  antMessage.success('Thanh toán thành công!');
+  clearCart();
+  try { localStorage.removeItem('pendingVnPayOrder'); } catch {}
+  showCountdown.value = true;
+  startCountdown(() => {
+    if (window.opener) {
+      window.opener.location.href = '/my-order';
+      window.close();
+    } else {
+      router.push({ name: 'client-complete-payment' });
+    }
+  });
+};
+
+const startCountdown = (callback: () => void) => {
+  countdownInterval = window.setInterval(() => {
     countdown.value -= 1;
     if (countdown.value <= 0) {
       clearInterval(countdownInterval);
-      if (status.value === 'fail') {
-        window.close();
-      } else {
-        callback();
-      }
+      callback();
     }
   }, 1000);
 };
 
-onBeforeUnmount(() => {
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-});
-
 const handleManualRedirect = () => {
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-  
+  if (countdownInterval) clearInterval(countdownInterval);
   if (status.value === 'success') {
     if (window.opener) {
-      window.opener.location.href = '/my-order';
+      window.opener.location.href = '/complete-payment';
       window.close();
     } else {
       router.push('/my-order');
@@ -156,4 +115,58 @@ const handleManualRedirect = () => {
     window.close();
   }
 };
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    const q = route.query;
+    if (!q || !q.vnp_ResponseCode) throw new Error('Không nhận được thông tin thanh toán từ VNPay');
+    if (!pendingOrderData) throw new Error('Không tìm thấy thông tin đơn hàng');
+
+    const payload = {
+      diaChiNguoiNhan: pendingOrderData.diaChiNguoiNhan || null,
+      ghiChu: pendingOrderData.ghiChu || null,
+      soDienThoai: pendingOrderData.soDienThoai || null,
+      tenNguoiNhan: pendingOrderData.tenNguoiNhan || null,
+      tienGiam: pendingOrderData.tienGiam || null,
+      tienShip: pendingOrderData.tienShip || null,
+      tongTien: pendingOrderData.tongTien || null,
+      idKhachHang: pendingOrderData.idKhachHang || null,
+      idPhieuGiamGia: pendingOrderData.idPhieuGiamGia || null,
+      paymentMethod: pendingOrderData.paymentMethod,
+      tinh: pendingOrderData.tinh,
+      huyen: pendingOrderData.huyen,
+      xa: pendingOrderData.xa,
+      email: pendingOrderData.email,
+      listSanPhamChiTiets: pendingOrderData.listSanPhamChiTiets,
+      maGiaoDich: String(q.vnp_TransactionNo || ''),
+      bankCode: String(q.vnp_BankCode || ''),
+      amount: null,
+      idNhanVien: null,
+    };
+
+    if (q.vnp_ResponseCode === '00') {
+      const response = await createInvoiceWithVnPay.mutateAsync(payload);
+      console.log('API Response:', response);
+      if (response.status === 'OK') {
+        handlePaymentSuccess();
+      } else {
+        throw new Error(response.message || 'Tạo hóa đơn thất bại trên hệ thống');
+      }
+    } else {
+      throw new Error('Thanh toán VNPay không thành công. Mã lỗi: ' + q.vnp_ResponseCode);
+    }
+  } catch (error: any) {
+    console.error('Error in payment return processing:', error);
+    status.value = 'fail';
+    errorMessage.value = error.message || 'Thanh toán không thành công. Vui lòng thử lại.';
+    antMessage.error(errorMessage.value);
+  } finally {
+    loading.value = false;
+  }
+});
+
+onBeforeUnmount(() => {
+  if (countdownInterval) clearInterval(countdownInterval);
+});
 </script>

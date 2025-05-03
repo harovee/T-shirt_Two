@@ -1,5 +1,6 @@
 <template>
-  <h2 class="text-xl font-semibold inline-flex">Giỏ hàng
+  <h2 class="text-xl font-semibold inline-flex">
+    Giỏ hàng
     <!-- <a-tooltip v-if="isMBConnected" title="Ngắt kết nối" trigger="hover">
             <a-button
               class="bg-purple-300 flex justify-between items-center gap-2  ms-4"
@@ -26,7 +27,7 @@
           <div v-if="column.dataIndex === 'linkAnh'" class="text-center">
             <a-image
               :width="100"
-              :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
+              :alt="record.linkAnh ? record.ten : 'T-shirt Two'"
               :src="
                 record.linkAnh != 'default-product-detail-image-url.jpg'
                   ? record.linkAnh
@@ -46,7 +47,11 @@
                   {{ formatCurrency(record.gia, "VND", "vi-VN") }}</a-tag
                 ></a-space
               >
-              <a-space class="text-red-500" v-if="record.gia !== record.giaGoc">Đã có sự thay đổi giá từ {{ formatCurrency(record.giaGoc, "VND", "vi-VN") }} -> {{ formatCurrency(record.gia, "VND", "vi-VN") }}</a-space>
+              <a-space class="text-red-500" v-if="record.gia !== record.giaGoc"
+                >Đã có sự thay đổi giá từ
+                {{ formatCurrency(record.giaGoc, "VND", "vi-VN") }} ->
+                {{ formatCurrency(record.gia, "VND", "vi-VN") }}</a-space
+              >
             </a-space>
           </div>
           <div v-if="column.dataIndex === 'chiTiet'" class="text-left">
@@ -64,27 +69,23 @@
                   }"
                   class=""
                 ></div>
-                {{ record.maMauSac }}
+                <!-- {{ record.maMauSac }} -->
               </a-space>
             </a-space>
           </div>
           <div v-if="column.dataIndex === 'soLuong'" class="center">
             <!-- <a-space>{{ record.soLuong }}</a-space>
                  -->
-            <a-input
-              type="number"
+            <a-input-number
               v-model:value="record.soLuong"
+              :min="1"
+              :step="1"
               @focus="focusQuantity(record.soLuong)"
-              @blur="handleQuantityChange(record)"
-              min="1"
-            >
-            </a-input>
+              @change="handleQuantityChange(record)"
+            />
           </div>
           <div v-if="column.dataIndex === 'giaBanHienTai'" class="center">
-            <a-typography-text
-              strong
-              class="cursor-pointer"
-            >
+            <a-typography-text strong class="cursor-pointer">
               {{
                 formatCurrency(
                   record.giaHienTai ? record.giaHienTai : record.gia,
@@ -95,10 +96,7 @@
             </a-typography-text>
           </div>
           <div v-if="column.dataIndex === 'thanhTien'" class="center">
-            <a-typography-text
-              strong
-              class="cursor-pointer text-xl"
-            >
+            <a-typography-text strong class="cursor-pointer text-xl">
               {{
                 formatCurrency(
                   record.giaHienTai
@@ -115,14 +113,19 @@
             class="flex items-center justify-center space-x-2"
           >
             <a-tooltip
-                placement="left"
-                :title="'Xóa sản phẩm khỏi giỏ hàng này?'"
-                trigger="hover"
+              placement="left"
+              :title="'Xóa sản phẩm khỏi giỏ hàng này?'"
+              trigger="hover"
+            >
+              <a-button
+                class="bg-purple-100"
+                size="middle"
+                shape="round"
+                @click="handleDelete(record.key)"
               >
-                <a-button class="bg-purple-100" size="middle" shape="round" @click="handleDelete(record.key)">
-                  <v-icon name="fa-trash-alt" />
-                </a-button>
-              </a-tooltip>
+                <v-icon name="fa-trash-alt" />
+              </a-button>
+            </a-tooltip>
           </div>
         </a-image-preview-group>
       </template>
@@ -130,8 +133,15 @@
   </div>
 </template>
   <script lang="ts" setup>
-import type { TableProps, TableColumnType} from "ant-design-vue";
-import { defineProps, computed, defineEmits, ref, watch, createVNode } from "vue";
+import type { TableProps, TableColumnType } from "ant-design-vue";
+import {
+  defineProps,
+  computed,
+  defineEmits,
+  ref,
+  watch,
+  createVNode,
+} from "vue";
 import { keepPreviousData } from "@tanstack/vue-query";
 import {
   defaultProductImageSaleUrl,
@@ -145,7 +155,7 @@ import {
 import {
   useGetOrderDetails,
   useUpdateQuantityOrderDetails,
-  useDeleteCartById
+  useDeleteCartById,
 } from "@/infrastructure/services/service/admin/point-of-sale";
 import {
   warningNotiSort,
@@ -155,14 +165,23 @@ import {
   openNotification,
 } from "@/utils/notification.config";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { currentInvoice, InvoiceData, invoices, Item, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
+import {
+  currentInvoice,
+  InvoiceData,
+  invoices,
+  Item,
+  sendCartInfo,
+} from "@/infrastructure/mobile.connect/InvoiceConnect2";
 import { useCheckQuantityInStock } from "@/infrastructure/services/service/admin/productdetail.action";
 import { checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
+import { number } from "echarts/core";
 
 const props = defineProps<{
   idOrder: string;
   maHoaDon: string;
 }>();
+
+const emit = defineEmits(["refetchLength"]);
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -219,13 +238,14 @@ const columns: TableColumnType<DataType>[] = [
 
 // const tableKey = ref(0); // Define tableKey as a ref
 
-const { data, isLoading, refetch: refetchCart } = useGetOrderDetails(
-  props.idOrder?.valueOf(),
-  {
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
-  }
-);
+const {
+  data,
+  isLoading,
+  refetch: refetchCart,
+} = useGetOrderDetails(props.idOrder?.valueOf(), {
+  refetchOnWindowFocus: false,
+  placeholderData: keepPreviousData,
+});
 
 const dataSource: DataType[] | any = computed(() => {
   return (
@@ -239,11 +259,7 @@ const dataSource: DataType[] | any = computed(() => {
       giaHienTai: e.giaHienTai || 0,
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
-      gioiTinh: e.gioiTinh
-        ? "Nam"
-        : e.gioiTinh == false
-        ? "Nữ"
-        : "Không xác định",
+      gioiTinh: e.gioiTinh,
       kichCo: e.kichCo || "",
       phongCach: e.phongCach || "",
       maMauSac: e.maMauSac || "",
@@ -253,11 +269,14 @@ const dataSource: DataType[] | any = computed(() => {
   );
 });
 
-watch (() => dataSource.value, (newData) => {
-  if (newData) {
-    console.log(newData);
+watch(
+  () => dataSource.value,
+  (newData) => {
+    if (newData) {
+      console.log(newData);
+    }
   }
-})
+);
 
 const { mutate: updateQuantityOrderDetails } = useUpdateQuantityOrderDetails();
 const { mutate: deleteOrderDetails } = useDeleteCartById();
@@ -267,7 +286,19 @@ const tableKey = ref(0);
 
 const focusQuantity = (quantity: number) => {
   preQuantity.value = quantity;
-}
+};
+
+const getTotalQuantity = () => {
+  return dataSource.value.reduce((total, item) => {
+    return total + (Number(item.soLuong) || 0);
+  }, 0);
+};
+
+const getTotalPrice = () => {
+  return dataSource.value.reduce((total, item) => {
+    return total + (item.giaHienTai * item.soLuong || 0);
+  }, 0);
+};
 
 const params = ref<checkQuantityRequest>({
   id: null,
@@ -283,7 +314,7 @@ const { data: checkQuantityData, refetch: checkQuantityRefetch } =
 
 const handleQuantityChange = async (record: any) => {
   params.value.id = record.key;
-  params.value.quantity = record.soLuong;
+  params.value.quantity = Math.floor(record.soLuong);
 
   if (record.soLuong > preQuantity.value && record.giaGoc !== record.gia) {
     warningNotiSort("Sản phẩm này đã thay đổi giá, không thể thêm số lượng!");
@@ -291,9 +322,21 @@ const handleQuantityChange = async (record: any) => {
     return;
   }
 
+  if (getTotalQuantity() > 1000) {
+    warningNotiSort("Số lượng sản phẩm trong giỏ không được lớn hơn 1000");
+    reloadData();
+    return;
+  }
+
+  if (getTotalPrice() > 100000000) {
+    warningNotiSort("Giá trị đơn hàng không được lớn hơn 100.000.000đ");
+    reloadData();
+    return;
+  }
+
   const payload = {
     idHoaDonChiTiet: record.key,
-    soLuongBanSau: record.soLuong,
+    soLuongBanSau: params.value.quantity,
     soLuongBanTruoc: null,
   };
 
@@ -301,13 +344,13 @@ const handleQuantityChange = async (record: any) => {
     // Chờ check số lượng xong trước khi tiếp tục
     await checkQuantityRefetch();
     const checkValue = checkQuantityData?.value?.data;
-    
+
     if (!checkValue) {
       warningNotiSort("Số lượng trong kho không đủ!");
       reloadData();
     } else {
       if (payload.soLuongBanSau <= 0) {
-        warningNotiSort("Số lượng không được âm!");
+        warningNotiSort("Số lượng không hợp lệ!");
         reloadData();
         return;
       }
@@ -339,6 +382,7 @@ const handleDelete = (idHdct: string) => {
       try {
         await deleteOrderDetails(idHdct);
         successNotiSort("Xóa thành công");
+        emit("refetchLength");
       } catch (error) {
         errorNotiSort("Xóa thất bại");
       }
@@ -350,36 +394,41 @@ const handleDelete = (idHdct: string) => {
   });
 };
 
-
 watch(
   () => data.value,
   (newData) => {
     console.log("Data changed:", newData?.data);
     if (props.maHoaDon === currentInvoice.value.id) {
-        const products : Item[] = newData?.data?.map((e: any) => ({
-            id: e.maSanPhamChiTiet,
-            name: e.ten,
-            quantity: e.soLuong,
-            price: e.giaHienTai ? e.giaHienTai : e.gia,
-            image: e.linkAnh,
-            color: e.tenMauSac,
-            size: e.kichCo,
-            sku: e.id,
-            total: e.giaHienTai ? e.giaHienTai * e.soLuong : e.gia * e.soLuong,
+      const products: Item[] =
+        newData?.data?.map((e: any) => ({
+          id: e.maSanPhamChiTiet,
+          name: e.ten,
+          quantity: e.soLuong,
+          price: e.giaHienTai ? e.giaHienTai : e.gia,
+          image: e.linkAnh,
+          color: e.tenMauSac,
+          size: e.kichCo,
+          sku: e.id,
+          total: e.giaHienTai ? e.giaHienTai * e.soLuong : e.gia * e.soLuong,
         })) || [];
 
-        invoices.value.forEach((item) => {
-            if (item.id === props.maHoaDon) {
-                item.items = products;
-                item.subtotal = item.items.reduce((total: number, item: any) => total + (item.giaHienTai ? item.giaHienTai : item.gia) * item.soLuong, 0);
-                currentInvoice.value.items = products;
-                currentInvoice.value.subtotal = item.subtotal
-                sendCartInfo(currentInvoice.value);
-            }
-        });
+      invoices.value.forEach((item) => {
+        if (item.id === props.maHoaDon) {
+          item.items = products;
+          item.subtotal = item.items.reduce(
+            (total: number, item: any) =>
+              total +
+              (item.giaHienTai ? item.giaHienTai : item.gia) * item.soLuong,
+            0
+          );
+          currentInvoice.value.items = products;
+          currentInvoice.value.subtotal = item.subtotal;
+          sendCartInfo(currentInvoice.value);
+        }
+      });
     }
-  }, {deep: true}
+  },
+  { deep: true }
 );
-
 </script>
   

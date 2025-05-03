@@ -33,6 +33,8 @@ public class ClientProductResponse {
 
     private String moTa;
 
+    private String gioiTinh;
+
     private  List<ImageResponse> anh;
 
     private String maSanPham;

@@ -14,6 +14,8 @@ public class AdminPaymentMethodDetailRequest {
 
     private String idPhuongThucThanhToan;
 
+    private String idNhanVien;
+
     private BigDecimal tienKhachDua;
 
     private BigDecimal soTienDu;

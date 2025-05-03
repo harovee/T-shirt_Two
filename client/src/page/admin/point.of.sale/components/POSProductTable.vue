@@ -54,7 +54,7 @@
       <a-space direction="vertical" class="m-1 ms-0">
         <div>Giới tính</div>
         <a-select
-          style="width: 100px"
+          style="width: 110px"
           v-model:value="params.gioiTinh"
           size="small"
         >
@@ -161,7 +161,7 @@
           <div v-if="column.dataIndex === 'linkAnh'" class="text-center">
             <a-image
               :width="100"
-              :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
+              :alt="record.linkAnh ? record.ten : 'T-shirt Two'"
               :src="
                 record.linkAnh != 'default-product-detail-image-url.jpg'
                   ? record.linkAnh
