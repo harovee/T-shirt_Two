@@ -263,6 +263,10 @@ import {
   currentInvoice,
   sendCartInfo,
   sendPaymentConfirm,
+  mbConnectStatus,
+  currentPayloadPaymentInfo,
+  currentInvoiceUUID,
+  InvoiceData
 } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
@@ -455,7 +459,7 @@ watch(
           shippingParams.value.toWardCode = getCustomerAddress.value.ward;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
-              if (totalAmount.value < 2000000) {
+              if (totalAmount.value <= 2000000) {
                 paymentInfo.value.shippingFee = shipping?.value?.data.total;
               } else {
                 paymentInfo.value.shippingFee = 0;
@@ -501,7 +505,7 @@ watch(
       paymentInfo.value.voucherId = newData[0].id;
       paymentInfo.value.discount = newData[0].loaiGiam ? parseFloat(newData[0].giaTri) : (totalAmount.value * parseFloat(newData[0].giaTri) / 100);
       paymentInfo.value.totalProductPrice =
-        Math.floor(totalAmount.value - paymentInfo.value.discount);
+        totalAmount.value - paymentInfo.value.discount;
       voucher.value =
         newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
         null;
@@ -530,7 +534,7 @@ watch(
       paymentInfo.value.voucherId = null;
       paymentInfo.value.discount = 0;
       paymentInfo.value.totalProductPrice =
-        Math.floor(totalAmount.value - paymentInfo.value.discount);
+        totalAmount.value - paymentInfo.value.discount;
     }
   }
 );
@@ -557,7 +561,7 @@ const discounted = computed(() => {
       return total + (e.gia * e.soLuong || 0);
     }, 0) || 0;
 
-  paymentInfo.value.totalProductPrice = Math.floor(total);
+  paymentInfo.value.totalProductPrice = total;
   return total;
 });
 
@@ -588,6 +592,18 @@ const handleClosePaymentMethod = () => {
 const updateTotal = () => {
   paymentInfo.value.total =
     (paymentInfo.value.shippingFee || 0) - (paymentInfo.value.discount || 0);
+
+    console.log(paymentInfo.value.shippingFee);
+    invoices.value.forEach((item) => {
+      if (item.id === currentInvoice.value.id) {
+        if (item.shipping) {
+          item.shipping.cost = paymentInfo.value.shippingFee || 0;
+        }
+        currentInvoice.value = item;
+        sendCartInfo(item);
+      }
+    });
+    sendCartInfo
 };
 
 const handleCheckPaymented = (totalAmountAfter: number) => {
@@ -606,11 +622,11 @@ const handleSelectVoucher = (voucher) => {
   if (!voucher.loaiGiam) {
     paymentInfo.value.discount = totalAmount.value * (voucher.giaTri  / 100);
     paymentInfo.value.totalProductPrice =
-      Math.floor(totalAmount.value - paymentInfo.value.discount);
+      totalAmount.value - paymentInfo.value.discount;
   } else {
     paymentInfo.value.discount = voucher.giaTri;
     paymentInfo.value.totalProductPrice =
-      Math.floor(totalAmount.value - paymentInfo.value.discount);
+      totalAmount.value - paymentInfo.value.discount;
   }
 };
 
@@ -633,7 +649,7 @@ const handleNotVoucher = () => {
   paymentInfo.value.voucherCode = "";
   paymentInfo.value.voucherId = null;
   paymentInfo.value.discount = 0;
-  paymentInfo.value.totalProductPrice = Math.floor(totalAmount.value);
+  paymentInfo.value.totalProductPrice = totalAmount.value;
 
   // Thảo
   invoices.value.forEach((item) => {
@@ -656,6 +672,8 @@ const changeShippingOption = (option: string) => {
             district: getCustomerAddress.value ? getCustomerAddress.value.district ?? '' : '',
             ward: getCustomerAddress.value ? getCustomerAddress.value.ward || '' : '',
             detail: getCustomerAddress.value ? getCustomerAddress.value.line : '',
+            phone: getCustomerAddress.value ? getCustomerAddress.value.phoneNumber || '' : '',
+            note: ''
           };
       } else {
           item.customerInfo.address = null;
@@ -673,13 +691,6 @@ const openLocalPdf = (maHoaDon) => {
 };
 
 const { mutate: updateBillWait } = useUpdateBillWait();
-
-// check số lượng trong giỏ
-const getTotalQuantity = () => {
-    return dataSourcePro.value.reduce((total, item) => {
-        return total + (item.soLuong || 0);
-    }, 0);
-};
 
 const handleUpdateBill = (x: number) => {
   const pdfParams = {
@@ -764,34 +775,21 @@ const handleUpdateBill = (x: number) => {
     return;
   }
 
+  currentPayloadPaymentInfo.value = payload;
+  currentInvoiceUUID.value = props.dataSourceInfor.id;
+
   if (x === 1) {
     Modal.confirm({
       content: "Bạn chắc chắn muốn hoàn thành thanh toán?",
       icon: createVNode(ExclamationCircleOutlined),
       centered: true,
-      async onOk() {
-        try {
-          await updateBillWait({
-            idBill: props.dataSourceInfor.id,
-            params: payload,
-          });
-          await createInvoicePdf(pdfParams)
-            .then(() => {
-              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
-              window.open(url, "_blank");
-            })
-            .catch((error) => {
-              console.error("Tạo hóa đơn PDF thất bại", error);
-            });
-          successNotiSort("Thanh toán thành công!");
-          router.push(
-            ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-          );
-        } catch (error: any) {
-          console.error("🚀 ~ handleCreate ~ error:", error);
-          if (error?.response) {
-            errorNotiSort(error?.response?.data?.message);
-          }
+      onOk() {
+        if (mbConnectStatus.value) {
+          console.log("Thao tác thanh toán trên app MB Connect");
+          sendPaymentConfirm(currentInvoice.value.id);
+          // hoanThanhDonHang(payload);
+        } else {
+          hoanThanhDonHang(payload);
         }
       },
       cancelText: "Huỷ",
@@ -800,38 +798,26 @@ const handleUpdateBill = (x: number) => {
       },
     });
   } else if (x === 2) {
-    sendPaymentConfirm(
-      props.dataSourceInfor.ma,
-      () => {
-        async () => {
-          try {
-            await updateBillWait({
-              idBill: props.dataSourceInfor.id,
-              params: payload,
-            });
-            await createInvoicePdf(pdfParams)
-            .then(() => {
-              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
-              window.open(url, "_blank");
-            })
-            .catch((error) => {
-              console.error("Tạo hóa đơn PDF thất bại", error);
-            });
-            successNotiSort("Thanh toán thành công!");
-            router.push(
-              ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-            );
-          } catch (error: any) {
-            if (error?.response) {
-              errorNotiSort(error?.response?.data?.message);
-            }
-          }
-        };
-        return true;
-      },
-      () => {}
-    );
+
   }
+};
+
+const hoanThanhDonHang = async (payload: any) => {
+      try {
+        await updateBillWait({
+          idBill: props.dataSourceInfor.id,
+          params: payload,
+        });
+        successNotiSort("Thanh toán thành công!");
+        router.push(
+          ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+        );
+      } catch (error: any) {
+        console.error("🚀 ~ handleCreate ~ error:", error);
+        if (error?.response) {
+          errorNotiSort(error?.response?.data?.message);
+        }
+      }
 };
 
 interface CustomerAddress {
@@ -875,12 +861,12 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
       console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
     }
 
-    invoices.value.forEach((invoice) => {
+    invoices.value.forEach((invoice: InvoiceData) => {
     if (invoice.id === currentInvoice.value.id) {
       invoice.customerInfo.address = {
-        province: provinceInfo.value,
-        district: districtInfo.value,
-        ward: wardInfo.value,
+        province: provinceInfo.value ?? '',
+        district: districtInfo.value ?? '',
+        ward: wardInfo.value ?? '',
         detail: modelRef.line,
         receiver: modelRef.name,
         phone: modelRef.phoneNumber,
@@ -904,7 +890,7 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 
       if (shippingParams.value.toWardCode) {
         refetchShipping().then(() => {
-          if (totalAmount.value < 2000000) {
+          if (totalAmount.value <= 2000000) {
             paymentInfo.value.shippingFee = shipping?.value?.data.total;
           } else {
             paymentInfo.value.shippingFee = 0;
@@ -921,7 +907,7 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 watch(totalAmount, (newTotal) => {
   if (newTotal !== 0) {
     // console.log(newTotal);
-    paymentInfo.value.totalProductPrice = Math.floor(newTotal);
+    paymentInfo.value.totalProductPrice = newTotal;
   }
 });
 
@@ -934,10 +920,10 @@ watch(
       paymentInfo.value.shippingOption === "true"
     ) {
       paymentInfo.value.totalProductPrice =
-        Math.floor(totalAmount.value + newTotal - paymentInfo.value.discount);
+        totalAmount.value + newTotal - paymentInfo.value.discount;
     } else {
       paymentInfo.value.totalProductPrice =
-        Math.floor(totalAmount.value + 0 - paymentInfo.value.discount);
+        totalAmount.value + 0 - paymentInfo.value.discount;
     }
   }
 );
@@ -953,15 +939,15 @@ watch(
         paymentInfo.value.shippingOption === "true"
       ) {
         paymentInfo.value.totalProductPrice =
-          Math.floor(totalAmount.value +
+          totalAmount.value +
           paymentInfo.value.shippingFee -
-          paymentInfo.value.discount);
+          paymentInfo.value.discount;
       } else {
         paymentInfo.value.shippingFee = 0;
         paymentInfo.value.totalProductPrice =
-          Math.floor(totalAmount.value +
+          totalAmount.value +
           paymentInfo.value.shippingFee -
-          paymentInfo.value.discount);
+          paymentInfo.value.discount;
       }
     }
   }
