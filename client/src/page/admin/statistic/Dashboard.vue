@@ -167,7 +167,7 @@ onUnmounted(() => {
               key: 'objectValue',
               customRender: ({ text }) => h(Tooltip, { title: text }, () => h('span', { class: 'ellipsis' }, text)),
             },
-            { title: 'Số lượng bán', dataIndex: 'numberProductSold', key: 'numberProductSold' },
+            { title: 'SL bán', dataIndex: 'numberProductSold', key: 'numberProductSold' },
             { title: 'Đơn hàng', dataIndex: 'numberOrder', key: 'numberOrder' },
             { 
               title: 'Doanh thu', 

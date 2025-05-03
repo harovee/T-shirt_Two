@@ -1,6 +1,8 @@
 
 import { Client } from '@stomp/stompjs';
+import { Modal } from "ant-design-vue";  // Import Modal từ ant-design-vue
 import { createVNode, ref } from "vue";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import {
   warningNotiSort,
   successNotiSort,
@@ -9,9 +11,6 @@ import {
   openNotification,
 } from "@/utils/notification.config";
 import { DOMAIN_BACKEND } from '../constants/url';
-import { ROUTES_CONSTANTS } from '../constants/path';
-import router from '../routes/router';
-import { updateBillWait } from '../services/api/admin/bill.api';
 
 interface Address {
   province: string
@@ -71,9 +70,6 @@ export interface InvoiceData {
 }
 
 export const invoices = ref<InvoiceData[]>([])
-export const mbConnectStatus = ref<boolean>(false)
-export const currentInvoiceUUID = ref<string>("")
-export const currentPayloadPaymentInfo = ref<any>(null)
 
 export const currentInvoice = ref({
   id: "#####",
@@ -142,7 +138,6 @@ const stompClient = new Client({
   appendMissingNULLonIncoming: true,
   onConnect: () => {
     console.warn('🟢 Kết nối thành công!');
-    subscribeInvoice2()
   },
   debug: (msg) => console.log('Debug: ', msg),
 });
@@ -200,13 +195,8 @@ const getAmount = (items: Item[]) => {
 // Gửi cập nhật màn app
 export const sendCartInfo = (cartInfo: InvoiceData) => {
   cartInfo.subtotal = getAmount(cartInfo.items);
-  // console.log("Gửi thông tin giỏ hàng đến app:", cartInfo);
+  console.log("Gửi thông tin giỏ hàng đến app:", cartInfo);
   stompClient.publish({ destination:"/app/cart-info", body: JSON.stringify(cartInfo) });
-};
-
-// Gửi xác nhận thanh toán
-export const sendPaymentConfirm = (invoiceId: string) => {
-  stompClient.publish({ destination:"/app/payment-confirm", body: JSON.stringify({invoiceId: invoiceId, status: null}) });
 };
 
 // Hàm lấy đối tượng địa chỉ START
@@ -241,69 +231,6 @@ export const convertAddressForApp = (response: any) => {
     phone,
     note
   };
-}
-
-export const subscribeInvoice2 = () => {
-  // Lắng nghe thông báo từ server
-  let subcr = stompClient.subscribe(`/topic/pos`, (message) => {
-    const parsedBody = JSON.parse(message.body);
-    handleWebSocketMessage(parsedBody);
- });
-
-}
-
-const handleWebSocketMessage = (message: any) => {
-  try {
-    const parsedMessage = typeof message === "string" ? JSON.parse(message) : message
-    console.log("Received message from POS:", parsedMessage)
-
-    switch (parsedMessage.type) {
-      case "connection_status":
-        if (parsedMessage.data && parsedMessage.data.status) {
-            if (parsedMessage.data.status === "connected") {
-              mbConnectStatus.value = true;
-              // successNotiSort("Kết nối thành công với MB!");
-            }else {
-              mbConnectStatus.value = false;
-              // errorNotiSort("Không có kết nối từ APP POS!");
-            }
-          }
-        break
-        case "payment_confirmed":
-          if (parsedMessage.data && parsedMessage.data.status) {
-              if (parsedMessage.data.status === "YES_CONFIRM") {
-                console.log("Xác nhận thanh toán thành công từ MB!");
-                // Gọi hoàn thành thanh toán ở đây
-                completePayment(currentPayloadPaymentInfo.value, currentInvoiceUUID.value);
-                successNotiSort("Xác nhận thanh toán thành công từ MB!");
-              }else {
-                console.log("Xác nhận thanh toán thành công từ MB!");
-                errorNotiSort("Khách từ chối thanh toán!");
-              }
-            }
-          break
-    }
-  }catch (error) {
-    console.error("Error parsing message:", error)
-  }
-}
-
-export const completePayment = async (payload: any, invoiceUUID: string) => {
-  try {
-    await updateBillWait(
-      invoiceUUID,
-      payload
-    );
-    successNotiSort("Thanh toán thành công!");
-    router.push(
-      ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-    );
-  } catch (error: any) {
-    console.error("🚀 ~ handleCreate ~ error:", error);
-    if (error?.response) {
-      errorNotiSort(error?.response?.data?.message);
-    }
-  }
 }
 
 ///////////////
@@ -346,13 +273,13 @@ export const sendCartUpdate = (invoiceId: string) => {
 };
 
 // Gửi xác nhận thanh toán
-// export const sendPaymentConfirm = (invoiceId: string, onPayment: () => boolean, onMbDisConnect: () => void) => {
-//   const subscription = subscriptions[invoiceId];
-//       if (subscription) {
-//         stompClient.publish({ destination:"/app/confirm-payment", body: invoiceId });
-//         subscribeConfirmPayment(invoiceId, onPayment, onMbDisConnect);
-//       }
-// };
+export const sendPaymentConfirm = (invoiceId: string, onPayment: () => boolean, onMbDisConnect: () => void) => {
+  const subscription = subscriptions[invoiceId];
+      if (subscription) {
+        stompClient.publish({ destination:"/app/confirm-payment", body: invoiceId });
+        subscribeConfirmPayment(invoiceId, onPayment, onMbDisConnect);
+      }
+};
 
 
 // Gửi thông tin giao dịch
