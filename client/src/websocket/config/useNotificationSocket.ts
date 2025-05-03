@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import SockJS from 'sockjs-client';
 import Stomp, { Client, Message, Subscription } from 'stompjs';
+import { infoNotiSort, successNotiSort } from '@/utils/notification.config';
 
 interface OrderNotification {
   orderId: number;
@@ -19,6 +20,7 @@ export function useNotificationSocket() {
       subscription = stompClient!.subscribe("/topic/notification", (message: Message) => {
       const data = JSON.parse(message.body) as OrderNotification;
         console.log("🔔 Received:", data);
+        infoNotiSort(`Có đơn hàng mới cần xác nhận`);
         messages.value.push(data);
       });
     });

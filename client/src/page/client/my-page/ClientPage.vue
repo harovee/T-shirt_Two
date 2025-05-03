@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
         <v-icon name="pr-users" size="x-large" width="48" height="48" />
-        <h3 class="text-2xl m-0">Thông tin khách hàng</h3>
+        <h3 class="text-2xl m-0">Thông tin cá nhân</h3>
       </div>
       <!-- <div
         class="flex items-center gap-2 scale-75 transition-all cursor-pointer hover:scale-100 hover:text-red-500"
