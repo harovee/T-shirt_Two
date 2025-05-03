@@ -265,7 +265,8 @@ import {
   sendPaymentConfirm,
   mbConnectStatus,
   currentPayloadPaymentInfo,
-  currentInvoiceUUID
+  currentInvoiceUUID,
+  InvoiceData
 } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
@@ -591,6 +592,18 @@ const handleClosePaymentMethod = () => {
 const updateTotal = () => {
   paymentInfo.value.total =
     (paymentInfo.value.shippingFee || 0) - (paymentInfo.value.discount || 0);
+
+    console.log(paymentInfo.value.shippingFee);
+    invoices.value.forEach((item) => {
+      if (item.id === currentInvoice.value.id) {
+        if (item.shipping) {
+          item.shipping.cost = paymentInfo.value.shippingFee || 0;
+        }
+        currentInvoice.value = item;
+        sendCartInfo(item);
+      }
+    });
+    sendCartInfo
 };
 
 const handleCheckPaymented = (totalAmountAfter: number) => {
@@ -659,6 +672,8 @@ const changeShippingOption = (option: string) => {
             district: getCustomerAddress.value ? getCustomerAddress.value.district ?? '' : '',
             ward: getCustomerAddress.value ? getCustomerAddress.value.ward || '' : '',
             detail: getCustomerAddress.value ? getCustomerAddress.value.line : '',
+            phone: getCustomerAddress.value ? getCustomerAddress.value.phoneNumber || '' : '',
+            note: ''
           };
       } else {
           item.customerInfo.address = null;
@@ -849,9 +864,9 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
     invoices.value.forEach((invoice: InvoiceData) => {
     if (invoice.id === currentInvoice.value.id) {
       invoice.customerInfo.address = {
-        province: provinceInfo.value,
-        district: districtInfo.value,
-        ward: wardInfo.value,
+        province: provinceInfo.value ?? '',
+        district: districtInfo.value ?? '',
+        ward: wardInfo.value ?? '',
         detail: modelRef.line,
         receiver: modelRef.name,
         phone: modelRef.phoneNumber,
