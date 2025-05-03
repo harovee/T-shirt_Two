@@ -82,12 +82,12 @@ const handlePaymentSuccess = () => {
   showCountdown.value = true;
   startCountdown(() => {
     if (window.opener) {
-      window.opener.location.href = '/my-order';
-      window.close();
+          window.opener.location.href = '/complete-payment';
+          window.close();
     } else {
-      router.push({ name: 'client-complete-payment' });
-    }
-  });
+        router.push({ name: "client-complete-payment" });
+      }
+      });
 };
 
 const startCountdown = (callback: () => void) => {
@@ -104,7 +104,7 @@ const handleManualRedirect = () => {
   if (countdownInterval) clearInterval(countdownInterval);
   if (status.value === 'success') {
     if (window.opener) {
-      window.opener.location.href = '/complete-payment';
+      window.opener.location.href = '/my-order';
       window.close();
     } else {
       router.push('/my-order');
@@ -122,7 +122,7 @@ onMounted(async () => {
     if (!pendingOrderData) throw new Error('Không tìm thấy thông tin đơn hàng');
 
     const payload = {
-      diaChiNguoiNhan: pendingOrderData.fullAddress || null,
+      diaChiNguoiNhan: pendingOrderData.diaChiNguoiNhan || null,
       ghiChu: pendingOrderData.ghiChu || null,
       soDienThoai: pendingOrderData.soDienThoai || null,
       tenNguoiNhan: pendingOrderData.tenNguoiNhan || null,

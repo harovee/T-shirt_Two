@@ -431,6 +431,7 @@ onMounted(() => {
   }
 });
 
+// Hàm lấy tất cả các biến thể của sản phẩm đó
 const {
   data: productResponse,
   isLoading,
@@ -505,6 +506,7 @@ watch(
   { immediate: true }
 );
 
+// Hàm lấy sản phẩm detail dựa vào kích thước màu sắc
 const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   productId,
   paramsDetail,
@@ -546,7 +548,7 @@ const effectivePhanTramGiam = computed(() => {
 });
 
 watch(dataDetail, (newDetail) => {
-  console.log(dataDetail.value);
+  //console.log(dataDetail.value);
   
   if (newDetail && newDetail.data && newDetail?.data?.data) {
     const detailData = newDetail?.data?.data;
@@ -554,23 +556,15 @@ watch(dataDetail, (newDetail) => {
       displayedPrice.value = detailData.gia;
     }
     displayedDiscount.value = detailData.discount;
-
-    // Chỉ cập nhật ảnh được chọn khi có ảnh mới từ variant
     if (
       detailData.anh &&
       Array.isArray(detailData.anh) &&
       detailData.anh.length > 0
     ) {
-      // Lấy ảnh đầu tiên từ variant làm ảnh hiện tại
       const variantImage = detailData.anh[0].url;
-
-      // Kiểm tra xem ảnh này đã có trong danh sách chưa
       if (!allProductImages.value.includes(variantImage)) {
-        // Nếu chưa có, thêm vào đầu danh sách
         allProductImages.value.unshift(variantImage);
       }
-
-      // Đặt ảnh variant làm ảnh được chọn
       selectedImage.value = variantImage;
     }
   }

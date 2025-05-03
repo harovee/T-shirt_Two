@@ -90,7 +90,7 @@ onMounted(async () => {
     }
 
     const payload = {
-      diaChiNguoiNhan: pending.fullAddress || null,
+      diaChiNguoiNhan: pending.diaChiNguoiNhan || null,
       ghiChu: pending.ghiChu || null,
       soDienThoai: pending.soDienThoai || null,
       tenNguoiNhan: pending.tenNguoiNhan || null,

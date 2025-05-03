@@ -35,20 +35,6 @@
           </a-input-number>
         </a-form-item>
 
-        <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" v-if="!formState.loaiGiam" required>
-          <a-input-number 
-            class="w-full"
-            v-model:value="formState.giamToiDa" 
-            :disabled="formState.loaiGiam || isExpired" 
-            min="0"
-            placeholder="Nhập giá trị giảm tối đa"
-            :formatter="formatter"
-          >
-          </a-input-number>
-        </a-form-item>
-
-        
-
         <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
           <a-input-number 
             class="w-full" 
@@ -58,6 +44,18 @@
             placeholder="Nhập đơn tối thiểu" 
             :disabled="isExpired" 
             :formatter="formatter">
+          </a-input-number>
+        </a-form-item>
+
+        <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa" v-if="!formState.loaiGiam && formState.giaTriGiam != '100'" required>
+          <a-input-number 
+            class="w-full"
+            v-model:value="formState.giamToiDa" 
+            :disabled="formState.loaiGiam || isExpired || formState.giaTriGiam == '100'" 
+            min="0"
+            placeholder="Nhập giá trị giảm tối đa"
+            :formatter="formatter"
+          >
           </a-input-number>
         </a-form-item>
 
@@ -213,7 +211,6 @@ const rules: Record<string, Rule[]> = {
       { required: true, message: 'Vui lòng nhập giá trị giảm', trigger: 'change' },
       {
         validator: (rule, value) => {
-            // Check if value contains only digits, decimal point, or is empty
             if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
                 return Promise.reject('Giá trị giảm phải là số');
             }
@@ -242,14 +239,8 @@ const rules: Record<string, Rule[]> = {
     },
     {
       validator: (rule, value) => {
-        // Nếu loại giảm là tiền (loaiGiam = true), bỏ qua validate
-        if (formState.loaiGiam === true) {
+        if (formState.loaiGiam === true || formState.giaTriGiam == '100') {
           return Promise.resolve();
-        }
-        
-        // Kiểm tra nếu giá trị không phải số hợp lệ
-        if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
-          return Promise.reject('Giá trị giảm tối đa phải là số');
         }
         
         const maxDiscountValue = parseFloat(value);
@@ -260,7 +251,34 @@ const rules: Record<string, Rule[]> = {
         return Promise.resolve();
       },
       trigger: 'change'
-    }
+    },  
+    {
+      validator: (rule, value) => {
+        if (formState.loaiGiam === true || formState.giaTriGiam == '100') {
+          return Promise.resolve();
+        }
+        
+        if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
+          return Promise.reject('Giá trị giảm tối đa phải là số');
+        }
+        
+        const maxDiscountValue = parseFloat(value);
+        
+        if (!formState.loaiGiam) {
+          const dieuKienGiam = parseFloat(formState.dieuKienGiam);
+          const giaTriGiam = parseFloat(formState.giaTriGiam) / 100; 
+          
+          const minAllowedDiscount = dieuKienGiam * giaTriGiam;
+          
+          if (maxDiscountValue <= minAllowedDiscount) {
+            return Promise.reject(`Giá trị giảm tối đa không được nhỏ hơn ${formatter(minAllowedDiscount)} (${formState.giaTriGiam}% của đơn tối thiểu)`);
+          }
+        }
+        
+        return Promise.resolve();
+      },
+      trigger: 'change'
+    },
   ],
   dieuKienGiam: [
   {
@@ -269,7 +287,6 @@ const rules: Record<string, Rule[]> = {
     trigger: 'change'},
     {
       validator: (rule, value) => {
-        // Chuyển đổi value thành số để so sánh
         const minOrderValue = parseFloat(value);
         const discountValue = parseFloat(formState.giaTriGiam);
 
@@ -278,12 +295,10 @@ const rules: Record<string, Rule[]> = {
           return Promise.reject('Đơn tối thiểu phải là số');
         }
 
-        // Kiểm tra giá trị âm
         if (minOrderValue <= 0) {
           return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
         }
 
-        // Nếu là giảm theo tiền (loaiGiam = true)
         if (formState.loaiGiam === true) {
           if (minOrderValue <= discountValue) {
             return Promise.reject('Đơn tối thiểu phải lớn hơn giá trị giảm');
@@ -429,7 +444,7 @@ const onSubmit = (x: number) => {
           voucherRequest.value.ten = formState.ten;
           voucherRequest.value.loaiGiam = formState.loaiGiam;
           voucherRequest.value.giaTriGiam = formState.giaTriGiam;
-          voucherRequest.value.giamToiDa = formState.giamToiDa;
+          voucherRequest.value.giamToiDa = (!formState.loaiGiam && formState.giaTriGiam == '100') ? "" : formState.giamToiDa;
           voucherRequest.value.dieuKienGiam = formState.dieuKienGiam;
           voucherRequest.value.kieu = formState.kieu;
           voucherRequest.value.soLuong = formState.kieu ? idKhachHangs.value.length : formState.soLuong;
@@ -463,20 +478,21 @@ watch(
   (newValue) => {
     if (newValue) {
       // Nếu đổi sang "Cá nhân"
-      idKhachHangs.value = []; // Reset danh sách khách hàng được chọn
+      idKhachHangs.value = []; 
     } else {
-      // Nếu đổi về "Công khai"
-      idKhachHangs.value = []; // Reset danh sách khách hàng
+      idKhachHangs.value = []; 
     }
   }
 );
 
-// Thêm watch để tự động cập nhật giá trị giảm tối đa khi loại giảm hoặc giá trị giảm thay đổi
+//watch để tự động cập nhật giá trị giảm tối đa khi loại giảm hoặc giá trị giảm thay đổi
 watch(
   [() => formState.loaiGiam, () => formState.giaTriGiam],
   ([newLoaiGiam, newGiaTriGiam]) => {
     if (newLoaiGiam === true) {
       formState.giamToiDa = newGiaTriGiam;
+    } else if (newGiaTriGiam == '100' || newGiaTriGiam === "100") {
+      formState.giamToiDa = "";
     }
   }
 );

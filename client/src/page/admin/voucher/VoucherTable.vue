@@ -49,7 +49,7 @@
                 {{ formatCurrencyVND(record.dieuKienGiam) }}
         </div>
         <div v-else-if="column.key === 'trangThai'" class="text-center">
-            <a-tag v-if="record.trangThai === 'ACTIVE' || record.trangThai === 'ACTIVE'" color="success">Đang áp dụng</a-tag>
+            <a-tag v-if="record.trangThai === 'ACTIVE' || record.trangThai === 'ACTIVE'" color="success">Đang diễn ra</a-tag>
             <a-tag v-else-if="record.trangThai === 'NOT_STARTED' || record.trangThai === 'NOT_STARTED'" color="warning">Sắp diễn ra</a-tag>
             <a-tag v-else-if="record.trangThai === 'EXPIRED' || record.trangThai === 'EXPRIXED'" color="error">Hết hạn</a-tag>
             <a-tag v-else-if="record.trangThai === 'INACTIVE' || record.trangThai === 'INACTIVE'" color="default">Vô hiệu hóa</a-tag>

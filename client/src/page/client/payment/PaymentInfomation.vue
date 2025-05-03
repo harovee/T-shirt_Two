@@ -196,6 +196,16 @@
             </tr>
           </table>
         </div>
+        <!-- Transaction code input field -->
+        <div class="mt-4">
+          <p class="font-medium mb-2 text-red-500">Mã giao dịch:</p>
+          <a-input 
+            v-model:value="transactionCode" 
+            placeholder="Nhập mã giao dịch của bạn" 
+            class="w-full"
+          />
+        </div>
+
       </div>
     </div>
     <div v-else class="py-10 text-red-500">
@@ -211,6 +221,7 @@
           borderColor: '#b91c1c',
           color: 'white',
         }"
+        :disabled="!transactionCode"
         @click="handleConfirmPaymentWithVietQR"
       >
         Xác nhận đã thanh toán
@@ -362,6 +373,7 @@ const qrCodeModalVisible = ref(false);
 const qrCodeLoading = ref(false);
 const qrCodeData = ref("");
 const qrPaymentReference = ref("");
+const transactionCode = ref("");
 
 interface DataType extends POSProductDetailResponse {
   key: string;
@@ -564,9 +576,13 @@ const showQRCodeModal = async () => {
 
 // Handle confirming payment and creating order
 const handleConfirmPaymentWithVietQR = async () => {
+  if (!transactionCode.value) {
+    errorNotiSort("Vui lòng nhập mã giao dịch của bạn!");
+    return;
+  }
   try {
     const payload = createOrderPayload();
-    payload.maGiaoDich = qrPaymentReference.value
+    payload.maGiaoDich = transactionCode.value;
     await createInvoiceWithVietQr(payload);
     clearCart();
     successNotiSort("Hoàn thành đơn hàng!");

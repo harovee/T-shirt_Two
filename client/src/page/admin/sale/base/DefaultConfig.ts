@@ -67,8 +67,29 @@ const range = (start: number, end: number) => {
     return result;
 };
 
-
 export const defaultSaleDatePickerRules = [
+    { label: 'Ngày mai', value: [dayjs().startOf('d').add(1, 'd'), dayjs().endOf('d').add(1, 'd')] },
+    { label: '7 ngày tiếp theo', value: [dayjs(), dayjs().add(7, 'd')] },
+    { label: '15 ngày tiếp theo', value: [dayjs(), dayjs().add(15, 'd')] },
+    { label: '30 ngày tiếp theo', value: [dayjs(), dayjs().add(30, 'd')] },
+    {
+        label: 'Tuần sau',
+        value: [
+            dayjs().startOf('week').add(1, 'week').add(1, 'd'),
+            dayjs().endOf('week').add(1, 'week').add(1, 'd')
+        ]
+    },
+    {
+        label: 'Tháng sau',
+        value: [
+            dayjs().startOf('month').add(1, 'month'),
+            dayjs().endOf('month').add(1, 'month'),
+        ]
+    },
+
+]
+
+export const defaultSaleDatePickersRules = [
     { label: 'Ngày mai', value: [dayjs().startOf('d').add(1, 'd'), dayjs().endOf('d').add(1, 'd')] },
     { 
         label: '7 ngày tiếp theo', 
