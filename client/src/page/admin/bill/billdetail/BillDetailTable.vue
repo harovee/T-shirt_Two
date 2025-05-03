@@ -9,8 +9,11 @@
         <span class="font-medium">Mã:</span>
         <span class="ml-2">{{ copiedBillData?.ma }}</span>
       </div>
-      
-      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
+
+      <div
+        v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'"
+        class="flex items-center"
+      >
         <span class="font-medium">SĐT người nhận:</span>
         <span class="ml-2">{{ copiedBillData?.soDienThoai }}</span>
       </div>
@@ -20,8 +23,11 @@
           copiedBillData?.tenKhachHang || "Khách lẻ"
         }}</span>
       </div>
-      
-      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
+
+      <div
+        v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'"
+        class="flex items-center"
+      >
         <span class="font-medium">Địa chỉ người nhận:</span>
         <span class="ml-2" color="blue">{{
           copiedBillData?.diaChiNguoiNhan || ""
@@ -33,11 +39,17 @@
           copiedBillData?.trangThai
         }}</a-tag>
       </div>
-      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
+      <div
+        v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'"
+        class="flex items-center"
+      >
         <span class="font-medium">Tên người nhận:</span>
         <span class="ml-2">{{ copiedBillData?.tenNguoiNhan || "" }}</span>
       </div>
-      <div v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'" class="flex items-center">
+      <div
+        v-if="copiedBillData?.phuongthucNhan === 'Giao hàng'"
+        class="flex items-center"
+      >
         <span class="font-medium">Ghi chú:</span>
         <span class="ml-2">{{ copiedBillData?.ghiChu || "" }}</span>
       </div>
@@ -127,6 +139,7 @@
         @onCancel="isOpenModalAddProductToOrder = false"
         :loadingValue="loadingValue"
         :billData="billData"
+        :dataSource="dataSource"
       />
     </div>
 
@@ -216,7 +229,11 @@
             type="number"
             min="0"
             v-model="record.soLuong"
-            @blur="billData.loaiHD === 'Online' ? handleChangeQuantityBiIDProduct(record) : handleChangeQuantity(record)"
+            @blur="
+              billData.loaiHD === 'Online'
+                ? handleChangeQuantityBiIDProduct(record)
+                : handleChangeQuantity(record)
+            "
             class="w-16 text-center border rounded"
             :disabled="
               [
@@ -262,7 +279,11 @@ import {
   useCheckQuantityInStockByProductDetail,
   useCheckQuantityListProduct,
 } from "@/infrastructure/services/service/admin/productdetail.action";
-import { checkQuantityInStockByIdProductDetail, checkQuantityRequest } from "@/infrastructure/services/api/admin/product_detail.api";
+import { useUpdateBillConfirm } from "@/infrastructure/services/service/admin/bill.action";
+import {
+  checkQuantityInStockByIdProductDetail,
+  checkQuantityRequest,
+} from "@/infrastructure/services/api/admin/product_detail.api";
 import {
   useGetListVoucher,
   useGetPriceNextVoucher,
@@ -343,6 +364,22 @@ const paramsCheckQuantity = ref<checkQuantityRequest>({
   quantity: null,
 });
 
+const payloadData = ref();
+
+watch(
+  () => props.dataSource,
+  (newData) => {
+    if (newData) {
+      payloadData.value = {
+        tienShip: newData[0].tienShip,
+        tienGiam: newData[0].tienGiamHD,
+        tongTien: newData[0].tongTienHD,
+      };
+    }
+  },
+  { deep: true }
+);
+
 watch(
   () => props?.billData,
   (result) => {
@@ -358,9 +395,6 @@ watch(
   () => props?.billData,
   (newBillData) => {
     copiedBillData.value = JSON.parse(JSON.stringify(newBillData));
-    // console.log(copiedBillData.value);
-    console.log(newBillData);
-    
   }
 );
 
@@ -448,18 +482,22 @@ const { data: checkQuantityData, refetch: checkQuantityRefetch } =
     enabled: false,
   });
 
-const { data: checkQuantityDataByIdProduct, refetch: checkQuantityByProductIdRefetch } =
-  useCheckQuantityInStockByProductDetail(paramsCheckQuantity, {
-    refetchOnWindowFocus: false,
-    keepPreviousData: false,
-    enabled: false,
-  });
+const {
+  data: checkQuantityDataByIdProduct,
+  refetch: checkQuantityByProductIdRefetch,
+} = useCheckQuantityInStockByProductDetail(paramsCheckQuantity, {
+  refetchOnWindowFocus: false,
+  keepPreviousData: false,
+  enabled: false,
+});
 
 // Trừ số lượng list product
 
 const copiedDataSource = ref(null);
 
 const { mutate: deleteOrderDetails } = useDeleteCartById();
+
+const { mutate: updateBill } = useUpdateBillConfirm();
 
 const { data: PaymentData } = useGetPayHistory(params, {
   refetchOnWindowClose: false,
@@ -539,7 +577,7 @@ watch(
     if (newData) {
       // console.log(newData);
       copiedDataSource.value = JSON.parse(JSON.stringify(newData));
-      
+
       // totalProductPrice.value = newData.reduce(
       //   (total, item) => total + item.thanhTien,
       //   0
@@ -606,12 +644,14 @@ const handleUpdateBill = async (modelRef: any) => {
   modelRefTmp.value = modelRef;
 
   const billHistoryParams = {
-          idHoaDon: params.value.idHoaDon,
-          hanhDong: `Thay đổi thông tin`,
-          moTa: `Nhân viên "${useAuthStore().user?.email}" thay đổi thông tin giao hàng`,
-          trangThai: "Chờ xác nhận",
-          nguoiTao: useAuthStore().user?.id || null,
-        };
+    idHoaDon: params.value.idHoaDon,
+    hanhDong: `Thay đổi thông tin`,
+    moTa: `Nhân viên "${
+      useAuthStore().user?.email
+    }" thay đổi thông tin giao hàng`,
+    trangThai: "Chờ xác nhận",
+    nguoiTao: useAuthStore().user?.id || null,
+  };
 
   Modal.confirm({
     content: "Bạn chắc chắn muốn sửa?",
@@ -633,7 +673,7 @@ const handleUpdateBill = async (modelRef: any) => {
           idPhieuGiamGia: props.detail ? props.detail.id : null,
           nhanVien: useAuthStore().user?.id || null,
         };
-        
+
         update(
           { idBill: params.value.idHoaDon, params: payload },
           {
@@ -705,21 +745,25 @@ const handleChangeQuantity = async (record: any) => {
     record.thanhTien = record.soLuong * record.gia;
     emit("update-quantity", record);
     record.previousQuantity = record.soLuong;
+    setTimeout(() => {
+      updateBill(
+        { idBill: params.value.idHoaDon, params: payloadData.value },
+        {
+          onSuccess: (result) => {
+            // successNotiSort("Cập nhật thông tin thành công");
+          },
+          onError: (error: any) => {
+            // errorNotiSort("Cập nhật thông tin thất bại");
+          },
+        }
+      );
+    }, 3000);
   }
 };
 
 const handleChangeQuantityBiIDProduct = async (record: any) => {
   paramsCheckQuantity.value.id = record.tenSanPhamChiTiet;
   paramsCheckQuantity.value.quantity = record.soLuong;
-
-  // if (record.previousQuantity === undefined) {
-  //   record.previousQuantity = record.soLuong;
-  // }
-
-  // if (record.soLuong > 0) {
-  //   record.previousQuantity = record.soLuong;
-  //   console.log("previousQuantity:", record.previousQuantity);
-  // }
 
   if (record.soLuong === 0) {
     handleDelete(record, () => {
@@ -731,7 +775,7 @@ const handleChangeQuantityBiIDProduct = async (record: any) => {
   } else {
     await checkQuantityByProductIdRefetch();
     const checkValue = checkQuantityData?.value?.data;
-    
+
     if (!checkValue) {
       warningNotiSort("Số lượng trong kho không đủ!");
       record.soLuong = 1;
@@ -742,6 +786,20 @@ const handleChangeQuantityBiIDProduct = async (record: any) => {
         return;
       }
     }
+
+    setTimeout(() => {
+      updateBill(
+        { idBill: params.value.idHoaDon, params: payloadData.value },
+        {
+          onSuccess: (result) => {
+            // successNotiSort("Cập nhật thông tin thành công");
+          },
+          onError: (error: any) => {
+            // errorNotiSort("Cập nhật thông tin thất bại");
+          },
+        }
+      );
+    }, 3000);
 
     record.thanhTien = record.soLuong * record.gia;
     emit("update-quantity", record);
@@ -762,6 +820,20 @@ const handleDelete = (productDetail: any, onCancel?: () => void) => {
         // await deleteOrderDetails(productDetail.id);
         emit("refetch-data", productDetail);
         successNotiSort("Xóa thành công");
+
+        setTimeout(() => {
+          updateBill(
+            { idBill: params.value.idHoaDon, params: payloadData.value },
+            {
+              onSuccess: (result) => {
+                // successNotiSort("Cập nhật thông tin thành công");
+              },
+              onError: (error: any) => {
+                // errorNotiSort("Cập nhật thông tin thất bại");
+              },
+            }
+          );
+        }, 3000);
       } catch (error) {
         errorNotiSort("Xóa thất bại");
       }

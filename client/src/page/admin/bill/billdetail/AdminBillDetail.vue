@@ -177,6 +177,7 @@ import {
   successNotiSort,
   warningNotiSort,
 } from "@/utils/notification.config";
+import { provide } from 'vue';
 
 const emit = defineEmits(["update:paginationParams"]);
 
@@ -406,12 +407,10 @@ watch(
     //   }
     //   // console.log(detailDataSources.value);
     // }
-    console.log(detailDataSources.value);
 
     serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
     if (copiedBillData.value && copiedBillData.value.huyen) {
       serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
-      console.log(serviceIdParams.value.toDistrict);
       
       if (serviceIdParams.value.toDistrict !== 0) {
         refetchService().then(() => {
@@ -428,8 +427,6 @@ watch(
               } else {
                 detailDataSources.value[0].tienShip = 0;
               }
-              console.log(totalPrice.value);
-              console.log(detailDataSources.value[0].tienShip);
               
             });
           }
@@ -438,7 +435,6 @@ watch(
         detailDataSources.value[0].tienShip = 0;
       }
     }
-    console.log(detailDataSources.value);
     
   },
   { immediate: true }
@@ -449,7 +445,6 @@ watch(
   () => detailDataSources.value,
   (newData) => {
     // console.log(newData);
-    console.log(newData);
     if (newData[0]) {
       // Tính toán lại phí giảm sau khi thêm sản phẩm hoặc thay đổi số lượng
       if (detail.value) {
@@ -679,6 +674,8 @@ const handleUpdateBill = () => {
     }
   }
 };
+
+provide('detailDataSources', detailDataSources.value);
 
 const columnsBill: ColumnType[] = [
   {

@@ -400,7 +400,7 @@ const confirmBill = async () => {
               }
             },
             onCancel: () => {
-              console.log("Thao tác đã bị hủy.");
+              // console.log("Thao tác đã bị hủy.");
             },
           });
         }
@@ -431,7 +431,7 @@ const confirmBill = async () => {
         }
       },
       onCancel: () => {
-        console.log("Thao tác đã bị hủy.");
+        // console.log("Thao tác đã bị hủy.");
       },
     });
   }
@@ -972,10 +972,6 @@ const createInvoicePdf = async () => {
     async onOk() {
       try {
         await createInvoicePdfWithId(billId.value, pdfParams);
-        console.log(props.dataProduct);
-
-        console.log(billId.value);
-        console.log(pdfParams);
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
       }

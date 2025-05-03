@@ -247,33 +247,6 @@ const items: ItemType[] = reactive([
     getItem("Tổng quan", ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name, () =>
       h(BarChartOutlined)
     ),
-
-  isAdmin &&
-    getItem("Thống kê", ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () =>
-      h(BarChartOutlined)
-    ),
-
-  getItem(
-    "Bán tại quầy",
-    ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
-    () => h(ShoppingCartOutlined)
-  ),
-
-  getItem(
-    "Hóa đơn",
-    ROUTES_CONSTANTS.ADMIN.children.BILL.name,
-    () => h(FileTextOutlined),
-    [
-      // getItem('Bán hàng', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
-      getItem(
-        "Quản lý hóa đơn",
-        ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
-        null
-      ),
-      // getItem('Trả hàng', ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name, null),
-    ]
-  ),
-
   getItem(
     "Sản Phẩm",
     ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.name,
@@ -327,6 +300,27 @@ const items: ItemType[] = reactive([
     ]
   ),
 
+  getItem(
+    "Bán tại quầy",
+    ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
+    () => h(ShoppingCartOutlined)
+  ),
+
+  getItem(
+    "Hóa đơn",
+    ROUTES_CONSTANTS.ADMIN.children.BILL.name,
+    () => h(FileTextOutlined),
+    [
+      // getItem('Bán hàng', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
+      getItem(
+        "Quản lý hóa đơn",
+        ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
+        null
+      ),
+      // getItem('Trả hàng', ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name, null),
+    ]
+  ),
+
   getItem("Đợt giảm giá", ROUTES_CONSTANTS.ADMIN.children.SALE.name, () =>
     h(PercentageOutlined)
   ),
@@ -343,6 +337,10 @@ const items: ItemType[] = reactive([
   getItem("Khách hàng", ROUTES_CONSTANTS.ADMIN.children.CLIENT.name, () =>
     h(TeamOutlined)
   ),
+  isAdmin &&
+    getItem("Thống kê", ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () =>
+      h(BarChartOutlined)
+    ),
 ]);
 
 const handleClick: MenuProps["onClick"] = (e) => {

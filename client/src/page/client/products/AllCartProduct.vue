@@ -2,15 +2,15 @@
   <div class="product-list">
     <!-- Show product list when not viewing product detail -->
       <div class="flex items-center">
-        <p class="mr-8 mt-4 text-base">Sắp xếp theo</p>
-        <a-select class="w-64" v-model:value="selectedArrange">
+        <!-- <p class="mr-8 mt-4 text-base">Sắp xếp theo</p> -->
+        <!-- <a-select class="w-64" v-model:value="selectedArrange">
           <a-select-option
             v-for="arrange in arrangesData"
             :key="arrange.value"
             :value="arrange.value"
             >{{ arrange.name  }}</a-select-option
           >
-        </a-select>
+        </a-select> -->
       </div>
       <a-row>
         <!-- Lặp qua danh sách sản phẩm -->

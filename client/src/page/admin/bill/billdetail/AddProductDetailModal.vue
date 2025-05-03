@@ -13,9 +13,7 @@
     centered
   >
     <div class="mb-4">
-      <filter-product-to-order 
-      @filter="handleFilterProductToOrder"
-    />
+      <filter-product-to-order @filter="handleFilterProductToOrder" />
     </div>
     <product-detail-table-to-order
       :data-source="dataSource"
@@ -37,11 +35,14 @@ import {
   reactive,
   onMounted,
   provide,
-  watch
+  watch,
 } from "vue";
 import ProductDetailTableToOrder from "./ProductDetailTableToOrder.vue";
 import FilterProductToOrder from "./FilterProductToOrder.vue";
-import { useGetAllProductDetail, useGetAllProductDetailOverZero } from "@/infrastructure/services/service/admin/productdetail.action";
+import {
+  useGetAllProductDetail,
+  useGetAllProductDetailOverZero,
+} from "@/infrastructure/services/service/admin/productdetail.action";
 import { keepPreviousData } from "@tanstack/vue-query";
 import { FindProductDetailRequest } from "@/infrastructure/services/api/admin/product_detail.api";
 import { useCreateBillDetail } from "@/infrastructure/services/service/admin/bill-detail.action";
@@ -57,6 +58,8 @@ import { useGetListStyle } from "@/infrastructure/services/service/admin/style.a
 import { useGetListTrademark } from "@/infrastructure/services/service/admin/trademark.action";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
+import { useUpdateBillConfirm } from "@/infrastructure/services/service/admin/bill.action";
+import { inject } from 'vue';
 
 // Định nghĩa Props
 const props = defineProps({
@@ -66,8 +69,11 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-  billData: Object
+  billData: Object,
+  dataSource: Array,
 });
+
+const dataSources = inject('detailDataSources');
 
 // Định nghĩa Emits
 const emit = defineEmits(["handleClose"]);
@@ -100,12 +106,16 @@ const { mutate: createBillDetail } = useCreateBillDetail();
 
 const { mutate: createBillHistory } = useCreateBillHistory();
 
+const { mutate: update } = useUpdateBillConfirm();
+
 const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
   idSanPhamChiTiet: null,
   soLuong: null,
   isClient: null,
 });
+
+const payload = ref();
 
 const getIdHoaDonFromUrl = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -139,6 +149,21 @@ watch(
   }
 );
 
+watch(
+  () => dataSources,
+  (newVal) => {
+    if (newVal) {
+      setTimeout(() => {
+        payload.value = {
+          tienShip: newVal[0].tienShip,
+          tienGiam: newVal[0].tienGiamHD,
+          tongTien: newVal[0].tongTienHD,
+        };
+      }, 3000);
+    }
+  }
+);
+
 const handleAddProducts = () => {
   if (selectedProducts.value.length === 0) {
     console.warn("Chưa chọn sản phẩm nào!");
@@ -154,17 +179,19 @@ const handleAddProducts = () => {
     const requestData = {
       idHoaDon: modelRef.idHoaDon, // ID hóa đơn từ URL
       idSanPhamChiTiet: product.id, // Đảm bảo lấy đúng ID sản phẩm
-      soLuong: 1,   // Mặc định số lượng là 1
-      isClient: props.billData.loaiHD === 'Online' ? true : false
+      soLuong: 1, // Mặc định số lượng là 1
+      isClient: props.billData.loaiHD === "Online" ? true : false,
     };
 
     const billHistoryParams = {
-          idHoaDon: modelRef.idHoaDon,
-          hanhDong: `Thêm sản phẩm`,
-          moTa: `Nhân viên "${useAuthStore().user?.email}" đã thêm sản phẩm vào đơn`,
-          trangThai: "Chờ xác nhận",
-          nguoiTao: useAuthStore().user?.id || null
-        }
+      idHoaDon: modelRef.idHoaDon,
+      hanhDong: `Thêm sản phẩm`,
+      moTa: `Nhân viên "${
+        useAuthStore().user?.email
+      }" đã thêm sản phẩm vào đơn`,
+      trangThai: "Chờ xác nhận",
+      nguoiTao: useAuthStore().user?.id || null,
+    };
 
     // console.log("📤 Dữ liệu gửi đi API:", requestData); // Log dữ liệu trước khi gửi
 
@@ -176,10 +203,25 @@ const handleAddProducts = () => {
         console.error("❌ Lỗi khi thêm sản phẩm:", error);
       },
     });
+    //cập nhật lại hóa đơn
+    setTimeout(() => {
+      console.log(payload.value);
+    }, 3000);
+
+    // update(
+    //   { idBill: modelRef.idHoaDon, params: payload.value },
+    //   {
+    //     onSuccess: (result) => {
+    //       // successNotiSort("Cập nhật thông tin thành công");
+    //     },
+    //     onError: (error: any) => {
+    //       // errorNotiSort("Cập nhật thông tin thất bại");
+    //     },
+    //   }
+    // );
     // Thêm lịch sử hóa đơn (Khi khách thêm sản phẩm vào đơn)
     createBillHistory(billHistoryParams);
   });
-  // console.log(selectedProducts.value);
 
   handleClose(); // Đóng modal sau khi thêm
 };
@@ -194,8 +236,8 @@ const {
   data: productData,
   isLoading,
   isFetching,
-  refetch
-} = useGetAllProductDetailOverZero(paramsAll, { 
+  refetch,
+} = useGetAllProductDetailOverZero(paramsAll, {
   refetchOnWindowFocus: false,
   placeholderData: keepPreviousData,
 });
@@ -207,8 +249,8 @@ const handlePaginationChange = (newParams: FindProductDetailRequest) => {
 };
 
 const handleFilterProductToOrder = (newParams: FindProductDetailRequest) => {
-  paramsAll.value = {...paramsAll.value, ...newParams};
-}
+  paramsAll.value = { ...paramsAll.value, ...newParams };
+};
 
 // lấy danh sách chất liệu
 const { data: materials } = useGetListMaterial({
@@ -315,7 +357,6 @@ const listSleeve = computed(() => {
   );
 });
 // console.log(listSleeve);
-
 
 // lấy danh sách kiểu dáng
 const { data: styles } = useGetListStyle({
