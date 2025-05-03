@@ -10,7 +10,7 @@
     centered
     width="700px"
   >
-    <a-form layout="vertical" class="pt-3">
+  <a-form layout="vertical" class="pt-3" :model="modelRef" :rules="rulesRef" validateTrigger="blur">
       <template v-for="field in formFields" :key="field.name">
         <a-form-item
           v-if="field.name === 'diaChiNguoiNhan'"
@@ -120,9 +120,35 @@ const rulesRef = reactive({
       trigger: "blur",
     },
   ],
+  soDienThoai: [
+    { 
+      required: true, 
+      message: "Vui lòng nhập số điện thoại", 
+      trigger: ["blur", "change"] // Thêm trigger 'change'
+    },
+    {
+      pattern: /^0[1-9]\d{8,9}$/,
+      message: "Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số.",
+      trigger: ["blur", "change"] // Thêm trigger 'change'
+    },
+  ],
+  tenNguoiNhan: [
+    {
+      required: true,
+      validator: (_, value) => value !== null && value.trim() !== "" 
+        ? Promise.resolve() 
+        : Promise.reject("Tên không được để trống"),
+      trigger: ["blur", "change"] // Thêm trigger 'change'
+    },
+    {
+      max: 50, 
+      message: "Tên không được dài quá 50 ký tự", 
+      trigger: ["blur", "change"] // Thêm trigger 'change'
+    },
+  ],
 });
 
-const { resetFields, validate, validateInfos } = Form.useForm(
+const { resetFields, validate, validateInfos, clearValidate } = Form.useForm(
   modelRef,
   rulesRef
 );
@@ -139,6 +165,8 @@ watch(
       modelRef.tinh = newBillData.tinh || null;
       modelRef.huyen = newBillData.huyen || null;
       modelRef.xa = newBillData.xa || null;
+      clearValidate();
+
     }
 
     // console.log(modelRef);
@@ -189,59 +217,20 @@ const handleChangeAddress = (fullAddress: string, modelRefAdd: any) => {
 const billId = getIdHoaDonFromUrl();
 // console.log(billId);
 
-const handleUpdateBill = () => {
-
-  emit("update:bill", modelRef);
-
-  // const payload = {
-  //   // idKhachHang: modelRef.idKhachHang,
-  //   soDienThoai: modelRef.soDienThoai,
-  //   diaChiNguoiNhan: modelRef.diaChiNguoiNhan,
-  //   tenNguoiNhan: modelRef.tenNguoiNhan,
-  //   ghiChu: modelRef.ghiChu,
-  // };
-
-  // console.log(payload);
-
-  // Modal.confirm({
-  //   content: "Bạn chắc chắn muốn sửa?",
-  //   icon: createVNode(ExclamationCircleOutlined),
-  //   centered: true,
-  //   async onOk() {
-  //     try {
-  //       await validate();
-  //       update(
-  //         { idBill: billId, params: payload },
-  //         {
-  //           onSuccess: (result) => {
-  //             successNotiSort("Cập nhật hóa đơn thành công");
-  //             emit("updated", result.data);
-  //             handleClose();
-  //           },
-  //           onError: (error: any) => {
-  //             errorNotiSort("Cập nhật hóa đơn thất bại");
-  //           },
-  //         }
-  //       );
-  //     } catch (error: any) {
-  //       console.error("🚀 ~ handleUpdate ~ error:", error);
-  //       if (error?.response) {
-  //         warningNotiSort(error?.response?.data?.message);
-  //       } else if (error?.errorFields) {
-  //         warningNotiSort("Vui lòng nhập đúng các trường dữ liệu");
-  //       }
-  //     }
-  //   },
-  //   cancelText: "Huỷ",
-  //   onCancel() {
-  //     Modal.destroyAll();
-  //   },
-  // });
+const handleUpdateBill = async () => {
+  try {
+    await validate();
+    emit("update:bill", modelRef);
+    console.log('updated');
+    
+  } catch (err) {
+    console.warn("Validation failed", err);
+  }
 };
 
 const handleClose = () => {
   emit("handleClose");
-  // resetFields();
+  clearValidate();
   if (props.billData) {
     modelRef.soDienThoai = props.billData.soDienThoai || null;
     modelRef.diaChiNguoiNhan = props.billData.diaChiNguoiNhan || null;

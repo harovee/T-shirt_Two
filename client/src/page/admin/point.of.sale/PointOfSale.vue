@@ -85,7 +85,7 @@
           @edit="onEdit"
           class="ms-5 me-5 mb-5 mt-2"
         >
-          <a-tab-pane v-for="bill in dataSource" :key="bill.id">
+          <a-tab-pane v-for="bill in dataSource" :key="String(bill.id)">
             <template #tab>
               <span class="relative pr-6">
                 {{ bill.ma }}
@@ -229,12 +229,12 @@ import {
 } from "@/utils/common.helper";
 import { currentInvoice, InvoiceData, sendCartInfo, addInvoice, getInvoiceById, invoices } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
-const { data, isLoading, isFetching } = useGetBillsWait();
+const { data, isLoading, isFetching: refetchBills } = useGetBillsWait();
 
 const { data: listProductDetail } = useGetListProductDetail();
 
 const dataSource = computed(() => data?.value?.data || []);
-const activeKey = ref<string | null>(null);
+const activeKey = ref<string>("");
 const maHoaDon = ref<string | null>(null);
 const isAddProduct = ref(0);
 const isChange = ref(0);
@@ -246,6 +246,7 @@ const dataListProductDetail = computed(
 watch(
   [() => dataSource.value, () => isChange.value],
   async ([newDataSource, newIsChange]) => {
+    await nextTick();
     if (newDataSource.length > 0) {
       activeKey.value = newDataSource[0].id;
     }
@@ -291,19 +292,26 @@ interface DataType extends POSProductDetailResponse {
 
 const lengthMap = ref({});
 
+onMounted(async () => {
+  await refetchBills; // Giả sử có hàm refetch từ useGetBillsWait
+  if (dataSource.value.length > 0) {
+    activeKey.value = dataSource.value[0].id.toString(); // Chuyển đổi sang string
+  }
+});
+
 watch(
   () => dataSource.value,
   async (newDataSource) => {
-    if (newDataSource) {
+    if (newDataSource && newDataSource.length > 0) {
       const results = await Promise.all(
-        dataSource.value.map(async (id) => {
-          const response = await getOrderDetailsAll(id.id);
+        dataSource.value.map(async (bill) => {
+          const response = await getOrderDetailsAll(bill.id);
           const length = response?.data.length || 0;
-          return { id, length };
+          return { id: bill.id, length };
         })
       );
       lengthMap.value = results.reduce((acc, { id, length }) => {
-        acc[id.id] = length;
+        acc[id] = length;
         return acc;
       }, {});
     }
