@@ -263,6 +263,9 @@ import {
   currentInvoice,
   sendCartInfo,
   sendPaymentConfirm,
+  mbConnectStatus,
+  currentPayloadPaymentInfo,
+  currentInvoiceUUID
 } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
@@ -752,34 +755,21 @@ const handleUpdateBill = (x: number) => {
     return;
   }
 
+  currentPayloadPaymentInfo.value = payload;
+  currentInvoiceUUID.value = props.dataSourceInfor.id;
+
   if (x === 1) {
     Modal.confirm({
       content: "Bạn chắc chắn muốn hoàn thành thanh toán?",
       icon: createVNode(ExclamationCircleOutlined),
       centered: true,
-      async onOk() {
-        try {
-          await updateBillWait({
-            idBill: props.dataSourceInfor.id,
-            params: payload,
-          });
-          await createInvoicePdf(pdfParams)
-            .then(() => {
-              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
-              window.open(url, "_blank");
-            })
-            .catch((error) => {
-              console.error("Tạo hóa đơn PDF thất bại", error);
-            });
-          successNotiSort("Thanh toán thành công!");
-          router.push(
-            ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-          );
-        } catch (error: any) {
-          console.error("🚀 ~ handleCreate ~ error:", error);
-          if (error?.response) {
-            errorNotiSort(error?.response?.data?.message);
-          }
+      onOk() {
+        if (mbConnectStatus.value) {
+          console.log("Thao tác thanh toán trên app MB Connect");
+          sendPaymentConfirm(currentInvoice.value.id);
+          // hoanThanhDonHang(payload);
+        } else {
+          hoanThanhDonHang(payload);
         }
       },
       cancelText: "Huỷ",
@@ -788,38 +778,26 @@ const handleUpdateBill = (x: number) => {
       },
     });
   } else if (x === 2) {
-    sendPaymentConfirm(
-      props.dataSourceInfor.ma,
-      () => {
-        async () => {
-          try {
-            await updateBillWait({
-              idBill: props.dataSourceInfor.id,
-              params: payload,
-            });
-            await createInvoicePdf(pdfParams)
-            .then(() => {
-              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
-              window.open(url, "_blank");
-            })
-            .catch((error) => {
-              console.error("Tạo hóa đơn PDF thất bại", error);
-            });
-            successNotiSort("Thanh toán thành công!");
-            router.push(
-              ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-            );
-          } catch (error: any) {
-            if (error?.response) {
-              errorNotiSort(error?.response?.data?.message);
-            }
-          }
-        };
-        return true;
-      },
-      () => {}
-    );
+   
   }
+};
+
+const hoanThanhDonHang = async (payload: any) => {
+      try {
+        await updateBillWait({
+          idBill: props.dataSourceInfor.id,
+          params: payload,
+        });
+        successNotiSort("Thanh toán thành công!");
+        router.push(
+          ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+        );
+      } catch (error: any) {
+        console.error("🚀 ~ handleCreate ~ error:", error);
+        if (error?.response) {
+          errorNotiSort(error?.response?.data?.message);
+        }
+      }
 };
 
 interface CustomerAddress {

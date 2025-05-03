@@ -1,5 +1,6 @@
 package com.shop.server.core.mobile.invoiceconnect;
 
+import com.shop.server.core.mobile.invoiceconnect.businessmodel.ConfirmInfo;
 import com.shop.server.core.mobile.invoiceconnect.businessmodel.InvoiceData;
 import com.shop.server.core.mobile.invoiceconnect.socketmodel.WebSocketMessage;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -41,6 +42,40 @@ public class PosSocketController {
         messagingTemplate.convertAndSend("/topic/pos", message);
     }
 
+
+    // Gửi yêu cầu xác nhận thanh toán
+    @MessageMapping("/payment-confirm")
+    public void handleSendConfirmPayment(ConfirmInfo confirmInfo) {
+        WebSocketMessage message = new WebSocketMessage();
+        message.setType("payment_confirm");
+        message.setData(confirmInfo);
+
+//        System.out.println(message);
+        messagingTemplate.convertAndSend("/topic/pos", message);
+    }
+
+    // Phản hồi xác nhận thanh toán
+    @MessageMapping("/payment-confirmed")
+    public void handleSendConfirmed(ConfirmInfo confirmInfo) {
+        WebSocketMessage message = new WebSocketMessage();
+        message.setType("payment_confirmed");
+        message.setData(confirmInfo);
+
+//        System.out.println(message);
+        messagingTemplate.convertAndSend("/topic/pos", message);
+    }
+
+    // Xử lý kết nối từ client
+    @MessageMapping("/disconnect")
+    public void handleDisConnection() {
+        // Gửi thông báo kết nối thành công
+        WebSocketMessage message = new WebSocketMessage();
+        message.setType("connection_status");
+        message.setData(Map.of("status", "disconnected"));
+
+//        System.out.println(message);
+        messagingTemplate.convertAndSend("/topic/pos", message);
+    }
     // Xử lý thanh toán
 //    @MessageMapping("/payment")
 //    public void handlePayment(@Payload PaymentRequest paymentRequest) {

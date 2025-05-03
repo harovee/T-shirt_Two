@@ -559,12 +559,12 @@ const InvoiceScreen = () => {
                     { getCurrentChanges() < 0 ? (
                       <>
                         <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền còn thiếu:</Text>
-                        <Text style={[styles.totalValue, { color: colors.danger }]}>{formatCurrency( -(getCurrentChanges()))}</Text>
+                        <Text style={[styles.totalValue, { color: colors.danger }]}>{formatCurrency(Math.floor(-(getCurrentChanges())))}</Text>
                       </>
                     ) : (
                       <>
                         <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
-                        <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(getCurrentChanges())}</Text>
+                        <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(Math.floor(getCurrentChanges()))}</Text>
                       </>
                     ) }
                     
@@ -596,7 +596,7 @@ const InvoiceScreen = () => {
                   <View style={[styles.summaryRow, styles.totalRow]}>
                     
                     <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
-                    <Text style={[styles.totalValue, { color: colors.danger }]}> {formatCurrency(getCurrentChanges())} </Text>
+                    <Text style={[styles.totalValue, { color: colors.danger }]}> {formatCurrency(Math.floor(getCurrentChanges()))} </Text>
                   </View>
                 </>
                 
