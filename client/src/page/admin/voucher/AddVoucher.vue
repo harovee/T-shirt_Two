@@ -38,20 +38,21 @@
             </a-input-number>
           </a-form-item>
 
-          <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa"  v-if="!formState.loaiGiam" required>
+          <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
+            <a-input-number class="w-full" v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu" :formatter="formatter">
+            </a-input-number>
+          </a-form-item>
+
+          <a-form-item class="mb-4" label="Giá trị giảm tối đa" name="giamToiDa"  v-if="!formState.loaiGiam && formState.giaTriGiam != '100'" required>
             <a-input-number class="w-full"
               v-model:value="formState.giamToiDa" 
               min="0"
               placeholder="Nhập giá trị giảm tối đa"
               :formatter="formatter"  
             >
-            </a-input-number> 
-            
+            </a-input-number>  
           </a-form-item>
-          <a-form-item class="mb-4" label="Đơn tối thiểu" name="dieuKienGiam" required>
-            <a-input-number class="w-full" v-model:value="formState.dieuKienGiam" min="0" step="10" placeholder="Nhập đơn tối thiểu" :formatter="formatter">
-            </a-input-number>
-          </a-form-item>
+          
 
           <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
             <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" placeholder="Nhập số lượng" :disabled="formState.kieu"/>
@@ -214,9 +215,9 @@ const rules: Record<string, Rule[]> = {
     {
       validator: (rule, value) => {
         // Nếu loại giảm là tiền (loaiGiam = true), bỏ qua validate
-        if (formState.loaiGiam === true) {
-          return Promise.resolve();
-        }
+        if (formState.loaiGiam === true || formState.giaTriGiam == '100') {
+        return Promise.resolve();
+      }
         
         // Kiểm tra nếu giá trị không phải số hợp lệ
         if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
@@ -231,7 +232,36 @@ const rules: Record<string, Rule[]> = {
         return Promise.resolve();
       },
       trigger: 'change'
-    }
+    },
+    {
+    validator: (rule, value) => {
+      if (formState.loaiGiam === true || formState.giaTriGiam === '100') {
+        return Promise.resolve();
+      }
+      
+      if (value && !/^[0-9]+(\.[0-9]+)?$/.test(value)) {
+        return Promise.reject('Giá trị giảm tối đa phải là số');
+      }
+      
+      const maxDiscountValue = parseFloat(value);
+      if (maxDiscountValue <= 0) {
+        return Promise.reject('Giá trị giảm tối đa phải lớn hơn 0');
+      }
+      
+      if (!formState.loaiGiam) {
+        const dieuKienGiam = parseFloat(formState.dieuKienGiam);
+        const giaTriGiam = parseFloat(formState.giaTriGiam) / 100; 
+        
+        const minAllowedDiscount = dieuKienGiam * giaTriGiam;
+        
+        if (maxDiscountValue <= minAllowedDiscount) {
+          return Promise.reject(`Giá trị giảm tối đa không được nhỏ hơn ${formatter(minAllowedDiscount)} (${formState.giaTriGiam}% của đơn tối thiểu)`);
+        }
+      }
+      return Promise.resolve();
+    },
+    trigger: 'change'
+  }
   ],
   dieuKienGiam: [
   {
@@ -400,7 +430,7 @@ const onSubmit = (x: number) => {
           voucherRequest.value.ten = formState.ten;
           voucherRequest.value.loaiGiam = formState.loaiGiam;
           voucherRequest.value.giaTriGiam = formState.giaTriGiam;
-          voucherRequest.value.giamToiDa = formState.giamToiDa;
+          voucherRequest.value.giamToiDa = (!formState.loaiGiam && formState.giaTriGiam === '100') ? "" : formState.giamToiDa;
           voucherRequest.value.dieuKienGiam = formState.dieuKienGiam;
           voucherRequest.value.kieu = formState.kieu;
           voucherRequest.value.soLuong = formState.kieu ? idKhachHangs.value.length : formState.soLuong;
@@ -446,6 +476,8 @@ watch(
   ([newLoaiGiam, newGiaTriGiam]) => {
     if (newLoaiGiam === true) {
       formState.giamToiDa = newGiaTriGiam;
+    } else if (newGiaTriGiam === '100' || newGiaTriGiam == "100") {
+      formState.giamToiDa = "";
     }
   },
   { immediate: true } 

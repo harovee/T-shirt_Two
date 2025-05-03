@@ -189,6 +189,7 @@ const userInfo = computed(() => auth.user);
 const saleId = ref<string | null>('');
 const currentStatus = ref<boolean | null>(true);
 const activeTabKey = ref('1');
+const isCopyMode = ref(false); // Thêm biến theo dõi chế độ sao chép
 
 onMounted(() => {
     saleId.value = useRoute().params.id as string;
@@ -278,31 +279,33 @@ const rules: Record<string, Rule[]> = {
             trigger: 'change',
         },
     ],
-    ngayBatDauVaKetThuc: [{ required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', trigger: 'change', type: 'array' },
-    {   
-        validator: (rule, value) => {
-          
-          if (!value || value.length !== 2) return Promise.resolve();
-            const startStr = dayjs(value[0]).format('YYYY-MM-DD HH:mm');
-            const endStr = dayjs(value[1]).format('YYYY-MM-DD HH:mm');
-            
-            if (startStr === endStr) {
-              return Promise.reject('Ngày kết thúc không được trùng ngày bắt đầu');
-            }
-            
-            const ngayBatDau = value[0].valueOf();
-            const ngayKetThuc = value[1].valueOf();
-            const now = dayjs().valueOf();
-            
-            if (ngayBatDau < now) {
-              return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
-            }
-            if (ngayKetThuc < ngayBatDau) {
-              return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
-            }
-            return Promise.resolve();
-          }
-      },
+    ngayBatDauVaKetThuc: [
+        { required: true, message: 'Vui lòng chọn ngày bắt đầu và kết thúc cho đợt giảm giá', trigger: 'change', type: 'array' },
+        {   
+            validator: (rule, value) => {
+                const [ngayBatDau, ngayKetThuc] = value.map((date: any) =>
+                    dayjs(date).valueOf()
+                );
+                const now = dayjs().valueOf();
+                
+                if (!isCopyMode.value && ngayBatDau < now) {
+                    return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
+                }
+
+                if (!value || value.length !== 2) return Promise.resolve();
+                    const startStr = dayjs(value[0]).format('YYYY-MM-DD HH:mm');
+                    const endStr = dayjs(value[1]).format('YYYY-MM-DD HH:mm');
+                
+                if (startStr === endStr) {
+                return Promise.reject('Ngày kết thúc không được trùng ngày bắt đầu');
+                }
+                    if (ngayKetThuc < ngayBatDau) {
+                        return Promise.reject('Ngày kết thúc không được nhỏ hơn ngày bắt đầu');
+                    }
+                return Promise.resolve();
+            },
+            trigger: 'change',
+        },
     ],
     loai: [{ required: true, message: 'Vui lòng chọn loại đợt giảm giá', trigger: 'change' }],
 };
@@ -376,19 +379,29 @@ const onSubmit = (x: number) => {
             saleRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
             saleRequest.value.nguoiSua = userInfo.value?.email || null;
             saleRequest.value.trangThai = formState.trangThai ? 'ACTIVE' : 'INACTIVE';
-            if ( x == 1 ) {
+            
+            if (x == 1) {
                 handleUpdateSale(saleId.value, saleRequest.value)
                 handleRedirectClient();
-            }else if ( x == 2 ){
-                handleUpdateSaleProduct(saleId.value || '',{
-                saleRequest: saleRequest.value,
-                saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value}});
+            } else if (x == 2) {
+                handleUpdateSaleProduct(saleId.value || '', {
+                    saleRequest: saleRequest.value,
+                    saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value}
+                });
                 handleRedirectClient();
-            }else {
+            } else {
                 const saleStore = useSaleStore();
+                
+                if (isCopyMode.value) {
+                    const newStartDate = dayjs().add(1, 'hour');
+                    const newEndDate = dayjs().add(7, 'day');
+                    saleRequest.value.ngayBatDau = newStartDate.valueOf();
+                    saleRequest.value.ngayKetThuc = newEndDate.valueOf();
+                }
+                
                 saleStore.setSaleData(saleRequest.value);
                 router.push({name: 'admin-sale-add'}).then(() => {
-                    warningNotiSort("Vui lòng nhập lại thời gian cho đợt giảm giá.");
+                    warningNotiSort("Vui lòng kiểm tra và điều chỉnh thời gian cho đợt giảm giá.");
                 });
             }
         });
@@ -446,7 +459,9 @@ const handleUpdateSaleProduct = (saleId: string | '', data: SaleAndSaleProductRe
 }
 
 const handleCopySale = () => {
-    onSubmit(3)
+    isCopyMode.value = true; 
+    onSubmit(3);
+    isCopyMode.value = false; 
 }
 
 </script>

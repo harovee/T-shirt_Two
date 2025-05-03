@@ -84,12 +84,12 @@ const handlePaymentSuccess = () => {
   showCountdown.value = true;
   startCountdown(() => {
     if (window.opener) {
-      window.opener.location.href = '/my-order';
-      window.close();
+          window.opener.location.href = '/complete-payment';
+          window.close();
     } else {
-      router.push({ name: 'client-complete-payment' });
-    }
-  });
+        router.push({ name: "client-complete-payment" });
+      }
+      });
 };
 
 const startCountdown = (callback: () => void) => {
@@ -106,7 +106,7 @@ const handleManualRedirect = () => {
   if (countdownInterval) clearInterval(countdownInterval);
   if (status.value === 'success') {
     if (window.opener) {
-      window.opener.location.href = '/complete-payment';
+      window.opener.location.href = '/my-order';
       window.close();
     } else {
       router.push('/my-order');

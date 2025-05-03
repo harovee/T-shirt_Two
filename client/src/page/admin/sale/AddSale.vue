@@ -122,7 +122,7 @@ import { SaleAndSaleProductRequest, SaleRequest } from "@/infrastructure/service
 import { useCreateSale, useCreateSaleAndSaleProduct, useGetAttributes } from "@/infrastructure/services/service/admin/sale.action.ts";
 import ProductTable from "./ProductTable.vue";
 import ProductDetailTable from "./ProductDetailTableInAddSale.vue";
-import { defaultSaleRequest, FormState, disabledDate, disabledDateTime, defaultSaleDatePickerRules} from "./base/DefaultConfig";
+import { defaultSaleRequest, FormState, disabledDate, disabledDateTime, defaultSaleDatePickerRules, defaultSaleDatePickersRules} from "./base/DefaultConfig";
 import { notificationType, openNotification } from "@/utils/notification.config";
 import { useSaleStore } from "./base/SaleStore";
 
@@ -153,7 +153,7 @@ let formState: UnwrapRef<FormState> = reactive( {
     createdDate: null,
     lastModifiedDate: null,
 });
-const rangePresets = ref(defaultSaleDatePickerRules);
+const rangePresets = ref(defaultSaleDatePickersRules);
 const rules: Record<string, Rule[]> = {
   ten: [
       { required: true, message: 'Vui lòng nhập tên đợt giảm giá', trigger: 'change' },
