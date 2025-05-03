@@ -24,7 +24,7 @@
                     <a-form-item class="m-0 mt-2" ref="loai" label="Loại" name="loai" required>
                             <a-radio-group v-model:value="formState.loai">
                               <a-radio value="PERCENT">%</a-radio>
-                              <a-radio value="VND">Tiền</a-radio>
+                              <a-radio value="VND">vnđ</a-radio>
                             </a-radio-group>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
