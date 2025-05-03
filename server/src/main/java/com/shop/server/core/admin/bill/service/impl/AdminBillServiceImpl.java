@@ -179,6 +179,7 @@ public class AdminBillServiceImpl implements AdminBillService {
         ls.setMoTa(request.getMoTa());
         ls.setNguoiTao(request.getNguoiTao());
         ls.setTrangThai(hoaDon.getTrangThai());
+        ls.setMoTa(nv != null ? "Nhân viên " + nv.getEmail() + " đã tạo hóa đơn" : "");
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
 
         return new ResponseObject<>(
@@ -338,6 +339,9 @@ public class AdminBillServiceImpl implements AdminBillService {
         } else {
             hoaDon.setKhachHang(null);
         }
+        NhanVien nv = request.getIdNhanVien() != null ? nhanVienRepository.findById(request.getIdNhanVien())
+                .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại")) : null;
+        hoaDon.setNhanVien(nv);
 
         hoaDon.setPhieuGiamGia(request.getIdPhieuGiamGia() != null ? phieuGiamGiaRepository.findById(request.getIdPhieuGiamGia()).orElse(null) : null);
         hoaDon.setNhanVien(request.getIdNhanVien() != null ? nhanVienRepository.findById(request.getIdNhanVien()).orElse(null) : null);
@@ -367,6 +371,8 @@ public class AdminBillServiceImpl implements AdminBillService {
         ls.setIdHoaDon(hoaDon);
         ls.setHanhDong("Cập nhật hóa đơn");
         ls.setTrangThai(hoaDon.getTrangThai());
+        ls.setNguoiTao(request.getIdNhanVien());
+        ls.setMoTa("Nhân viên " + nv.getEmail() + " đã thay đổi trạng thái");
         lichSuHoaDonRepository.save(ls);
 
         return new ResponseObject<>(

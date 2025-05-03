@@ -496,7 +496,7 @@ const updateFullAddress = () => {
 };
 
 const handleGetAddress = (name: string) => {
-  // validate();
+  validate();
   const fullAddress = modelRef.line + ", " + fullAddressRef.value;
   emit("handleGetAddress", modelRef, fullAddress);
 };

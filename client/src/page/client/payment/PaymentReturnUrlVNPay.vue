@@ -57,7 +57,7 @@ const router = useRouter();
 const loading = ref(true);
 const status = ref<'success'|'fail'|''>('');
 const errorMessage = ref('');
-const countdown = ref(5);
+const countdown = ref(100);
 const showCountdown = ref(false);
 let countdownInterval: number;
 
@@ -65,6 +65,8 @@ let countdownInterval: number;
 const pendingOrderData = (() => {
   try {
     const data = localStorage.getItem('pendingVnPayOrder');
+    console.log(data);
+    
     return data ? JSON.parse(data) : null;
   } catch (e) {
     console.error('Lỗi khi đọc dữ liệu đơn hàng:', e);
@@ -122,7 +124,7 @@ onMounted(async () => {
     if (!pendingOrderData) throw new Error('Không tìm thấy thông tin đơn hàng');
 
     const payload = {
-      diaChiNguoiNhan: pendingOrderData.fullAddress || null,
+      diaChiNguoiNhan: pendingOrderData.diaChiNguoiNhan || null,
       ghiChu: pendingOrderData.ghiChu || null,
       soDienThoai: pendingOrderData.soDienThoai || null,
       tenNguoiNhan: pendingOrderData.tenNguoiNhan || null,

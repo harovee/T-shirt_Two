@@ -455,7 +455,7 @@ watch(
           shippingParams.value.toWardCode = getCustomerAddress.value.ward;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
-              if (totalAmount.value <= 2000000) {
+              if (totalAmount.value < 2000000) {
                 paymentInfo.value.shippingFee = shipping?.value?.data.total;
               } else {
                 paymentInfo.value.shippingFee = 0;
@@ -501,7 +501,7 @@ watch(
       paymentInfo.value.voucherId = newData[0].id;
       paymentInfo.value.discount = newData[0].loaiGiam ? parseFloat(newData[0].giaTri) : (totalAmount.value * parseFloat(newData[0].giaTri) / 100);
       paymentInfo.value.totalProductPrice =
-        totalAmount.value - paymentInfo.value.discount;
+        Math.floor(totalAmount.value - paymentInfo.value.discount);
       voucher.value =
         newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
         null;
@@ -530,7 +530,7 @@ watch(
       paymentInfo.value.voucherId = null;
       paymentInfo.value.discount = 0;
       paymentInfo.value.totalProductPrice =
-        totalAmount.value - paymentInfo.value.discount;
+        Math.floor(totalAmount.value - paymentInfo.value.discount);
     }
   }
 );
@@ -557,7 +557,7 @@ const discounted = computed(() => {
       return total + (e.gia * e.soLuong || 0);
     }, 0) || 0;
 
-  paymentInfo.value.totalProductPrice = total;
+  paymentInfo.value.totalProductPrice = Math.floor(total);
   return total;
 });
 
@@ -606,11 +606,11 @@ const handleSelectVoucher = (voucher) => {
   if (!voucher.loaiGiam) {
     paymentInfo.value.discount = totalAmount.value * (voucher.giaTri  / 100);
     paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
+      Math.floor(totalAmount.value - paymentInfo.value.discount);
   } else {
     paymentInfo.value.discount = voucher.giaTri;
     paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
+      Math.floor(totalAmount.value - paymentInfo.value.discount);
   }
 };
 
@@ -633,7 +633,7 @@ const handleNotVoucher = () => {
   paymentInfo.value.voucherCode = "";
   paymentInfo.value.voucherId = null;
   paymentInfo.value.discount = 0;
-  paymentInfo.value.totalProductPrice = totalAmount.value;
+  paymentInfo.value.totalProductPrice = Math.floor(totalAmount.value);
 
   // Thảo
   invoices.value.forEach((item) => {
@@ -673,6 +673,13 @@ const openLocalPdf = (maHoaDon) => {
 };
 
 const { mutate: updateBillWait } = useUpdateBillWait();
+
+// check số lượng trong giỏ
+const getTotalQuantity = () => {
+    return dataSourcePro.value.reduce((total, item) => {
+        return total + (item.soLuong || 0);
+    }, 0);
+};
 
 const handleUpdateBill = (x: number) => {
   const pdfParams = {
@@ -749,6 +756,11 @@ const handleUpdateBill = (x: number) => {
     warningNotiSort(
       "Vui lòng chọn phương thức thanh toán và tiến hành thanh toán!"
     );
+    return;
+  }
+
+  if (getTotalQuantity() > 1000) {
+    warningNotiSort("Số lượng sản phẩm trong giỏ không được quá 1000!");
     return;
   }
 
@@ -863,7 +875,7 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
       console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
     }
 
-    invoices.value.forEach((invoice: InvoiceData) => {
+    invoices.value.forEach((invoice) => {
     if (invoice.id === currentInvoice.value.id) {
       invoice.customerInfo.address = {
         province: provinceInfo.value,
@@ -892,7 +904,7 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 
       if (shippingParams.value.toWardCode) {
         refetchShipping().then(() => {
-          if (totalAmount.value <= 2000000) {
+          if (totalAmount.value < 2000000) {
             paymentInfo.value.shippingFee = shipping?.value?.data.total;
           } else {
             paymentInfo.value.shippingFee = 0;
@@ -909,7 +921,7 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 watch(totalAmount, (newTotal) => {
   if (newTotal !== 0) {
     // console.log(newTotal);
-    paymentInfo.value.totalProductPrice = newTotal;
+    paymentInfo.value.totalProductPrice = Math.floor(newTotal);
   }
 });
 
@@ -922,10 +934,10 @@ watch(
       paymentInfo.value.shippingOption === "true"
     ) {
       paymentInfo.value.totalProductPrice =
-        totalAmount.value + newTotal - paymentInfo.value.discount;
+        Math.floor(totalAmount.value + newTotal - paymentInfo.value.discount);
     } else {
       paymentInfo.value.totalProductPrice =
-        totalAmount.value + 0 - paymentInfo.value.discount;
+        Math.floor(totalAmount.value + 0 - paymentInfo.value.discount);
     }
   }
 );
@@ -941,15 +953,15 @@ watch(
         paymentInfo.value.shippingOption === "true"
       ) {
         paymentInfo.value.totalProductPrice =
-          totalAmount.value +
+          Math.floor(totalAmount.value +
           paymentInfo.value.shippingFee -
-          paymentInfo.value.discount;
+          paymentInfo.value.discount);
       } else {
         paymentInfo.value.shippingFee = 0;
         paymentInfo.value.totalProductPrice =
-          totalAmount.value +
+          Math.floor(totalAmount.value +
           paymentInfo.value.shippingFee -
-          paymentInfo.value.discount;
+          paymentInfo.value.discount);
       }
     }
   }

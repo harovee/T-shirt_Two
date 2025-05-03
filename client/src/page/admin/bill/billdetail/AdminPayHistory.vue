@@ -71,8 +71,14 @@ watch(
     refetch().then(() => {
       emit("get:total-amount", totalAmountPaid(data?.value?.data));
     });
+    
   }
 );
+
+watch (() => data?.value, (newData) => {
+console.log(newData);
+    
+})
 
 const totalAmountPaid = (listPay: any) => {
   return listPay.reduce((total, item) => total + (item.tienKhachDua || 0), 0);

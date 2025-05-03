@@ -309,7 +309,10 @@ import {
 } from "vue";
 import MyOrderUpdateModal from "./MyOrderUpdateModal.vue";
 import MyOrderAddProductModal from "./MyOrderAddProductModal.vue";
-import { formatCurrencyVND, defaultProductImageSaleUrl } from "@/utils/common.helper";
+import {
+  formatCurrencyVND,
+  defaultProductImageSaleUrl,
+} from "@/utils/common.helper";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
@@ -836,6 +839,18 @@ const loadTotalPrice = () => {};
 
 const totalPrice = computed(() => totalProductPrice.value);
 
+const getTotalQuantity = () => {
+    return localData.value.reduce((total, item) => {
+        return total + (item.soLuong || 0);
+    }, 0);
+};
+
+const getTotalPrice = () => {
+    return localData.value.reduce((total, item) => {
+        return total + (item.thanhTien || 0);
+    }, 0);
+};
+
 const handleChangeQuantity = async (record: any) => {
   params.value.id = record.idSanPhamChiTiet;
   params.value.quantity = record.soLuong;
@@ -875,6 +890,12 @@ const handleChangeQuantity = async (record: any) => {
     } else {
       if (record.soLuong < 0) {
         warningNotiSort("Số lượng không được âm!");
+        record.soLuong = 1;
+      } else if (getTotalQuantity() > 1000) {
+        warningNotiSort("Tổng số lượng sản phẩm trong giỏ không được lớn hơn 1000!");
+        record.soLuong = 1;
+      } else if (getTotalPrice() > 100000000) {
+        warningNotiSort("Tổng giá trị đơn hàng không được lớn hơn 100.000.000đ!");
         record.soLuong = 1;
       }
       emit("update-quantity", record);

@@ -636,7 +636,6 @@ const handlePayment = () => {
       centered: true,
       async onOk() {
         try {
-
           const orderData = {
             diaChiNguoiNhan: paymentInfo.value.fullAddress || null,
             ghiChu: props.memo || null,
@@ -658,7 +657,7 @@ const handlePayment = () => {
               gia: product.gia || null,
             }))
         };
-        
+
         localStorage.setItem('pendingVnPayOrder', JSON.stringify(orderData));
           const pay = {
               amount: Number(paymentInfo.value.total)+ "" || "",

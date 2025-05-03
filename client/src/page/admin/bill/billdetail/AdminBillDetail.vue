@@ -457,21 +457,21 @@ watch(
         if (detail.value.loaiGiam) {
           newData[0] = detail?.value?.giaTriGiam;
           newData[0].tongTienHD =
-            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+            Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
         } else {
           // Loại giảm = flase (%)
           newData[0].tienGiamHD =
             (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
 
           newData[0].tongTienHD =
-            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+            Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
           // console.log(newData[0].tongTienHD);
         }
       } else {
         newData[0].tienGiamHD = 0;
         // newData[0].tienShip = 0;
         newData[0].tongTienHD =
-          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+          Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
       }
 
       // Tính toán lại phụ phí/ hoàn trả
@@ -539,18 +539,18 @@ watch(
           // Loại giảm = true (tiền mặt)
           detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
           detailDataSources.value[0].tongTienHD =
-            totalPrice.value +
+            Math.floor(totalPrice.value +
             detailDataSources.value[0].tienShip -
-            detailDataSources.value[0].tienGiamHD;
+            detailDataSources.value[0].tienGiamHD);
         } else {
           // Loại giảm = flase (%)
           detailDataSources.value[0].tienGiamHD =
             (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
 
           detailDataSources.value[0].tongTienHD =
-            totalPrice.value +
+            Math.floor(totalPrice.value +
             detailDataSources.value[0].tienShip -
-            detailDataSources.value[0].tienGiamHD;
+            detailDataSources.value[0].tienGiamHD);
         }
       });
     }

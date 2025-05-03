@@ -143,6 +143,7 @@ import {
   errorNotiSort,
 } from "@/utils/notification.config";
 import { currentInvoice, InvoiceData, invoices, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -214,6 +215,8 @@ const params = ref<paymentMethodDetailRequest>({
   maGiaoDich: null,
   soTienDu: null,
   tienChuyenKhoan: 0,
+  idNhanVien: null,
+  moTa: ""
 });
 
 const { resetFields, validate, validateInfos } = Form.useForm(params, rulesRef);
@@ -305,7 +308,9 @@ const handlePayment = () => {
         if (params.value.tienKhachDua > props.totalAmount) {
           params.value.tienKhachDua = props.totalAmount - totalAmountAfter.value
         }
-        console.log("🚀 ~ handlePayment ~ params:", params.value);
+        params.value.idNhanVien = useAuthStore().user.id;
+        params.value.moTa = `Nhân viên ${useAuthStore().user.email} đã thực hiện thanh toán`
+        // console.log("🚀 ~ handlePayment ~ params:", params.value);
         invoices.value.forEach((item: InvoiceData) => {
           if (item.id === currentInvoice.value.id) {
             item.paymentMethod = params.value.idPhuongThucThanhToan === 'tienmat' ?
@@ -318,6 +323,7 @@ const handlePayment = () => {
             sendCartInfo(item);
           }
         });
+
         createPaymentMethodDetail(params.value, {
           onSuccess: (result) => {
             successNotiSort(result?.message);

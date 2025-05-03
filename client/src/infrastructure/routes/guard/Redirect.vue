@@ -42,7 +42,7 @@ onMounted(() => {
         router.push({name: ROUTES_CONSTANTS.ADMIN.name});
         break;
       case ROLES.USER:
-        router.push({name: ROUTES_CONSTANTS.USER.name});
+        router.push({name: ROUTES_CONSTANTS.ADMIN.name});
         break;
       case ROLES.CLIENT:
         router.push({name: ROUTES_CONSTANTS.CLIENT.children.HOME.name});

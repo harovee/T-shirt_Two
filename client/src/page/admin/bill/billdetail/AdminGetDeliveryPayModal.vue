@@ -128,6 +128,7 @@ import {
   successNotiSort,
   errorNotiSort,
 } from "@/utils/notification.config";
+import { useAuthStore } from "@/infrastructure/stores/auth";
 
 const pageSize = ref(5);
 const current1 = ref(1);
@@ -191,6 +192,8 @@ const params = ref<paymentMethodDetailRequest>({
   maGiaoDich: null,
   soTienDu: null,
   tienChuyenKhoan: 0,
+  idNhanVien: null,
+  moTa: ""
 });
 
 const { resetFields, validate, validateInfos } = Form.useForm(params, rulesRef);
@@ -282,6 +285,8 @@ const handlePayment = () => {
         if (params.value.tienKhachDua > props.paymentInfoData.amountPayable) {
           params.value.tienKhachDua = props.paymentInfoData.amountPayable
         }
+        params.value.idNhanVien = useAuthStore().user.id || null;
+        params.value.moTa = `Nhân viên ${useAuthStore().user.email} đã thực hiện thanh toán`
         createPaymentMethodDetail(params.value, {
           onSuccess: (result) => {
             successNotiSort(result?.message);

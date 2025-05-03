@@ -122,12 +122,14 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
             ctpttt1.setHoaDon(hoaDon);
             ctpttt1.setPhuongThucThanhToan(pttt1);
             ctpttt1.setTienKhachDua(request.getTienKhachDua());
+            ctpttt1.setNguoiTao(request.getIdNhanVien());
             ctpttt1.setDeleted(false);
             ChiTietPhuongThucThanhToan ctpttt2 = new ChiTietPhuongThucThanhToan();
             ctpttt2.setHoaDon(hoaDon);
             ctpttt2.setPhuongThucThanhToan(pttt2);
             ctpttt2.setTienKhachDua(request.getTienChuyenKhoan());
             ctpttt2.setMaGiaoDich(request.getMaGiaoDich());
+            ctpttt2.setNguoiTao(request.getIdNhanVien());
             ctpttt2.setDeleted(false);
             ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt1);
             // Nếu chuyển khoản 0 đồng thì k lưu
@@ -140,7 +142,7 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
 
             LichSuHoaDon ls = new LichSuHoaDon();
             ls.setIdHoaDon(hoaDon);
-            ls.setHanhDong("Thanh toán thành công, chuyển trạng thái hóa đơn -> 'Đã thanh toán'");
+            ls.setHanhDong("Thanh toán");
             ls.setMoTa(request.getMoTa());
             ls.setTrangThai(hoaDon.getTrangThai());
             LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
@@ -154,6 +156,7 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
         ctpttt.setTienKhachDua(request.getTienKhachDua());
         ctpttt.setSoTienDu(request.getSoTienDu());
         ctpttt.setMaGiaoDich(request.getMaGiaoDich());
+        ctpttt.setNguoiTao(request.getIdNhanVien());
         ctpttt.setDeleted(false);
         ChiTietPhuongThucThanhToan ct = adminChiTietPhuongThucThanhToanRepository.save(ctpttt);
 
@@ -161,10 +164,9 @@ public class AdminPaymentServicesImpl implements AdminPaymentServices {
         HoaDon hd1 = hoaDonRepository.save(hoaDon);
 
 
-
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);
-        ls.setHanhDong("Thanh toán thành công, chuyển trạng thái hóa đơn -> 'Đã thanh toán'");
+        ls.setHanhDong("Thanh toán");
         ls.setMoTa(request.getMoTa());
         ls.setTrangThai(hoaDon.getTrangThai());
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);

@@ -44,7 +44,7 @@
             >Đang bán</a-tag
           >
           <a-tag v-else-if="record.trangThai === 1" color="warning"
-            >Ngừng kinh doanh</a-tag
+            >Ngừng bán</a-tag
           >
           <a-tag v-else color="error">Không xác định</a-tag>
         </div>
