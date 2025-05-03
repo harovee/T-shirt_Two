@@ -88,6 +88,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                   LEFT JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
                   WHERE sp.trang_thai = 0
                   AND spct.so_luong > 0
+                  AND spct.trang_thai = 0
                   AND spct.so_luong IS NOT NULL
                   AND (spct.gia <= :#{#request.max} OR :#{#request.max} IS NULL)
                   AND (spct.gia >= :#{#request.min} OR :#{#request.min} IS NULL)
@@ -220,6 +221,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                         LEFT JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
                         WHERE sp.trang_thai = 0
                         AND spct.so_luong > 0
+                        AND spct.trang_thai = 0
                         AND spct.so_luong IS NOT NULL
                         AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
                         AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
@@ -338,6 +340,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                 AND  ta.id =  :#{#request.idTayAo}
                                 AND  spct.gioi_tinh = :#{#request.gioiTinh}
                                 AND spct.so_luong > 0
+                                AND spct.trang_thai = 0    
                         GROUP BY sp.id, sp.ten ,cl.id, cl.ten,dm.id, dm.ten,ca.id, ca.ten,ta.id, ta.ten,ht.id, ht.ten,tn.id, tn.ten,th.id, th.ten,kd.id, kd.ten, sp.ma_san_pham,spct.gioi_tinh  
             """, nativeQuery = true)
     ClientProductProjectionResponse getProductById(String idSanPham, ClientProductRequest request);
@@ -434,6 +437,7 @@ public interface ClientProductRepository extends SanPhamRepository {
             JOIN kich_co kc ON kc.id = spct.id_kich_co
             LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
             WHERE sp.trang_thai = 0
+                AND spct.trang_thai = 0
                 AND spct.so_luong >0
                 AND (sp.id = :#{#idSanPham} OR :#{#idSanPham} IS NULL)
                 AND (dm.id = :#{#request.idDanhMuc} OR :#{#request.idDanhMuc} IS NULL)
@@ -470,6 +474,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                             WHERE sp.trang_thai = 0
                                   AND spct.so_luong > 0
                                   AND spct.so_luong IS NOT NULL
+                                  AND spct.trang_thai = 0
                             GROUP BY sp.id
                             ORDER BY tongSoLuongBan DESC, has_discount DESC
                             LIMIT 8
@@ -611,6 +616,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                         JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
                         WHERE sp.trang_thai = 0
                             AND spct.so_luong > 0
+                            AND spct.trang_thai = 0          
                             AND spct.so_luong IS NOT NULL
                         GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,spct.gioi_tinh,
                                  ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta

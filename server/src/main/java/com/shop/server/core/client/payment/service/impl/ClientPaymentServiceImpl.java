@@ -344,18 +344,16 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
 
         for(ClientInvoiceDetailRequest req : request.getListSanPhamChiTiets()) {
             clientPaymentRepository.saveProductDetailsToInvoice(req, hoaDon.getId(), request.getIdNhanVien());
-            clientPaymentRepository.updateSoLuong(req);
+//            clientPaymentRepository.updateSoLuong(req);
         }
-        ChiTietPhuongThucThanhToan chiTietPTTT = new ChiTietPhuongThucThanhToan();
-        chiTietPTTT.setHoaDon(hoaDon);
-        chiTietPTTT.setMaGiaoDich(request.getMaGiaoDich());
-        chiTietPTTT.setTienKhachDua(request.getTongTien());
-        chiTietPTTT.setGhiChu("Thanh toán qua VietQr");
 
-        PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
-        chiTietPTTT.setPhuongThucThanhToan(pttt);
+        // lưu thông báo - gửi thông báo
+        OrderNotification orderNotification = new OrderNotification();
+        orderNotification.setOrderId(hoaDon.getId());
+        orderNotification.setContent("Hóa đơn " + hoaDon.getMa() + " cần xác nhận");
+        OrderNotification noti  = notificationRepository.save(orderNotification);
+        messagingTemplate.convertAndSend("/topic/notification", noti);
 
-        chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
         LichSuHoaDon ls = new LichSuHoaDon();
         ls.setIdHoaDon(hoaDon);
         ls.setHanhDong("Tạo hóa đơn");
@@ -363,6 +361,14 @@ public class ClientPaymentServiceImpl implements ClientPaymentService {
         ls.setNguoiTao(request.getIdNhanVien());
         ls.setTrangThai(hoaDon.getTrangThai());
         LichSuHoaDon ls1 = lichSuHoaDonRepository.save(ls);
+        ChiTietPhuongThucThanhToan chiTietPTTT = new ChiTietPhuongThucThanhToan();
+        chiTietPTTT.setHoaDon(hoaDon);
+        chiTietPTTT.setMaGiaoDich(request.getMaGiaoDich());
+        chiTietPTTT.setTienKhachDua(request.getTongTien());
+        chiTietPTTT.setGhiChu("Thanh toán qua VietQr");
+        PhuongThucThanhToan pttt = phuongThucThanhToanRepository.findPhuongThucThanhToanByName("Chuyển khoản");
+        chiTietPTTT.setPhuongThucThanhToan(pttt);
+        chiTietPhuongThucThanhToanRepository.save(chiTietPTTT);
         return new ResponseObject<>(
                 null,
                 HttpStatus.OK,
