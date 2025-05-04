@@ -2,7 +2,7 @@
   <!-- Bảng danh sách sản phẩm -->
   <table-example
     wrapperClassName="min-h-[35rem]"
-    :columns="columns"
+    :columns="columnsFilter"
     :data-source="props.dataSource?.data"
     :loading="props.loading"
     :pagination-params="paginationParams || {}"
@@ -60,6 +60,12 @@ import {
 } from "@/utils/common.helper";
 import { ColumnType } from "ant-design-vue/es/table";
 import { Image } from "ant-design-vue";
+import { useAuthStore } from "@/infrastructure/stores/auth";
+import { computed } from "vue";
+
+const authStore = useAuthStore();
+const userRole = computed(() => authStore?.user?.roleName);
+const isClient = computed(() => userRole.value === "CLIENT");
 
 const emit = defineEmits([
   "update:paginationParams",
@@ -196,4 +202,9 @@ const columns: ColumnType[] = [
     fixed: "right",
   },
 ];
+
+const columnsFilter = computed(() =>
+  columns.filter(col => !(isClient.value && col.key === "soLuong"))
+)
+
 </script>

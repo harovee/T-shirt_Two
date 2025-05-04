@@ -117,7 +117,7 @@
         <div class="flex justify-between items-center mb-5">
           <div>
             <h3 class="text-xl font-semibold text-gray-800 m-0">
-              Địa chỉ khách hàng
+              Địa chỉ của tôi
             </h3>
           </div>
           <a-tooltip title="Thêm địa chỉ" trigger="hover">
