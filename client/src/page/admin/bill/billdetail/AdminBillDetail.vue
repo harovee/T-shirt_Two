@@ -450,13 +450,23 @@ watch(
       if (detail.value) {
         // Loại giảm = true (tiền mặt)
         if (detail.value.loaiGiam) {
-          newData[0].tienGiamHD = detail?.value?.giaTriGiam;
+          // newData[0].tienGiamHD = detail?.value?.giaTriGiam;
+          if (detail.value.dieuKienGiam <= totalPrice.value) {
+            newData[0].tienGiamHD = detail.value.giaTriGiam;
+          } else {
+            newData[0].tienGiamHD = 0;
+          }
           newData[0].tongTienHD =
             Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
         } else {
           // Loại giảm = flase (%)
           const discount = (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
-          newData[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          if (detail.value.dieuKienGiam <= totalPrice.value) {
+            newData[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          } else {
+            newData[0].tienGiamHD = 0;
+          }
+          // newData[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
 
           newData[0].tongTienHD =
             Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
@@ -553,7 +563,12 @@ watch(
 
         if (detail.value.loaiGiam) {
           // Loại giảm = true (tiền mặt)
-          detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
+          if (detail.value.dieuKienGiam <= totalPrice.value) {
+            copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+          } else {
+            copiedDataSource.value[0].tienGiamHD = 0;
+          }
+          // detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
           detailDataSources.value[0].tongTienHD =
             Math.floor(totalPrice.value +
             detailDataSources.value[0].tienShip -
@@ -563,7 +578,12 @@ watch(
           const discount = (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
           // detailDataSources.value[0].tienGiamHD =
           //   (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
-          detailDataSources.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          if (detail.value.dieuKienGiam <= totalPrice.value) {
+            copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          } else {
+            copiedDataSource.value[0].tienGiamHD = 0;
+          }
+          // detailDataSources.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
           
           detailDataSources.value[0].tongTienHD =
             Math.floor(totalPrice.value +
