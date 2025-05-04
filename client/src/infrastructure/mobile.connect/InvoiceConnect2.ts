@@ -54,6 +54,7 @@ interface Voucher {
   name: string
   discount: number
   type: "fixed" | "percent"
+  maxDiscount: number | null
 }
 
 export interface InvoiceData {

@@ -7,4 +7,5 @@ public class Voucher {
     private String code;
     private double discount;
     private String type;
+    private double maxDiscount;
 }
