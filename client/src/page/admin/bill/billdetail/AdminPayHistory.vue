@@ -41,6 +41,7 @@ import { useRoute } from "vue-router";
 const props = defineProps({
   isPaymented: Boolean,
   billId: String,
+  isRefetchData: Boolean
 });
 
 const emit = defineEmits(["get:total-amount"]);
@@ -72,6 +73,17 @@ watch(
       emit("get:total-amount", totalAmountPaid(data?.value?.data));
     });
     
+  }
+);
+
+watch(
+  () => props.isRefetchData,
+  (newId) => {
+    if (newId) {
+      refetch().then(() => {
+      emit("get:total-amount", totalAmountPaid(data?.value?.data));
+    });
+    }
   }
 );
 

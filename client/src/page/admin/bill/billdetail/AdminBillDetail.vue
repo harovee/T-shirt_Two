@@ -673,13 +673,28 @@ const handleRefetchData = (record) => {
 // const { data, isLoading, isFetching } = useGetPayHistory(params, {
 //   refetchOnWindowClose: false,
 //   placeholderData: keepPreviousData,
-//   keepPreviousData: false,
+//   keepPreviousData: false,y
 // });
 
 // Hàm tính tổng tiền đã thanh toán
 const totalAmountPaid = (listPay: any) => {
   return listPay.reduce((total, item) => total + (item.tienKhachDua || 0), 0);
 };
+
+const { data, isFetching, refetch:rePay } = useGetPayHistory(params, {
+  refetchOnWindowClose: false,
+  placeholderData: keepPreviousData,
+  keepPreviousData: false,
+});
+
+watch(() => data?.value?.data , (newData) => {
+  if (newData) {
+    paid.value = totalAmountPaid(newData);
+    paymentInfo.value.paid = totalAmountPaid(newData);
+  }
+})
+
+
 
 // Hàm emit tính tiền đã thanh toán
 const getTotalAmountPaid = (totalPaid: number) => {

@@ -102,11 +102,13 @@
         :payment-info-data="paymentInfoData"
         @handleClose="handleCloseModalGetPay"
         @onCancel="isOpenModalGetPay = false"
+        @handleRefetchPayHistory="refetchPayHistory"
       />
     </div>
     <admin-pay-history
       :isPaymented="isPaymented"
       :billId="billId"
+      :isRefetch="isRefetchData"
       @get:total-amount="getTotalAmount"
     />
   </div>
@@ -365,6 +367,8 @@ const paramsCheckQuantity = ref<checkQuantityRequest>({
 });
 
 const payloadData = ref();
+
+const isRefetchData = ref(false);
 
 watch(
   () => props.dataSource,
@@ -703,6 +707,10 @@ const handleUpdateBill = async (modelRef: any) => {
     },
   });
 };
+
+const refetchPayHistory = () => {
+  isRefetchData.value = true;
+}
 
 const getTotalAmount = (totalPaid: number) => {
   emit("get:total-amount", totalPaid);

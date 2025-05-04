@@ -142,7 +142,7 @@ const props = defineProps({
   paymentInfoData: Object
 });
 
-const emit = defineEmits(["handleClose", "handlePaymented"]);
+const emit = defineEmits(["handleClose", "handlePaymented", "handleRefetchPayHistory"]);
 
 const { mutate: createPaymentMethodDetail } = useCreatePaymentMethodDetail();
 

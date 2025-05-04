@@ -132,7 +132,7 @@ const getIdHoaDonFromUrl = () => {
   return urlParams.get("idHoaDon") || "";
 };
 
-const emit = defineEmits(["handleClose"]);
+const emit = defineEmits(["handleClose", "handleRefetchPayHistory"]);
 
 const modelRef = reactive<CreateDeliveryPaymentRequest>({
   idHoaDon: getIdHoaDonFromUrl(),
