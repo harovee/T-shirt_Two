@@ -12,7 +12,9 @@ import {
     getKieuDang,
     getColor,
     getProductsBestSale,
-    getSaleProducts
+    getSaleProducts,
+    getProductDetailByIdWithColor,
+    getProductDetailByIdWithSize
 } from "@/infrastructure/services/api/client/clientproduct.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -130,6 +132,30 @@ export const useGetSaleProduct = (
     return useQuery({
         queryKey: [queryKey.client.product.productSaleList, params],
         queryFn: () => getSaleProducts(params),
+        ...options,
+    });
+};
+
+export const useGetProductDetailByIdWithColor = (
+    sanPhamId: Ref<string | null>,
+    params: Ref<ClientProductDetailRequest>,
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getProductDetailByIdWithColor>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.productDetailWithColor, sanPhamId,params],
+        queryFn: () => getProductDetailByIdWithColor(sanPhamId,params),
+        ...options,
+    });
+};
+
+export const useGetProductDetailByIdWithSize = (
+    sanPhamId: Ref<string | null>,
+    params: Ref<ClientProductDetailRequest>,
+    options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof getProductDetailByIdWithSize>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.client.product.productDetailWithSize, sanPhamId,params],
+        queryFn: () => getProductDetailByIdWithSize(sanPhamId,params),
         ...options,
     });
 };

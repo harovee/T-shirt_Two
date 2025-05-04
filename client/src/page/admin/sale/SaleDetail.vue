@@ -223,6 +223,12 @@ const formState: UnwrapRef<FormState> = reactive( {
     createdDate: null,
     lastModifiedDate: null,
 });
+
+const formatter = (value: any) => {
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
 const validStartDate = ref<number | null> (dayjs().valueOf());
 const rangePresets = ref([
     { label: 'Bây giờ', value: [dayjs().add(1, 'minute'), dayjs().add(16, 'minute')] },

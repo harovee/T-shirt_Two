@@ -28,8 +28,16 @@
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'giaTri'" class="text-left">
           <span>
-             {{ record.loaiGiam ? formatCurrencyVND(record.giaTri) : record.giaTri + "%" }}
-          </span>
+             {{ record.loaiGiam ? formatCurrencyVND(record.giaTri) : (record.giaTri + "%") }}
+             
+              <!-- {{ formatCurrencyVND(record.giaTriGiam) }} -->
+          </span> 
+        </div>
+        <div v-if="column.key === 'giamToiDa'" class="text-left">
+          <span>
+             
+              {{ formatCurrencyVND(record.giaTriGiam) }}
+          </span> 
         </div>
         <div v-if="column.key === 'dieuKienGiam'" class="text-left">
           {{ formatCurrencyVND(record.dieuKienGiam) }}
@@ -137,6 +145,8 @@ const { data } = useGetListVoucher(params, {
   placeholderData: keepPreviousData,
 });
 
+console.log(data);
+
 const handleSearch = (newValue: string) => {
   params.value.keyword = newValue;
   params.value.page = 1;
@@ -215,6 +225,14 @@ const columns: TableColumnType<VoucherResponse>[] = [
     title: "Đơn tối thiểu",
     dataIndex: "dieuKienGiam",
     key: "dieuKienGiam",
+    ellipsis: true,
+    width: 100,
+    resizable: true,
+  },
+  {
+    title: "Giảm tối đa",
+    dataIndex: "giamToiDa",
+    key: "giamToiDa",
     ellipsis: true,
     width: 100,
     resizable: true,
