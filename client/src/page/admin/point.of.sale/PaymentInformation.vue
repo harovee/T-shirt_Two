@@ -20,7 +20,7 @@
       <h3 class="text-xl font-semibold mb-4">Thông tin thanh toán</h3>
       <a-form layout="vertical">
         <div class="flex gap-4">
-          <a-form-item >
+          <a-form-item>
             <a-radio-group
               v-model:value="paymentInfo.shippingOption"
               option-type="button"
@@ -61,10 +61,7 @@
             </a-tooltip>
           </div>
           <!-- dataNextPriceVouchers > 0 && paymentInfo.value && paymentInfo.value.discount > 0 -->
-          <div
-            v-if="voucher"
-            class="text-xs border rounded-lg p-3 mt-3"
-          >
+          <div v-if="voucher" class="text-xs border rounded-lg p-3 mt-3">
             <div class="flex items-center">
               <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
               <span
@@ -143,7 +140,10 @@
             :formatter="formatter"
           />
         </div>
-        <p v-if="totalAmount >= 2000000 && paymentInfo.shippingOption === 'true'" class="mt-1 ms-16 text-red-500">
+        <p
+          v-if="totalAmount >= 2000000 && paymentInfo.shippingOption === 'true'"
+          class="mt-1 ms-16 text-red-500"
+        >
           (Free ship cho hóa đơn từ 2.000.000đ.)
         </p>
         <a-form-item label="Phương thức thanh toán" class="text-xl">
@@ -358,10 +358,10 @@ const dataSourcePro: DataType[] | any = computed(() => {
       tenSanPham: e.tenSanPham || "",
       tenThuongHieu: e.tenThuongHieu || "",
       gioiTinh: e.gioiTinh,
-        // ? "Nam"
-        // : e.gioiTinh == false
-        // ? "Nữ"
-        // : "Không xác định",
+      // ? "Nam"
+      // : e.gioiTinh == false
+      // ? "Nữ"
+      // : "Không xác định",
       kichCo: e.kichCo || "",
       phongCach: e.phongCach || "",
       maMauSac: e.maMauSac || "",
@@ -499,13 +499,15 @@ watch(
   () => dataListVoucher.value,
   (newData) => {
     console.log(newData);
-    
+
     if (newData && newData.length > 0) {
       paymentInfo.value.voucherCode = newData[0].ma;
       paymentInfo.value.voucherId = newData[0].id;
-      paymentInfo.value.discount = newData[0].loaiGiam ? parseFloat(newData[0].giaTri) : (totalAmount.value * parseFloat(newData[0].giaTri) / 100);
-      paymentInfo.value.totalProductPrice =
-        totalAmount.value - paymentInfo.value.discount;
+      // paymentInfo.value.discount = newData[0].loaiGiam ? parseFloat(newData[0].giaTri) : (totalAmount.value * parseFloat(newData[0].giaTri) / 100);
+      paymentInfo.value.discount = Number(newData[0].giaTriGiam);
+      paymentInfo.value.totalProductPrice = Math.floor(
+        totalAmount.value - paymentInfo.value.discount
+      );
       voucher.value =
         newData.find((voucher) => voucher.id === paymentInfo.value.voucherId) ||
         null;
@@ -533,8 +535,9 @@ watch(
       paymentInfo.value.voucherCode = "";
       paymentInfo.value.voucherId = null;
       paymentInfo.value.discount = 0;
-      paymentInfo.value.totalProductPrice =
-        totalAmount.value - paymentInfo.value.discount;
+      paymentInfo.value.totalProductPrice = Math.floor(
+        totalAmount.value - paymentInfo.value.discount
+      );
     }
   }
 );
@@ -578,7 +581,11 @@ const openVoucherModal = () => {
 };
 
 const openPaymentMethodModal = () => {
-  openPaymentMethod.value = true;
+  if (dataSourcePro.value.length > 0) {
+    openPaymentMethod.value = true;
+  } else {
+    warningNotiSort("Không có sản phẩm nào trong giỏ hàng!");
+  }
 };
 
 const handleClose = () => {
@@ -619,15 +626,20 @@ const handleSelectVoucher = (voucher) => {
   }
   paymentInfo.value.voucherCode = voucher.ma;
   paymentInfo.value.voucherId = voucher.id;
-  if (!voucher.loaiGiam) {
-    paymentInfo.value.discount = totalAmount.value * (voucher.giaTri  / 100);
-    paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
-  } else {
-    paymentInfo.value.discount = voucher.giaTri;
-    paymentInfo.value.totalProductPrice =
-      totalAmount.value - paymentInfo.value.discount;
-  }
+  // if (!voucher.loaiGiam) {
+  //   // paymentInfo.value.discount = totalAmount.value * (voucher.giaTri  / 100);
+  // paymentInfo.value.discount = Number(voucher.giaTriGiam);
+  //   paymentInfo.value.totalProductPrice =
+  //     Math.floor(totalAmount.value - paymentInfo.value.discount);
+  // } else {
+  //   paymentInfo.value.discount = Number(voucher.giaTriGiam);
+  //   paymentInfo.value.totalProductPrice =
+  //     Math.floor(totalAmount.value - paymentInfo.value.discount);
+  // }
+  paymentInfo.value.discount = Number(voucher.giaTriGiam);
+  paymentInfo.value.totalProductPrice = Math.floor(
+    totalAmount.value - paymentInfo.value.discount
+  );
 };
 
 watch(
@@ -663,20 +675,24 @@ const handleNotVoucher = () => {
 
 const changeShippingOption = (option: string) => {
   paymentInfo.value.shippingOption = option;
-   // Thảo
-   invoices.value.forEach((item) => {
+  // Thảo
+  invoices.value.forEach((item) => {
     if (item.id === currentInvoice.value.id) {
-      if (option === 'true') {
-          item.customerInfo.address = {
-            province: getCustomerAddress.value ? getCustomerAddress.value.province || '' : '',
-            district: getCustomerAddress.value ? getCustomerAddress.value.district ?? '' : '',
-            ward: getCustomerAddress.value ? getCustomerAddress.value.ward || '' : '',
-            detail: getCustomerAddress.value ? getCustomerAddress.value.line : '',
-            phone: getCustomerAddress.value ? getCustomerAddress.value.phoneNumber || '' : '',
-            note: ''
-          };
+      if (option === "true") {
+        item.customerInfo.address = {
+          province: getCustomerAddress.value
+            ? getCustomerAddress.value.province || ""
+            : "",
+          district: getCustomerAddress.value
+            ? getCustomerAddress.value.district ?? ""
+            : "",
+          ward: getCustomerAddress.value
+            ? getCustomerAddress.value.ward || ""
+            : "",
+          detail: getCustomerAddress.value ? getCustomerAddress.value.line : "",
+        };
       } else {
-          item.customerInfo.address = null;
+        item.customerInfo.address = null;
       }
       currentInvoice.value = item;
       sendCartInfo(item);
@@ -691,6 +707,13 @@ const openLocalPdf = (maHoaDon) => {
 };
 
 const { mutate: updateBillWait } = useUpdateBillWait();
+
+// check số lượng trong giỏ
+const getTotalQuantity = () => {
+  return dataSourcePro.value.reduce((total, item) => {
+    return total + (Number(item.soLuong) || 0);
+  }, 0);
+};
 
 const handleUpdateBill = (x: number) => {
   const pdfParams = {
@@ -769,8 +792,9 @@ const handleUpdateBill = (x: number) => {
     );
     return;
   }
-
+console.log(getTotalQuantity());
   if (getTotalQuantity() > 1000) {
+    
     warningNotiSort("Số lượng sản phẩm trong giỏ không được quá 1000!");
     return;
   }
@@ -798,7 +822,37 @@ const handleUpdateBill = (x: number) => {
       },
     });
   } else if (x === 2) {
-
+    sendPaymentConfirm(
+      props.dataSourceInfor.ma,
+      () => {
+        async () => {
+          try {
+            await updateBillWait({
+              idBill: props.dataSourceInfor.id,
+              params: payload,
+            });
+            await createInvoicePdf(pdfParams)
+              .then(() => {
+                const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
+                window.open(url, "_blank");
+              })
+              .catch((error) => {
+                console.error("Tạo hóa đơn PDF thất bại", error);
+              });
+            successNotiSort("Thanh toán thành công!");
+            router.push(
+              ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+            );
+          } catch (error: any) {
+            if (error?.response) {
+              errorNotiSort(error?.response?.data?.message);
+            }
+          }
+        };
+        return true;
+      },
+      () => {}
+    );
   }
 };
 
@@ -861,20 +915,20 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
       console.error("Lỗi khi lấy thông tin Xã, huyện, tỉnh:", error);
     }
 
-    invoices.value.forEach((invoice: InvoiceData) => {
-    if (invoice.id === currentInvoice.value.id) {
-      invoice.customerInfo.address = {
-        province: provinceInfo.value ?? '',
-        district: districtInfo.value ?? '',
-        ward: wardInfo.value ?? '',
-        detail: modelRef.line,
-        receiver: modelRef.name,
-        phone: modelRef.phoneNumber,
-        note: '',
-      };
-      currentInvoice.value = invoice;
-      sendCartInfo(currentInvoice.value);
-    }
+    invoices.value.forEach((invoice) => {
+      if (invoice.id === currentInvoice.value.id) {
+        invoice.customerInfo.address = {
+          province: provinceInfo.value,
+          district: districtInfo.value,
+          ward: wardInfo.value,
+          detail: modelRef.line,
+          receiver: modelRef.name,
+          phone: modelRef.phoneNumber,
+          note: "",
+        };
+        currentInvoice.value = invoice;
+        sendCartInfo(currentInvoice.value);
+      }
     });
   }
 
@@ -918,12 +972,14 @@ watch(
       newTotal &&
       newTotal !== 0 &&
       paymentInfo.value.shippingOption === "true"
-    ) {
-      paymentInfo.value.totalProductPrice =
-        totalAmount.value + newTotal - paymentInfo.value.discount;
+    ) 
+      paymentInfo.value.totalProductPrice = Math.floor(
+        totalAmount.value + newTotal - paymentInfo.value.discount
+      );
     } else {
-      paymentInfo.value.totalProductPrice =
-        totalAmount.value + 0 - paymentInfo.value.discount;
+      paymentInfo.value.totalProductPrice = Math.floor(
+        totalAmount.value + 0 - paymentInfo.value.discount
+      );
     }
   }
 );
@@ -938,16 +994,18 @@ watch(
         paymentInfo.value.shippingFee !== 0 &&
         paymentInfo.value.shippingOption === "true"
       ) {
-        paymentInfo.value.totalProductPrice =
+        paymentInfo.value.totalProductPrice = Math.floor(
           totalAmount.value +
-          paymentInfo.value.shippingFee -
-          paymentInfo.value.discount;
+            paymentInfo.value.shippingFee -
+            paymentInfo.value.discount
+        );
       } else {
         paymentInfo.value.shippingFee = 0;
-        paymentInfo.value.totalProductPrice =
+        paymentInfo.value.totalProductPrice = Math.floor(
           totalAmount.value +
-          paymentInfo.value.shippingFee -
-          paymentInfo.value.discount;
+            paymentInfo.value.shippingFee -
+            paymentInfo.value.discount
+        );
       }
     }
   }

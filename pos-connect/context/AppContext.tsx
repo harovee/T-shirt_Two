@@ -100,7 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const subscriptionRef = useRef<any>(null)
 
   // Lấy địa chỉ IP từ biến môi trường
-  const SERVER_IP = process.env.SERVER_IP || "192.168.0.102"
+  const SERVER_IP = process.env.SERVER_IP || "192.168.232.2"
   const SERVER_PORT = process.env.SERVER_PORT || "8080"
 
   // Sửa lại URL để sử dụng http thay vì ws

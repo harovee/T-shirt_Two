@@ -24,7 +24,7 @@
           {{ formatCurrencyVND(record.daTra) }}
         </div>
         <div v-else-if="column.key === 'tienPhaiTra'" class="text-center">
-          {{ formatCurrencyVND(record.tienPhaiTra) }}
+          {{ (record.tienPhaiTra >= 0) ? formatCurrencyVND(record.tienPhaiTra) : formatCurrencyVND(0) }}
         </div>
         <div v-else-if="column.key === 'status'" class="text-center">
           <a-tag v-if="record.trangThai === 'Thành công'" color="success"
