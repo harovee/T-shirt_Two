@@ -140,7 +140,7 @@ public class PointOfSaleController {
     @GetMapping("/invoices/{invoiceId}")
     public ResponseEntity<Resource> viewInvoice(@PathVariable String invoiceId) throws IOException {
         String maHoaDon = pointOfSaleRepository.getInvoiceCodeById(invoiceId);
-        File file = new File("D:/DATN/TShirtShop/hoa-don/" + maHoaDon + ".pdf");
+        File file = new File("C:/TShirtTwo/hoa_don/" + maHoaDon + ".pdf");
 
         if (!file.exists()) {
             return ResponseEntity.notFound().build();
