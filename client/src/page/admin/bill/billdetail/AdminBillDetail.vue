@@ -95,7 +95,7 @@
         <span v-if="detailDataSources" class="text-lg">{{
           detailDataSources.length > 0
             ? `${formatCurrencyVND(paymentInfo.paid)}`
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
       <div class="flex justify-between">
@@ -103,15 +103,15 @@
         <span v-if="detailDataSources" class="text-lg text-red-500">{{
           detailDataSources.length > 0
             ? formatCurrencyVND(paymentInfo.amountPayable)
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
       <div class="flex justify-between text-lg">
         <span>(Phụ phí)</span>
         <span v-if="detailDataSources">{{
-          detailDataSources.length > 0
+          detailDataSources.length > 0 && paymentInfo.paid > 0
             ? formatCurrencyVND(paymentInfo.surcharge)
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
       <div class="flex justify-between text-lg">
@@ -119,7 +119,7 @@
         <span v-if="detailDataSources">{{
           detailDataSources.length > 0
             ? formatCurrencyVND(paymentInfo.refund)
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
     </div>
@@ -450,13 +450,13 @@ watch(
       if (detail.value) {
         // Loại giảm = true (tiền mặt)
         if (detail.value.loaiGiam) {
-          newData[0] = detail?.value?.giaTriGiam;
+          newData[0].tienGiamHD = detail?.value?.giaTriGiam;
           newData[0].tongTienHD =
             Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
         } else {
           // Loại giảm = flase (%)
-          newData[0].tienGiamHD =
-            (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
+          const discount = (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          newData[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
 
           newData[0].tongTienHD =
             Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
@@ -470,6 +470,8 @@ watch(
       }
 
       // Tính toán lại phụ phí/ hoàn trả
+
+      
       if (newData[0].tongTienHD > paymentInfo.value.paid) {
         paymentInfo.value.amountPayable =
           detailDataSources.value[0].tongTienHD - paymentInfo.value.paid;
@@ -485,6 +487,25 @@ watch(
     }
   },
   { deep: true, immediate: true }
+);
+
+watch(
+  () => paymentInfo.value.paid,
+  (newPaid) => {
+    if (newPaid != null) {
+      if (detailDataSources.value[0].tongTienHD > newPaid) {
+        paymentInfo.value.amountPayable =
+          detailDataSources.value[0].tongTienHD - newPaid;
+        paymentInfo.value.surcharge =
+          detailDataSources.value[0].tongTienHD - newPaid;
+        paymentInfo.value.refund = 0;
+      } else {
+        paymentInfo.value.amountPayable = 0;
+        paymentInfo.value.surcharge = 0;
+        paymentInfo.value.refund = newPaid - detailDataSources.value[0].tongTienHD;
+      }
+    }
+  }
 );
 
 // Theo dõi nếu id hóa đơn thay đổi
@@ -539,9 +560,11 @@ watch(
             detailDataSources.value[0].tienGiamHD);
         } else {
           // Loại giảm = flase (%)
-          detailDataSources.value[0].tienGiamHD =
-            (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
-
+          const discount = (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          // detailDataSources.value[0].tienGiamHD =
+          //   (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          detailDataSources.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          
           detailDataSources.value[0].tongTienHD =
             Math.floor(totalPrice.value +
             detailDataSources.value[0].tienShip -

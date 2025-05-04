@@ -32,24 +32,39 @@ public interface AdminPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
                 pgg.loai_phieu as kieu,
                 pgg.gia_tri_giam as giaTri,
                 CAST(
-                    CASE
-                        WHEN :#{#request.tongTien} IS NULL THEN pgg.gia_tri_giam
-                        WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
-                            CASE
-                                WHEN pgg.loai_giam = FALSE THEN
                                     CASE
-                                        WHEN pgg.giam_toi_da IS NULL THEN (pgg.gia_tri_giam / 100) * :#{#request.tongTien}
-                                        ELSE LEAST((pgg.gia_tri_giam / 100) * :#{#request.tongTien}, pgg.giam_toi_da)
-                                    END
-                                ELSE
-                                    CASE
-                                        WHEN pgg.giam_toi_da IS NULL THEN pgg.gia_tri_giam
-                                        ELSE LEAST(pgg.gia_tri_giam, pgg.giam_toi_da)
-                                    END
-                                    END
-                                ELSE 0
-                            END AS DECIMAL(10,2)
-                        ) AS giaTriGiam
+                                        WHEN :#{#request.tongTien} IS NULL THEN pgg.gia_tri_giam
+                                        WHEN :#{#request.tongTien} >= pgg.dieu_kien_giam THEN
+                                            CASE
+                                                WHEN pgg.loai_giam = FALSE THEN
+                                                    CASE
+                                                        WHEN pgg.giam_toi_da IS NULL THEN
+                                                            (pgg.gia_tri_giam * :#{#request.tongTien}) / 100
+                                                        ELSE
+                                                            CASE
+                                                                WHEN ((pgg.gia_tri_giam * :#{#request.tongTien}) / 100) > pgg.giam_toi_da THEN
+                                                                    pgg.giam_toi_da
+                                                                ELSE
+                                                                    (pgg.gia_tri_giam * :#{#request.tongTien}) / 100
+                                                            END
+                                                    END
+                                                ELSE
+                                                    CASE
+                                                        WHEN pgg.giam_toi_da IS NULL THEN
+                                                            pgg.gia_tri_giam
+                                                        ELSE
+                                                            CASE
+                                                                WHEN pgg.gia_tri_giam > pgg.giam_toi_da THEN
+                                                                    pgg.giam_toi_da
+                                                                ELSE
+                                                                    pgg.gia_tri_giam
+                                                            END
+                                                    END
+                                            END
+                                        ELSE 0
+                                    END AS DECIMAL(10,2)
+                                ) AS giaTriGiam
+                
                     FROM phieu_giam_gia pgg
                     LEFT JOIN khach_hang_phieu_giam_gia khpgg 
                         ON khpgg.id_phieu_giam_gia = pgg.id 

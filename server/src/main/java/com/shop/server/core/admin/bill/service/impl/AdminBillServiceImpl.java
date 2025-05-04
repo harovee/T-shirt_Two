@@ -262,9 +262,9 @@ public class AdminBillServiceImpl implements AdminBillService {
         HoaDon hoaDon = adminBillRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
         hoaDon.setTrangThai(request.getTrangThai());
+        NhanVien nhanVien = new NhanVien();
         if (request.getNhanVien() != null) {
-            NhanVien nhanVien = nhanVienRepository.findById(request.getNhanVien())
-                    .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại"));
+            nhanVien = nhanVienRepository.findById(request.getNhanVien()).orElse(null);
             hoaDon.setNhanVien(nhanVien);
         }
 
@@ -274,7 +274,7 @@ public class AdminBillServiceImpl implements AdminBillService {
         adminSendEmailRequest.setMaHoaDon(hoaDon.getMa());
         adminSendEmailRequest.setTrangThai(request.getTrangThai());
         adminSendEmailRequest.setGhiChu(request.getGhiChu());
-        adminSendEmailRequest.setEmailNhanVien(request.getNhanVien());
+        adminSendEmailRequest.setEmailNhanVien(nhanVien != null ? nhanVien.getEmail() : "Nhân viên không xác định");
         adminBillSendMailService.sendMailUpdateBill(adminSendEmailRequest);
 
         LichSuHoaDon ls = new LichSuHoaDon();

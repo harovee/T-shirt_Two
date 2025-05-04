@@ -57,7 +57,7 @@
         </a-button>
 
         <a-button
-          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Đang vận chuyển'"
+          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Đang vận chuyển' || stepsTmp[stepsTmp.length - 1]?.title === 'Đã thanh toán'"
           type="primary"
           @click="confirmArrived()"
         >
@@ -65,7 +65,7 @@
         </a-button>
 
         <a-button
-          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Đã thanh toán'"
+          v-if="stepsTmp[stepsTmp.length - 1]?.title === 'Đã giao hàng'"
           type="primary"
           @click="confirmCompleted()"
         >
@@ -73,7 +73,7 @@
         </a-button>
 
         <!-- Quay lại trạng thái -->
-        <a-button
+        <!-- <a-button
           v-if="
             stepsTmp[stepsTmp.length - 1]?.title !== 'Đã hủy' &&
             stepsTmp[stepsTmp.length - 1]?.title !== 'Chờ xác nhận' &&
@@ -83,7 +83,7 @@
           @click="rollBack(stepsTmp[stepsTmp.length - 1]?.title)"
         >
           Quay lại trạng thái trước
-        </a-button>
+        </a-button> -->
 
         <a-button
           v-if="
@@ -584,7 +584,7 @@ const confirmDelivery = () => {
 
   Modal.confirm({
     title: "Xác nhận thay đổi trạng thái",
-    content: `Bạn muốn xác nhận giao hàng cho đơn này?`,
+    content: `Bạn muốn xác nhận giao cho đơn vị vận chuyển đơn hàng này?`,
     onOk: async () => {
       try {
         // Gọi API để thay đổi trạng thái đơn hàng
@@ -610,7 +610,7 @@ const confirmArrived = () => {
 
   if (props.dataPaymentInfo.amountPayable == 0) {
     // Nếu khách đã thanh toán đủ -> Chuyển trực tiếp sang trạng thái "Đã thanh toán"
-    const nextStep = "Đã thanh toán";
+    const nextStep = "Đã giao hàng";
 
     const params = {
       status: nextStep,
@@ -626,12 +626,12 @@ const confirmArrived = () => {
 
     Modal.confirm({
       title: "Xác nhận đơn hàng đã thanh toán",
-      content: `Khách đã thanh toán đủ ${tienKhachDua.toLocaleString()} VND. Chuyển trạng thái sang "${nextStep}"?`,
+      content: `Khách đã thanh toán đủ ${props.billData.tongTien.toLocaleString()} VND. Chuyển trạng thái sang "Đã giao hàng"?`,
       onOk: async () => {
         try {
           changeStatus({ idBill, params });
           successNotiSort(
-            "Đơn hàng đã chuyển sang trạng thái 'Đã thanh toán'!"
+            "Đơn hàng đã chuyển sang trạng thái 'Đã giao hàng'!"
           );
         } catch (error) {
           console.error("Cập nhật trạng thái thất bại:", error);

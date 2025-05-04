@@ -44,8 +44,7 @@
             <div class="flex items-center">
               <span class="me-3"><v-icon name="ri-coupon-2-fill" /></span>
               <span
-                >Bạn đang sử dụng: {{ voucher.ten }} - Số lượng:
-                {{ voucher.soLuong }} - Giá trị giảm ({{
+                >Bạn đang sử dụng: {{ voucher.ten }} - Giá trị giảm ({{
                   voucher.loaiGiam ? "Tiền mặt" : "%"
                 }}):
                 {{
@@ -494,6 +493,8 @@ const generatePaymentReference = () => {
 
 const handleGetVoucher = (voucherDetail: any) => {
   voucher.value = voucherDetail;
+  console.log(voucher.value);
+  
   if (!voucher.value) {
     paymentInfo.value.voucherCode = null;
     paymentInfo.value.voucherId = null;
@@ -503,9 +504,8 @@ const handleGetVoucher = (voucherDetail: any) => {
     if (voucher.value.loaiGiam) {
       paymentInfo.value.discount = Number(voucher.value.giaTri);
     } else {
-      paymentInfo.value.discount =
-        (paymentInfo.value.totalProductPrice * Number(voucher.value.giaTri)) /
-        100;
+      const discount = (paymentInfo.value.totalProductPrice * Number(voucher.value.giaTri)) / 100;
+      paymentInfo.value.discount = (discount < Number(voucher.value.giamToiDa)) ? Number(discount) : Number(voucher.value.giamToiDa)
     }
   }
 };
