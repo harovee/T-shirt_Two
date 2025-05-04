@@ -58,6 +58,7 @@ import { useGetListTrademark } from "@/infrastructure/services/service/admin/tra
 import { createUpdateBillHistoryRequest } from "@/infrastructure/services/api/admin/billhistory.api";
 import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
 import { useAuthStore } from "@/infrastructure/stores/auth";
+import { useUpdateBillConfirm } from "@/infrastructure/services/service/admin/bill.action";
 
 // Định nghĩa Props
 const props = defineProps({
@@ -66,7 +67,8 @@ const props = defineProps({
   loadingValue: {
     type: Boolean,
     required: true,
-  }
+  },
+  dataSource: Array
 });
 
 // Định nghĩa Emits
@@ -75,6 +77,8 @@ const emit = defineEmits(["handleClose"]);
 const { mutate: createBillDetail } = useCreateBillDetail();
 
 const { mutate: createBillHistory } = useCreateBillHistory();
+
+const { mutate: update } = useUpdateBillConfirm();
 
 const modelRef = reactive<CreateBillDetailRequest>({
   idHoaDon: null,
@@ -122,6 +126,8 @@ onMounted(() => {
   }
 });
 
+const payload = ref();
+
 // Theo dõi khi modal mở
 watch(
   () => props.open,
@@ -137,6 +143,19 @@ watch(
   (newVal) => {
     if (newVal) {
       refetch();
+    }
+  }
+);
+
+watch(
+  () => props.dataSource,
+  (newVal) => {
+    if (newVal) {
+      payload.value = {
+          tienShip: newVal[0].tienShip,
+          tienGiam: newVal[0].tienGiamHD,
+          tongTien: newVal[0].tongTienHD,
+        };
     }
   }
 );
@@ -174,6 +193,23 @@ const handleAddProducts = () => {
         console.error("❌ Lỗi khi thêm sản phẩm:", error);
       }
     });
+
+//cập nhật lại hóa đơn
+    setTimeout(() => {
+      // console.log(payload.value);
+      update(
+      { idBill: modelRef.idHoaDon, params: payload.value },
+      {
+        onSuccess: (result) => {
+          // successNotiSort("Cập nhật thông tin thành công");
+        },
+        onError: (error: any) => {
+          // errorNotiSort("Cập nhật thông tin thất bại");
+        },
+      }
+    );
+    }, 3000);
+
     // Thêm lịch sử hóa đơn (Khi khách thêm sản phẩm vào đơn)
     createBillHistory(billHistoryParams);
   });

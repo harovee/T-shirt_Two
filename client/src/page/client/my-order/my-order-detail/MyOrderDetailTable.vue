@@ -149,6 +149,7 @@
             @handleClose="handleCloseModalAddProductToOrder"
             @onCancel="isOpenModalAddProductToOrder = false"
             :loadingValue="loadingValue"
+            :dataSource="dataSource"
           />
         </div>
 
@@ -806,7 +807,7 @@ watch(
 );
 
 const handleUpdateBill = async (modelRef: any) => {
-  modelRefTmp.value = modelRef;
+  modelRefTmp.value = modelRef
 
   Modal.confirm({
     content: "Bạn chắc chắn muốn sửa?",
@@ -827,6 +828,7 @@ const handleUpdateBill = async (modelRef: any) => {
           tienShip: copiedDataSource.value[0].tienShip,
           tienGiam: copiedDataSource.value[0].tienGiamHD,
           tongTien: copiedDataSource.value[0].tongTienHD,
+          nhanVien:null
         };
         const billHistoryParams = {
           idHoaDon: billId,

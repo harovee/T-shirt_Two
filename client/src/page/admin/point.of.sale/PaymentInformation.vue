@@ -775,7 +775,6 @@ const handleUpdateBill = (x: number) => {
     );
     return;
   }
-  console.log(getTotalQuantity());
   if (getTotalQuantity() > 1000) {
     warningNotiSort("Số lượng sản phẩm trong giỏ không được quá 1000!");
     return;
@@ -869,7 +868,7 @@ const hoanThanhDonHang = async (payload: any) => {
       .catch((error) => {
         console.error("Tạo hóa đơn PDF thất bại", error);
       });
-    successNotiSort("Thanh toán thành công!");
+    successNotiSort("Đơn hàng đã được hoàn thành!");
     router.push(
       ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
     );

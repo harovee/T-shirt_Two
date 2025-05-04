@@ -20,7 +20,7 @@ public class PdfStorageService {
 
     public static String savePdfToServer(byte[] pdfBytes, String filename) {
         try {
-            String folderPath = "C:/New folder/hoa_don";
+            String folderPath = "D:/DATN/TShirtShop/hoa-don/";
             File file = new File(folderPath + filename);
 
             if (!file.getParentFile().exists()) {

@@ -59,7 +59,6 @@ import { useGetListTrademark } from "@/infrastructure/services/service/admin/tra
 import { useAuthStore } from "@/infrastructure/stores/auth";
 import { useCreateBillHistory } from "@/infrastructure/services/service/admin/billhistory.action";
 import { useUpdateBillConfirm } from "@/infrastructure/services/service/admin/bill.action";
-import { inject } from 'vue';
 
 // Định nghĩa Props
 const props = defineProps({
@@ -72,8 +71,6 @@ const props = defineProps({
   billData: Object,
   dataSource: Array,
 });
-
-const dataSources = inject('detailDataSources');
 
 // Định nghĩa Emits
 const emit = defineEmits(["handleClose"]);
@@ -150,16 +147,14 @@ watch(
 );
 
 watch(
-  () => dataSources,
+  () => props.dataSource,
   (newVal) => {
     if (newVal) {
-      setTimeout(() => {
-        payload.value = {
+      payload.value = {
           tienShip: newVal[0].tienShip,
           tienGiam: newVal[0].tienGiamHD,
           tongTien: newVal[0].tongTienHD,
         };
-      }, 3000);
     }
   }
 );
@@ -205,20 +200,21 @@ const handleAddProducts = () => {
     });
     //cập nhật lại hóa đơn
     setTimeout(() => {
-      console.log(payload.value);
+      // console.log(payload.value);
+      update(
+      { idBill: modelRef.idHoaDon, params: payload.value },
+      {
+        onSuccess: (result) => {
+          // successNotiSort("Cập nhật thông tin thành công");
+        },
+        onError: (error: any) => {
+          // errorNotiSort("Cập nhật thông tin thất bại");
+        },
+      }
+    );
     }, 3000);
 
-    // update(
-    //   { idBill: modelRef.idHoaDon, params: payload.value },
-    //   {
-    //     onSuccess: (result) => {
-    //       // successNotiSort("Cập nhật thông tin thành công");
-    //     },
-    //     onError: (error: any) => {
-    //       // errorNotiSort("Cập nhật thông tin thất bại");
-    //     },
-    //   }
-    // );
+    
     // Thêm lịch sử hóa đơn (Khi khách thêm sản phẩm vào đơn)
     createBillHistory(billHistoryParams);
   });
@@ -398,6 +394,7 @@ provide("listFeature", listFeature);
 provide("listColor", listColor);
 provide("listSize", listSize);
 provide("listTrademark", listTrademark);
+
 </script>
 
 <style scoped></style>

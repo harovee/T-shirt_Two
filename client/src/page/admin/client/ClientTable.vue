@@ -20,7 +20,7 @@
             <v-icon name="md-addcircle"/>
           </a-button>
         </a-tooltip>
-        <a-tooltip
+        <!-- <a-tooltip
             title="Thêm nhanh khách hàng"
             trigger="hover"
         >
@@ -31,7 +31,7 @@
           >
             <v-icon name="md-addcircle"/>
           </a-button>
-        </a-tooltip>
+        </a-tooltip> -->
       </div>
     </div>
     <table-t-shirt
