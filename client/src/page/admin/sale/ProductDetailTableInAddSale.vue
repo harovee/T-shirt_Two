@@ -87,7 +87,13 @@
     :loading="isLoading"
     :row-selection="rowSelection"
     :columns="columns"
-    :data-source="dataSource"
+    :data-source="dataSource.filter(item => {
+        if (dggLoaiGiam === 'VND') {
+          return item.gia >= dggGiaTriGiam;
+        }else if (dggLoaiGiam === 'PERCENT') {
+          return true;
+        }
+    })"
     :pagination="false"
     :scroll="{ x: 1000, y: 500 }"
   >
@@ -157,7 +163,9 @@ const current1 = ref(1);
 const props = defineProps<{
   attributes: AttributesResponse| undefined,
   idSanPhams: string[] | null,
-  idSanPhamChiTiets: string[] | null
+  idSanPhamChiTiets: string[] | null,
+  dggLoaiGiam: string | null,
+  dggGiaTriGiam: number | null,
 }>();
 
 const emit = defineEmits(['update:idSanPhamChiTiets']);

@@ -32,13 +32,13 @@
                         :formatter="formState.loai == 'VND' ? formatter : undefined"
                         ></a-input-number>
                     </a-form-item>  
-                    <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
+                    <!-- <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
                         <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10" style="width: 100%"
                           :formatter="formatter"
                         >
                             <template #addonAfter>đ</template>
                         </a-input-number>
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item class="m-0 mt-2" label="Thời gian" required name="ngayBatDauVaKetThuc">
                         <a-range-picker size="" style="width: 100%;" show-time format="DD/MM/YYYY HH:mm"
                             :disabled-date="disabledDate"
@@ -93,6 +93,8 @@
     :attributes="listAttributes.data.value?.data" 
     :id-san-phams="idSanPhams"
     :id-san-pham-chi-tiets="idSanPhamChiTiets"
+    :dgg-loai-giam="formState.loai"
+    :dgg-gia-tri-giam="formState.giaTri"
     @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"  
      />
   </div>
@@ -145,7 +147,7 @@ let formState: UnwrapRef<FormState> = reactive( {
     ma: '',
     ten: '',
     loai: 'PERCENT',
-    giaTri: 1,
+    giaTri: null,
     giaTriGiamToiDa: null,
     ngayBatDauVaKetThuc: [],
     nguoiSua: undefined,
@@ -234,10 +236,7 @@ function loadDataFromStore() {
             loai: savedSaleData.loai || '',
             giaTri: savedSaleData.giaTri || 0,
             giaTriGiamToiDa: savedSaleData.giaTriGiamToiDa || null,
-            ngayBatDauVaKetThuc: [
-                savedSaleData.ngayBatDau ? dayjs(savedSaleData.ngayBatDau) : null,
-                savedSaleData.ngayKetThuc ? dayjs(savedSaleData.ngayKetThuc) : null,
-            ],
+            ngayBatDauVaKetThuc: [],
             nguoiSua: savedSaleData.nguoiSua || '',
             trangThai: savedSaleData.trangThai === 'ACTIVE',
             createdDate: savedSaleData.createdDate,
@@ -252,6 +251,17 @@ onMounted(() => {
   const interval = setInterval(updateRangePresets, 60000);
   onUnmounted(() => clearInterval(interval));
 });
+
+// THAO - 04/05/2025
+watch(() => formState.loai, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    formState.giaTri = null; 
+    if (formState.giaTriGiamToiDa !== null) {
+      formState.giaTriGiamToiDa = null;
+    }
+  }
+});
+// THAO - 04/05/2025
 
 const { mutate: createSale } = useCreateSale();
 const { mutate: createSaleAndSaleProduct } = useCreateSaleAndSaleProduct();
@@ -328,7 +338,7 @@ const onSubmit = (x: number) => {
           saleRequest.value.ten = formState.ten;
           saleRequest.value.loai = formState.loai;
           saleRequest.value.giaTri = formState.giaTri;
-          saleRequest.value.giaTriGiamToiDa = formState.giaTriGiamToiDa;
+          saleRequest.value.giaTriGiamToiDa = null;
           saleRequest.value.ngayBatDau = formState.ngayBatDauVaKetThuc[0]?.valueOf() || null;
           saleRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
           saleRequest.value.trangThai = formState.trangThai ? 'ACTIVE' : 'INACTIVE';
