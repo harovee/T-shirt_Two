@@ -61,7 +61,7 @@
                     </span>
                   </p>
                   <!-- Size dynamic list -->
-                  <p class="mb-2">
+                  <p class="text-gray-700 font-medium mr-2 mb-2">
                     Size:
                     <span
                       v-for="(size, index) in product.kichCo"
@@ -73,13 +73,13 @@
                   </p>
 
                   <!-- Color dynamic list -->
-                  <p>
+                  <p class="text-gray-700 font-medium">
                     Màu:
                     <span
                       v-for="(c, index) in product.color"
                       :key="index"
                       :style="{ backgroundColor: c.code }"
-                      class="inline-block mr-2 p-2 w-4 h-4 rounded-full cursor-pointer"
+                      class="inline-block mr-2 p-2 w-4 h-4 rounded-full cursor-pointer border border-gray-300 shadow"
                     ></span>
                   </p>
                   <p class="text-gray-700 font-medium mr-2">Giới tính:  

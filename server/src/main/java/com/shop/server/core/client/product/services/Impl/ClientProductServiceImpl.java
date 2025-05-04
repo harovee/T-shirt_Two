@@ -116,7 +116,7 @@ public class ClientProductServiceImpl implements ClientProductService {
 
     private ClientProductResponse convertToResponse(ClientProductProjectionResponse projection) {
         ClientProductResponse response = new ClientProductResponse();
-        if (projection.getCatalog() != null) {
+        if (    projection.getCatalog() != null) {
             response.setCatalog(projection.getCatalog());
         }
         response.setId(projection.getId());

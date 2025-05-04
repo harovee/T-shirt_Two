@@ -75,14 +75,13 @@ public interface ClientProductRepository extends SanPhamRepository {
                          spgg.id_dot_giam_gia,
                          ROW_NUMBER() OVER (
                                PARTITION BY spgg.id_san_pham_chi_tiet
-                                  ORDER BY (spct_inner.gia - spgg.gia_sau_giam) / spct_inner.gia DESC
-                             ) as rank_num
+                                  ORDER BY (spct_inner.gia - spgg.gia_sau_giam) / spct_inner.gia DESC) as rank_num
                       FROM san_pham_giam_gia spgg
                       JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
                       JOIN san_pham_chi_tiet spct_inner ON spct_inner.id = spgg.id_san_pham_chi_tiet
                       WHERE dgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000
                       AND dgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
-                      AND dgg.trang_thai = "ACTIVE"
+                      AND dgg.trang_thai = 'ACTIVE'
                       AND dgg.deleted = 0
                       ) best_discounts ON best_discounts.id_san_pham_chi_tiet = spct.id AND best_discounts.rank_num = 1
                   LEFT JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
@@ -99,7 +98,47 @@ public interface ClientProductRepository extends SanPhamRepository {
                   AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
                   GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,   
                            ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta,spct.gioi_tinh
-            """, nativeQuery = true)
+            """,
+            countQuery = """
+              SELECT COUNT( sp.id) 
+              FROM san_pham sp
+              JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham
+              JOIN danh_muc dm ON dm.id = sp.id_danh_muc
+              JOIN chat_lieu cl ON cl.id = spct.id_chat_lieu
+              JOIN co_ao ca ON ca.id = spct.id_co_ao
+              JOIN tay_ao ta ON ta.id = spct.id_tay_ao
+              JOIN hoa_tiet ht ON ht.id = spct.id_hoa_tiet
+              JOIN tinh_nang tn ON tn.id = spct.id_tinh_nang
+              JOIN thuong_hieu th ON th.id = spct.id_thuong_hieu
+              JOIN kieu_dang kd ON kd.id = spct.id_kieu_dang
+              JOIN mau_sac ms ON ms.id = spct.id_mau_sac
+              JOIN kich_co kc ON kc.id = spct.id_kich_co
+              LEFT JOIN (
+                  SELECT
+                     spgg.id_san_pham_chi_tiet,
+                     spgg.gia_sau_giam,
+                     spgg.id_dot_giam_gia
+                  FROM san_pham_giam_gia spgg
+                  JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
+                  JOIN san_pham_chi_tiet spct_inner ON spct_inner.id = spgg.id_san_pham_chi_tiet
+                  WHERE dgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000
+                  AND dgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
+                  AND dgg.trang_thai = 'ACTIVE'
+                  AND dgg.deleted = 0
+              ) best_discounts ON best_discounts.id_san_pham_chi_tiet = spct.id
+              WHERE sp.trang_thai = 0
+              AND spct.so_luong > 0
+              AND spct.trang_thai = 0
+              AND spct.so_luong IS NOT NULL
+              AND (spct.gia <= :#{#request.max} OR :#{#request.max} IS NULL)
+              AND (spct.gia >= :#{#request.min} OR :#{#request.min} IS NULL)
+              AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
+              AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
+              AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
+              AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
+              AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
+        """
+            , nativeQuery = true)
     Page<ClientProductProjectionResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request);
 
 
@@ -208,14 +247,14 @@ public interface ClientProductRepository extends SanPhamRepository {
                                spgg.id_dot_giam_gia,
                                ROW_NUMBER() OVER (
                                      PARTITION BY spgg.id_san_pham_chi_tiet
-                                        ORDER BY (spct_inner.gia - spgg.gia_sau_giam) / spct_inner.gia DESC
-                                   ) as rank_num
+                                        ORDER BY (spct_inner.gia - spgg.gia_sau_giam) / spct_inner.gia DESC) 
+                                        as rank_num
                             FROM san_pham_giam_gia spgg
                             JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
                             JOIN san_pham_chi_tiet spct_inner ON spct_inner.id = spgg.id_san_pham_chi_tiet
                             WHERE dgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000
                             AND dgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
-                            AND dgg.trang_thai = "ACTIVE"
+                            AND dgg.trang_thai = 'ACTIVE'
                             AND dgg.deleted = 0
                             ) best_discounts ON best_discounts.id_san_pham_chi_tiet = spct.id AND best_discounts.rank_num = 1
                         LEFT JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
@@ -264,7 +303,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                             WHEN dgg.id IS NOT NULL 
                                                 AND dgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000 
                                                 AND dgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000 
-                                                AND dgg.trang_thai = "ACTIVE"
+                                                AND dgg.trang_thai = 'ACTIVE'
                                                 AND dgg.deleted = 0 
                                             THEN spgg.gia_sau_giam 
                                             ELSE NULL 
@@ -304,7 +343,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                                              WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
                                                                AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
                                                                AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
-                                                               AND dgg_inner.trang_thai = "ACTIVE"
+                                                               AND dgg_inner.trang_thai = 'ACTIVE'
                                                                AND dgg_inner.deleted = 0)) / spct.gia
                                             ELSE 0
                                         END DESC
@@ -397,7 +436,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                           WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
                                             AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
                                             AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
-                                            AND dgg_inner.trang_thai = "ACTIVE"
+                                            AND dgg_inner.trang_thai = 'ACTIVE'
                                             AND dgg_inner.deleted = 0)) / spct.gia * 100, 1), '%')
                         ELSE NULL
                     END
@@ -415,7 +454,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                                              WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
                                                AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
                                                AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
-                                               AND dgg_inner.trang_thai = "ACTIVE"
+                                               AND dgg_inner.trang_thai = 'ACTIVE'
                                                AND dgg_inner.deleted = 0)) / spct.gia
                             ELSE 0
                         END DESC
@@ -841,5 +880,4 @@ public interface ClientProductRepository extends SanPhamRepository {
             """, nativeQuery = true)
     ClientProductProjectionResponse getProductDetailByIdWithColor(String idSanPham, ClientProductDetailRequest request);
 
-    String id(String id);
 }

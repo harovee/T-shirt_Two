@@ -508,7 +508,6 @@ watch(
         selectedImage.value = "/default-product-image.jpg";
       }
 
-      // Lưu tất cả kích thước và màu sắc
       if (newProduct.kichCo && newProduct.kichCo.length > 0) {
         allSizes.value = newProduct.kichCo;
         availableSizes.value = [...allSizes.value];
@@ -519,7 +518,6 @@ watch(
         availableColors.value = [...allColors.value]; 
       }
 
-      // Thiết lập giá trị ban đầu
       if (availableSizes.value.length > 0) {
         selectedSize.value = availableSizes.value[0].id;
       }
@@ -535,7 +533,6 @@ watch(
 );
 
 const loadVariantData = async () => {
-  // Đặt tham số cho API
   if (selectedColor.value) {
     paramsDetail.value.idMauSac = selectedColor.value;
   }
@@ -558,6 +555,7 @@ const { data: dataDetailWithColor, refetch: refetchColor } = useGetProductDetail
   {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
+    enabled: computed(() => !!productId.value && !!paramsDetail.value.idMauSac)
   }
 );
 
@@ -568,6 +566,7 @@ const { data: dataDetailWithSize, refetch: refetchSize } = useGetProductDetailBy
   {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
+    enabled: computed(() => !!productId.value && !!paramsDetail.value.idKichCo)
   }
 );
 
@@ -641,9 +640,7 @@ const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
-    enabled:
-      !!productId.value &&
-      (!!paramsDetail.value.idMauSac || !!paramsDetail.value.idKichCo),
+    enabled: computed(() => !!productId.value && !!paramsDetail.value.idMauSac  && !!paramsDetail.value.idKichCo)
   }
 );
 
