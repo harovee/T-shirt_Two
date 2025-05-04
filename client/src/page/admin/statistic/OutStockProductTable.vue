@@ -10,7 +10,7 @@
                     key: 'tenSanPham',
                     customRender: ({ text }) => h(Tooltip, { title: text }, () => h('span', { class: 'ellipsis' }, text)),
                     },
-                    { title: 'SL tồn', dataIndex: 'soLuong', key: 'soLuong', align: 'center' },
+                    { title: 'Số lượng tồn', dataIndex: 'soLuong', key: 'soLuong', align: 'center' },
                 ]"
             :loading="isLoading|| isFetching "
             :data-source="data?.data?.data"

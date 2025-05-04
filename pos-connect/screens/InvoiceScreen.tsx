@@ -466,7 +466,8 @@ const InvoiceScreen = () => {
                         <View style={styles.shippingRow}>
                           <Ionicons name="car-outline" size={20} color={colors.muted} />
                           <Text style={[styles.shippingText, { color: colors.text }]}>
-                            {invoiceData.shipping.method} ({invoiceData.shipping.estimatedDelivery})
+                            {invoiceData.shipping.method}
+                            {/* ({invoiceData.shipping.estimatedDelivery}) */}
                           </Text>
                         </View>
                         <Text style={[styles.shippingCost, { color: colors.primary }]}>
@@ -559,12 +560,12 @@ const InvoiceScreen = () => {
                     { getCurrentChanges() < 0 ? (
                       <>
                         <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền còn thiếu:</Text>
-                        <Text style={[styles.totalValue, { color: colors.danger }]}>{formatCurrency( -(getCurrentChanges()))}</Text>
+                        <Text style={[styles.totalValue, { color: colors.danger }]}>{formatCurrency(Math.floor(-(getCurrentChanges())))}</Text>
                       </>
                     ) : (
                       <>
                         <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
-                        <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(getCurrentChanges())}</Text>
+                        <Text style={[styles.totalValue, { color: colors.primary }]}>{formatCurrency(Math.floor(getCurrentChanges()))}</Text>
                       </>
                     ) }
                     
@@ -596,7 +597,7 @@ const InvoiceScreen = () => {
                   <View style={[styles.summaryRow, styles.totalRow]}>
                     
                     <Text style={[styles.totalLabel, { color: colors.text }]}>Tiền thừa:</Text>
-                    <Text style={[styles.totalValue, { color: colors.danger }]}> {formatCurrency(getCurrentChanges())} </Text>
+                    <Text style={[styles.totalValue, { color: colors.danger }]}> {formatCurrency(Math.floor(getCurrentChanges()))} </Text>
                   </View>
                 </>
                 

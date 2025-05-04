@@ -143,7 +143,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           break
 
-        case "payment_confirmation":
+        case "payment_confirm":
           // Hiển thị modal xác nhận thanh toán với đếm ngược 5 giây
           setShowPaymentConfirmation(true)
           break
@@ -361,10 +361,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Gửi xác nhận thanh toán qua STOMP
     if (stompClientRef.current && invoiceData) {
       stompClientRef.current.publish({
-        destination: `/app/payment`,
+        destination: `/app/payment-confirmed`,
         body: JSON.stringify({
           invoiceId: invoiceData.id,
-          status: "confirmed",
+          status: "YES_CONFIRM",
         }),
       })
     }
@@ -377,10 +377,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Gửi từ chối thanh toán qua STOMP
     if (stompClientRef.current && invoiceData) {
       stompClientRef.current.publish({
-        destination: `/app/payment`,
+        destination: `/app/payment-confirmed`,
         body: JSON.stringify({
           invoiceId: invoiceData.id,
-          status: "rejected",
+          status: "NO_CONFIRM",
         }),
       })
     }

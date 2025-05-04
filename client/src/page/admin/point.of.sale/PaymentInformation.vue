@@ -263,6 +263,10 @@ import {
   currentInvoice,
   sendCartInfo,
   sendPaymentConfirm,
+  mbConnectStatus,
+  currentPayloadPaymentInfo,
+  currentInvoiceUUID,
+  InvoiceData
 } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
@@ -455,7 +459,7 @@ watch(
           shippingParams.value.toWardCode = getCustomerAddress.value.ward;
           if (shippingParams.value.toWardCode) {
             refetchShipping().then(() => {
-              if (totalAmount.value < 2000000) {
+              if (totalAmount.value <= 2000000) {
                 paymentInfo.value.shippingFee = shipping?.value?.data.total;
               } else {
                 paymentInfo.value.shippingFee = 0;
@@ -560,7 +564,7 @@ const discounted = computed(() => {
       return total + (e.gia * e.soLuong || 0);
     }, 0) || 0;
 
-  paymentInfo.value.totalProductPrice = Math.floor(total);
+  paymentInfo.value.totalProductPrice = total;
   return total;
 });
 
@@ -595,6 +599,18 @@ const handleClosePaymentMethod = () => {
 const updateTotal = () => {
   paymentInfo.value.total =
     (paymentInfo.value.shippingFee || 0) - (paymentInfo.value.discount || 0);
+
+    console.log(paymentInfo.value.shippingFee);
+    invoices.value.forEach((item) => {
+      if (item.id === currentInvoice.value.id) {
+        if (item.shipping) {
+          item.shipping.cost = paymentInfo.value.shippingFee || 0;
+        }
+        currentInvoice.value = item;
+        sendCartInfo(item);
+      }
+    });
+    sendCartInfo
 };
 
 const handleCheckPaymented = (totalAmountAfter: number) => {
@@ -645,7 +661,7 @@ const handleNotVoucher = () => {
   paymentInfo.value.voucherCode = "";
   paymentInfo.value.voucherId = null;
   paymentInfo.value.discount = 0;
-  paymentInfo.value.totalProductPrice = Math.floor(totalAmount.value);
+  paymentInfo.value.totalProductPrice = totalAmount.value;
 
   // Thảo
   invoices.value.forEach((item) => {
@@ -783,34 +799,21 @@ console.log(getTotalQuantity());
     return;
   }
 
+  currentPayloadPaymentInfo.value = payload;
+  currentInvoiceUUID.value = props.dataSourceInfor.id;
+
   if (x === 1) {
     Modal.confirm({
       content: "Bạn chắc chắn muốn hoàn thành thanh toán?",
       icon: createVNode(ExclamationCircleOutlined),
       centered: true,
-      async onOk() {
-        try {
-          await updateBillWait({
-            idBill: props.dataSourceInfor.id,
-            params: payload,
-          });
-          await createInvoicePdf(pdfParams)
-            .then(() => {
-              const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
-              window.open(url, "_blank");
-            })
-            .catch((error) => {
-              console.error("Tạo hóa đơn PDF thất bại", error);
-            });
-          successNotiSort("Thanh toán thành công!");
-          router.push(
-            ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-          );
-        } catch (error: any) {
-          console.error("🚀 ~ handleCreate ~ error:", error);
-          if (error?.response) {
-            errorNotiSort(error?.response?.data?.message);
-          }
+      onOk() {
+        if (mbConnectStatus.value) {
+          console.log("Thao tác thanh toán trên app MB Connect");
+          sendPaymentConfirm(currentInvoice.value.id);
+          // hoanThanhDonHang(payload);
+        } else {
+          hoanThanhDonHang(payload);
         }
       },
       cancelText: "Huỷ",
@@ -851,6 +854,24 @@ console.log(getTotalQuantity());
       () => {}
     );
   }
+};
+
+const hoanThanhDonHang = async (payload: any) => {
+      try {
+        await updateBillWait({
+          idBill: props.dataSourceInfor.id,
+          params: payload,
+        });
+        successNotiSort("Thanh toán thành công!");
+        router.push(
+          ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+        );
+      } catch (error: any) {
+        console.error("🚀 ~ handleCreate ~ error:", error);
+        if (error?.response) {
+          errorNotiSort(error?.response?.data?.message);
+        }
+      }
 };
 
 interface CustomerAddress {
@@ -923,7 +944,7 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 
       if (shippingParams.value.toWardCode) {
         refetchShipping().then(() => {
-          if (totalAmount.value < 2000000) {
+          if (totalAmount.value <= 2000000) {
             paymentInfo.value.shippingFee = shipping?.value?.data.total;
           } else {
             paymentInfo.value.shippingFee = 0;
@@ -940,7 +961,7 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
 watch(totalAmount, (newTotal) => {
   if (newTotal !== 0) {
     // console.log(newTotal);
-    paymentInfo.value.totalProductPrice = Math.floor(newTotal);
+    paymentInfo.value.totalProductPrice = newTotal;
   }
 });
 
@@ -951,7 +972,7 @@ watch(
       newTotal &&
       newTotal !== 0 &&
       paymentInfo.value.shippingOption === "true"
-    ) {
+    ) 
       paymentInfo.value.totalProductPrice = Math.floor(
         totalAmount.value + newTotal - paymentInfo.value.discount
       );
