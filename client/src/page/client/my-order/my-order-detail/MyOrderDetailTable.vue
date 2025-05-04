@@ -581,11 +581,17 @@ watch(
   () => voucherId.value,
   (newValue) => {
     if (newValue) {
+      
+      
       refetch().then(() => {
         detail.value = dataDetail?.value?.data?.data;
         if (detail.value.loaiGiam) {
           // Loại giảm = true (tiền mặt)
-          copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+          if (detail.value.dieuKienGiam <= totalProductPrice.value) {
+            copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+          } else {
+            copiedDataSource.value[0].tienGiamHD = 0;
+          }
           copiedDataSource.value[0].tongTienHD =
             totalProductPrice.value +
             copiedDataSource.value[0].tienShip -
@@ -595,12 +601,11 @@ watch(
         } else {
           // Loại giảm = flase (%)
           const discount = (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
-          copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
-            
-          // if (copiedBillData.value) {
-          //   copiedBillData.value.tienGiam = copiedDataSource.value[0].tienGiamHD;
-          //   copiedBillData.value.tongTien = copiedDataSource.value[0].tongTienHD;
-          // }
+          if (detail.value.dieuKienGiam <= totalProductPrice.value) {
+            copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          } else {
+            copiedDataSource.value[0].tienGiamHD = 0;
+          }
 
           copiedDataSource.value[0].tongTienHD =
             totalProductPrice.value +
@@ -770,7 +775,11 @@ watch(
 
       if (detail.value && detail.value.loaiGiam) {
         // Loại giảm = true (tiền mặt)
-        copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+        if (detail.value.dieuKienGiam <= totalProductPrice.value) {
+            copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+          } else {
+            copiedDataSource.value[0].tienGiamHD = 0;
+          }
         copiedDataSource.value[0].tongTienHD =
           totalProductPrice.value +
           copiedDataSource.value[0].tienShip -
@@ -781,7 +790,11 @@ watch(
         // Loại giảm = flase (%)
         if (detail.value && detail.value.giaTriGiam) {
           const discount = (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
-          copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          if (detail.value.dieuKienGiam <= totalProductPrice.value) {
+            copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          } else {
+            copiedDataSource.value[0].tienGiamHD = 0;}
+
         }
         copiedDataSource.value[0].tongTienHD =
           totalProductPrice.value +
