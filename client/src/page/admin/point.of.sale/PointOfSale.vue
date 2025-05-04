@@ -99,7 +99,7 @@
             </template>
             <div class="rounded-xl p-7 mt-6 rounded-xl border-2">
               <POSProducsInCart
-                :maHoaDon="bill.ma"
+                :maHoaDon="bill.ma || ''"
                 :idOrder="activeKey?.valueOf() || ''"
                 @refetchLength="onDeleted"
               ></POSProducsInCart>

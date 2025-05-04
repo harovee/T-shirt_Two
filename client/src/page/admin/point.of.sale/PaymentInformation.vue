@@ -283,6 +283,10 @@ const props = defineProps({
     default: () => ({}),
   },
   isRefresh: Boolean,
+  maHoaDon: {
+    type: String,
+    required: true,
+  }
 });
 
 const emit = defineEmits(["handlePaymentInfo", "handleChangeMbConnect"]);
@@ -498,7 +502,7 @@ const voucher = ref(null);
 watch(
   () => dataListVoucher.value,
   (newData) => {
-    console.log(newData);
+    console.log("ZKJDFVBHZERGHVIZEUR",newData);
 
     if (newData && newData.length > 0) {
       paymentInfo.value.voucherCode = newData[0].ma;
@@ -515,16 +519,15 @@ watch(
 
       // Thảo
       invoices.value.forEach((item) => {
-        if (item.id === currentInvoice.value.id) {
+        if (item.id === props.maHoaDon) {
           item.vouchers = [
             {
               id: newData[0].id,
               code: newData[0].ma,
               name: newData[0].ten,
-              discount: Number(
-                newData[0].loaiGiam ? newData[0].giaTri : newData[0].giaTri
-              ),
+              discount: Number(newData[0].giaTri),
               type: newData[0].loaiGiam ? "fixed" : "percent",
+              maxDiscount: Number(newData[0].giamToiDa),
             },
           ];
           currentInvoice.value = item;
@@ -640,6 +643,25 @@ const handleSelectVoucher = (voucher) => {
   paymentInfo.value.totalProductPrice = Math.floor(
     totalAmount.value - paymentInfo.value.discount
   );
+
+  // Thảo
+  invoices.value.forEach((item) => {
+        if (item.id === currentInvoice.value.id) {
+          item.vouchers = [
+            {
+              id: voucher.id,
+              code: voucher.ma,
+              name: voucher.ten,
+              discount: voucher.giaTri,
+              type: voucher.loaiGiam ? "fixed" : "percent",
+              maxDiscount: voucher.giamToiDa,
+            },
+          ];
+          currentInvoice.value = item;
+          sendCartInfo(item);
+        }
+      });
+
 };
 
 watch(
@@ -677,7 +699,7 @@ const changeShippingOption = (option: string) => {
   paymentInfo.value.shippingOption = option;
   // Thảo
   invoices.value.forEach((item) => {
-    if (item.id === currentInvoice.value.id) {
+    if (item.id === paymentInfo.value.id) {
       if (option === "true") {
         item.customerInfo.address = {
           province: getCustomerAddress.value
@@ -689,7 +711,12 @@ const changeShippingOption = (option: string) => {
           ward: getCustomerAddress.value
             ? getCustomerAddress.value.ward || ""
             : "",
+          receiver: getCustomerAddress.value
+            ? getCustomerAddress.value.name || ""
+            : "",
           detail: getCustomerAddress.value ? getCustomerAddress.value.line : "",
+          phone: getCustomerAddress.value ? getCustomerAddress.value.phoneNumber || "" : "",
+          note: "",
         };
       } else {
         item.customerInfo.address = null;
@@ -923,11 +950,11 @@ const handleGetCustomerAddress = async (modelRef: any, fullAddress: string) => {
     }
 
     invoices.value.forEach((invoice) => {
-      if (invoice.id === currentInvoice.value.id) {
+      if (invoice.id === props.maHoaDon) {
         invoice.customerInfo.address = {
-          province: provinceInfo.value,
-          district: districtInfo.value,
-          ward: wardInfo.value,
+          province: provinceInfo.value || "",
+          district: districtInfo.value || "",
+          ward: wardInfo.value || "",
           detail: modelRef.line,
           receiver: modelRef.name,
           phone: modelRef.phoneNumber,

@@ -395,7 +395,7 @@ const InvoiceScreen = () => {
                     </View>
                     <Text>
                       ― {invoiceData.vouchers && invoiceData.vouchers.length > 0
-                          ? `${invoiceData.vouchers[0].discount} %`
+                          ? invoiceData.vouchers[0].type == "fixed" ? `${formatCurrency(invoiceData.vouchers[0].discount)}` : `${invoiceData.vouchers[0].discount} %`
                           : formatCurrency((invoiceData.vouchers?.[0]?.discount ?? 0))}
                     </Text>
                   </View>
