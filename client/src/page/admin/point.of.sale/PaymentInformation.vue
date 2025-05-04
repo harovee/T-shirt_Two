@@ -822,37 +822,37 @@ console.log(getTotalQuantity());
       },
     });
   } else if (x === 2) {
-    sendPaymentConfirm(
-      props.dataSourceInfor.ma,
-      () => {
-        async () => {
-          try {
-            await updateBillWait({
-              idBill: props.dataSourceInfor.id,
-              params: payload,
-            });
-            await createInvoicePdf(pdfParams)
-              .then(() => {
-                const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
-                window.open(url, "_blank");
-              })
-              .catch((error) => {
-                console.error("Tạo hóa đơn PDF thất bại", error);
-              });
-            successNotiSort("Thanh toán thành công!");
-            router.push(
-              ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-            );
-          } catch (error: any) {
-            if (error?.response) {
-              errorNotiSort(error?.response?.data?.message);
-            }
-          }
-        };
-        return true;
-      },
-      () => {}
-    );
+    // sendPaymentConfirm(
+    //   props.dataSourceInfor.ma,
+    //   () => {
+    //     async () => {
+    //       try {
+    //         await updateBillWait({
+    //           idBill: props.dataSourceInfor.id,
+    //           params: payload,
+    //         });
+    //         await createInvoicePdf(pdfParams)
+    //           .then(() => {
+    //             const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
+    //             window.open(url, "_blank");
+    //           })
+    //           .catch((error) => {
+    //             console.error("Tạo hóa đơn PDF thất bại", error);
+    //           });
+    //         successNotiSort("Thanh toán thành công!");
+    //         router.push(
+    //           ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+    //         );
+    //       } catch (error: any) {
+    //         if (error?.response) {
+    //           errorNotiSort(error?.response?.data?.message);
+    //         }
+    //       }
+    //     };
+    //     return true;
+    //   },
+    //   () => {}
+    // );
   }
 };
 
@@ -972,7 +972,7 @@ watch(
       newTotal &&
       newTotal !== 0 &&
       paymentInfo.value.shippingOption === "true"
-    ) 
+    ) {
       paymentInfo.value.totalProductPrice = Math.floor(
         totalAmount.value + newTotal - paymentInfo.value.discount
       );
