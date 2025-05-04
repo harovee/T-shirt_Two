@@ -145,6 +145,8 @@ const { data } = useGetListVoucher(params, {
   placeholderData: keepPreviousData,
 });
 
+console.log(data);
+
 const handleSearch = (newValue: string) => {
   params.value.keyword = newValue;
   params.value.page = 1;

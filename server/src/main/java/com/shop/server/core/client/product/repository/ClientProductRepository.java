@@ -595,7 +595,6 @@ public interface ClientProductRepository extends SanPhamRepository {
                         JOIN mau_sac ms ON ms.id = spct.id_mau_sac
                         JOIN kich_co kc ON kc.id = spct.id_kich_co
                         LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
-                        
                         INNER JOIN (
                             SELECT
                                 spgg.id_san_pham_chi_tiet,
@@ -622,4 +621,225 @@ public interface ClientProductRepository extends SanPhamRepository {
                                  ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta
             """, nativeQuery = true)
     Page<ClientProductProjectionResponse> getSaleProduct(ClientProductSearchRequest request, Pageable pageable);
+
+
+    @Query(value = """
+            SELECT 
+                sp.id as id,
+                sp.ma_san_pham as maSanPham,
+                sp.ten as ten,
+                sp.mo_ta as moTa,
+                cl.id as idChatLieu,
+                cl.ten as tenChatLieu,
+                dm.id as idDanhMuc,
+                dm.ten as tenDanhMuc,
+                ca.id as idCoAo,
+                ca.ten as tenCoAo,
+                ta.id as idTayAo,
+                ta.ten as tenTayAo,
+                ht.id as idHoaTiet,
+                ht.ten as tenHoaTiet,
+                tn.id as idTinhNang,
+                tn.ten as tenTinhNang,
+                th.id as idThuongHieu,
+                th.ten as tenThuongHieu,
+                kd.id as idKieuDang,
+                kd.ten as tenKieuDang,
+                spct.gioi_tinh as gioiTinh,
+                GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
+                GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
+                GROUP_CONCAT(DISTINCT\s
+                    (SELECT MIN(spgg_inner.gia_sau_giam) \s
+                     FROM san_pham_giam_gia spgg_inner\s
+                     JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                     WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                       AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                       AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                       AND dgg_inner.trang_thai = "ACTIVE"
+                       AND dgg_inner.deleted = 0)
+                     ORDER BY 1 ASC) AS discount,
+                GROUP_CONCAT(DISTINCT
+                    CASE
+                        WHEN (SELECT MIN(spgg_inner.gia_sau_giam) 
+                             FROM san_pham_giam_gia spgg_inner\s
+                             JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                             WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                               AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                               AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                               AND dgg_inner.trang_thai = "ACTIVE"
+                               AND dgg_inner.deleted = 0) IS NOT NULL
+                        THEN CONCAT(ROUND((spct.gia - (SELECT MIN(spgg_inner.gia_sau_giam) \s
+                                          FROM san_pham_giam_gia spgg_inner\s
+                                          JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                                          WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                                            AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                                            AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                                            AND dgg_inner.trang_thai = "ACTIVE"
+                                            AND dgg_inner.deleted = 0)) / spct.gia * 100, 1), '%')
+                        ELSE NULL
+                    END
+                    ORDER BY\s
+                        CASE\s
+                            WHEN (SELECT MIN(spgg_inner.gia_sau_giam) FROM san_pham_giam_gia spgg_inner\s
+                                 JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                                 WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                                   AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                                   AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                                   AND dgg_inner.trang_thai = "ACTIVE"
+                                   AND dgg_inner.deleted = 0) IS NOT NULL
+                            THEN (spct.gia - (SELECT MIN(spgg_inner.gia_sau_giam) FROM san_pham_giam_gia spgg_inner\s
+                                             JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                                             WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                                               AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                                               AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                                               AND dgg_inner.trang_thai = "ACTIVE"
+                                               AND dgg_inner.deleted = 0)) / spct.gia
+                            ELSE 0
+                        END DESC
+                ) AS phanTramGiam,
+                GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,
+                GROUP_CONCAT(DISTINCT CONCAT(ms.id,':' ,ms.ma_mau_sac, ':', ms.ten)) AS colors,
+                GROUP_CONCAT(DISTINCT anh.url) AS anhs
+            FROM san_pham sp
+            JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham\s
+            JOIN danh_muc dm ON dm.id = sp.id_danh_muc
+            JOIN chat_lieu cl ON cl.id = spct.id_chat_lieu
+            JOIN co_ao ca ON ca.id = spct.id_co_ao
+            JOIN tay_ao ta ON ta.id = spct.id_tay_ao
+            JOIN hoa_tiet ht ON ht.id = spct.id_hoa_tiet
+            JOIN tinh_nang tn ON tn.id = spct.id_tinh_nang
+            JOIN thuong_hieu th ON th.id = spct.id_thuong_hieu
+            JOIN kieu_dang kd ON kd.id = spct.id_kieu_dang
+            JOIN mau_sac ms ON ms.id = spct.id_mau_sac
+            JOIN kich_co kc ON kc.id = spct.id_kich_co
+            LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
+            WHERE sp.trang_thai = 0
+                AND spct.trang_thai = 0
+                AND spct.so_luong >0
+                AND (sp.id = :#{#idSanPham} OR :#{#idSanPham} IS NULL)
+                AND (dm.id = :#{#request.idDanhMuc} OR :#{#request.idDanhMuc} IS NULL)
+                AND (cl.id = :#{#request.idChatLieu} OR :#{#request.idChatLieu} IS NULL)
+                AND (ca.id = :#{#request.idCoAo} OR :#{#request.idCoAo} IS NULL)
+                AND (ht.id = :#{#request.idHoaTiet} OR :#{#request.idHoaTiet} IS NULL)
+                AND (tn.id = :#{#request.idTinhNang} OR :#{#request.idTinhNang} IS NULL)
+                AND (kd.id = :#{#request.idKieuDang} OR :#{#request.idKieuDang} IS NULL)
+                AND (th.id = :#{#request.idThuongHieu} OR :#{#request.idThuongHieu} IS NULL)
+                AND (ta.id = :#{#request.idTayAo} OR :#{#request.idTayAo} IS NULL)
+                AND (kc.id = :#{#request.idKichCo} OR :#{#request.idKichCo} IS NULL)
+                AND (spct.gioi_tinh = :#{#request.gioiTinh} OR :#{#request.gioiTinh} IS NULL)
+            GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,
+                     ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta,spct.gioi_tinh
+            """, nativeQuery = true)
+    ClientProductProjectionResponse getProductDetailByIdWithSize(String idSanPham, ClientProductDetailRequest request);
+
+    @Query(value = """
+            SELECT 
+                sp.id as id,
+                sp.ma_san_pham as maSanPham,
+                sp.ten as ten,
+                sp.mo_ta as moTa,
+                cl.id as idChatLieu,
+                cl.ten as tenChatLieu,
+                dm.id as idDanhMuc,
+                dm.ten as tenDanhMuc,
+                ca.id as idCoAo,
+                ca.ten as tenCoAo,
+                ta.id as idTayAo,
+                ta.ten as tenTayAo,
+                ht.id as idHoaTiet,
+                ht.ten as tenHoaTiet,
+                tn.id as idTinhNang,
+                tn.ten as tenTinhNang,
+                th.id as idThuongHieu,
+                th.ten as tenThuongHieu,
+                kd.id as idKieuDang,
+                kd.ten as tenKieuDang,
+                spct.gioi_tinh as gioiTinh,
+                GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
+                GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
+                GROUP_CONCAT(DISTINCT\s
+                    (SELECT MIN(spgg_inner.gia_sau_giam) \s
+                     FROM san_pham_giam_gia spgg_inner\s
+                     JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                     WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                       AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                       AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                       AND dgg_inner.trang_thai = "ACTIVE"
+                       AND dgg_inner.deleted = 0)
+                     ORDER BY 1 ASC) AS discount,
+                GROUP_CONCAT(DISTINCT
+                    CASE
+                        WHEN (SELECT MIN(spgg_inner.gia_sau_giam) 
+                             FROM san_pham_giam_gia spgg_inner\s
+                             JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                             WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                               AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                               AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                               AND dgg_inner.trang_thai = "ACTIVE"
+                               AND dgg_inner.deleted = 0) IS NOT NULL
+                        THEN CONCAT(ROUND((spct.gia - (SELECT MIN(spgg_inner.gia_sau_giam) \s
+                                          FROM san_pham_giam_gia spgg_inner\s
+                                          JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                                          WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                                            AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                                            AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                                            AND dgg_inner.trang_thai = "ACTIVE"
+                                            AND dgg_inner.deleted = 0)) / spct.gia * 100, 1), '%')
+                        ELSE NULL
+                    END
+                    ORDER BY\s
+                        CASE\s
+                            WHEN (SELECT MIN(spgg_inner.gia_sau_giam) FROM san_pham_giam_gia spgg_inner\s
+                                 JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                                 WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                                   AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                                   AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                                   AND dgg_inner.trang_thai = "ACTIVE"
+                                   AND dgg_inner.deleted = 0) IS NOT NULL
+                            THEN (spct.gia - (SELECT MIN(spgg_inner.gia_sau_giam) FROM san_pham_giam_gia spgg_inner\s
+                                             JOIN dot_giam_gia dgg_inner ON dgg_inner.id = spgg_inner.id_dot_giam_gia\s
+                                             WHERE spgg_inner.id_san_pham_chi_tiet = spct.id
+                                               AND dgg_inner.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000\s
+                                               AND dgg_inner.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000\s
+                                               AND dgg_inner.trang_thai = "ACTIVE"
+                                               AND dgg_inner.deleted = 0)) / spct.gia
+                            ELSE 0
+                        END DESC
+                ) AS phanTramGiam,
+                GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,
+                GROUP_CONCAT(DISTINCT CONCAT(ms.id,':' ,ms.ma_mau_sac, ':', ms.ten)) AS colors,
+                GROUP_CONCAT(DISTINCT anh.url) AS anhs
+            FROM san_pham sp
+            JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham\s
+            JOIN danh_muc dm ON dm.id = sp.id_danh_muc
+            JOIN chat_lieu cl ON cl.id = spct.id_chat_lieu
+            JOIN co_ao ca ON ca.id = spct.id_co_ao
+            JOIN tay_ao ta ON ta.id = spct.id_tay_ao
+            JOIN hoa_tiet ht ON ht.id = spct.id_hoa_tiet
+            JOIN tinh_nang tn ON tn.id = spct.id_tinh_nang
+            JOIN thuong_hieu th ON th.id = spct.id_thuong_hieu
+            JOIN kieu_dang kd ON kd.id = spct.id_kieu_dang
+            JOIN mau_sac ms ON ms.id = spct.id_mau_sac
+            JOIN kich_co kc ON kc.id = spct.id_kich_co
+            LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
+            WHERE sp.trang_thai = 0
+                AND spct.trang_thai = 0
+                AND spct.so_luong >0
+                AND (sp.id = :#{#idSanPham} OR :#{#idSanPham} IS NULL)
+                AND (dm.id = :#{#request.idDanhMuc} OR :#{#request.idDanhMuc} IS NULL)
+                AND (cl.id = :#{#request.idChatLieu} OR :#{#request.idChatLieu} IS NULL)
+                AND (ca.id = :#{#request.idCoAo} OR :#{#request.idCoAo} IS NULL)
+                AND (ht.id = :#{#request.idHoaTiet} OR :#{#request.idHoaTiet} IS NULL)
+                AND (tn.id = :#{#request.idTinhNang} OR :#{#request.idTinhNang} IS NULL)
+                AND (kd.id = :#{#request.idKieuDang} OR :#{#request.idKieuDang} IS NULL)
+                AND (th.id = :#{#request.idThuongHieu} OR :#{#request.idThuongHieu} IS NULL)
+                AND (ta.id = :#{#request.idTayAo} OR :#{#request.idTayAo} IS NULL)
+                AND (ms.id = :#{#request.idMauSac} OR :#{#request.idMauSac} IS NULL)
+                AND (spct.gioi_tinh = :#{#request.gioiTinh} OR :#{#request.gioiTinh} IS NULL)
+            GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,
+                     ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta,spct.gioi_tinh
+            """, nativeQuery = true)
+    ClientProductProjectionResponse getProductDetailByIdWithColor(String idSanPham, ClientProductDetailRequest request);
+
+    String id(String id);
 }

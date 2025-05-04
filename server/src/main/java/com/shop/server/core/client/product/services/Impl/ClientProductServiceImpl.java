@@ -91,6 +91,20 @@ public class ClientProductServiceImpl implements ClientProductService {
                 "Lấy danh sách sản phẩm được giảm giá thành công");
     }
 
+    @Override
+    public ResponseObject<?> getProductDetailByIdWithSize(String idSanPham, ClientProductDetailRequest request) {
+        return new ResponseObject<>(convertToResponse(clientProductRepository.getProductDetailByIdWithSize(idSanPham,request)),
+                HttpStatus.OK,
+                "Lấy danh sách sản phẩm theo kích cỡ thành công");
+    }
+
+    @Override
+    public ResponseObject<?> getProductDetailByIdWithColor(String idSanPham, ClientProductDetailRequest request) {
+        return new ResponseObject<>(convertToResponse(clientProductRepository.getProductDetailByIdWithColor(idSanPham,request)),
+                HttpStatus.OK,
+                "Lấy danh sách sản phẩm theo màu sắc thành công");
+    }
+
     private Page<ClientProductResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request) {
         Page<ClientProductProjectionResponse> projections = clientProductRepository.getAllProducts(pageable, request);
         return projections.map(this::convertToResponse);

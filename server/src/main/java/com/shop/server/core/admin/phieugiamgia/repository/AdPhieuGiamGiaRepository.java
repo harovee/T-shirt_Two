@@ -108,4 +108,32 @@ public interface AdPhieuGiamGiaRepository extends PhieuGiamGiaRepository {
     Optional<PhieuGiamGiaResponse> getPhieuGiamGiaByMa(String ma);
 
     boolean existsByTen(String ten);
+
+    @Query(value = """
+            SELECT pgg.id as id,
+                   pgg.ten as ten,
+                   pgg.ma_phieu_giam_gia as ma,
+                   pgg.so_luong as soLuong,
+                   pgg.dieu_kien_giam as dieuKienGiam,
+                   pgg.giam_toi_da as giamToiDa,
+                   pgg.loai_giam as loaiGiam,
+                   pgg.gia_tri_giam as giaTriGiam,
+                   pgg.ngay_bat_dau as ngayBatDau,
+                   pgg.ngay_ket_thuc as ngayKetThuc,
+                   pgg.loai_phieu as kieu,
+                    CASE
+                         WHEN UNIX_TIMESTAMP() * 1000 > pgg.ngay_ket_thuc THEN 'EXPRIXED'
+                         WHEN pgg.trang_thai = 'ACTIVE' THEN
+                             CASE
+                                 WHEN UNIX_TIMESTAMP() * 1000 BETWEEN pgg.ngay_bat_dau AND pgg.ngay_ket_thuc THEN 'ACTIVE'
+                                 WHEN UNIX_TIMESTAMP() * 1000 < pgg.ngay_bat_dau THEN 'NOT_STARTED'
+                                 ELSE 'UNKNOWN'
+                             END
+                         ELSE 'INACTIVE'
+                    END AS trangThai           
+            FROM 
+            phieu_giam_gia pgg JOIN hoa_don hd on pgg.id = hd.id_phieu_giam_gia
+            WHERE hd.id_phieu_giam_gia = :id
+                        """,nativeQuery = true)
+    PhieuGiamGiaResponse checkVoucherInUse(String id);
 }
