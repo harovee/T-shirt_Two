@@ -562,13 +562,14 @@ watch(
         detail.value = dataDetail?.value?.data?.data;
 
         if (detail.value.loaiGiam) {
-          // Loại giảm = true (tiền mặt)
-          if (detail.value.dieuKienGiam <= totalPrice.value) {
-            copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
-          } else {
-            copiedDataSource.value[0].tienGiamHD = 0;
-          }
-          // detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
+          // // Loại giảm = true (tiền mặt)
+          // if (detail.value.dieuKienGiam <= totalPrice.value) {
+          //   copiedDataSource.value[0].tienGiamHD = detail.value.giaTriGiam;
+          // } else {
+          //   copiedDataSource.value[0].tienGiamHD = 0;
+          // }
+          detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
+          
           detailDataSources.value[0].tongTienHD =
             Math.floor(totalPrice.value +
             detailDataSources.value[0].tienShip -
@@ -578,12 +579,12 @@ watch(
           const discount = (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
           // detailDataSources.value[0].tienGiamHD =
           //   (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
-          if (detail.value.dieuKienGiam <= totalPrice.value) {
-            copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
-          } else {
-            copiedDataSource.value[0].tienGiamHD = 0;
-          }
-          // detailDataSources.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          // if (detail.value.dieuKienGiam <= totalPrice.value) {
+          //   copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          // } else {
+          //   copiedDataSource.value[0].tienGiamHD = 0;
+          // }
+          detailDataSources.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
           
           detailDataSources.value[0].tongTienHD =
             Math.floor(totalPrice.value +
@@ -717,8 +718,6 @@ const handleUpdateBill = () => {
     }
   }
 };
-
-provide('detailDataSources', detailDataSources.value);
 
 const columnsBill: ColumnType[] = [
   {

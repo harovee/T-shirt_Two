@@ -10,7 +10,9 @@
     <h1 class="text-xl">Thanh toán</h1>
     <div class="flex justify-between">
       <p>Số tiền phải thanh toán:</p>
-      <p class="text-lg">{{ formatCurrencyVND(totalAmount - totalAmountAfter) }}</p>
+      <p class="text-lg">
+        {{ formatCurrencyVND(totalAmount - totalAmountAfter) }}
+      </p>
       <!-- <p v-if="dataPaymentMethodDetails && dataPaymentMethodDetails.length && (totalAmountAfter >= totalAmount)" class="text-lg">{{ formatCurrencyVND(0) }}</p> -->
     </div>
     <a-form :model="params" :rules="rulesRef" layout="vertical">
@@ -142,7 +144,12 @@ import {
   successNotiSort,
   errorNotiSort,
 } from "@/utils/notification.config";
-import { currentInvoice, InvoiceData, invoices, sendCartInfo } from "@/infrastructure/mobile.connect/InvoiceConnect2";
+import {
+  currentInvoice,
+  InvoiceData,
+  invoices,
+  sendCartInfo,
+} from "@/infrastructure/mobile.connect/InvoiceConnect2";
 import { useAuthStore } from "@/infrastructure/stores/auth";
 
 const pageSize = ref(5);
@@ -156,7 +163,7 @@ const props = defineProps({
   dataCustomer: {
     type: Object,
     required: true,
-    default: () => ({})
+    default: () => ({}),
   },
   totalAmount: {
     type: Number,
@@ -165,12 +172,12 @@ const props = defineProps({
   dataVoucher: {
     type: Object,
     required: true,
-    default: () => ({})
+    default: () => ({}),
   },
   dataSourceInfo: {
     type: Object,
     required: true,
-    default: () => ({})
+    default: () => ({}),
   },
 });
 
@@ -198,7 +205,11 @@ const rulesRef = reactive({
   maGiaoDich: [
     {
       validator: (_, value) => {
-        if ((params.value.idPhuongThucThanhToan === "chuyenkhoan" || params.value.idPhuongThucThanhToan === "cahai") && !value) {
+        if (
+          (params.value.idPhuongThucThanhToan === "chuyenkhoan" ||
+            params.value.idPhuongThucThanhToan === "cahai") &&
+          !value
+        ) {
           return Promise.reject(new Error("Vui lòng nhập mã giao dịch"));
         }
         return Promise.resolve();
@@ -216,7 +227,7 @@ const params = ref<paymentMethodDetailRequest>({
   soTienDu: null,
   tienChuyenKhoan: 0,
   idNhanVien: null,
-  moTa: ""
+  moTa: "",
 });
 
 const { resetFields, validate, validateInfos } = Form.useForm(params, rulesRef);
@@ -251,9 +262,11 @@ const currentAmount = ref(0);
 watch(
   () => dataPaymentMethodDetails.value,
   (newData) => {
-    totalAmountAfter.value = newData.reduce((sum, item) => sum + (item.soTien || 0), 0);
-    currentAmount.value = props.totalAmount - totalAmountAfter.value;
-    emit("handlePaymented", totalAmountAfter.value)
+    totalAmountAfter.value = newData.reduce(
+      (sum, item) => sum + (item.soTien || 0),
+      0
+    );
+    emit("handlePaymented", totalAmountAfter.value);
     if (params.value.tienKhachDua === null) {
       params.value.soTienDu = 0;
     }
@@ -261,16 +274,15 @@ watch(
       params.value.idPhuongThucThanhToan === "tienmat" &&
       params.value.tienKhachDua > 0
     ) {
-      params.value.soTienDu = Math.floor(params.value.tienKhachDua - currentAmount.value);
-      
+      params.value.soTienDu = params.value.tienKhachDua - props.totalAmount;
     } else if (params.value.idPhuongThucThanhToan === "chuyenkhoan") {
-      params.value.tienKhachDua = props.totalAmount - totalAmountAfter.value;
+      params.value.tienKhachDua = props.totalAmount;
     } else {
-      
       if (params.value.tienKhachDua > 0 && params.value.tienChuyenKhoan === 0) {
-        params.value.soTienDu = Math.floor(params.value.tienKhachDua - currentAmount.value);
+        params.value.soTienDu = params.value.tienKhachDua - props.totalAmount;
       }
-      params.value.tienChuyenKhoan = Math.floor(props.totalAmount - totalAmountAfter.value - params.value.tienKhachDua);
+      params.value.tienChuyenKhoan =
+        props.totalAmount - totalAmountAfter.value - params.value.tienKhachDua;
       if (params.value.tienChuyenKhoan < 0) {
         params.value.tienChuyenKhoan = 0;
       }
@@ -292,30 +304,53 @@ const handlePayment = () => {
     async onOk() {
       try {
         await validate();
-        
+
         if (props.totalAmount === 0) {
-          warningNotiSort("Bạn chưa thêm sản phẩm vào giỏ, không thể thanh toán!");
+          warningNotiSort(
+            "Bạn chưa thêm sản phẩm vào giỏ, không thể thanh toán!"
+          );
           return;
         }
-        if (Math.floor(props.totalAmount) - Math.floor(totalAmountAfter.value) <= 0) {
+        if (
+          Math.floor(props.totalAmount) - Math.floor(totalAmountAfter.value) <=
+          0
+        ) {
           warningNotiSort("Đơn hàng này đã hoàn thành thanh toán!");
           return;
         }
-        if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < Math.floor(totalAmountAfter.value)) {
+        if (
+          params.value.idPhuongThucThanhToan === "tienmat" &&
+          params.value.tienKhachDua < Math.floor(totalAmountAfter.value)
+        ) {
           warningNotiSort("Tiền khách đưa chưa đủ!");
           return;
         }
+        console.log(totalAmountAfter.value);
+        console.log(props.totalAmount);
+
         if (params.value.tienKhachDua > Math.floor(totalAmountAfter.value)) {
-          params.value.tienKhachDua = props.totalAmount - totalAmountAfter.value
+          if (!(params.value.idPhuongThucThanhToan === "cahai")) {
+            if (Math.floor(totalAmountAfter.value) > 0) {
+              params.value.tienKhachDua =
+                props.totalAmount - totalAmountAfter.value;
+            } else {
+              params.value.tienKhachDua = props.totalAmount;
+            }
+          }
         }
         params.value.idNhanVien = useAuthStore().user.id;
-        params.value.moTa = `Nhân viên ${useAuthStore().user.email} đã thực hiện thanh toán`
+        params.value.moTa = `Nhân viên ${
+          useAuthStore().user.email
+        } đã thực hiện thanh toán`;
         // console.log("🚀 ~ handlePayment ~ params:", params.value);
         invoices.value.forEach((item: InvoiceData) => {
           if (item.id === currentInvoice.value.id) {
-            item.paymentMethod = params.value.idPhuongThucThanhToan === 'tienmat' ?
-             'Tiền mặt' : params.value.idPhuongThucThanhToan === 'chuyenkhoan' ?
-              'Chuyển khoản' : 'Cả hai';
+            item.paymentMethod =
+              params.value.idPhuongThucThanhToan === "tienmat"
+                ? "Tiền mặt"
+                : params.value.idPhuongThucThanhToan === "chuyenkhoan"
+                ? "Chuyển khoản"
+                : "Cả hai";
             item.guestMoney = params.value.tienKhachDua;
             item.transferMoney = params.value.tienChuyenKhoan;
 
@@ -323,6 +358,7 @@ const handlePayment = () => {
             sendCartInfo(item);
           }
         });
+        console.log(params.value);
 
         createPaymentMethodDetail(params.value, {
           onSuccess: (result) => {
@@ -333,7 +369,6 @@ const handlePayment = () => {
             errorNotiSort(error?.response?.data?.message);
           },
         });
-        
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
         if (error?.response) {

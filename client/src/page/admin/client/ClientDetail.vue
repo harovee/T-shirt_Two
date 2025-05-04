@@ -315,13 +315,13 @@ const formFields = computed(() => [
     component: "a-input",
     placeholder: "Nhâp email"
   },
-  {
-    label: "Mật khẩu",
-    name: "password",
-    type: "string",
-    component: "a-input-password",
-    placeholder: "Nhâp mật khẩu"
-  },
+  // {
+  //   label: "Mật khẩu",
+  //   name: "password",
+  //   type: "string",
+  //   component: "a-input-password",
+  //   placeholder: "Nhâp mật khẩu"
+  // },
   {
     label: "Ngày sinh",
     name: "birthday",

@@ -16,6 +16,92 @@ import java.util.List;
 @Repository
 public interface ClientProductRepository extends SanPhamRepository {
 
+//    @Query(value = """
+//                  SELECT  ROW_NUMBER() OVER(ORDER BY MAX(spct.ngay_tao) DESC) AS catalog,
+//                          sp.id as id,
+//                          sp.ma_san_pham as maSanPham,
+//                          sp.ten as ten,
+//                          sp.mo_ta as moTa,
+//                          cl.id as idChatLieu,
+//                          cl.ten as tenChatLieu,
+//                          dm.id as idDanhMuc,
+//                          dm.ten as tenDanhMuc,
+//                          ca.id as idCoAo,
+//                          ca.ten as tenCoAo,
+//                          ta.id as idTayAo,
+//                          ta.ten as tenTayAo,
+//                          ht.id as idHoaTiet,
+//                          ht.ten as tenHoaTiet,
+//                          tn.id as idTinhNang,
+//                          tn.ten as tenTinhNang,
+//                          th.id as idThuongHieu,
+//                          th.ten as tenThuongHieu,
+//                          kd.id as idKieuDang,
+//                          kd.ten as tenKieuDang,
+//                          spct.gioi_tinh as gioiTinh,
+//                          GROUP_CONCAT(DISTINCT spct.id) as maSPCTs,
+//                          GROUP_CONCAT(DISTINCT best_discounts.gia_sau_giam ORDER BY best_discounts.gia_sau_giam ASC) AS discount,
+//                          GROUP_CONCAT(DISTINCT spct.gia ORDER BY spct.gia ASC) AS gia,
+//                          GROUP_CONCAT(DISTINCT
+//                              CASE
+//                                  WHEN best_discounts.gia_sau_giam IS NOT NULL
+//                                  THEN CONCAT(ROUND((spct.gia - best_discounts.gia_sau_giam) / spct.gia * 100, 1), '%')
+//                                  ELSE NULL
+//                                  END
+//                                  ORDER BY (CASE WHEN best_discounts.gia_sau_giam IS NOT NULL
+//                                  THEN (spct.gia - best_discounts.gia_sau_giam) / spct.gia
+//                                  ELSE 0 END) DESC
+//                              ) AS phanTramGiam,
+//                          GROUP_CONCAT(DISTINCT CONCAT(kc.id, ':', kc.ten)) AS kichCos,
+//                          GROUP_CONCAT(DISTINCT CONCAT(ms.id,':' ,ms.ma_mau_sac, ':', ms.ten)) AS colors,
+//                          GROUP_CONCAT(DISTINCT anh.url) AS anhs
+//                  FROM san_pham sp
+//                  JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham
+//                  JOIN danh_muc dm ON dm.id = sp.id_danh_muc
+//                  JOIN chat_lieu cl ON cl.id = spct.id_chat_lieu
+//                  JOIN co_ao ca ON ca.id = spct.id_co_ao
+//                  JOIN tay_ao ta ON ta.id = spct.id_tay_ao
+//                  JOIN hoa_tiet ht ON ht.id = spct.id_hoa_tiet
+//                  JOIN tinh_nang tn ON tn.id = spct.id_tinh_nang
+//                  JOIN thuong_hieu th ON th.id = spct.id_thuong_hieu
+//                  JOIN kieu_dang kd ON kd.id = spct.id_kieu_dang
+//                  JOIN mau_sac ms ON ms.id = spct.id_mau_sac
+//                  JOIN kich_co kc ON kc.id = spct.id_kich_co
+//                  LEFT JOIN anh ON anh.id_san_pham_chi_tiet = spct.id
+//                  LEFT JOIN (
+//                      SELECT
+//                         spgg.id_san_pham_chi_tiet,
+//                         spgg.gia_sau_giam,
+//                         spgg.id_dot_giam_gia,
+//                         ROW_NUMBER() OVER (
+//                               PARTITION BY spgg.id_san_pham_chi_tiet
+//                                  ORDER BY (spct_inner.gia - spgg.gia_sau_giam) / spct_inner.gia DESC
+//                             ) as rank_num
+//                      FROM san_pham_giam_gia spgg
+//                      JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
+//                      JOIN san_pham_chi_tiet spct_inner ON spct_inner.id = spgg.id_san_pham_chi_tiet
+//                      WHERE dgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000
+//                      AND dgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
+//                      AND dgg.trang_thai = 'ACTIVE'
+//                      AND dgg.deleted = 0
+//                      ) best_discounts ON best_discounts.id_san_pham_chi_tiet = spct.id AND best_discounts.rank_num = 1
+//                  LEFT JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
+//                  WHERE sp.trang_thai = 0
+//                  AND spct.so_luong > 0
+//                  AND spct.trang_thai = 0
+//                  AND spct.so_luong IS NOT NULL
+//                  AND (spct.gia <= :#{#request.max} OR :#{#request.max} IS NULL)
+//                  AND (spct.gia >= :#{#request.min} OR :#{#request.min} IS NULL)
+//                  AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
+//                  AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
+//                  AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
+//                  AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
+//                  AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
+//                  GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,
+//                           ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta,spct.gioi_tinh
+//            """, nativeQuery = true)
+//    Page<ClientProductProjectionResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request);
+
     @Query(value = """
                   SELECT  ROW_NUMBER() OVER(ORDER BY MAX(spct.ngay_tao) DESC) AS catalog,
                           sp.id as id,
@@ -75,8 +161,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                          spgg.id_dot_giam_gia,
                          ROW_NUMBER() OVER (
                                PARTITION BY spgg.id_san_pham_chi_tiet
-                                  ORDER BY (spct_inner.gia - spgg.gia_sau_giam) / spct_inner.gia DESC
-                             ) as rank_num
+                                  ORDER BY (spct_inner.gia - spgg.gia_sau_giam) / spct_inner.gia DESC) as rank_num
                       FROM san_pham_giam_gia spgg
                       JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
                       JOIN san_pham_chi_tiet spct_inner ON spct_inner.id = spgg.id_san_pham_chi_tiet
@@ -99,9 +184,48 @@ public interface ClientProductRepository extends SanPhamRepository {
                   AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
                   GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,   
                            ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta,spct.gioi_tinh
-            """, nativeQuery = true)
+            """,
+            countQuery = """
+              SELECT COUNT( sp.id) 
+              FROM san_pham sp
+              JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham
+              JOIN danh_muc dm ON dm.id = sp.id_danh_muc
+              JOIN chat_lieu cl ON cl.id = spct.id_chat_lieu
+              JOIN co_ao ca ON ca.id = spct.id_co_ao
+              JOIN tay_ao ta ON ta.id = spct.id_tay_ao
+              JOIN hoa_tiet ht ON ht.id = spct.id_hoa_tiet
+              JOIN tinh_nang tn ON tn.id = spct.id_tinh_nang
+              JOIN thuong_hieu th ON th.id = spct.id_thuong_hieu
+              JOIN kieu_dang kd ON kd.id = spct.id_kieu_dang
+              JOIN mau_sac ms ON ms.id = spct.id_mau_sac
+              JOIN kich_co kc ON kc.id = spct.id_kich_co
+              LEFT JOIN (
+                  SELECT
+                     spgg.id_san_pham_chi_tiet,
+                     spgg.gia_sau_giam,
+                     spgg.id_dot_giam_gia
+                  FROM san_pham_giam_gia spgg
+                  JOIN dot_giam_gia dgg ON dgg.id = spgg.id_dot_giam_gia
+                  JOIN san_pham_chi_tiet spct_inner ON spct_inner.id = spgg.id_san_pham_chi_tiet
+                  WHERE dgg.ngay_bat_dau <= UNIX_TIMESTAMP() * 1000
+                  AND dgg.ngay_ket_thuc >= UNIX_TIMESTAMP() * 1000
+                  AND dgg.trang_thai = 'ACTIVE'
+                  AND dgg.deleted = 0
+              ) best_discounts ON best_discounts.id_san_pham_chi_tiet = spct.id
+              WHERE sp.trang_thai = 0
+              AND spct.so_luong > 0
+              AND spct.trang_thai = 0
+              AND spct.so_luong IS NOT NULL
+              AND (spct.gia <= :#{#request.max} OR :#{#request.max} IS NULL)
+              AND (spct.gia >= :#{#request.min} OR :#{#request.min} IS NULL)
+              AND (:#{#request.tenSanPham} IS NULL OR sp.ten LIKE CONCAT('%', :#{#request.tenSanPham}, '%'))
+              AND (:#{#request.tenDanhMuc} IS NULL OR dm.ten LIKE CONCAT('%', :#{#request.tenDanhMuc}, '%'))
+              AND (:#{#request.tenChatLieu} IS NULL OR cl.ten LIKE CONCAT('%', :#{#request.tenChatLieu}, '%'))
+              AND (:#{#request.tenKieuDang} IS NULL OR kd.ten LIKE CONCAT('%', :#{#request.tenKieuDang}, '%'))
+              AND (:#{#request.tenThuongHieu} IS NULL OR th.ten LIKE CONCAT('%', :#{#request.tenThuongHieu}, '%'))
+        """
+            , nativeQuery = true)
     Page<ClientProductProjectionResponse> getAllProducts(Pageable pageable, ClientProductSearchRequest request);
-
 
     @Query(value = """
                         SELECT  

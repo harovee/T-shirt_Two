@@ -521,12 +521,7 @@ watch(
       </Radio.Group>
     </div>
     <Row :gutter="16" class="chart-table-row">
-      <Col :span="12">
-        <Card title="">
-          <!-- <VChart :option="pieChartOptions" style="height: 300px" /> -->
-        </Card>
-      </Col>
-      <Col :span="12">
+      <Col :span="12" class="mt-5">
         <Card :title="''" style="height: 400px">
           <Table
             :dataSource="statisticByTypeData"
@@ -535,6 +530,12 @@ watch(
           />
         </Card>
       </Col>
+      <Col :span="12">
+        <!-- <Card title=""> -->
+          <!-- <VChart :option="pieChartOptions" style="height: 300px" /> -->
+        <!-- </Card> -->
+      </Col>
+      
     </Row>
   </div>
 </template>
