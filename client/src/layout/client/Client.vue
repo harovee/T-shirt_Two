@@ -170,6 +170,7 @@ watch(() => route.path, (newPath) => {
   }
 }, { immediate: true });
 
+const products = getCartFromLocalStorage();
 // hiển thị badge cho giỏ hàng
 const cartItemCount = computed(() => {
   if (forceCartUpdate.value >= 0) {
@@ -178,6 +179,10 @@ const cartItemCount = computed(() => {
   }
   return 0;
 });
+
+watch(() => products, (newProduct) => {
+  cartItemCount;
+})
 
 onMounted(() => {
   emitCartUpdate();

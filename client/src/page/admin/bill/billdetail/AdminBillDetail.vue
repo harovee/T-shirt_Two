@@ -95,7 +95,7 @@
         <span v-if="detailDataSources" class="text-lg">{{
           detailDataSources.length > 0
             ? `${formatCurrencyVND(paymentInfo.paid)}`
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
       <div class="flex justify-between">
@@ -103,15 +103,15 @@
         <span v-if="detailDataSources" class="text-lg text-red-500">{{
           detailDataSources.length > 0
             ? formatCurrencyVND(paymentInfo.amountPayable)
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
       <div class="flex justify-between text-lg">
         <span>(Phụ phí)</span>
         <span v-if="detailDataSources">{{
-          detailDataSources.length > 0
+          detailDataSources.length > 0 && paymentInfo.paid > 0
             ? formatCurrencyVND(paymentInfo.surcharge)
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
       <div class="flex justify-between text-lg">
@@ -119,7 +119,7 @@
         <span v-if="detailDataSources">{{
           detailDataSources.length > 0
             ? formatCurrencyVND(paymentInfo.refund)
-            : "0 VND"
+            : "0 đ"
         }}</span>
       </div>
     </div>
@@ -177,6 +177,7 @@ import {
   successNotiSort,
   warningNotiSort,
 } from "@/utils/notification.config";
+import { provide } from 'vue';
 
 const emit = defineEmits(["update:paginationParams"]);
 
@@ -406,12 +407,10 @@ watch(
     //   }
     //   // console.log(detailDataSources.value);
     // }
-    console.log(detailDataSources.value);
 
     serviceIdParams.value.formDistrict = shippingParams.value.fromDistrictId;
     if (copiedBillData.value && copiedBillData.value.huyen) {
       serviceIdParams.value.toDistrict = Number(copiedBillData.value.huyen);
-      console.log(serviceIdParams.value.toDistrict);
       
       if (serviceIdParams.value.toDistrict !== 0) {
         refetchService().then(() => {
@@ -428,8 +427,6 @@ watch(
               } else {
                 detailDataSources.value[0].tienShip = 0;
               }
-              console.log(totalPrice.value);
-              console.log(detailDataSources.value[0].tienShip);
               
             });
           }
@@ -438,7 +435,6 @@ watch(
         detailDataSources.value[0].tienShip = 0;
       }
     }
-    console.log(detailDataSources.value);
     
   },
   { immediate: true }
@@ -449,32 +445,33 @@ watch(
   () => detailDataSources.value,
   (newData) => {
     // console.log(newData);
-    console.log(newData);
     if (newData[0]) {
       // Tính toán lại phí giảm sau khi thêm sản phẩm hoặc thay đổi số lượng
       if (detail.value) {
         // Loại giảm = true (tiền mặt)
         if (detail.value.loaiGiam) {
-          newData[0] = detail?.value?.giaTriGiam;
+          newData[0].tienGiamHD = detail?.value?.giaTriGiam;
           newData[0].tongTienHD =
-            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+            Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
         } else {
           // Loại giảm = flase (%)
-          newData[0].tienGiamHD =
-            (totalPrice.value * Number(detail?.value?.giaTriGiam)) / 100;
+          const discount = (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          newData[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
 
           newData[0].tongTienHD =
-            totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+            Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
           // console.log(newData[0].tongTienHD);
         }
       } else {
         newData[0].tienGiamHD = 0;
         // newData[0].tienShip = 0;
         newData[0].tongTienHD =
-          totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD;
+          Math.floor(totalPrice.value + newData[0].tienShip - newData[0].tienGiamHD);
       }
 
       // Tính toán lại phụ phí/ hoàn trả
+
+      
       if (newData[0].tongTienHD > paymentInfo.value.paid) {
         paymentInfo.value.amountPayable =
           detailDataSources.value[0].tongTienHD - paymentInfo.value.paid;
@@ -490,6 +487,25 @@ watch(
     }
   },
   { deep: true, immediate: true }
+);
+
+watch(
+  () => paymentInfo.value.paid,
+  (newPaid) => {
+    if (newPaid != null) {
+      if (detailDataSources.value[0].tongTienHD > newPaid) {
+        paymentInfo.value.amountPayable =
+          detailDataSources.value[0].tongTienHD - newPaid;
+        paymentInfo.value.surcharge =
+          detailDataSources.value[0].tongTienHD - newPaid;
+        paymentInfo.value.refund = 0;
+      } else {
+        paymentInfo.value.amountPayable = 0;
+        paymentInfo.value.surcharge = 0;
+        paymentInfo.value.refund = newPaid - detailDataSources.value[0].tongTienHD;
+      }
+    }
+  }
 );
 
 // Theo dõi nếu id hóa đơn thay đổi
@@ -539,18 +555,20 @@ watch(
           // Loại giảm = true (tiền mặt)
           detailDataSources.value[0].tienGiamHD = detail.value.giaTriGiam;
           detailDataSources.value[0].tongTienHD =
-            totalPrice.value +
+            Math.floor(totalPrice.value +
             detailDataSources.value[0].tienShip -
-            detailDataSources.value[0].tienGiamHD;
+            detailDataSources.value[0].tienGiamHD);
         } else {
           // Loại giảm = flase (%)
-          detailDataSources.value[0].tienGiamHD =
-            (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
-
+          const discount = (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          // detailDataSources.value[0].tienGiamHD =
+          //   (totalPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          detailDataSources.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+          
           detailDataSources.value[0].tongTienHD =
-            totalPrice.value +
+            Math.floor(totalPrice.value +
             detailDataSources.value[0].tienShip -
-            detailDataSources.value[0].tienGiamHD;
+            detailDataSources.value[0].tienGiamHD);
         }
       });
     }
@@ -679,6 +697,8 @@ const handleUpdateBill = () => {
     }
   }
 };
+
+provide('detailDataSources', detailDataSources.value);
 
 const columnsBill: ColumnType[] = [
   {

@@ -111,12 +111,38 @@ const rulesRef = reactive({
     {
       max: 255,
       message: "Ghi chú không được vượt quá 255 ký tự",
-      trigger: "blur",
+      trigger: "change",
+    },
+  ],
+  soDienThoai: [
+    { 
+      required: true, 
+      message: "Vui lòng nhập số điện thoại", 
+      trigger: ["blur", "change"] // Thêm trigger 'change'
+    },
+    {
+      pattern: /^0[1-9]\d{8,9}$/,
+      message: "Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số.",
+      trigger: ["blur", "change"] // Thêm trigger 'change'
+    },
+  ],
+  tenNguoiNhan: [
+    {
+      required: true,
+      validator: (_, value) => value !== null && value.trim() !== "" 
+        ? Promise.resolve() 
+        : Promise.reject("Tên không được để trống"),
+      trigger: ["blur", "change"] // Thêm trigger 'change'
+    },
+    {
+      max: 50, 
+      message: "Tên không được dài quá 50 ký tự", 
+      trigger: ["blur", "change"] // Thêm trigger 'change'
     },
   ],
 });
 
-const { resetFields, validate, validateInfos } = Form.useForm(
+const { resetFields, validate, validateInfos, clearValidate } = Form.useForm(
   modelRef,
   rulesRef
 );
@@ -132,6 +158,7 @@ watch(
       modelRef.tinh = newBillData.tinh || null;
       modelRef.huyen = newBillData.huyen || null;
       modelRef.xa = newBillData.xa || null;
+      clearValidate();
     }
   },
 );
@@ -177,14 +204,20 @@ const handleChangeAddress = (fullAddress: string, modelRefAdd: any) => {
 
 const billId = getIdHoaDonFromUrl();
 
-const handleUpdateBill = () => {
-  validate();
-  emit("update:bill", modelRef);
+const handleUpdateBill = async () => {
+  try {
+    await validate();
+    emit("update:bill", modelRef);
+    console.log('updated');
+    
+  } catch (err) {
+    console.warn("Validation failed", err);
+  }
 };
 
 const handleClose = () => {
   emit("handleClose");
-  // resetFields();
+  clearValidate();
   if (props.billData) {
     modelRef.soDienThoai = props.billData.soDienThoai || null;
     modelRef.diaChiNguoiNhan = props.billData.diaChiNguoiNhan || null;

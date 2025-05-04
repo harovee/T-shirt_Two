@@ -5,25 +5,29 @@
     style="display: flex; justify-content: flex-end"
   >
     <div class="me-10" style="display: flex; align-items: center">
-        <a-input-number
-          class="me-1"
-          v-model:value="newPrice"
-          min="0"
-          style="width: 140px"
-          :formatter="formatter"
-        />
-        <a-button style="margin-top: 0" type="primary" @click="updateValuesGia">Sửa giá</a-button>
-      </div>
-      <div style="display: flex; align-items: center">
-        <a-input
-          class="me-1"
-          v-model:value="newQuantity"
-          type="number"
-          min="0"
-          style="width: 120px"
-        />
-        <a-button type="primary" @click="updateValuesSoLuong">Sửa số lượng</a-button>
-      </div>
+      <a-input-number
+        class="me-1"
+        v-model:value="newPrice"
+        min="0"
+        style="width: 140px"
+        :formatter="formatter"
+      />
+      <a-button style="margin-top: 0" type="primary" @click="updateValuesGia"
+        >Sửa giá</a-button
+      >
+    </div>
+    <div style="display: flex; align-items: center">
+      <a-input
+        class="me-1"
+        v-model:value="newQuantity"
+        type="number"
+        min="0"
+        style="width: 120px"
+      />
+      <a-button type="primary" @click="updateValuesSoLuong"
+        >Sửa số lượng</a-button
+      >
+    </div>
   </div>
   <a-table
     v-if="dataSource.length > 0"
@@ -51,12 +55,14 @@
       </div>
       <div v-if="column.key === 'soLuong'" class="text-center">
         <a-input
-          type="number"
+        type="number"
           min="0"
+          max="1000"
+          :step="1"
+          :precision="0"
           v-model:value="record.soLuong"
           @blur="handleInputChangeSoLuong(record, index)"
-        >
-        </a-input>
+        />
       </div>
       <div v-if="column.key === 'gia'" class="text-center">
         <a-input-number
@@ -66,7 +72,11 @@
           :formatter="formatter"
           class="w-40"
           @blur="handleInputChangeGia(record, index)"
-          @change="(value) => { record.gia = value }"
+          @change="
+            (value) => {
+              record.gia = value;
+            }
+          "
         />
       </div>
       <div
@@ -90,15 +100,14 @@
           <div style="display: flex; align-items: center; gap: 10px">
             <a-button
               @click="openWidget(record)"
-              style="width: 80px; height: 80px; border: 1px dashed #D3D3D3;"
+              style="width: 80px; height: 80px; border: 1px dashed #d3d3d3"
               v-if="
                 (fileLists[record.idMauSac] &&
                   fileLists[record.idMauSac].length <= 2) ||
                 !fileLists[record.idMauSac]
               "
             >
-            <v-icon name="co-plus" style="font-size: 14px"></v-icon
-              >
+              <v-icon name="co-plus" style="font-size: 14px"></v-icon>
               <div>Ảnh</div>
             </a-button>
             <div
@@ -185,7 +194,13 @@ import type { UploadProps } from "ant-design-vue";
 import { ListProductResponse } from "@/infrastructure/services/api/admin/product.api";
 import { ListSizeResponse } from "@/infrastructure/services/api/admin/size.api";
 import { ListColorResponse } from "@/infrastructure/services/api/admin/color.api";
-import { warningNotiSort, successNotiSort, errorNotiSort, openNotification, notificationType } from "@/utils/notification.config";
+import {
+  warningNotiSort,
+  successNotiSort,
+  errorNotiSort,
+  openNotification,
+  notificationType,
+} from "@/utils/notification.config";
 import { useCreateProductDetail } from "@/infrastructure/services/service/admin/productdetail.action";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { Form, message, Modal, Upload } from "ant-design-vue";
@@ -276,9 +291,9 @@ const props = defineProps<{
 }>();
 
 const formatter = (value: any) => {
-      if (!value) return '';
-      return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    };
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 interface DataType {
   stt: number;
@@ -298,7 +313,6 @@ interface DataType {
   idSanPham: string | null;
   gioiTinh: string | null;
 }
-
 
 // TableColumnType<RenProductDetailResponse>[]
 const columns: TableColumnType<RenProductDetailResponse>[] = [
@@ -355,6 +369,7 @@ const params = ref<FindProductRequest>({
 
 const newQuantity = ref(0);
 const newPrice = ref(0);
+let isWarningVisible = false;
 
 // Cập nhật giá trị trong copiedData cho tất cả các dòng được chọn
 // const updateValuesGia = (field: string) => {
@@ -375,6 +390,18 @@ const newPrice = ref(0);
 // };
 
 const updateValuesGia = () => {
+  if (newPrice.value > 100000000) {
+    if (!isWarningVisible) {
+      isWarningVisible = true;
+      warningNotiSort("Giá không được lớn hơn 100.000.000đ");
+
+      // Nếu không có thì reset sau 2-3 giây:
+      setTimeout(() => {
+        isWarningVisible = false;
+      }, 2000); // tùy thời gian toast hiển thị bao lâu
+    }
+    return;
+  }
   if (dataSource.value.length > 0) {
     selectedRowKeyNews.value.forEach((selectedKey) => {
       dataSource.value.forEach((item, index) => {
@@ -389,9 +416,22 @@ const updateValuesGia = () => {
   }
   newPrice.value = 0;
   emit("updatePrice", dataSource.value);
+  isWarningVisible = false;
 };
 
 const updateValuesSoLuong = (field: string) => {
+  if (newQuantity.value > 1000) {
+    if (!isWarningVisible) {
+      isWarningVisible = true;
+      warningNotiSort("Số lượng không được lớn hơn 1000");
+
+      // Nếu không có thì reset sau 2-3 giây:
+      setTimeout(() => {
+        isWarningVisible = false;
+      }, 2000); // tùy thời gian toast hiển thị bao lâu
+    }
+    return;
+  }
   if (dataSource.value.length > 0) {
     selectedRowKeyNews.value.forEach((selectedKey) => {
       dataSource.value.forEach((item) => {
@@ -405,7 +445,7 @@ const updateValuesSoLuong = (field: string) => {
   }
   newQuantity.value = 0;
   emit("updateQuantity", dataSource.value);
-  // console.log(dataSource.value);
+  isWarningVisible = false;
 };
 
 // Blur giá, số lượng thì sẽ thay đổi
@@ -421,6 +461,12 @@ const handleInputChangeSoLuong = (
   if (value === "") {
     value = "0";
   }
+
+  // if (Number(value) <= 0) {
+  //   console.log("lỗi");
+  //   warningNotiSort('Số lượng phải lớn hơn 0');
+  //   return;
+  // }
   record["soLuong"] = parseFloat(value);
   dataSource.value[index] = { ...dataSource.value[index], ...record };
   // console.log(dataSource.value);
@@ -446,26 +492,24 @@ const handleInputChangeSoLuong = (
 const handleInputChangeGia = (
   record: RenProductDetailResponse,
   index: number
-  ) => {
-      let value = record["gia"].toString();
-      value = value.replace(/[^0-9.]/g, "");
-      
-      if (value.split(".").length > 2) {
-        value = value.substring(0, value.lastIndexOf("."));
-      }
-      
-      if (value === "") {
-        value = "0";
-      }
-    
-    const numValue = parseFloat(value);
-    record["gia"] = numValue;
-    dataSource.value[index] = { ...record };
-    emit("updatePrice", dataSource.value);
-}
+) => {
+  let value = record["gia"].toString();
+  value = value.replace(/[^0-9.]/g, "");
+
+  if (value.split(".").length > 2) {
+    value = value.substring(0, value.lastIndexOf("."));
+  }
+
+  if (value === "") {
+    value = "0";
+  }
+
+  const numValue = parseFloat(value);
+  record["gia"] = numValue;
+  dataSource.value[index] = { ...record };
+  emit("updatePrice", dataSource.value);
+};
 // -----------------------------------------------------
-
-
 
 const findMau = (id: string) => {
   const mau = props.colors.find((mau) => mau.value === id);
@@ -502,7 +546,9 @@ const getRowSpan = (record) => {
 //   }
 // };
 const isFirstInGroup = (record) => {
-  const group = dataSource.value.filter((item) => item.idMauSac === record.idMauSac);
+  const group = dataSource.value.filter(
+    (item) => item.idMauSac === record.idMauSac
+  );
   return group.length === 1 || group[0].id === record.id;
 };
 
@@ -552,6 +598,8 @@ const dataSource: RenProductDetailResponse[] | any = computed(() => {
 watch(
   () => dataSource.value,
   (newValue) => {
+    console.log(newValue);
+    
     if (newValue.length === 0) {
       selectedRowKeyNews.value = [];
     }
@@ -583,7 +631,16 @@ const handleRedirectProductDetail = (id: string) => {
 // Thêm sản phẩm chi tiết toàn bộ list copitedData
 const { mutate: create } = useCreateProductDetail();
 
+const hasZeroQuantity = () => {
+  return dataSource.value.some(item => Number(item.soLuong) <= 0);
+};
+
 const handleCreateProduct = async () => {
+  if (hasZeroQuantity()) {
+    warningNotiSort("Số lượng phải lớn hơn 0!");
+    return;
+  }
+
   Modal.confirm({
     content: "Bạn chắc chắn muốn thêm?",
     icon: createVNode(ExclamationCircleOutlined),
@@ -601,14 +658,18 @@ const handleCreateProduct = async () => {
               item.listAnh = [];
             }
           }
-          create(item,{
-          // onSuccess: (result) => {
-          //   openNotification(notificationType.success, "Tất cả sản phẩm chi tiết đã được tạo thành công", '');
-          // },
-          onError: (error: any) => {
-            openNotification(notificationType.error, error?.response?.data?.message, '');
-          },
-        });
+          create(item, {
+            // onSuccess: (result) => {
+            //   openNotification(notificationType.success, "Tất cả sản phẩm chi tiết đã được tạo thành công", '');
+            // },
+            onError: (error: any) => {
+              openNotification(
+                notificationType.error,
+                error?.response?.data?.message,
+                ""
+              );
+            },
+          });
         } catch (error: any) {
           console.error("🚀 ~ handleCreate ~ error:", error);
           if (error?.response) {
@@ -621,10 +682,11 @@ const handleCreateProduct = async () => {
         }
       });
       await Promise.all(promises);
-      const successMessage = dataSource.value.length > 1 
-        ? "Tất cả các sản phẩm chi tiết đã được tạo thành công" 
-        : "Sản phẩm chi tiết đã được tạo thành công";
-      
+      const successMessage =
+        dataSource.value.length > 1
+          ? "Tất cả các sản phẩm chi tiết đã được tạo thành công"
+          : "Sản phẩm chi tiết đã được tạo thành công";
+
       successNotiSort(successMessage);
       handleRedirectProductDetail(dataSource.value[0].idSanPham);
     },

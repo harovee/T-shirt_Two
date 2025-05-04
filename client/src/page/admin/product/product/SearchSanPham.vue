@@ -56,7 +56,7 @@ const params = ref<PropertyProductParams>({
 const statusOptions = [
   {label: "Tất cả", value: null},
   {label: "Đang bán", value: 0},
-  {label: "Ngừng kinh doanh", value: 1}
+  {label: "Ngừng bán", value: 1}
 ]
 
 const debouncedEmit = debounce(() => {

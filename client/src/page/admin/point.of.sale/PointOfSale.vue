@@ -2,7 +2,7 @@
   <div class="p-6 grid grid-cols-1 gap-6">
     <div class="flex items-center gap-2">
       <v-icon name="bi-cart3" size="x-large" width="48" height="48" />
-      <h3 class="text-2xl m-0">Bán hàng tại quầy</h3>
+      <h3 class="text-2xl m-0">Bán tại quầy</h3>
     </div>
     <div>
       <div class="p-2 rounded-xl border-2">
@@ -85,7 +85,7 @@
           @edit="onEdit"
           class="ms-5 me-5 mb-5 mt-2"
         >
-          <a-tab-pane v-for="bill in dataSource" :key="bill.id">
+          <a-tab-pane v-for="bill in dataSource" :key="String(bill.id)">
             <template #tab>
               <span class="relative pr-6">
                 {{ bill.ma }}
@@ -101,6 +101,7 @@
               <POSProducsInCart
                 :maHoaDon="bill.ma"
                 :idOrder="activeKey?.valueOf() || ''"
+                @refetchLength="onDeleted"
               ></POSProducsInCart>
             </div>
 
@@ -228,12 +229,12 @@ import {
 } from "@/utils/common.helper";
 import { currentInvoice, InvoiceData, sendCartInfo, addInvoice, getInvoiceById, invoices } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
-const { data, isLoading, isFetching } = useGetBillsWait();
+const { data, isLoading, isFetching: refetchBills } = useGetBillsWait();
 
 const { data: listProductDetail } = useGetListProductDetail();
 
 const dataSource = computed(() => data?.value?.data || []);
-const activeKey = ref<string | null>(null);
+const activeKey = ref<string>("");
 const maHoaDon = ref<string | null>(null);
 const isAddProduct = ref(0);
 const isChange = ref(0);
@@ -245,6 +246,7 @@ const dataListProductDetail = computed(
 watch(
   [() => dataSource.value, () => isChange.value],
   async ([newDataSource, newIsChange]) => {
+    await nextTick();
     if (newDataSource.length > 0) {
       activeKey.value = newDataSource[0].id;
     }
@@ -290,19 +292,26 @@ interface DataType extends POSProductDetailResponse {
 
 const lengthMap = ref({});
 
+onMounted(async () => {
+  await refetchBills; // Giả sử có hàm refetch từ useGetBillsWait
+  if (dataSource.value.length > 0) {
+    activeKey.value = dataSource.value[0].id.toString(); // Chuyển đổi sang string
+  }
+});
+
 watch(
   () => dataSource.value,
   async (newDataSource) => {
-    if (newDataSource) {
+    if (newDataSource && newDataSource.length > 0) {
       const results = await Promise.all(
-        dataSource.value.map(async (id) => {
-          const response = await getOrderDetailsAll(id.id);
+        dataSource.value.map(async (bill) => {
+          const response = await getOrderDetailsAll(bill.id);
           const length = response?.data.length || 0;
-          return { id, length };
+          return { id: bill.id, length };
         })
       );
       lengthMap.value = results.reduce((acc, { id, length }) => {
-        acc[id.id] = length;
+        acc[id] = length;
         return acc;
       }, {});
     }
@@ -502,6 +511,29 @@ const setRefetch = (refetch) => {
   refetchProducts.value = refetch;
 };
 
+const onDeleted = async () => {
+    // Đợi Vue cập nhật xong reactivity sau khi con emit ra
+    await nextTick();
+    await handleRefetchLength();
+};
+
+const handleRefetchLength = async () => {
+  console.log(dataSource.value);
+  
+    const results = await Promise.all(
+        dataSource.value.map(async (item) => {
+            const response = await getOrderDetailsAll(item.id);
+            const length = response?.data.length || 0;
+            return { item, length };
+        })
+    );
+    lengthMap.value = results.reduce((acc, { item, length }) => {
+        acc[item.id] = length;
+        return acc;
+    }, {});
+    console.log(lengthMap.value);
+};
+
 const { mutate: createBillWail } = useCreateBillsWait();
 const { mutate: removeBillWait } = useRemoveBillById();
 
@@ -655,7 +687,7 @@ const add = async () => {
   const payload = {
     loaiHD: "Tại quầy",
     idKhachHang: null,
-    idNhanVien: null,
+    idNhanVien: useAuthStore().user.id,
     idPhieuGiamGia: null,
   };
 

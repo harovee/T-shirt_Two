@@ -32,34 +32,6 @@
 
           <div class="flex items-center gap-4 justify-end">
             <!-- chuông thông báo -->
-            <!-- <a-dropdown
-              placement="bottomRight"
-              arrow
-              :overlay-style="{
-                width: '350px',
-                padding: '0',
-              }"
-            >
-              <template #overlay>
-                <div
-                  class="rounded-lg overflow-hidden shadow-lg bg-white custom-dropdown-notification"
-                >
-                  <div
-                    class="flex items-center justify-between px-4 py-2 border-b"
-                  >
-                    <span class="font-medium text-gray-700">Thông báo</span>
-                    <button
-                      class="text-sm text-gray-400 hover:text-red-500"
-                      @click="messages = []"
-                    >
-                      Xóa tất cả
-                    </button>
-                  </div>
-                  <notification-list class="m-5" :messages="messages" />
-                </div>
-              </template>
-              <BellOutlined class="text-xl cursor-pointer" />
-            </a-dropdown> -->
 
             <a-popover
               trigger="click"
@@ -67,9 +39,7 @@
               overlay-class-name="custom-popover"
             >
               <template #content>
-                <div
-                  class="w-[350px] max-h-[400px] overflow-auto rounded-lg"
-                >
+                <div class="w-[350px] max-h-[400px] overflow-auto rounded-lg">
                   <div
                     class="flex items-center justify-between px-4 py-2 border-b"
                   >
@@ -84,7 +54,9 @@
                   <notification-list :messages="messages" />
                 </div>
               </template>
-              <BellOutlined class="text-xl cursor-pointer" />
+              <a-badge :count="messages.length" :offset="[-5, 5]">
+                <BellOutlined class="text-xl cursor-pointer" />
+              </a-badge>
             </a-popover>
 
             <!-- user info -->
@@ -130,6 +102,7 @@ import logo from "@/assets/image/logo/T-ShirtTwo.png";
 import { computed, h, reactive, ref, VueElement } from "vue";
 import { useRouter } from "vue-router";
 import { ROUTES_CONSTANTS } from "@/infrastructure/constants/path.ts";
+import { ROLES } from "@/infrastructure/constants/role.ts";
 import { useAuthStore } from "@/infrastructure/stores/auth.ts";
 import {
   AppstoreOutlined,
@@ -149,7 +122,6 @@ import { ItemType, MenuProps } from "ant-design-vue";
 import { useDeleteAllNotification } from "@/websocket/services/notification.action";
 import NotificationList from "@/websocket/view/NotificationList.vue";
 
-const selectedKeys = ref([ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name]);
 const openKeys = ref(["sub1"]);
 
 function getItem(
@@ -169,9 +141,16 @@ function getItem(
 }
 
 const auth = useAuthStore();
+const isAdmin = auth?.user?.roleCode === ROLES.ADMIN;
 const userInfo = computed(() => auth.user);
 const collapsed = ref<boolean>(false);
 const router = useRouter();
+
+const selectedKeys = ref(
+  isAdmin
+    ? [ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name]
+    : [ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name]
+);
 
 const { mutate: deleteAllNotification } = useDeleteAllNotification();
 
@@ -261,41 +240,13 @@ const menuItems = ref([
     key: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
     path: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.path,
   },
-  // {
-  //   key: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name,
-  //   path: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.path
-  // },
 ]);
 
 const items: ItemType[] = reactive([
-  getItem("Tổng quan", ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name, () =>
-    h(BarChartOutlined)
-  ),
-  getItem("Thống kê", ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () =>
-    h(BarChartOutlined)
-  ),
-
-  getItem(
-    "Bán tại quầy",
-    ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
-    () => h(ShoppingCartOutlined)
-  ),
-
-  getItem(
-    "Hóa đơn",
-    ROUTES_CONSTANTS.ADMIN.children.BILL.name,
-    () => h(FileTextOutlined),
-    [
-      // getItem('Bán hàng', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
-      getItem(
-        "Quản lý hóa đơn",
-        ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
-        null
-      ),
-      // getItem('Trả hàng', ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name, null),
-    ]
-  ),
-
+  isAdmin &&
+    getItem("Tổng quan", ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name, () =>
+      h(BarChartOutlined)
+    ),
   getItem(
     "Sản Phẩm",
     ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.name,
@@ -349,6 +300,27 @@ const items: ItemType[] = reactive([
     ]
   ),
 
+  getItem(
+    "Bán tại quầy",
+    ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
+    () => h(ShoppingCartOutlined)
+  ),
+
+  getItem(
+    "Hóa đơn",
+    ROUTES_CONSTANTS.ADMIN.children.BILL.name,
+    () => h(FileTextOutlined),
+    [
+      // getItem('Bán hàng', ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, null),
+      getItem(
+        "Quản lý hóa đơn",
+        ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
+        null
+      ),
+      // getItem('Trả hàng', ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name, null),
+    ]
+  ),
+
   getItem("Đợt giảm giá", ROUTES_CONSTANTS.ADMIN.children.SALE.name, () =>
     h(PercentageOutlined)
   ),
@@ -357,13 +329,18 @@ const items: ItemType[] = reactive([
     h(TagOutlined)
   ),
 
-  getItem("Nhân viên", ROUTES_CONSTANTS.ADMIN.children.STAFF.name, () =>
-    h(UserOutlined)
-  ),
+  isAdmin &&
+    getItem("Nhân viên", ROUTES_CONSTANTS.ADMIN.children.STAFF.name, () =>
+      h(UserOutlined)
+    ),
 
   getItem("Khách hàng", ROUTES_CONSTANTS.ADMIN.children.CLIENT.name, () =>
     h(TeamOutlined)
   ),
+  isAdmin &&
+    getItem("Thống kê", ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name, () =>
+      h(BarChartOutlined)
+    ),
 ]);
 
 const handleClick: MenuProps["onClick"] = (e) => {
@@ -377,7 +354,7 @@ const handleClick: MenuProps["onClick"] = (e) => {
 
 const handleDeleteAllNotification = async () => {
   await deleteAllNotification();
-}
+};
 
 import { useNotificationSocket } from "@/websocket/config/useNotificationSocket";
 const { messages } = useNotificationSocket();

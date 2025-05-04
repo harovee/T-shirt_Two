@@ -155,8 +155,8 @@ const formFields = computed(() => [
     component: "a-radio-group",
     props: {
       options: [
-        { label: "Đang áp dụng", value: 0 },
-        { label: "Ngưng áp dụng", value: 1 },
+        { label: "Đang bán", value: 0 },
+        { label: "Ngừng bán", value: 1 },
       ],
       value: 0,
     },

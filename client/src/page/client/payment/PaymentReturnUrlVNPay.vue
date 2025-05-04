@@ -57,7 +57,7 @@ const router = useRouter();
 const loading = ref(true);
 const status = ref<'success'|'fail'|''>('');
 const errorMessage = ref('');
-const countdown = ref(5);
+const countdown = ref(100);
 const showCountdown = ref(false);
 let countdownInterval: number;
 
@@ -65,6 +65,8 @@ let countdownInterval: number;
 const pendingOrderData = (() => {
   try {
     const data = localStorage.getItem('pendingVnPayOrder');
+    console.log(data);
+    
     return data ? JSON.parse(data) : null;
   } catch (e) {
     console.error('Lỗi khi đọc dữ liệu đơn hàng:', e);

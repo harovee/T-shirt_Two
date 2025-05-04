@@ -31,7 +31,7 @@
             <div v-if="column.dataIndex === 'linkAnh'" class="text-center">
                   <a-badge-ribbon :text="formatCurrency((record.giaSauGiam - record.gia), 'VND', 'vi-VN')"  color="red">
                         <a-image :width="140"
-                         :alt="record.linkAnh ? record.ten : 'K&Q T-Shirts'"
+                         :alt="record.linkAnh ? record.ten : 'T-shirt Two'"
                          :src="record.linkAnh != 'default-product-detail-image-url.jpg'
                         ? record.linkAnh : defaultProductImageSaleUrl " />
                   </a-badge-ribbon>

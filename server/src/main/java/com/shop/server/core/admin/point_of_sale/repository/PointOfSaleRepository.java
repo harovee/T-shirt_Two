@@ -129,7 +129,7 @@ public interface PointOfSaleRepository extends SanPhamChiTietRepository {
                 left join kieu_dang kd on spct.id_kieu_dang = kd.id
                 left join tinh_nang tn on spct.id_tinh_nang = tn.id
                 left join anh on spct.id = anh.id_san_pham_chi_tiet and (anh.is_top = true)
-                where spct.deleted = false and spct.trang_thai = 0 and spct.so_luong > 0
+                where spct.deleted = false and spct.trang_thai = 0 and sp.trang_thai = 0 and spct.so_luong > 0
                 and (:#{#req.bienGiaLon} is null or (tinh_gia_hien_tai(spct.id) between :#{#req.bienGiaBe} and :#{#req.bienGiaLon}))
                 and (:#{#req.gioiTinh} is null or spct.gioi_tinh = :#{#req.gioiTinh})
                 and (:#{#req.keyword} is null

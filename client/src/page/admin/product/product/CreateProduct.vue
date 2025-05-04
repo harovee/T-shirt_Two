@@ -301,13 +301,6 @@
       <div v-if="productDetails.length > 0" class="mb-5 label-bold">
         <h1>Bảng sản phẩm chi tiết</h1>
       </div>
-      <!-- <product-detail-table
-      :product="dataProduct"
-          :material="listMaterial"
-          :collar="listCollar"
-          :trademark="listTrademark"
-          :style="listStyle"
-          :data-product-detail="productDetails" /> -->
 
       <product-table-detail
         :data-product-detail="productDetails"

@@ -60,6 +60,8 @@ export interface paymentMethodDetailRequest {
 
     idPhuongThucThanhToan: string | null;
 
+    idNhanVien: string | null;
+
     tienKhachDua: number | null;
 
     soTienDu: number | null;
@@ -67,6 +69,8 @@ export interface paymentMethodDetailRequest {
     maGiaoDich: string | null;
 
     tienChuyenKhoan: number | null
+
+    moTa: string | null
 }
 
 export interface invoicePdfRequest {

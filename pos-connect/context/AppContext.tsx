@@ -100,7 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const subscriptionRef = useRef<any>(null)
 
   // Lấy địa chỉ IP từ biến môi trường
-  const SERVER_IP = process.env.SERVER_IP || "192.168.0.102"
+  const SERVER_IP = process.env.SERVER_IP || "192.168.232.2"
   const SERVER_PORT = process.env.SERVER_PORT || "8080"
 
   // Sửa lại URL để sử dụng http thay vì ws
@@ -143,7 +143,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           break
 
-        case "payment_confirmation":
+        case "payment_confirm":
           // Hiển thị modal xác nhận thanh toán với đếm ngược 5 giây
           setShowPaymentConfirmation(true)
           break
@@ -361,10 +361,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Gửi xác nhận thanh toán qua STOMP
     if (stompClientRef.current && invoiceData) {
       stompClientRef.current.publish({
-        destination: `/app/payment`,
+        destination: `/app/payment-confirmed`,
         body: JSON.stringify({
           invoiceId: invoiceData.id,
-          status: "confirmed",
+          status: "YES_CONFIRM",
         }),
       })
     }
@@ -377,10 +377,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Gửi từ chối thanh toán qua STOMP
     if (stompClientRef.current && invoiceData) {
       stompClientRef.current.publish({
-        destination: `/app/payment`,
+        destination: `/app/payment-confirmed`,
         body: JSON.stringify({
           invoiceId: invoiceData.id,
-          status: "rejected",
+          status: "NO_CONFIRM",
         }),
       })
     }

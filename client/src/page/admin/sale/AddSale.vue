@@ -24,7 +24,7 @@
                     <a-form-item class="m-0 mt-2" ref="loai" label="Loại" name="loai" required>
                             <a-radio-group v-model:value="formState.loai">
                               <a-radio value="PERCENT">%</a-radio>
-                              <a-radio value="VND">vnđ</a-radio>
+                              <a-radio value="VND">Tiền</a-radio>
                             </a-radio-group>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
@@ -32,13 +32,13 @@
                         :formatter="formState.loai == 'VND' ? formatter : undefined"
                         ></a-input-number>
                     </a-form-item>  
-                    <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
+                    <!-- <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
                         <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10" style="width: 100%"
                           :formatter="formatter"
                         >
                             <template #addonAfter>đ</template>
                         </a-input-number>
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item class="m-0 mt-2" label="Thời gian" required name="ngayBatDauVaKetThuc">
                         <a-range-picker size="" style="width: 100%;" show-time format="DD/MM/YYYY HH:mm"
                             :disabled-date="disabledDate"

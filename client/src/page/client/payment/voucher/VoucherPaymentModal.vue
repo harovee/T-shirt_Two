@@ -65,7 +65,7 @@
             <p class="text-xs text-black">
               Đơn tối thiểu {{ formatCurrencyVND(voucher.dieuKienGiam) }}
             </p>
-            <p class="text-xs text-black">Còn lại {{ voucher.soLuong }}</p>
+            <!-- <p class="text-xs text-black">Còn lại {{ voucher.soLuong }}</p> -->
           </div>
 
           <a-button

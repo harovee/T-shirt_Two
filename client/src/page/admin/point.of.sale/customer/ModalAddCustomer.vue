@@ -176,19 +176,19 @@ const handleCreateClient = () => {
         });
       } catch (error: any) {
         console.error("🚀 ~ handleCreate ~ error:", error);
-        if (error?.response) {
-          notification.warning({
-            message: "Thông báo",
-            description: error?.response?.data?.message,
-            duration: 4,
-          });
-        } else if (error?.errorFields) {
-          notification.warning({
-            message: "Thông báo",
-            description: "Vui lòng nhập đúng đủ các trường dữ liệu",
-            duration: 4,
-          });
-        }
+        // if (error?.response) {
+        //   notification.warning({
+        //     message: "Thông báo",
+        //     description: error?.response?.data?.message,
+        //     duration: 4,
+        //   });
+        // } else if (error?.errorFields) {
+        //   notification.warning({
+        //     message: "Thông báo",
+        //     description: "Vui lòng nhập đúng đủ các trường dữ liệu",
+        //     duration: 4,
+        //   });
+        // }
       }
     },
     cancelText: "Huỷ",

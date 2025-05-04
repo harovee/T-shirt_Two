@@ -309,7 +309,10 @@ import {
 } from "vue";
 import MyOrderUpdateModal from "./MyOrderUpdateModal.vue";
 import MyOrderAddProductModal from "./MyOrderAddProductModal.vue";
-import { formatCurrencyVND, defaultProductImageSaleUrl } from "@/utils/common.helper";
+import {
+  formatCurrencyVND,
+  defaultProductImageSaleUrl,
+} from "@/utils/common.helper";
 import { BillResponse } from "@/infrastructure/services/api/admin/bill.api";
 import { BillDetailResponse } from "@/infrastructure/services/api/admin/bill-detail.api";
 import { Image, Modal } from "ant-design-vue";
@@ -591,8 +594,9 @@ watch(
           copiedBillData.value.tongTien = copiedDataSource.value[0].tongTienHD;
         } else {
           // Loại giảm = flase (%)
-          copiedDataSource.value[0].tienGiamHD =
-            (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          const discount = (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
+            
           // if (copiedBillData.value) {
           //   copiedBillData.value.tienGiam = copiedDataSource.value[0].tienGiamHD;
           //   copiedBillData.value.tongTien = copiedDataSource.value[0].tongTienHD;
@@ -636,11 +640,19 @@ watch(
               if (totalPrice.value >= 2000000) {
                 copiedDataSource.value[0].tienShip = 0;
                 copiedBillData.value.tienShip = 0;
+                copiedDataSource.value[0].tongTienHD =
+                  totalProductPrice.value +
+                  copiedDataSource.value[0].tienShip -
+                  copiedDataSource.value[0].tienGiamHD;
               } else {
                 copiedDataSource.value[0].tienShip =
                   shipping?.value?.data.total;
                 copiedBillData.value.tienShip =
                   copiedDataSource.value[0].tienShip;
+                copiedDataSource.value[0].tongTienHD =
+                  totalProductPrice.value +
+                  copiedDataSource.value[0].tienShip -
+                  copiedDataSource.value[0].tienGiamHD;
               }
             });
           }
@@ -734,11 +746,19 @@ watch(
                 if (totalPrice.value >= 2000000) {
                   copiedDataSource.value[0].tienShip = 0;
                   copiedBillData.value.tienShip = 0;
+                  copiedDataSource.value[0].tongTienHD =
+                    totalProductPrice.value +
+                    copiedDataSource.value[0].tienShip -
+                    copiedDataSource.value[0].tienGiamHD;
                 } else {
                   copiedDataSource.value[0].tienShip =
                     shipping?.value?.data.total;
                   copiedBillData.value.tienShip =
                     copiedDataSource.value[0].tienShip;
+                  copiedDataSource.value[0].tongTienHD =
+                    totalProductPrice.value +
+                    copiedDataSource.value[0].tienShip -
+                    copiedDataSource.value[0].tienGiamHD;
                 }
               });
             }
@@ -760,8 +780,8 @@ watch(
       } else {
         // Loại giảm = flase (%)
         if (detail.value && detail.value.giaTriGiam) {
-          copiedDataSource.value[0].tienGiamHD =
-            (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          const discount = (totalProductPrice.value * Number(detail.value.giaTriGiam)) / 100;
+          copiedDataSource.value[0].tienGiamHD = (discount < detail.value.giamToiDa) ? discount : detail.value.giamToiDa
         }
         copiedDataSource.value[0].tongTienHD =
           totalProductPrice.value +
@@ -836,6 +856,18 @@ const loadTotalPrice = () => {};
 
 const totalPrice = computed(() => totalProductPrice.value);
 
+const getTotalQuantity = () => {
+  return localData.value.reduce((total, item) => {
+    return total + (item.soLuong || 0);
+  }, 0);
+};
+
+const getTotalPrice = () => {
+  return localData.value.reduce((total, item) => {
+    return total + (item.thanhTien || 0);
+  }, 0);
+};
+
 const handleChangeQuantity = async (record: any) => {
   params.value.id = record.idSanPhamChiTiet;
   params.value.quantity = record.soLuong;
@@ -875,6 +907,16 @@ const handleChangeQuantity = async (record: any) => {
     } else {
       if (record.soLuong < 0) {
         warningNotiSort("Số lượng không được âm!");
+        record.soLuong = 1;
+      } else if (getTotalQuantity() > 1000) {
+        warningNotiSort(
+          "Tổng số lượng sản phẩm trong giỏ không được lớn hơn 1000!"
+        );
+        record.soLuong = 1;
+      } else if (getTotalPrice() > 100000000) {
+        warningNotiSort(
+          "Tổng giá trị đơn hàng không được lớn hơn 100.000.000đ!"
+        );
         record.soLuong = 1;
       }
       emit("update-quantity", record);

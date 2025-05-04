@@ -57,17 +57,23 @@ const routes: Array<RouteRecordRaw> = [
         name: ROUTES_CONSTANTS.ADMIN.name,
         component: () => import("@/layout/admin/Admin.vue"),
         meta: {
-            requiresRole: ROLES.ADMIN,
+            requiresRole: [ROLES.ADMIN, ROLES.USER],
             requiresAuth: true
         },
-        redirect: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD,
+        // redirect: (to) => {
+        //     const userRole = useAuthStore();
+        //     if (userRole?.user?.roleCode === ROLES.USER) {
+        //         return ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE;
+        //     }
+        //     return ROUTES_CONSTANTS.ADMIN.children.DASHBOARD;
+        // },
         children: [
             {
                 path: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.path,
                 name: ROUTES_CONSTANTS.ADMIN.children.DASHBOARD.name,
                 component: () => import('@/page/admin/statistic/Dashboard.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -76,7 +82,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.STATISTIC.name,
                 component: () => import('@/page/admin/statistic/Statistic.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -85,7 +91,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE.name,
                 component: () => import('@/page/admin/point.of.sale/PointOfSale.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -94,7 +100,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.name,
                 component: () => import('@/page/admin/bill/bill/AdminBill.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -103,7 +109,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_DETAIL.name,
                 component: () => import('@/page/admin/bill/billdetail/AdminBillDetail.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -112,7 +118,7 @@ const routes: Array<RouteRecordRaw> = [
             //     name: ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_REFUND.name,
             //     component: () => import('@/page/admin/bill/refund/AdminBillRefund.vue'),
             //     meta: {
-            //         requiresRole: ROLES.ADMIN,
+            //         requiresRole: [ROLES.ADMIN, ROLES.USER],
             //         requiresAuth: true
             //     },
             // },
@@ -121,7 +127,7 @@ const routes: Array<RouteRecordRaw> = [
             //     name: "admin-bill-refund-detail",
             //     component: () => import('@/page/admin/bill/refund/RefundDetail.vue'),
             //     meta: {
-            //         requiresRole: ROLES.ADMIN,
+            //         requiresRole: [ROLES.ADMIN, ROLES.USER],
             //         requiresAuth: true
             //     },
             // },
@@ -130,7 +136,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT_DETAIL.name,
                 component: () => import('@/page/admin/product/product-detail/ProductDetail.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -139,7 +145,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: 'product-detail-id',
                 component: () => import('@/page/admin/product/product-detail/ProductDetail.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -148,7 +154,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CATEGORY.name,
                 component: () => import('@/page/admin/product/category/Category.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -157,7 +163,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PRODUCT.name,
                 component: () => import('@/page/admin/product/product/Product.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -166,7 +172,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.CREATE_PRODUCT.name,
                 component: () => import('@/page/admin/product/product/CreateProduct.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -175,7 +181,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.TRADEMARK.name,
                 component: () => import('@/page/admin/product/trademark/Trademark.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -184,7 +190,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.MATERIAL.name,
                 component: () => import('@/page/admin/product/material/Material.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -193,7 +199,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.COLLAR.name,
                 component: () => import('@/page/admin/product/collar/Collar.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -202,7 +208,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SIZE.name,
                 component: () => import('@/page/admin/product/size/Size.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -211,7 +217,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.COLOR.name,
                 component: () => import('@/page/admin/product/color/Color.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -220,7 +226,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.STYLE.name,
                 component: () => import('@/page/admin/product/style/Style.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -229,7 +235,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.SLEEVE.name,
                 component: () => import('@/page/admin/product/sleeve/Sleeve.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -238,7 +244,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.FEATURE.name,
                 component: () => import('@/page/admin/product/feature/Feature.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -247,7 +253,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.PRODUCTS.children.PATTERN.name,
                 component: () => import('@/page/admin/product/pattern/Pattern.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -256,7 +262,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.SALE.name,
                 component: () => import('@/page/admin/sale/Sale.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -265,7 +271,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.VOUCHER.name,
                 component: () => import('@/page/admin/voucher/Voucher.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -274,7 +280,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.VOUCHER_ADD.name,
                 component: () => import('@/page/admin/voucher/AddVoucher.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -283,7 +289,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.VOUCHER_DETAIL.name,
                 component: () => import('@/page/admin/voucher/VoucherDetail.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -292,7 +298,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.SALE_DETAIL.name,
                 component: () => import('@/page/admin/sale/SaleDetail.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -301,7 +307,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.SALE_ADD.name,
                 component: () => import('@/page/admin/sale/AddSale.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -310,7 +316,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.STAFF.name,
                 component: () => import('@/page/admin/staff/Staff.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -319,7 +325,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.STAFF_CREATE.name,
                 component: () => import('@/page/admin/staff/StaffCreate.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -328,7 +334,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.STAFF_DETAIL.name,
                 component: () => import('@/page/admin/staff/StaffDetail.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -337,7 +343,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.CLIENT.name,
                 component: () => import('@/page/admin/client/Client.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -346,7 +352,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.CLIENT_CREATE.name,
                 component: () => import('@/page/admin/client/ClientCreate.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -355,7 +361,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: ROUTES_CONSTANTS.ADMIN.children.CLIENT_DETAIL.name,
                 component: () => import('@/page/admin/client/ClientDetail.vue'),
                 meta: {
-                    requiresRole: ROLES.ADMIN,
+                    requiresRole: [ROLES.ADMIN, ROLES.USER],
                     requiresAuth: true
                 },
             },
@@ -520,13 +526,24 @@ route.beforeEach((to, from, next) => {
     const requiresAuth = to.matched && Array.isArray(to.matched) && to.matched.some((record) => record?.meta?.requiresAuth);
     const requiresRole = to.matched && Array.isArray(to.matched) && to.matched.some((record) => record?.meta?.requiresRole);
     const userRole = authStore?.user?.roleCode;
+    console.log('userRole', userRole);
+    console.log('to.meta.requiresRole', to.meta);
     if (userRole === null && requiresAuth) {
         next({name: ROUTES_CONSTANTS.AUTHENTICATION.children.LOGIN.name});
     } else if (requiresAuth && !authStore.isAuthenticated) {
         next({name: ROUTES_CONSTANTS.AUTHENTICATION.children.LOGIN.name});
-    } else if (requiresRole && (!userRole || userRole !== to.meta.requiresRole)) {
+    } else if (requiresRole && !userRole) {
         next({name: ROUTES_CONSTANTS.AUTHENTICATION.children.LOGIN.name});
+    } else if (requiresRole && (!to.meta.requiresRole.some(role => userRole.includes(role)))) {
+        next({name: ROUTES_CONSTANTS.AUTHENTICATION.children.LOGIN.name});
+    } else if (to.path === ROUTES_CONSTANTS.ADMIN.path) {
+        if (authStore?.user?.roleCode === ROLES.USER) {
+            next(ROUTES_CONSTANTS.ADMIN.children.POINT_OF_SALE);
+        } else {
+            next(ROUTES_CONSTANTS.ADMIN.children.DASHBOARD);
+        }
     } else {
+        console.log('to.meta.true or false', requiresRole && to.meta.requiresRole.some(role => userRole.includes(role)));
         next();
     }
 });
