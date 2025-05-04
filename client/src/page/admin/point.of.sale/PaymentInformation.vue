@@ -266,7 +266,7 @@ import {
   mbConnectStatus,
   currentPayloadPaymentInfo,
   currentInvoiceUUID,
-  InvoiceData
+  InvoiceData,
 } from "@/infrastructure/mobile.connect/InvoiceConnect2";
 
 // import { BillWaitResponse } from "@/infrastructure/services/api/admin/bill.api";
@@ -600,17 +600,17 @@ const updateTotal = () => {
   paymentInfo.value.total =
     (paymentInfo.value.shippingFee || 0) - (paymentInfo.value.discount || 0);
 
-    console.log(paymentInfo.value.shippingFee);
-    invoices.value.forEach((item) => {
-      if (item.id === currentInvoice.value.id) {
-        if (item.shipping) {
-          item.shipping.cost = paymentInfo.value.shippingFee || 0;
-        }
-        currentInvoice.value = item;
-        sendCartInfo(item);
+  console.log(paymentInfo.value.shippingFee);
+  invoices.value.forEach((item) => {
+    if (item.id === currentInvoice.value.id) {
+      if (item.shipping) {
+        item.shipping.cost = paymentInfo.value.shippingFee || 0;
       }
-    });
-    sendCartInfo
+      currentInvoice.value = item;
+      sendCartInfo(item);
+    }
+  });
+  sendCartInfo;
 };
 
 const handleCheckPaymented = (totalAmountAfter: number) => {
@@ -716,23 +716,6 @@ const getTotalQuantity = () => {
 };
 
 const handleUpdateBill = (x: number) => {
-  const pdfParams = {
-    idKhachHang: props.selectedCustomerInfo
-      ? props.selectedCustomerInfo.id
-      : null,
-
-    idNhanVien: useAuthStore().user?.id || null,
-
-    idHoaDon: props.dataSourceInfor.id,
-
-    products: dataSourcePro.value,
-
-    tongTien: totalAmount.value,
-
-    phiVanChuyen: paymentInfo.value.shippingFee,
-
-    giamGia: paymentInfo.value.discount,
-  };
   const payload = {
     trangThai:
       paymentInfo.value.shippingOption === "true"
@@ -792,9 +775,8 @@ const handleUpdateBill = (x: number) => {
     );
     return;
   }
-console.log(getTotalQuantity());
+  console.log(getTotalQuantity());
   if (getTotalQuantity() > 1000) {
-    
     warningNotiSort("Số lượng sản phẩm trong giỏ không được quá 1000!");
     return;
   }
@@ -857,21 +839,46 @@ console.log(getTotalQuantity());
 };
 
 const hoanThanhDonHang = async (payload: any) => {
-      try {
-        await updateBillWait({
-          idBill: props.dataSourceInfor.id,
-          params: payload,
-        });
-        successNotiSort("Thanh toán thành công!");
-        router.push(
-          ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
-        );
-      } catch (error: any) {
-        console.error("🚀 ~ handleCreate ~ error:", error);
-        if (error?.response) {
-          errorNotiSort(error?.response?.data?.message);
-        }
-      }
+  const pdfParams = {
+    idKhachHang: props.selectedCustomerInfo
+      ? props.selectedCustomerInfo.id
+      : null,
+
+    idNhanVien: useAuthStore().user?.id || null,
+
+    idHoaDon: props.dataSourceInfor.id,
+
+    products: dataSourcePro.value,
+
+    tongTien: totalAmount.value,
+
+    phiVanChuyen: paymentInfo.value.shippingFee,
+
+    giamGia: paymentInfo.value.discount,
+  };
+  try {
+    await updateBillWait({
+      idBill: props.dataSourceInfor.id,
+      params: payload,
+    });
+    await createInvoicePdf(pdfParams)
+      .then(() => {
+        const url = `http://localhost:6868/api/v1/admin/point-of-sale/invoices/${props.dataSourceInfor.id}`;
+        window.open(url, "_blank");
+      })
+      .catch((error) => {
+        console.error("Tạo hóa đơn PDF thất bại", error);
+      });
+    successNotiSort("Thanh toán thành công!");
+    router.push(
+      ROUTES_CONSTANTS.ADMIN.children.BILL.children.BILL_MANAGEMENT.path
+    );
+  } catch (error: any) {
+    console.error("🚀 ~ handleCreate ~ error:", error);
+    if (error?.response) {
+      errorNotiSort(error?.response?.data?.message);
+    }
+  }
 };
 
 interface CustomerAddress {
