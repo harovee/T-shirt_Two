@@ -206,7 +206,7 @@ const InvoiceScreen = () => {
           <Ionicons name="receipt-outline" size={64} color={colors.muted} />
           <Text style={[styles.emptyText, { color: colors.text }]}>Hiện tại không có hóa đơn nào</Text>
           <Text style={[styles.emptySubtext, { color: colors.muted }]}>
-            Đang chờ máy quầy gửi thông tin hóa đơn mới
+            Đang chờ quầy gửi thông tin hóa đơn mới
           </Text>
         </View>
       </View>
@@ -214,11 +214,12 @@ const InvoiceScreen = () => {
   }
 
   // Tính tổng tiền giảm giá từ voucher
-  const calculateDiscount = () => {
+  const calculateDiscount = (): number => {
     if (!invoiceData.vouchers || invoiceData.vouchers.length === 0) return 0
     const voucher = invoiceData.vouchers[0]
     if (voucher.type === "percent") {
-      return (invoiceData.subtotal * voucher.discount) / 100
+      let discount = (invoiceData.subtotal * voucher.discount) / 100
+      return discount >= (voucher.maxDiscount ?? 0) ? (voucher.maxDiscount ?? 0) : discount
     }
     return voucher.discount
   }

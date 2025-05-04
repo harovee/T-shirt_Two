@@ -615,7 +615,7 @@ public interface ClientProductRepository extends SanPhamRepository {
                         JOIN dot_giam_gia dgg ON dgg.id = best_discounts.id_dot_giam_gia
                         WHERE sp.trang_thai = 0
                             AND spct.so_luong > 0
-                            AND spct.trang_thai = 0          
+                            AND spct.trang_thai = 0
                             AND spct.so_luong IS NOT NULL
                         GROUP BY sp.id, sp.ten, cl.id, cl.ten, dm.id, dm.ten, ca.id, ca.ten, ta.id, ta.ten,spct.gioi_tinh,
                                  ht.id, ht.ten, tn.id, tn.ten, th.id, th.ten, kd.id, kd.ten, sp.ma_san_pham, sp.mo_ta

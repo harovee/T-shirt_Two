@@ -167,6 +167,7 @@ const handleSelectVoucher = (voucher: VoucherResponse) => {
       name: voucher.ten,
       discount: Number(voucher.loaiGiam ? voucher.giaTriGiam : voucher.giaTri),
       type: voucher.loaiGiam ?  "fixed" : "percent",
+      maxDiscount: Number(voucher.giamToiDa),
     },
   ]
   invoices.value.forEach((item) => {

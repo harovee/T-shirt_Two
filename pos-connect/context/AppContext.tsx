@@ -46,6 +46,7 @@ interface Voucher {
   code: string
   discount: number
   type: "fixed" | "percent"
+  maxDiscount: number | null
 }
 
 interface InvoiceData {
@@ -195,7 +196,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Xử lý khi kết nối thành công
       client.onConnect = (frame) => {
-        console.info("Connected to STOMP:", frame)
+        // console.info("Connected to STOMP:", frame)
         setConnectionStatus("connected")
 
         // Xóa timeout nếu kết nối thành công
