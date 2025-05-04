@@ -301,11 +301,11 @@ const handlePayment = () => {
           warningNotiSort("Đơn hàng này đã hoàn thành thanh toán!");
           return;
         }
-        if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < props.totalAmount) {
+        if (params.value.idPhuongThucThanhToan === 'tienmat' && params.value.tienKhachDua < Math.floor(totalAmountAfter.value)) {
           warningNotiSort("Tiền khách đưa chưa đủ!");
           return;
         }
-        if (params.value.tienKhachDua > props.totalAmount) {
+        if (params.value.tienKhachDua > Math.floor(totalAmountAfter.value)) {
           params.value.tienKhachDua = props.totalAmount - totalAmountAfter.value
         }
         params.value.idNhanVien = useAuthStore().user.id;
