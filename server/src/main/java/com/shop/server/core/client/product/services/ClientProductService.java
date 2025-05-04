@@ -19,4 +19,8 @@ public interface ClientProductService {
     ResponseObject<?> getProductBestSale();
 
     ResponseObject<?>  getSaleProduct(ClientProductSearchRequest request);
+
+    ResponseObject<?> getProductDetailByIdWithSize(String idSanPham, ClientProductDetailRequest request);
+
+    ResponseObject<?> getProductDetailByIdWithColor(String idSanPham, ClientProductDetailRequest request);
 }

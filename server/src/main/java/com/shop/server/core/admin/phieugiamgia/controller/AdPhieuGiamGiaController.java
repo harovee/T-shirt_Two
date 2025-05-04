@@ -78,4 +78,9 @@ public class AdPhieuGiamGiaController {
     public ResponseEntity<?> updateVoucherSanPhamKhachHang(@PathVariable String id,@Valid final @RequestBody AdVoucherKhachHangRequest request){
         return Helper.createResponseEntity(adPhieuGiamGiaServices.updateVoucherKhachHang(id,request));
     }
+
+    @GetMapping("/check-voucher-in-use/{id}")
+    public ResponseEntity<?> checkVoucherInUse(@PathVariable String id) {
+        return Helper.createResponseEntity(adPhieuGiamGiaServices.checkVoucherInUse(id));
+    }
 }

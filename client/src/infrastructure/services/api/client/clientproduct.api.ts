@@ -284,3 +284,23 @@ export const getSaleProducts = async (params: Ref<FindProductClientRequest>) => 
 
     return res.data;
 };
+
+export const getProductDetailByIdWithColor = async (sanPhamId: Ref<string | null>, params: Ref<ClientProductDetailRequest>) => {
+    return await request({
+        url: `${API_CLIENT_ALLPRODUCT}/detail/color/${sanPhamId.value}`,
+        params: params.value,
+        method: "GET"
+    }) as AxiosResponse<
+        DefaultResponse<Array<ClientProductResponse>>
+    >;
+};
+
+export const getProductDetailByIdWithSize = async (sanPhamId: Ref<string | null>, params: Ref<ClientProductDetailRequest>) => {
+    return await request({
+        url: `${API_CLIENT_ALLPRODUCT}/detail/size/${sanPhamId.value}`,
+        params: params.value,
+        method: "GET"
+    }) as AxiosResponse<
+        DefaultResponse<Array<ClientProductResponse>>
+    >;
+};

@@ -39,6 +39,16 @@ public class ClientProductController {
         return Helper.createResponseEntity(clientProductService.getProductDetaiById(id,request));
     }
 
+    @GetMapping("/detail/color/{id}")
+    public ResponseEntity<?> getProductDetailByIdColor(@PathVariable String id, @Valid final ClientProductDetailRequest request) {
+        return Helper.createResponseEntity(clientProductService.getProductDetailByIdWithColor(id,request));
+    }
+
+    @GetMapping("/detail/size/{id}")
+    public ResponseEntity<?> getProductDetailByIdSize(@PathVariable String id, @Valid final ClientProductDetailRequest request) {
+        return Helper.createResponseEntity(clientProductService.getProductDetailByIdWithSize(id,request));
+    }
+
     @GetMapping("/danh-muc")
     public ResponseEntity<?> getProductDanhMuc() {
         return  Helper.createResponseEntity(clientThuocTinhServices.getDanhMuc());

@@ -297,6 +297,14 @@ public class AdPhieuGiamGiaServicesImpl implements AdPhieuGiamGiaServices {
         }
         return new ResponseObject<>(null, HttpStatus.NOT_FOUND, "PhieuGiamGia không tìm thấy");
     }
+
+    @Override
+    public ResponseObject<?> checkVoucherInUse(String id) {
+        return new ResponseObject<>(adPhieuGiamGiaRepository.checkVoucherInUse(id),
+                HttpStatus.OK,
+                "lấy voucher đã được sử dụng thành công");
+    }
+
     @Async
     public void sendEmailsInBatchesAsync(String voucherId) {
         PhieuGiamGia phieuGiamGia = adPhieuGiamGiaRepository.findById(voucherId).orElse(null);

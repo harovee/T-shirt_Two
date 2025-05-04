@@ -30,4 +30,6 @@ public interface AdPhieuGiamGiaServices {
     public ResponseObject<?> updateVoucherKhachHang(String id, AdVoucherKhachHangRequest request);
 
     public ResponseObject<?> changeStatusPhieuGiamGia(String id,String trangThai);
+
+    public ResponseObject<?> checkVoucherInUse(String id);
 }

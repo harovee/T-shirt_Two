@@ -20,13 +20,6 @@
           <!-- Thumbnails -->
           <div class="flex-1">
             <div class="bg-white rounded-lg shadow-sm overflow-hidden relative">
-              <!-- Badge giảm giá -->
-              <!-- <div 
-                v-if="effectivePhanTramGiam" 
-                class="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded-md z-10 font-medium"
-              >
-                -{{ effectivePhanTramGiam }}%
-              </div> -->
               <img
                 :src="selectedImage"
                 :alt="product.ten"
@@ -133,21 +126,21 @@
           <div class="w-full h-px bg-gray-200 my-4"></div>
 
           <!-- Size selection -->
-          <div class="mb-6" v-if="product.kichCo && product.kichCo.length > 0">
+          <div class="mb-6" v-if="availableSizes && availableSizes.length > 0">
             <label class="block text-sm font-medium text-gray-700 mb-2"
               >Kích cỡ:</label
             >
             <div class="flex flex-wrap gap-2">
               <button
-                v-for="(size, index) in product.kichCo"
-                :key="index"
+                v-for="size in availableSizes"
+                :key="size.id"
                 class="px-4 py-2 border rounded-md text-sm transition-all"
                 :class="
                   selectedSize === size.id
                     ? 'bg-blue-50 border-blue-500 text-blue-700'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                 "
-                @click="selectedSize = size.id"
+                @click="handleSizeChange(size.id)"
               >
                 {{ size.ten }}
               </button>
@@ -155,14 +148,14 @@
           </div>
 
           <!-- Color selection -->
-          <div class="mb-6" v-if="product.color && product.color.length > 0">
+          <div class="mb-6" v-if="availableColors && availableColors.length > 0">
             <label class="block text-sm font-medium text-gray-700 mb-2"
               >Màu sắc:</label
             >
             <div class="flex flex-wrap gap-3">
               <button
-                v-for="(mausac, index) in product.color"
-                :key="index"
+                v-for="mausac in availableColors"
+                :key="mausac.id"
                 class="w-10 h-10 rounded-full border-2 transition-transform hover:scale-110 focus:outline-none"
                 :style="{ backgroundColor: mausac.code }"
                 :class="
@@ -170,7 +163,7 @@
                     ? 'border-blue-500 shadow-md'
                     : 'border-gray-300'
                 "
-                @click="selectedColor = mausac.id"
+                @click="handleColorChange(mausac.id)"
               >
                 <span
                   v-if="selectedColor === mausac.id"
@@ -253,6 +246,8 @@
             <button
               @click="addToCart"
               class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-md font-medium flex items-center justify-center gap-2 transition-colors"
+              :disabled="!isVariantAvailable"
+              :class="{'opacity-50 cursor-not-allowed': !isVariantAvailable}"
             >
               <svg
                 class="w-5 h-5"
@@ -273,9 +268,16 @@
             <button
               @click="buyNow"
               class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-md font-medium transition-colors"
+              :disabled="!isVariantAvailable"
+              :class="{'opacity-50 cursor-not-allowed': !isVariantAvailable}"
             >
               Mua ngay
             </button>
+          </div>
+          
+          <!-- Thông báo nếu biến thể không khả dụng -->
+          <div v-if="!isVariantAvailable" class="text-red-500 mb-4 text-center font-medium">
+            Biến thể sản phẩm này không có sẵn
           </div>
 
           <!-- Product description -->
@@ -361,6 +363,8 @@ import {
 import {
   useGetProductById,
   useGetProductDetailById,
+  useGetProductDetailByIdWithColor,
+  useGetProductDetailByIdWithSize,
 } from "@/infrastructure/services/service/client/productclient.action";
 import { useRouter, useRoute } from "vue-router";
 import { keepPreviousData } from "@tanstack/vue-query";
@@ -466,19 +470,31 @@ const quantity = ref(1);
 
 const displayedPrice = ref<number[]>([]);
 const displayedDiscount = ref<number[]>([]);
-const allProductImages = ref<string[]>([]); // Danh sách tất cả ảnh sản phẩm
-const currentVariantImage = ref<string | null>(null); // Ảnh của variant hiện tại
+const allProductImages = ref<string[]>([]); 
+const currentVariantImage = ref<string | null>(null); 
+
+const availableSizes = ref([]);
+const availableColors = ref([]);
+const allSizes = ref([]);
+const allColors = ref([]);
+const sizesByColor = ref({}); 
+const colorsBySize = ref({}); 
+
+const isVariantAvailable = computed(() => {
+  if (!selectedSize.value || !selectedColor.value) return false;
+  
+  const sizesForColor = sizesByColor.value[selectedColor.value] || [];
+  return sizesForColor.some(size => size.id === selectedSize.value);
+});
 
 watch(
   product,
   (newProduct) => {
     if (newProduct) {
-      console.log(newProduct);
-      
       displayedPrice.value = newProduct.gia || [];
       displayedDiscount.value = newProduct.discount || [];
 
-      // Lưu tất cả ảnh sản phẩm vào biến riêng
+      // Lưu tất cả ảnh sản phẩm
       if (newProduct.anh && Array.isArray(newProduct.anh)) {
         allProductImages.value = newProduct.anh.map((img) => img.url);
 
@@ -492,21 +508,133 @@ watch(
         selectedImage.value = "/default-product-image.jpg";
       }
 
+      // Lưu tất cả kích thước và màu sắc
       if (newProduct.kichCo && newProduct.kichCo.length > 0) {
-        selectedSize.value = newProduct.kichCo[0].id;
-        paramsDetail.value.idKichCo = selectedSize.value;
+        allSizes.value = newProduct.kichCo;
+        availableSizes.value = [...allSizes.value];
       }
 
       if (newProduct.color && newProduct.color.length > 0) {
-        selectedColor.value = newProduct.color[0].id;
-        paramsDetail.value.idMauSac = selectedColor.value;
+        allColors.value = newProduct.color;
+        availableColors.value = [...allColors.value]; 
       }
+
+      // Thiết lập giá trị ban đầu
+      if (availableSizes.value.length > 0) {
+        selectedSize.value = availableSizes.value[0].id;
+      }
+
+      if (availableColors.value.length > 0) {
+        selectedColor.value = availableColors.value[0].id;
+      }
+
+      loadVariantData();
     }
   },
   { immediate: true }
 );
 
-// Hàm lấy sản phẩm detail dựa vào kích thước màu sắc
+const loadVariantData = async () => {
+  // Đặt tham số cho API
+  if (selectedColor.value) {
+    paramsDetail.value.idMauSac = selectedColor.value;
+  }
+  
+  if (selectedSize.value) {
+    paramsDetail.value.idKichCo = selectedSize.value;
+  }
+
+  await refetchColor();
+  
+  await refetchSize();
+
+  processSizeColorData();
+};
+
+// Hàm lấy chi tiết sản phẩm theo màu sắc
+const { data: dataDetailWithColor, refetch: refetchColor } = useGetProductDetailByIdWithColor(
+  productId,
+  paramsDetail,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  }
+);
+
+// Hàm lấy chi tiết sản phẩm theo kích thước
+const { data: dataDetailWithSize, refetch: refetchSize } = useGetProductDetailByIdWithSize(
+  productId,
+  paramsDetail,
+  {
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  }
+);
+
+// Hàm xử lý dữ liệu về kích thước và màu sắc
+const processSizeColorData = () => {
+  if (dataDetailWithColor.value?.data?.data?.kichCo) {
+    const availableSizesForColor = dataDetailWithColor.value.data.data.kichCo;
+    sizesByColor.value[selectedColor.value] = availableSizesForColor;
+    
+    availableSizes.value = availableSizesForColor;
+    if (selectedSize.value && !availableSizesForColor.some(size => size.id === selectedSize.value)) {
+      if (availableSizesForColor.length > 0) {
+        selectedSize.value = availableSizesForColor[0].id;
+        paramsDetail.value.idKichCo = selectedSize.value;
+      } else {
+        selectedSize.value = "";
+      }
+    }
+  }
+  
+  // Xử lý dữ liệu về màu sắc theo kích thước
+  if (dataDetailWithSize.value?.data?.data?.color) {
+    const availableColorsForSize = dataDetailWithSize.value.data.data.color;
+    colorsBySize.value[selectedSize.value] = availableColorsForSize;
+    
+    // Nếu đang chọn kích thước, chỉ hiển thị màu có sẵn
+    availableColors.value = availableColorsForSize;
+    
+    // Kiểm tra nếu màu đã chọn không khả dụng với kích thước này
+    if (selectedColor.value && !availableColorsForSize.some(color => color.id === selectedColor.value)) {
+      // Chọn màu khả dụng đầu tiên
+      if (availableColorsForSize.length > 0) {
+        selectedColor.value = availableColorsForSize[0].id;
+        paramsDetail.value.idMauSac = selectedColor.value;
+      } else {
+        selectedColor.value = "";
+      }
+    }
+  }
+  
+  // Cập nhật chi tiết sản phẩm
+  refetchDetail();
+};
+
+// Hàm xử lý khi thay đổi kích thước
+const handleSizeChange = (sizeId) => {
+  selectedSize.value = sizeId;
+  paramsDetail.value.idKichCo = sizeId;
+  
+  // Cập nhật màu sắc khả dụng dựa trên kích thước đã chọn
+  refetchSize().then(() => {
+    processSizeColorData();
+  });
+};
+
+// Hàm xử lý khi thay đổi màu sắc
+const handleColorChange = (colorId) => {
+  selectedColor.value = colorId;
+  paramsDetail.value.idMauSac = colorId;
+  
+  // Cập nhật kích thước khả dụng dựa trên màu sắc đã chọn
+  refetchColor().then(() => {
+    processSizeColorData();
+  });
+};
+
+// Hàm lấy sản phẩm chi tiết dựa vào kích thước màu sắc
 const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
   productId,
   paramsDetail,
@@ -518,20 +646,6 @@ const { data: dataDetail, refetch: refetchDetail } = useGetProductDetailById(
       (!!paramsDetail.value.idMauSac || !!paramsDetail.value.idKichCo),
   }
 );
-
-watch(selectedSize, (newSize) => {
-  if (newSize) {
-    paramsDetail.value.idKichCo = newSize;
-    refetchDetail();
-  }
-});
-
-watch(selectedColor, (newColor) => {
-  if (newColor) {
-    paramsDetail.value.idMauSac = newColor;
-    refetchDetail();
-  }
-});
 
 // Computed property lấy giá trị phanTramGiam từ dataDetail nếu có
 const effectivePhanTramGiam = computed(() => {
@@ -548,8 +662,6 @@ const effectivePhanTramGiam = computed(() => {
 });
 
 watch(dataDetail, (newDetail) => {
-  //console.log(dataDetail.value);
-  
   if (newDetail && newDetail.data && newDetail?.data?.data) {
     const detailData = newDetail?.data?.data;
     if (detailData.gia && detailData.gia.length > 0) {
@@ -578,7 +690,7 @@ const getAttributeName = (attribute) => {
 };
 
 const addToCart = () => {
-  if (!product.value) return;
+  if (!product.value || !isVariantAvailable.value) return;
 
   addProduct({
     id: dataDetail?.value?.data?.data?.maSPCTs[0],
@@ -601,6 +713,8 @@ const addToCart = () => {
 };
 
 const buyNow = () => {
+  if (!isVariantAvailable.value) return;
+  
   router.push({
     name: "client-cart",
   });
@@ -614,10 +728,14 @@ const decreaseQuantity = () => {
 };
 
 const increaseQuantity = async () => {
+  // Kiểm tra nếu biến thể không khả dụng
+  if (!isVariantAvailable.value) {
+    warningNotiSort("Biến thể sản phẩm này không có sẵn!");
+    return;
+  }
   
   params.value.id = dataDetail?.value?.data?.data?.maSPCTs[0];
   params.value.quantity = quantity.value + 1;
-  console.log(params.value);
   
   await checkQuantityRefetch();
   const checkValue = checkQuantityData?.value?.data;

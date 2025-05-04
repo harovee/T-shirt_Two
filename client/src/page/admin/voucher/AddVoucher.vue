@@ -30,7 +30,7 @@
                     class="w-full"
             >
               <template #addonAfter>
-                <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid">
+                <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid" @change="handleLoaiGiamChange">
                   <a-radio :value="false">%</a-radio>
                   <a-radio :value="true">Tiền</a-radio>
                 </a-radio-group>
@@ -270,21 +270,17 @@ const rules: Record<string, Rule[]> = {
     trigger: 'change'},
     {
       validator: (rule, value) => {
-        // Chuyển đổi value thành số để so sánh
         const minOrderValue = parseFloat(value);
         const discountValue = parseFloat(formState.giaTriGiam);
 
-        // Kiểm tra nếu giá trị không phải số hợp lệ
         if (isNaN(minOrderValue)) {
           return Promise.reject('Đơn tối thiểu phải là số');
         }
 
-        // Kiểm tra giá trị âm
         if (minOrderValue <= 0) {
           return Promise.reject('Đơn tối thiểu phải lớn hơn 0');
         }
 
-        // Nếu là giảm theo tiền (loaiGiam = true)
         if (formState.loaiGiam === true) {
           if (minOrderValue <= discountValue) {
             return Promise.reject('Đơn tối thiểu phải lớn hơn giá trị giảm');
@@ -302,7 +298,7 @@ const rules: Record<string, Rule[]> = {
     trigger: 'change',
     validator: (_, value) => {
       if (formState.kieu) {
-        return Promise.resolve(); // Bỏ qua kiểm tra nếu là "Cá nhân"
+        return Promise.resolve();
       }
       return value > 0
         ? Promise.resolve()
@@ -317,8 +313,6 @@ const rules: Record<string, Rule[]> = {
       {   validator: (rule, value) => {
           
         if (!value || value.length !== 2) return Promise.resolve();
-          
-          // Format to remove millisecond precision for comparison
           const startStr = dayjs(value[0]).format('YYYY-MM-DD HH:mm');
           const endStr = dayjs(value[1]).format('YYYY-MM-DD HH:mm');
           
@@ -326,7 +320,6 @@ const rules: Record<string, Rule[]> = {
             return Promise.reject('Ngày kết thúc không được trùng ngày bắt đầu');
           }
           
-          // Rest of your existing validations
           const ngayBatDau = value[0].valueOf();
           const ngayKetThuc = value[1].valueOf();
           const now = dayjs().valueOf();
@@ -458,19 +451,23 @@ const handleRedirectClient = () => {
     router.push({ name: 'admin-voucher' });
 }
 
+const handleLoaiGiamChange = () => {
+  formState.giaTriGiam = "0";
+  formState.giamToiDa = "0";
+  formRef.value?.validateFields(['giaTriGiam']);
+};
+
 watch(
   () => formState.kieu,
   (newValue) => {
     if (newValue) {
-
-      idKhachHangs.value = []; // Reset danh sách khách hàng được chọn
+      idKhachHangs.value = []; 
     } else {
-      idKhachHangs.value = []; // Reset danh sách khách hàng
+      idKhachHangs.value = [];
     }
   }
 );
 
-// Thêm watch để tự động cập nhật giá trị giảm tối đa khi loại giảm hoặc giá trị giảm thay đổi
 watch(
   [() => formState.loaiGiam, () => formState.giaTriGiam],
   ([newLoaiGiam, newGiaTriGiam]) => {

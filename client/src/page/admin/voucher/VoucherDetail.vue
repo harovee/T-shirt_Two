@@ -19,15 +19,15 @@
       <h4 class="text-lg font-semibold mb-4">Chi tiết phiếu giảm giá</h4>
       <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
         <a-form-item class="mb-4" label="Tên" name="ten" required>
-          <a-input v-model:value="formState.ten" placeholder="Nhập tên đợt giảm giá" :disabled="isExpired"/>
+          <a-input v-model:value="formState.ten" placeholder="Nhập tên đợt giảm giá" :disabled="isDisabled"/>
         </a-form-item>
 
         <a-form-item class="mb-4" label="Giá trị giảm" name="giaTriGiam" required>
-          <a-input-number v-model:value="formState.giaTriGiam" min="0" :disabled="isExpired"
+          <a-input-number v-model:value="formState.giaTriGiam" min="0" :disabled="isDisabled"
                     :formatter="formState.loaiGiam ? formatter : undefined"
           >
             <template #addonAfter>
-              <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid" :disabled="isExpired">
+              <a-radio-group v-model:value="formState.loaiGiam" option-type="default" button-style="solid" :disabled="isDisabled">
                 <a-radio :value="false">%</a-radio>
                 <a-radio :value="true">Tiền</a-radio>
               </a-radio-group>
@@ -42,7 +42,7 @@
             min="0" 
             step="10" 
             placeholder="Nhập đơn tối thiểu" 
-            :disabled="isExpired" 
+            :disabled="isDisabled" 
             :formatter="formatter">
           </a-input-number>
         </a-form-item>
@@ -51,7 +51,7 @@
           <a-input-number 
             class="w-full"
             v-model:value="formState.giamToiDa" 
-            :disabled="formState.loaiGiam || isExpired || formState.giaTriGiam == '100'" 
+            :disabled="formState.loaiGiam || isDisabled || formState.giaTriGiam == '100'" 
             min="0"
             placeholder="Nhập giá trị giảm tối đa"
             :formatter="formatter"
@@ -61,7 +61,7 @@
 
         <a-form-item class="mb-4" label="Số lượng" name="soLuong" required>
           <a-input-number class="w-full" v-model:value="formState.soLuong" min="0" step="10" 
-          placeholder="Nhập số lượng" :disabled="formState.kieu || isExpired" />
+          placeholder="Nhập số lượng" :disabled="formState.kieu || isDisabled" />
         </a-form-item>
 
         <a-form-item class="mb-4" label="Thời gian" name="ngayBatDauVaKetThuc" required>
@@ -73,14 +73,14 @@
             :disabled-date="disabledDate"
             :disabled-date-time="disabledDateTime"
             v-model:value="formState.ngayBatDauVaKetThuc"
-            :disabled="isExpired"
+            :disabled="isDisabled"
             :placeholder="['Ngày bắt đầu', 'Ngày kết thúc']"
             :presets="rangePresets"
           />
         </a-form-item>
 
         <a-form-item class="mb-4" label="Loại phiếu giảm giá" name="kieu">
-          <a-radio-group v-model:value="formState.kieu" option-type="default" button-style="solid" :disabled="isExpired">
+          <a-radio-group v-model:value="formState.kieu" option-type="default" button-style="solid" :disabled="isDisabled">
             <a-radio :value="false">Công khai</a-radio>
             <a-radio :value="true">Cá nhân</a-radio>
           </a-radio-group>
@@ -88,18 +88,21 @@
 
         <a-form-item class="mt-6">
           <div class="flex gap-4">
-            <a-button type="primary" @click="onSubmit(formState.kieu ? 2 : 1)" :disabled="isExpired">Cập nhật</a-button>
-            <a-button @click="resetForm" :disabled="isExpired">Xóa form</a-button>
+            <a-button type="primary" @click="onSubmit(formState.kieu ? 2 : 1)" :disabled="isDisabled">Cập nhật</a-button>
+            <a-button @click="resetForm" :disabled="isDisabled">Xóa form</a-button>
           </div>
         </a-form-item>
       </a-form>
       <span v-if="isExpired" class="text-red-500 italic mt-2">
         Phiếu giảm giá đã kết thúc vào ngày {{ dayjs(formState.ngayBatDauVaKetThuc[1]).format('DD/MM/YYYY HH:mm') }}
       </span>
+      <span v-else-if="isInUse" class="text-orange-500 italic mt-2">
+        Phiếu giảm giá đã được sử dụng và đang trong thời gian áp dụng. Không thể chỉnh sửa.
+      </span>
     </div>
 
     <!-- Khách Hàng Section -->
-    <div class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu && !isExpired">
+    <div class="col-span-5 lg:col-span-3 bg-white rounded-md shadow-md p-6" v-if="formState.kieu && !isDisabled">
       <h4 class="text-lg font-semibold mb-4">Danh sách khách hàng</h4>
       <div class="h-100 overflow-y-auto">
         <khach-hang-table-in-voucher
@@ -131,7 +134,8 @@ import { keepPreviousData } from "@tanstack/vue-query";
 
 import {  FindKhachHangRequest, VoucherAndCustomerVoucherRequest, PhieuGiamGiaRequest} from "@/infrastructure/services/api/admin/voucher/voucher.api";
 import { useUpdateVoucher, useUpdateCustomerVoucher,
-  useGetListKhachHang, useGetVoucherById, useGetCusTomerByIdPhieuGiamGia
+  useGetListKhachHang, useGetVoucherById, useGetCusTomerByIdPhieuGiamGia,
+  useCheckVoucherInUse
 } from "@/infrastructure/services/service/admin/voucher/voucher.action";
 import KhachHangTableInVoucher from "./KhachHangTableInVoucher.vue";
 import { defaultVoucherDatePickerRules, defaultVoucherRequest, FormState } from "./base/DefaultConfig";
@@ -165,16 +169,34 @@ const { data: dataDetail, isLoading, isFetching} = useGetVoucherById(
     }
   );  
 
+const {data: dataInUse, isFetching: fetchingInUse} = useCheckVoucherInUse(
+  voucherId,
+  {
+    refetchOnWindowFocus: false
+  }
+);
+
 const { data: customerData } = useGetCusTomerByIdPhieuGiamGia(voucherId);
 
 const idKhachHangs = ref<string[]>([]);
 
 const dataSource = computed(() => data?.value?.data|| []);
 
-const voucherRequest = ref<PhieuGiamGiaRequest>(defaultVoucherRequest)
+const voucherRequest = ref<PhieuGiamGiaRequest>(defaultVoucherRequest);
 
+// Check if voucher is expired
 const isExpired = computed(() => {
   return formState.ngayBatDauVaKetThuc[1] && dayjs(formState.ngayBatDauVaKetThuc[1]).isBefore(dayjs());
+});
+
+// Check if voucher is in use and still valid (not expired)
+const isInUse = computed(() => {
+  return dataInUse?.value?.data != null && !isExpired.value;
+});
+
+// Combined condition for disabling form inputs
+const isDisabled = computed(() => {
+  return isExpired.value || isInUse.value;
 });
 
 const formatter = (value: any) => {

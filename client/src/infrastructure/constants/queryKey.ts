@@ -128,7 +128,8 @@ export const queryKey = {
         voucher: {
             voucherList: "adVoucherListKey",
             voucherDetail: "adVoucherDetailKey",
-            khachHangList: "adKhachHangListKey"
+            khachHangList: "adKhachHangListKey",
+            voucherUse: "adVoucherInUse"
         },
         livechat: {
             chatHistory: "adChatHistoryKey",
@@ -138,6 +139,8 @@ export const queryKey = {
         product: {
             productList: "clientAllProductKey",
             productDetailList: "clientProductDetailKey",
+            productDetailWithColor: "clientProductDetailWithColorKey",
+            productDetailWithSize: "clientProductDetailWithSizeKey",
             danhMucList: "danhMucListKey",
             colorList: "colorListkey",
             thuongHieuList: "thuongHieuListKey",

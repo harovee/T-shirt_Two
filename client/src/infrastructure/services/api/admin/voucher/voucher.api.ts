@@ -185,3 +185,12 @@ export const changeStatusVoucher = async (VoucherId: string, trangThai: string) 
     >;
 };
 
+
+export const checkVoucherInUse = async (VoucherId: Ref<string | null>) => {
+    return await request({
+        url: `${PREFIX_API_ADMIN_VOUCHER}/check-voucher-in-use/${VoucherId.value}`,
+        method: "GET",
+    }) as AxiosResponse<
+        DefaultResponse<DetailVoucherResponse>
+    >;
+};

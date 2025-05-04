@@ -12,7 +12,8 @@ import {
     createCustomerVoucher,
     getKhachHangInPhieuGiamGia,
     updateCustomerVoucher,
-    changeStatusVoucher
+    changeStatusVoucher,
+    checkVoucherInUse
 } from "@/infrastructure/services/api/admin/voucher/voucher.api";
 import {useMutation, useQuery, useQueryClient, UseQueryReturnType} from "@tanstack/vue-query";
 import {queryKey} from "@/infrastructure/constants/queryKey.ts";
@@ -139,5 +140,15 @@ export const useChangeStatusVoucher = () => {
         onError: (error: any) => {
             console.log(queryKey.admin.voucher.voucherList + "🚀 ~ change status voucher ~ error:", error);
         },
+    });
+};
+
+export const useCheckVoucherInUse = (
+    voucherId: Ref<string | null>, options?: any
+): UseQueryReturnType<Awaited<ReturnType<typeof checkVoucherInUse>>, Error> => {
+    return useQuery({
+        queryKey: [queryKey.admin.voucher.voucherUse,voucherId,],
+        queryFn: () => checkVoucherInUse(voucherId),
+        ...options,
     });
 };
