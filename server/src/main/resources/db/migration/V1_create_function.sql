@@ -18,6 +18,7 @@ BEGIN
             LEFT JOIN dot_giam_gia dg ON sd.id_dot_giam_gia = dg.id
     WHERE
         spct.id = spct_id
+      AND dg.trang_thai = 'ACTIVE'
       AND dg.ngay_bat_dau <= UNIX_TIMESTAMP()*1000  -- So sánh thời gian bắt đầu
       AND dg.ngay_ket_thuc >= UNIX_TIMESTAMP()*1000  -- So sánh thời gian kết thúc
     GROUP BY

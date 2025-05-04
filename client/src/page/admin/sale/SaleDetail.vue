@@ -33,11 +33,13 @@
                     <a-form-item class="m-0 mt-2" ref="loai" label="Loại" name="loai" required>
                             <a-radio-group v-model:value="formState.loai">
                               <a-radio value="PERCENT">%</a-radio>
-                              <a-radio value="VND">vnđ</a-radio>
+                              <a-radio value="VND">Tiền</a-radio>
                             </a-radio-group>
                     </a-form-item>
                     <a-form-item class="m-0 mt-2" ref="giaTri" label="Giá trị" name="giaTri" required >
-                        <a-input-number v-model:value="formState.giaTri" min="0" style="width: 100%" :formatter="formState.loai == 'VND' ? formatter : undefined"></a-input-number>
+                        <a-input-number v-model:value="formState.giaTri" min="0" style="width: 100%"
+                        :formatter="formState.loai == 'VND' ? formatter : undefined"
+                        ></a-input-number>
                     </a-form-item>
                     <!-- <a-form-item class="m-0 mt-2" v-if="formState.loai == 'VND'" ref="giaTriGiamToiDa" label="Giá trị giảm tối đa" name="giaTriGiamToiDa" required>
                         <a-input-number v-model:value="formState.giaTriGiamToiDa" min="0" step="10" style="width: 100%">
@@ -140,6 +142,8 @@
     :attributes="listAttributes.data.value?.data"
     :id-san-phams="idSanPhams"
     :id-san-pham-chi-tiets="idSanPhamChiTiets"
+    :dgg-loai-giam="formState.loai"
+    :dgg-gia-tri-giam="formState.giaTri"
     @update:idSanPhamChiTiets="handleUpdateIdSanPhamChiTiets"
      />
   </div>
@@ -190,6 +194,7 @@ const saleId = ref<string | null>('');
 const currentStatus = ref<boolean | null>(true);
 const activeTabKey = ref('1');
 const isCopyMode = ref(false); // Thêm biến theo dõi chế độ sao chép
+const isInitialLoad = ref(true);
 
 onMounted(() => {
     saleId.value = useRoute().params.id as string;
@@ -294,7 +299,7 @@ const rules: Record<string, Rule[]> = {
                 );
                 const now = dayjs().valueOf();
                 
-                if (!isCopyMode.value && ngayBatDau < now) {
+                if (currentStatus.value && ngayBatDau < now) {
                     return Promise.reject('Ngày bắt đầu không được nhỏ hơn thời điểm hiện tại');
                 }
 
@@ -316,15 +321,22 @@ const rules: Record<string, Rule[]> = {
     loai: [{ required: true, message: 'Vui lòng chọn loại đợt giảm giá', trigger: 'change' }],
 };
 
+// Hàm format tiền sang VNĐ
+const formatter = (value: any) => {
+  if (!value) return "";
+  return `${value} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 watch(() => data.value?.data.data, (saleData) => {
     if (saleData) {
+        isInitialLoad.value = true;
+
         Object.assign(formState, {
             ma: saleData.maDotGiamGia || '',
             ten: saleData.ten || '',
             loai: saleData.loai || '',
             giaTri: saleData.giaTri || 0,
-            giaTriGiamToiDa: saleData.giaTriGiamToiDa || null,
+            giaTriGiamToiDa: null,
             ngayBatDauVaKetThuc: [
                 saleData.ngayBatDau ? dayjs(saleData.ngayBatDau) : null,
                 saleData.ngayKetThuc ? dayjs(saleData.ngayKetThuc) : null,
@@ -337,8 +349,23 @@ watch(() => data.value?.data.data, (saleData) => {
             currentStatus.value = saleData.ngayKetThuc ? (saleData.ngayKetThuc > Date.now() ? true : false) : null;
             validStartDate.value = saleData.ngayBatDau ;
             // console.log(saleData.ngayKetThuc, Date.now());
+            setTimeout(() => {
+                isInitialLoad.value = false;
+            }, 100);
     }
 });
+
+// THAO - 04/05/2025
+watch(() => formState.loai, (newValue, oldValue) => {
+  if (!isInitialLoad.value && newValue !== oldValue) {
+    formState.giaTri = null;
+    if (formState.giaTriGiamToiDa !== null) {
+      formState.giaTriGiamToiDa = null;
+    }
+  }
+});
+// THAO - 04/05/2025
+
 const { mutate: updateSale } = useUpdateSale();
 const handleUpdateSale = (id: string | any, dataRequest: SaleRequest) => {
     Modal.confirm({
@@ -351,7 +378,7 @@ const handleUpdateSale = (id: string | any, dataRequest: SaleRequest) => {
           onSuccess: (result) => {
             openNotification(notificationType.success, result?.data.message, '');
             activeTabKey.value =  '1';
-            
+            handleRedirectClient();
           },
           onError: (error: any) => {
             openNotification(notificationType.error, error?.response?.data?.message, '');
@@ -380,7 +407,7 @@ const onSubmit = (x: number) => {
             saleRequest.value.ten = formState.ten;
             saleRequest.value.loai = formState.loai;
             saleRequest.value.giaTri = formState.giaTri;
-            saleRequest.value.giaTriGiamToiDa = formState.giaTriGiamToiDa;
+            saleRequest.value.giaTriGiamToiDa = null;
             saleRequest.value.ngayBatDau = formState.ngayBatDauVaKetThuc[0]?.valueOf() || null;
             saleRequest.value.ngayKetThuc = formState.ngayBatDauVaKetThuc[1]?.valueOf() || null;
             saleRequest.value.nguoiSua = userInfo.value?.email || null;
@@ -388,27 +415,25 @@ const onSubmit = (x: number) => {
             
             if (x == 1) {
                 handleUpdateSale(saleId.value, saleRequest.value)
-                handleRedirectClient();
             } else if (x == 2) {
                 handleUpdateSaleProduct(saleId.value || '', {
                     saleRequest: saleRequest.value,
                     saleProductRequest: {idSanPhamChiTiets: idSanPhamChiTiets.value}
                 });
-                handleRedirectClient();
             } else {
-                const saleStore = useSaleStore();
                 
-                if (isCopyMode.value) {
-                    const newStartDate = dayjs().add(1, 'hour');
-                    const newEndDate = dayjs().add(7, 'day');
-                    saleRequest.value.ngayBatDau = newStartDate.valueOf();
-                    saleRequest.value.ngayKetThuc = newEndDate.valueOf();
+                if (!currentStatus.value) {
+                    const saleStore = useSaleStore();
+                    saleRequest.value.ngayBatDau = null;
+                    saleRequest.value.ngayKetThuc = null;
+                    saleRequest.value.trangThai = 'ACTIVE';
+
+                    saleStore.setSaleData(saleRequest.value);
+                    router.push({name: 'admin-sale-add'})
+                    // .then(() => {
+                    //      warningNotiSort("Vui lòng kiểm tra và điều chỉnh thời gian cho đợt giảm giá.");
+                    // });
                 }
-                
-                saleStore.setSaleData(saleRequest.value);
-                router.push({name: 'admin-sale-add'}).then(() => {
-                    warningNotiSort("Vui lòng kiểm tra và điều chỉnh thời gian cho đợt giảm giá.");
-                });
             }
         });
 };
@@ -442,6 +467,7 @@ const handleUpdateSaleProduct = (saleId: string | '', data: SaleAndSaleProductRe
             onSuccess: (result) => {
                 openNotification(notificationType.success, result?.message, '');
                 activeTabKey.value =  '1';
+                // handleRedirectClient();
           },
           onError: (error: any) => {
                 openNotification(notificationType.error, error?.response?.data?.message, '');
@@ -465,9 +491,7 @@ const handleUpdateSaleProduct = (saleId: string | '', data: SaleAndSaleProductRe
 }
 
 const handleCopySale = () => {
-    isCopyMode.value = true; 
     onSubmit(3);
-    isCopyMode.value = false; 
 }
 
 </script>

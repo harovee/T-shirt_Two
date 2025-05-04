@@ -51,7 +51,7 @@
                       <!-- <span>Giá trung bình trên các đợt đang diễn ra</span> -->
                     </template>
                    <a-typography-text type="danger" strong underline class="cursor-pointer">
-                        Giá bán hiện tại: {{ formatCurrency(record.giaHienTai ? record.giaHienTai : record.giaSauGiam, 'VND', 'vi-VN')  }}
+                        Giá bán hiện tại: {{ formatCurrency(record.giaHienTai ? record.giaHienTai : record.gia, 'VND', 'vi-VN')  }}
                     </a-typography-text>
                 </a-popover>
             </a-space>
